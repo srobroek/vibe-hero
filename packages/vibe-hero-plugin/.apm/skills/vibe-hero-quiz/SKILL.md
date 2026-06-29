@@ -18,6 +18,15 @@ returns. The host agent never sets the score directly.
 - The user asks for a knowledge check on a named topic or tool.
 - Another skill (`vibe-hero-learn`) hands off because the user wants to practice.
 
+## End-of-work backstop
+
+At the end of a unit of work, consider calling `get_offer` and, if it returns an
+offer, surface a quiz to the user (non-interrupting — present it, don't force it).
+The Stop hook normally nudges this via `additionalContext`, but that nudge only
+acts while you are still in your loop; if it cannot trigger a follow-up the
+offer would be missed. This backstop keeps the end-of-work offer working even
+then. Honor cadence: if `get_offer` returns suppressed, say nothing.
+
 ## Steps
 
 ### 1. Identify the topic key

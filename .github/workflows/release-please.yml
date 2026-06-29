@@ -1,0 +1,45 @@
+name: Release Please
+
+# Release-PR gate for vibe-hero (spec 002, US2 / T018, FR-013/017).
+#
+# SINGLE-PACKAGE mode: @vibe-hero/server (rooted at packages/server) is the one
+# source of version truth. Config lives in release-please-config.json +
+# .release-please-manifest.json (this is NOT a monorepo multi-package manifest;
+# one component, simple `v{version}` tags -- FR-017 / critique E5).
+#
+# Behavior: merges to main accumulate Conventional Commits into a bot-maintained
+# release PR that updates packages/server/package.json version + CHANGELOG.md.
+# Merging that release PR is the single human approval point: release-please then
+# creates the GitHub release and the `v{version}` tag, which fires release.yml
+# (the OIDC npm publish + marketplace-pointer workflow).
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+# Avoid overlapping release-PR maintenance runs.
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: maintain release PR / cut release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run release-please
+        uses: googleapis/release-please-action@v4
+        with:
+          # Default GITHUB_TOKEN is sufficient for a public single-package repo.
+          # (No artifact-sync-on-PR step is needed: the only version-derived
+          # in-tree artifact is .claude-plugin/marketplace.json, which the
+          # release.yml publish job regenerates and commits AFTER the npm publish,
+          # per the publish-before-marketplace ordering in FR-016. The CI
+          # staleness gate still guards drift on normal PRs.)
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

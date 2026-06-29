@@ -1,0 +1,45 @@
+# Agent Assignments — spec 002 distribution
+# Generated: 2026-06-29 | Command: /speckit.agent-assign.assign
+
+agents_scanned:
+  - name: "coder"
+    source: "project"
+    description: "Bounded code changes, setup, glue, configs, shell, CI workflows."
+  - name: "typescript-pro"
+    source: "project"
+    description: "TypeScript — bin dispatcher, packaging tests, strict types."
+  - name: "docs-architect"
+    source: "project"
+    description: "Technical documentation."
+
+assignments:
+  # Phase 1 — Setup
+  T001: { agent: "docs-architect", reason: "Create distribution doc stub (bootstrap section)" }
+  T002: { agent: "coder", reason: "Run/record spec-001 green baseline" }
+  # Phase 2 — Foundational (publishable package + bin + content build)
+  T003: { agent: "coder", reason: "package.json publishable fields + bin/files/publishConfig" }
+  T004: { agent: "typescript-pro", reason: "Unified bin dispatcher cli/index.ts (TS routing)" }
+  T005: { agent: "coder", reason: "build/copy-assets + prepublishOnly content-bundle step" }
+  T006: { agent: "typescript-pro", reason: "Packaging tests (bin dispatch, pack contents, offline content)" }
+  T007: { agent: "coder", reason: "Confirm 144-test no-regression after package changes" }
+  # Phase 3 — US1 install (plugin + manifests)
+  T008: { agent: "coder", reason: "Author root apm.yml (marketplace + dependencies.mcp npx + skills)" }
+  T009: { agent: "coder", reason: "Generate plugin/marketplace/.mcp.json via apm pack; verify no name-only deps" }
+  T010: { agent: "typescript-pro", reason: "Manifest assertion test (npx shape, no {name} deps, marketplace lists plugin)" }
+  T011: { agent: "docs-architect", reason: "Install-gesture documentation" }
+  # Phase 4 — US3 agent-mediated Stop hook
+  T012: { agent: "coder", reason: "Rewrite stop-offer.sh to emit additionalContext, spawn nothing" }
+  T013: { agent: "coder", reason: "Author .apm/hooks manifest + regenerate hooks.json (auto-register)" }
+  T014: { agent: "docs-architect", reason: "Reinforce end-of-work offering in quiz skill steering" }
+  T015: { agent: "typescript-pro", reason: "Stop-hook test (emits nudge, no spawn, loop guard)" }
+  T016: { agent: "docs-architect", reason: "Update hook README (auto-register; dev-only manual)" }
+  # Phase 5 — US2 CI release
+  T017: { agent: "coder", reason: "ci.yml — build + tests + artifact staleness gate" }
+  T018: { agent: "coder", reason: "release-please.yml — single-package mode" }
+  T019: { agent: "coder", reason: "release.yml — OIDC publish + provenance + atomic marketplace commit" }
+  T020: { agent: "coder", reason: "CI/release validation (OIDC-only, no token, staleness fails on edit)" }
+  # Phase 6 — Polish
+  T021: { agent: "docs-architect", reason: "Maintainer bootstrap doc (org, first publish, Trusted Publisher)" }
+  T022: { agent: "docs-architect", reason: "Rollback procedure doc" }
+  T023: { agent: "docs-architect", reason: "Cross-publish fast-follow doc (remote-git source entry)" }
+  T024: { agent: "coder", reason: "Final quickstart V1–V8 verification pass" }

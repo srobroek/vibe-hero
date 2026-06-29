@@ -1,11 +1,47 @@
 {
   "name": "@vibe-hero/server",
   "version": "0.1.0",
-  "private": true,
+  "description": "MCP server engine for the vibe-hero adaptive-learning plugin — not used standalone; install the vibe-hero Claude Code plugin, which launches this and ships the skills + hook.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude-code",
+    "codex",
+    "learning",
+    "quiz",
+    "adaptive-learning",
+    "agentic-coding",
+    "education"
+  ],
+  "author": "Sjors Robroek",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srobroek/vibe-hero.git",
+    "directory": "packages/server"
+  },
+  "homepage": "https://github.com/srobroek/vibe-hero#readme",
+  "bugs": {
+    "url": "https://github.com/srobroek/vibe-hero/issues"
+  },
+  "private": false,
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "vibe-hero": "dist/cli/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && pnpm run copy-assets",
-    "copy-assets": "node -e \"const{cpSync,existsSync}=require('node:fs');const s='src/catalog/bundled';const d='dist/catalog/bundled';if(existsSync(s))cpSync(s,d,{recursive:true,filter:p=>!p.endsWith('.ts')});\"",
+    "copy-assets": "node -e \"const{cpSync,existsSync,mkdirSync}=require('node:fs');const path=require('node:path');function cp(s,d){if(existsSync(s)){mkdirSync(d,{recursive:true});cpSync(s,d,{recursive:true,filter:p=>!p.endsWith('.ts')});}}cp('src/catalog/bundled','dist/catalog/bundled');const root=path.resolve('../..');['claude-code','general'].forEach(cls=>{const s=path.join(root,'content',cls);const d=path.join('dist','catalog','bundled',cls);if(existsSync(s)){mkdirSync(d,{recursive:true});cpSync(s,d,{recursive:true});}});\"",
+    "prepublishOnly": "pnpm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "node dist/index.js",

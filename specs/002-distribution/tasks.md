@@ -27,8 +27,8 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 **Purpose**: prerequisites shared across the publish + plugin work.
 
-- [ ] T001 Confirm/record the bootstrap prerequisites doc target (`CONTRIBUTING.md` or `docs/distribution.md`) and add a stub section "Maintainer one-time bootstrap" (org, manual first publish, Trusted Publisher) to be filled in T024 — placeholder only.
-- [ ] T002 [P] Verify the spec-001 baseline is green before packaging changes: `pnpm install && pnpm --filter @vibe-hero/server build && pnpm --filter @vibe-hero/server test` (record the 144-test baseline; FR-019 guard).
+- [X] T001 Confirm/record the bootstrap prerequisites doc target (`CONTRIBUTING.md` or `docs/distribution.md`) and add a stub section "Maintainer one-time bootstrap" (org, manual first publish, Trusted Publisher) to be filled in T024 — placeholder only.
+- [X] T002 [P] Verify the spec-001 baseline is green before packaging changes: `pnpm install && pnpm --filter @vibe-hero/server build && pnpm --filter @vibe-hero/server test` (record the 144-test baseline; FR-019 guard).
 
 ---
 
@@ -38,11 +38,11 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 **⚠️ CRITICAL**: blocks US1, US2, US3.
 
-- [ ] T003 Make `packages/server/package.json` publishable (FR-001): remove `private`; add `license` (Apache-2.0), `repository`, `homepage`, `bugs`, `publishConfig: { access: "public", provenance: true }`, `files: ["dist"]`, and `bin: { "vibe-hero": "dist/cli/index.js" }`. Leave `version` as-is (release-please owns it later).
-- [ ] T004 Implement the unified bin dispatcher `packages/server/src/cli/index.ts` (FR-002): no-arg/`mcp` → run the server bootstrap `main()` from `../index.js`; `get-offer` → run `./getOffer.js` `main()` (optional utility); unknown → usage to stderr + nonzero exit. Reuse the existing exported `main()`s; routing only, no logic.
-- [ ] T005 Extend the build to bundle real content (FR-004/019b): update `packages/server/package.json` `copy-assets` (and add `prepublishOnly: "pnpm run build"`) so `tsc` output PLUS a MINIMAL baseline of `content/**` (claude-code + general) is copied into `dist/catalog/bundled/`. Keep the snapshot deliberately small (offline baseline); full catalog comes via runtime fetch.
-- [ ] T006 [P] Packaging tests `packages/server/test/integration/packaging.test.ts` (FR-019a): assert (a) `vibe-hero` bin dispatches mcp vs get-offer vs unknown; (b) a `pnpm pack`/`npm pack --dry-run` tarball includes `dist/` (incl. bundled content) and EXCLUDES `src/`,`test/`,configs; (c) the built server loads bundled content offline with ≥3 real topics, 0 errors.
-- [ ] T007 [P] Confirm no spec-001 regression after T003–T005 (FR-018/019): `pnpm --filter @vibe-hero/server build && test` → 144 prior tests still pass; runtime behavior unchanged.
+- [X] T003 Make `packages/server/package.json` publishable (FR-001): remove `private`; add `license` (Apache-2.0), `repository`, `homepage`, `bugs`, `publishConfig: { access: "public", provenance: true }`, `files: ["dist"]`, and `bin: { "vibe-hero": "dist/cli/index.js" }`. Leave `version` as-is (release-please owns it later).
+- [X] T004 Implement the unified bin dispatcher `packages/server/src/cli/index.ts` (FR-002): no-arg/`mcp` → run the server bootstrap `main()` from `../index.js`; `get-offer` → run `./getOffer.js` `main()` (optional utility); unknown → usage to stderr + nonzero exit. Reuse the existing exported `main()`s; routing only, no logic.
+- [X] T005 Extend the build to bundle real content (FR-004/019b): update `packages/server/package.json` `copy-assets` (and add `prepublishOnly: "pnpm run build"`) so `tsc` output PLUS a MINIMAL baseline of `content/**` (claude-code + general) is copied into `dist/catalog/bundled/`. Keep the snapshot deliberately small (offline baseline); full catalog comes via runtime fetch.
+- [X] T006 [P] Packaging tests `packages/server/test/integration/packaging.test.ts` (FR-019a): assert (a) `vibe-hero` bin dispatches mcp vs get-offer vs unknown; (b) a `pnpm pack`/`npm pack --dry-run` tarball includes `dist/` (incl. bundled content) and EXCLUDES `src/`,`test/`,configs; (c) the built server loads bundled content offline with ≥3 real topics, 0 errors.
+- [X] T007 [P] Confirm no spec-001 regression after T003–T005 (FR-018/019): `pnpm --filter @vibe-hero/server build && test` → 144 prior tests still pass; runtime behavior unchanged.
 
 **Checkpoint**: `@vibe-hero/server` is a publishable package with a working `vibe-hero` bin and real offline content; all tests green.
 

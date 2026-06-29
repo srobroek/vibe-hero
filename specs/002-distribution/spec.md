@@ -26,11 +26,13 @@ This spec covers **packaging, publishing, and release automation only** — it d
 
 - Q: Where does the marketplace live? → A: In THIS repo (`.claude-plugin/marketplace.json` + APM at root); ALSO cross-publishable into `srobroek/agentic-packages`.
 - Q: Plugin packaging shape? → A: ONE combined Claude Code plugin (skills + Stop hook + `.mcp.json` npx-launching the server + offline content snapshot). The server is the only separately-published (npm) artifact.
-- Q: What does `@vibe-hero/server`'s `bin` expose? → A: A SINGLE bin `vibe-hero` with subcommands — default (or `mcp`) starts the stdio MCP server; `get-offer` serves the Stop hook. (`npx -y @vibe-hero/server` and `npx -y @vibe-hero/server get-offer`.)
+- Q: What does `@vibe-hero/server`'s `bin` expose? → A: A SINGLE bin `vibe-hero` — default (or `mcp`) starts the stdio MCP server (the primary use, `npx -y @vibe-hero/server`); an OPTIONAL `get-offer` subcommand remains for non-Claude-Code hosts/debugging. (Note: post-critique, the Claude Code Stop hook is agent-mediated and does NOT call `get-offer` — see the Stop-hook clarification below.)
 - Q: How does offline content get into the npm package? → A: The npm build COPIES the repo's real `content/` (claude-code + general topics) into the package as the bundled offline snapshot; runtime GitHub fetch (`VIBE_HERO_CONTENT_URL`) still layers updates on top.
 - Q: How does CI authenticate to npm? → A: **npm Trusted Publishers (OIDC)** — NOT a long-lived `NPM_TOKEN` secret. GitHub Actions authenticates via a short-lived OIDC token tied to the repo + publish workflow (workflow needs `permissions: id-token: write`); the trusted publisher is configured once on npmjs.com linking the package to `srobroek/vibe-hero` + the workflow. No publish secret is created, stored, or at risk of leaking, and npm provenance attestation is emitted automatically.
 - Q: What triggers a release in CI? → A: **Release-PR gate (release-please style)**, matching `agentic-packages`. Merges to main accumulate into a bot-maintained release PR; merging THAT PR cuts the version, publishes to npm (via OIDC), and regenerates/commits the marketplace + plugin artifacts. The release PR is the human approval point and the single version source-of-truth.
-- Q: How does the plugin pin the npx-launched server version? → A: **Floating `latest`** — the plugin's `.mcp.json` and the Stop hook both invoke `npx -y @vibe-hero/server` with NO version, always resolving the newest published version. (Tradeoff accepted: installs aren't byte-reproducible and a server/hook version skew is possible only transiently across a publish; both float to the same `latest` and self-heal on next npx resolution. This supersedes the earlier "exact pin / no drift" framing — see FR-012/SC-007.)
+- Q: How does the plugin pin the npx-launched server version? → A: **Floating `latest`** — the plugin's `.mcp.json` invokes `npx -y @vibe-hero/server` with NO version, always resolving the newest published version (auto-distributes updates; no user-critical payload; users may pin themselves). A documented rollback procedure (deprecate / dist-tag) handles a bad publish (FR-012a). (Post-critique: the Stop hook no longer launches the server — see the agent-mediated decision below — so there is only ONE version reference, in `.mcp.json`.)
+- Q: Should the Stop hook spawn a process to fetch the offer? → A: **No (post-critique E3)** — a hook cannot reach the running stdio MCP server, and spawning `npx … get-offer` every turn-end is a hot-path latency/hang risk. The hook is **agent-mediated**: it emits an `additionalContext` nudge and the agent calls the `get_offer` MCP tool on the already-running server. The `get-offer` bin subcommand stays only as an optional utility for non-Claude-Code hosts/debugging.
+- Q: How is the plugin cross-published into agentic-packages? → A: **A direct remote-git marketplace `source` entry** (`source: srobroek/vibe-hero` + `ref:`) — APM core supports remote git marketplace sources first-class (corrects an earlier "impossible" critique note). No stub, no APM/npm dependency, no copy. Blocker is agentic-packages' LOCAL marketplace generators (they overwrite the packages block from local dirs only and would drop an external entry + fail the staleness gate); refactoring them to preserve external-source entries is in progress. So cross-publish is a fast-follow, not v1-critical.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -68,18 +70,19 @@ A maintainer merges a change. CI automatically versions the release, publishes t
 
 ---
 
-### User Story 3 — Installed plugin stays consistent (server ↔ hook ↔ content) (Priority: P2)
+### User Story 3 — End-of-work offer works in an npx-only install (no process spawn) (Priority: P2)
 
-Because the server is npx-launched (no plugin-local build), the Stop hook cannot call a local built file. The hook instead invokes the published package's `get-offer` subcommand, so the hook logic and the MCP server logic come from the SAME published package rather than from a separately-bundled script that could rot. (Both use the unpinned `npx -y @vibe-hero/server` reference per FR-012, so they track the same `latest`.)
+Because the server is npx-launched (no plugin-local build) AND a hook cannot reach the running stdio MCP server (Claude Code owns its pipes), the Stop hook does NOT spawn any process or call a `get-offer` CLI. It emits a short `additionalContext` nudge; the AGENT — which already holds the live MCP connection — calls the `get_offer` MCP tool itself. The offer logic stays server-side, reached through the agent's existing connection, with zero per-turn-end process spawn.
 
-**Why this priority**: The npx decision creates a real consistency hazard (the current Stop hook calls a local `dist/cli/getOffer.js` that won't exist in an npx-only install). Resolving it is required for US1 to actually work, but it is a focused sub-requirement of the packaging, so P2.
+**Why this priority**: The npx decision created a real hazard — the spec-001 Stop hook calls a local `dist/cli/getOffer.js` that won't exist in an npx-only install, and spawning `npx … get-offer` every turn-end would add latency/hang risk on a hot path. The agent-mediated pattern resolves both. It's required for US1's offer to work post-install, but is a focused packaging sub-requirement, so P2.
 
-**Independent Test**: In an npx-style install (no plugin-local `dist/`), trigger the Stop hook; confirm it resolves an offer by invoking the published package (`npx … get-offer`) and never depends on a plugin-local build artifact.
+**Independent Test**: In an npx-style install (no plugin-local `dist/`), trigger the Stop hook; confirm it spawns NO process, emits an `additionalContext` nudge, and the agent then calls the `get_offer` MCP tool against the running server.
 
 **Acceptance Scenarios**:
 
-1. **Given** an npx-only install, **When** the Stop hook runs, **Then** it obtains the offer via the published package's `get-offer` subcommand, not a plugin-local file.
-2. **Given** a pinned plugin version, **When** the server and the hook both run, **Then** they resolve to the same published package version.
+1. **Given** an npx-only install, **When** the Stop hook runs, **Then** it spawns no process and references no plugin-local build artifact — it only emits an `additionalContext` nudge.
+2. **Given** the nudge is emitted while the agent is still in its loop, **When** the agent continues, **Then** it calls the `get_offer` MCP tool on the already-running server (no fresh npx spawn).
+3. **Given** the agent has already fully stopped, **When** the nudge cannot trigger a follow-up call, **Then** the behavior degrades safely (no error; the offer is simply not shown that turn) and the quiz-skill steering still surfaces offers at end of work.
 
 ---
 
@@ -100,7 +103,7 @@ Because the server is npx-launched (no plugin-local build), the Stop hook cannot
 **npm package**
 
 - **FR-001**: `@vibe-hero/server` MUST be publishable to the public npm registry (drop `private: true`; add the public-publish metadata: `name`, `version`, `license`, `files`, `bin`, `repository`).
-- **FR-002**: The package MUST expose a single `bin` named `vibe-hero` that, with no subcommand (or `mcp`), starts the MCP server over stdio, and with the `get-offer` subcommand serves the Stop-hook offer query. Both MUST be invocable via `npx -y @vibe-hero/server [get-offer]`.
+- **FR-002**: The package MUST expose a single `bin` named `vibe-hero` that, with no subcommand (or `mcp`), starts the MCP server over stdio. It MAY also accept a `get-offer` subcommand as an OPTIONAL utility (for non-Claude-Code hosts / debugging) — but the Claude Code Stop hook does NOT use it (FR-011 is agent-mediated). Primary invocation: `npx -y @vibe-hero/server`.
 - **FR-003**: The published package MUST include its built output and the offline content snapshot, and MUST NOT include test files, sources-only-needed-at-build, or development artifacts (control via `files`/`.npmignore`).
 - **FR-004**: The package build MUST copy the repository's real `content/` curriculum (claude-code + general topics) into the package as the bundled offline snapshot, so npx users get real curriculum offline; runtime GitHub fetch (`VIBE_HERO_CONTENT_URL`) still layers updates on top.
 
@@ -110,13 +113,14 @@ Because the server is npx-launched (no plugin-local build), the Stop hook cannot
 - **FR-006**: Installing the plugin MUST make the MCP server, skills, and Stop hook available WITHOUT the user manually editing settings, MCP config, or hook registration.
 - **FR-007**: The Stop hook MUST be declared so it auto-registers on plugin install (a hooks manifest using the plugin-root path token the loader expects), replacing the current manual-install README.
 - **FR-008**: The plugin's MCP declaration MUST launch the server via `npx` against the published package (no plugin-local build/toolchain required at install or run time).
-- **FR-009**: An APM marketplace manifest MUST live at this repository's root so vibe-hero is its own Claude Code marketplace; the plugin MUST also be cross-publishable into the `srobroek/agentic-packages` marketplace without source duplication or version divergence.
+- **FR-009**: An APM marketplace manifest MUST live at this repository's root so vibe-hero is its own Claude Code marketplace (installable via `apm marketplace add srobroek/vibe-hero`) — the v1 distribution path. Cross-publishing into `srobroek/agentic-packages` MUST use a **direct remote-git marketplace `source` entry** there (`source: srobroek/vibe-hero` + `ref:`) — a first-class APM capability (remote git sources), needing no stub, no APM/npm dependency, and no source copy. This cross-publish is a **fast-follow** gated on refactoring agentic-packages' local marketplace generators to preserve external-source entries (today they overwrite the packages block from local dirs only), NOT part of vibe-hero's v1 critical path.
 - **FR-010**: Generated packaging artifacts (plugin manifest, marketplace manifest, MCP/hook manifests) MUST be produced by a generator from declared inputs — never hand-authored — and MUST use valid sourced dependency forms (not the name-only object form that breaks resolution).
 
 **Server ↔ hook consistency (npx consequence)**
 
-- **FR-011**: The Stop hook MUST resolve offers by invoking the published package's `get-offer` subcommand, NOT a plugin-local build artifact, so an npx-only install has no missing-file dependency.
-- **FR-012**: The plugin's `.mcp.json` and the Stop hook MUST both invoke `npx -y @vibe-hero/server` with NO version pin (floating `latest`), so both resolve the newest published version. Because they use the identical unpinned reference, they resolve to the same version in steady state; a transient skew is possible only across a publish boundary and self-heals on the next `npx` resolution. (Reproducible pinning is explicitly NOT a requirement — see Clarifications.)
+- **FR-011**: The Stop hook MUST be **agent-mediated and spawn NO process**: it emits a Stop `additionalContext` nudge and the agent calls the `get_offer` MCP tool on the already-running server (a hook cannot reach the stdio server directly). It MUST NOT spawn `npx`/`node` or depend on any plugin-local build artifact. It MUST degrade safely when the nudge can't trigger a follow-up (no error). The bin's `get-offer` subcommand is retained only as an optional utility for non-Claude-Code hosts/debugging — not used by the Claude Code Stop hook.
+- **FR-012**: The plugin's `.mcp.json` MUST invoke `npx -y @vibe-hero/server` with NO version pin (floating `latest`), so it resolves the newest published version (auto-distributes updates — the deciding factor, since there is no user-critical/security-sensitive payload). Reproducible pinning is explicitly NOT a requirement; users MAY pin themselves. (With FR-011 now agent-mediated, the hook no longer launches the server, so the server/hook version-skew concern is moot — only the single `.mcp.json` reference matters.)
+- **FR-012a**: Because `latest` auto-distributes, the project MUST have a documented **rollback procedure** for a bad publish (e.g. `npm deprecate` the bad version + publish a fixed patch, or move the `latest` dist-tag back to the last-good version), since installed users pick up `latest` on next resolution.
 
 **Release automation (CI/CD)**
 
@@ -124,13 +128,17 @@ Because the server is npx-launched (no plugin-local build), the Stop hook cannot
 - **FR-014**: npm authentication in CI MUST use **npm Trusted Publishers (OIDC)** — a short-lived, workflow-scoped OIDC token — NOT a long-lived `NPM_TOKEN` secret. The publish workflow MUST request `permissions: id-token: write`, and the npm package MUST be configured (once, on npm) to trust this repo + publish workflow. No long-lived publish credential is created or stored. Publishing MUST emit npm provenance attestation (`--provenance`, enabled by OIDC).
 - **FR-014a**: BOOTSTRAP — because a trusted publisher can only be attached to a package that already exists on npm, the FIRST publish of `@vibe-hero/server` is a one-time MANUAL `npm publish` performed by the maintainer (logged in, ideally with 2FA), which creates the package and establishes ownership. The spec/plan MUST document this one-time step. AFTER it, the maintainer configures the trusted publisher (repo + publish workflow) on npm, and ALL subsequent releases publish via OIDC/CI per FR-014 — no further manual publishes.
 - **FR-015**: CI MUST include a staleness gate that fails when generated packaging artifacts are out of date relative to their inputs (so drift can't ship).
-- **FR-016**: A release that fails to publish to npm MUST fail atomically and MUST NOT advance the marketplace to a server version that was not actually published.
-- **FR-017**: The release versioning MUST be automated and consistent across the npm package and the plugin/marketplace entry (a single source of version truth).
+- **FR-016**: A release that fails to publish to npm MUST fail atomically and MUST NOT advance the marketplace to a server version that was not actually published. Concretely (npm publish and a git commit are not one transaction): publish to npm FIRST; only on success regenerate + commit the marketplace pointer; if the commit step fails, the next release reconciles idempotently. **npm is the source of truth; the marketplace is a derived pointer** (critique E4).
+- **FR-017**: The release versioning MUST be automated and consistent across the npm package and the plugin/marketplace entry (a single source of version truth). Use release-please in **single-package mode** (a simple `v{version}` tag + one component), not the monorepo multi-package config (critique E5).
+- **FR-017a**: There MUST be a documented rollback procedure for a bad `latest` publish (npm `deprecate` the bad version and/or move the `latest` dist-tag to the last-good version + publish a fixed patch), since floating-`latest` users pick it up on next resolution (critique P4; pairs with FR-012a).
 
 **Compatibility / non-regression**
 
 - **FR-018**: This spec MUST NOT change any spec-001 learning behavior; the server's runtime behavior (tools, gate, grading, privacy) is unchanged — only how it is packaged and launched.
 - **FR-019**: All spec-001 tests MUST continue to pass; packaging changes (build script, bin, files) MUST be verified to not break the existing build/test.
+- **FR-019a**: Packaging correctness MUST be verified against the BUILT/PACKED artifact, not only `src` — at least: `bin` dispatch works, `npm pack` includes `dist` (incl. bundled content) and excludes sources/tests, and the built server loads the bundled content offline (critique E8; quickstart V1–V3 automated in CI).
+- **FR-019b**: The bundled offline content snapshot SHOULD be a deliberately MINIMAL baseline (enough for offline first use), with the full/updated catalog delivered via runtime fetch (`VIBE_HERO_CONTENT_URL`), so curriculum growth does not bloat the npm package or force a server republish per content change (critique E7).
+- **FR-019c**: Install docs MUST state the npx reality honestly: bundled content works fully offline, but the first-ever server launch needs the `@vibe-hero/server` package present/cached (one network fetch), and SHOULD note an air-gapped escape hatch (pre-install the package) and that first use may incur a one-time npx cold-start (critique P2/P3).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -149,11 +157,11 @@ Because the server is npx-launched (no plugin-local build), the Stop hook cannot
 - **SC-003**: With no network, 100% of bundled-curriculum quiz requests still succeed after install (offline content shipped in the package).
 - **SC-004**: A release is published end-to-end by CI with ZERO manual `npm publish` or hand-edited manifest steps.
 - **SC-005**: No long-lived npm publish credential exists anywhere (no `NPM_TOKEN` secret in the repo); publish authenticates via OIDC and emits a provenance attestation — verifiable by the absence of a publish secret and the presence of provenance on the published version.
-- **SC-006**: The Stop hook in an npx-only install resolves an offer with NO dependency on a plugin-local build file (100% of hook invocations use the published `get-offer`).
-- **SC-007**: The plugin and the Stop hook use the IDENTICAL unpinned `npx -y @vibe-hero/server` reference (verifiable by inspection), so both resolve the same `latest` in steady state; any version skew is transient (only across a publish) and self-heals — there is no persistent divergence.
+- **SC-006**: The Stop hook spawns ZERO processes and references NO plugin-local build file (100% of invocations only emit `additionalContext`); the offer is fetched by the agent calling the MCP tool on the already-running server.
+- **SC-007**: There is exactly ONE place the server version is referenced — the plugin's `.mcp.json` (`npx -y @vibe-hero/server`, unpinned). The hook does not launch the server, so no server/hook version divergence is possible by construction.
 - **SC-008**: A hand-edit to a generated packaging artifact is caught by CI's staleness gate (build fails) rather than shipping.
 - **SC-009**: All spec-001 tests continue to pass after the packaging changes.
-- **SC-010**: The same plugin is installable from BOTH the vibe-hero root marketplace and the agentic-packages marketplace, at the same version, without source duplication.
+- **SC-010**: (fast-follow) When cross-publish ships, the same plugin is installable from BOTH the vibe-hero root marketplace and (via the stub's cross-repo APM dependency) the agentic-packages marketplace, at the same version, with NO source duplication. v1 ships the vibe-hero root marketplace alone.
 
 ## Open Design Decisions
 
@@ -162,7 +170,7 @@ Deferred to planning; do not block the spec.
 - **OD-001 — Generator choice**: reuse agentic-packages' `build-native-plugins.py` (+ `apm pack`) generator pattern, or rely on plain `apm pack` (vibe-hero is ~1 plugin, not a 100-package monorepo). Decide in plan; FR-010's "generated, valid sourced deps" holds either way.
 - ~~OD-002 — Version pin policy~~ **RESOLVED (clarify)**: floating `latest`, unpinned `npx -y @vibe-hero/server` (FR-012).
 - ~~OD-003 — Release tooling~~ **RESOLVED (clarify)**: release-please-style release-PR gate, matching agentic-packages (tag pattern `{name}-v{version}`) (FR-013).
-- **OD-004 — Cross-publish mechanism**: how the agentic-packages marketplace references this plugin (a package entry pointing at this repo, a submodule, or a copied/generated package) without version divergence (FR-009/SC-010).
+- ~~OD-004 — Cross-publish mechanism~~ **RESOLVED**: a **direct remote-git marketplace `source` entry** in agentic-packages (`source: srobroek/vibe-hero` + `ref:`) — first-class APM core support; no stub/dep/copy. Fast-follow, gated on refactoring agentic-packages' local marketplace generators to preserve external-source entries. (FR-009/SC-010.)
 - **OD-005 — npm org/scope**: confirm the `@vibe-hero` scope (org) on npm and 2FA policy. `@vibe-hero/server` is currently unregistered (name available). Scope creation + the one-time manual bootstrap publish (FR-014a) + trusted-publisher configuration are maintainer steps done out-of-band before CI-driven releases work.
 
 ## Assumptions

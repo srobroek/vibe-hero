@@ -29,10 +29,10 @@ How to prove the packaging + release works. References `data-model.md` and `cont
 2. **Expect**: manifests are generated (not hand-authored), wire MCP + hook + skills, and contain no `{name:...}`-only dependency entries.
 3. (Full end-to-end install in a real Claude Code is a manual acceptance step — confirm: add marketplace → install → MCP tools present, skills present, Stop hook fires at end of work, all with zero config edits.)
 
-### V5 — Stop hook uses the published CLI, not a local build (FR-011, SC-006)
-1. In an environment with NO `packages/server/dist` (simulating an npx-only install) and `VIBE_HERO_SERVER_DIST` unset: run `hooks/claude-code/stop-offer.sh` with a synthetic Stop payload → it invokes `npx -y @vibe-hero/server get-offer` (or the wrapper) and never references a missing local file; on any failure it exits 0 silently.
-2. With `VIBE_HERO_SERVER_DIST` set (local dev) → it uses the local dist (fast path).
-3. **Expect**: no dependency on a plugin-local `dist/cli/getOffer.js` in the npx path.
+### V5 — Stop hook is agent-mediated, spawns nothing (FR-011, SC-006)
+1. Run `hooks/claude-code/stop-offer.sh` with a synthetic Stop payload → it prints a `{"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"…call get_offer…"}}` JSON and exits 0; assert it invokes NO subprocess (no `npx`/`node`) — e.g. trace/strace or assert the script has no spawn, and references no `dist/cli/getOffer.js`.
+2. With `stop_hook_active` set in the payload → it emits nothing (loop guard).
+3. **Expect**: zero process spawn; the offer is fetched by the agent calling the MCP tool, not by the hook. (Full end-to-end — agent acts on the nudge and calls `get_offer` — is a manual Claude Code acceptance step.)
 
 ### V6 — Release pipeline (FR-013/014/016, SC-004/005) — CI dry-run / inspection
 1. Inspect the publish workflow: triggers on the release-please release (not arbitrary merges); requests `permissions: id-token: write`; runs `pnpm publish --access public --provenance`; references NO `NPM_TOKEN` secret.

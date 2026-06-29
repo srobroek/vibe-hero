@@ -10,13 +10,25 @@ Resolves the open decisions (OD-001/004/005) and the concrete packaging/CI mecha
 
 **Alternatives**: Port `build-native-plugins.py` (rejected — overkill, drags in the dep-shape bug); fully hand-author manifests (rejected — drift risk; FR-010 wants generated-not-hand-authored, satisfied by `apm pack`).
 
-## OD-004 — Cross-publish into agentic-packages → **marketplace entry referencing this repo by source; no source duplication**
+## OD-004 — Cross-publish into agentic-packages → **direct remote-git marketplace `source` entry pointing at the vibe-hero repo** *(authoritative, supersedes earlier framings)*
 
-**Decision**: vibe-hero's plugin lives in THIS repo (root `.claude-plugin/marketplace.json`). To cross-publish, add a marketplace/package entry in `srobroek/agentic-packages` that REFERENCES the vibe-hero plugin by its published location (a marketplace `source` pointing at the vibe-hero repo/tag), NOT a copy of the source. Same version, single source of truth (the vibe-hero release tag).
+**Decision**: vibe-hero's plugin lives in THIS repo (root `.claude-plugin/marketplace.json`), independently installable (`apm marketplace add srobroek/vibe-hero`) — the v1 path. To ALSO surface it in `srobroek/agentic-packages`, add a marketplace **PackageEntry** there whose `source` is the **remote git coordinate of the vibe-hero repo** with a `ref`:
+```yaml
+- name: vibe-hero
+  source: srobroek/vibe-hero      # remote git source (default host github.com)
+  ref: vibe-hero-v<version>       # branch / tag / sha
+  category: ...
+  tags: [...]
+```
+No stub package, no APM dependency, no npm dependency, no source copy. The entry references vibe-hero's repo directly; the npm package `@vibe-hero/server` is referenced ONLY inside vibe-hero's own `.mcp.json`.
 
-**Rationale**: Avoids version divergence and duplicate maintenance (SC-010). The agentic-packages marketplace.json already lists plugins by `source`; a remote source (repo/ref) is the established mechanism. The npm server is the same `@vibe-hero/server` regardless of which marketplace surfaces the plugin.
+**Authoritative basis (corrects critique E1)**: APM **core** supports remote git marketplace sources as a first-class `PackageEntry.source` — `yml_schema.py` accepts `owner/repo`, `host.tld/owner/repo`, `https://host.tld/owner/repo[.git]`, and `./local`; `is_local` is derived from a leading `./`, so a non-`./` source resolves as remote git with `ref`/`subdir`/`tag_pattern`. My critique E1 ("sources must be local, impossible") was WRONG about APM core — it conflated agentic-packages' *current usage* (only `./packages/...`) with APM's capability. Remote git sources are valid.
 
-**Alternatives**: Vendor/copy the plugin into agentic-packages (rejected — duplication + drift); git submodule (rejected — heavier, brittle). Exact reference syntax (remote `source` vs an APM dependency on the vibe-hero package) is finalized in the plan's CI section; both avoid duplication.
+**Real blocker (the actual constraint)**: agentic-packages' LOCAL generators — `build_inventory.py` + `render-docs.py` — rebuild the marketplace `packages` block by walking `packages/*/` and OVERWRITE it (`block["packages"] = entries`), so a hand-added external-source entry not backed by a local dir is dropped on the next regenerate AND fails the PR staleness gate. Cross-publish therefore depends on **refactoring those generators to inject/preserve external-source entries** (the user is doing this). Until then, cross-publish can't land in agentic-packages.
+
+**Consequence**: cross-publish stays a **fast-follow**, gated on the agentic-packages generator refactor — NOT part of vibe-hero's v1 critical path. vibe-hero's own remote-git marketplace (`srobroek/vibe-hero`) ships first and is itself the same first-class mechanism (a remote marketplace add).
+
+**Alternatives**: stub package + cross-repo APM dependency (workable but heavier — unnecessary now that a direct remote `source` entry is confirmed valid); vendor/copy the plugin (rejected — duplication/drift).
 
 ## OD-005 — npm org/scope → **`@vibe-hero` scoped public package, Trusted Publishers + 2FA**
 
@@ -54,13 +66,17 @@ The current code is already close: `getOffer.ts` parses a `get-offer` subcommand
 
 **Rationale**: Matches the verified agentic-packages plugin conventions; install gives MCP + skills + hook with zero manual config (SC-001).
 
-## Stop-hook rewiring for npx (FR-011 — the npx consequence)
+## Stop-hook: agent-mediated, NO process spawn (FR-011 — corrected post-critique E3)
 
-**Decision**: The Stop hook must NOT call a plugin-local `dist/cli/getOffer.js` (no such file in an npx-only install). Rewire it to invoke the published CLI: `npx -y @vibe-hero/server get-offer --session <id> --tool <tool>`. Because npx-resolving on every Stop could be slow, the hook keeps its current defensive guards (skip silently on any failure) and may prefer a cached npx. The `VIBE_HERO_SERVER_DIST` override stays for local dev/testing (call the local `dist` when set).
+**Decision**: The Stop hook does NOT spawn any process (no `npx`, no `node`, no `get-offer` CLI). **Verified**: a hook cannot reach the running stdio MCP server (Claude Code owns the server's pipes; no socket/IPC is exposed). The idiomatic pattern is **agent-mediated**: the Stop hook emits `hookSpecificOutput.additionalContext` (a short JSON nudge), and the AGENT — which already has the MCP connection live — calls the `get_offer` MCP tool itself against the already-running server. The hook is a tiny pure-shell script that just prints the additionalContext JSON; it spawns nothing.
 
-**Rationale**: Puts the offer logic in the same published package as the server (no separately-bundled script to rot, FR-011); both server and hook float to the same `@vibe-hero/server` latest (FR-012). The getOffer logic already lives in the package's CLI — only the hook's invocation path changes.
+**Rationale**: Eliminates the per-turn-end process spawn + npx-resolution latency entirely (the E3 concern disappears, not just mitigated). No plugin-local build file is referenced (FR-011 satisfied trivially — there's nothing to reference). The offer logic stays server-side and is reached by the agent's existing MCP connection, not a fresh process.
 
-**Alternatives**: Ship a `${PLUGIN_ROOT}/scripts/stop-offer.sh` wrapper inside the plugin that shells to npx (acceptable variant — decide in tasks whether the hook command is the raw `npx … get-offer` or a wrapper script; wrapper gives a place for the guards). Either way the logic is in the npm package.
+**Caveat**: `additionalContext` only triggers a follow-up tool call if the agent is still in its loop (if Stop fires after the agent has fully committed to stopping, the nudge may not act). Mitigation: reinforce "offer a check at end of work" in the quiz skill / steering so the behavior isn't solely hook-dependent. The hook's `Stop`-event JSON also keeps a loop guard (don't re-nudge if `stop_hook_active`).
+
+**Consequence for the bin (FR-002)**: the `get-offer` subcommand is NO LONGER needed by the Claude Code Stop hook. Keep it in the bin as an OPTIONAL utility (useful for non-Claude-Code hosts that lack additionalContext, and for debugging/tests), but it is off the critical path. The primary bin behavior is just the MCP server (`npx -y @vibe-hero/server`).
+
+**Alternatives**: hook spawns `npx … get-offer` per stop (rejected — E3 latency/hang on hot path); dual-transport server with a local HTTP port for the hook to curl (rejected — added complexity, two transports to manage); hook reads `~/.vibe-hero` offer state directly (rejected — duplicates server logic in shell, drift risk).
 
 ## Release pipeline (FR-013–017)
 

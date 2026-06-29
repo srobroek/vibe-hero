@@ -9,7 +9,7 @@ All shapes are defined with **Zod** schemas in TypeScript and are the single sou
 - `Tier` — `100 | 200 | 300 | 400 | 500` (course-numbering ladder).
 - `BloomLevel` — `"remember" | "understand" | "apply" | "analyze" | "evaluate" | "create"`.
 - `QuestionType` — `"multiple_choice" | "short_answer" | "free_form"`.
-- `Grade` — `"correct" | "incorrect"` (binary outcome feeding the Elo update; free-form verdicts collapse to this).
+- `Grade` — `"correct" | "incorrect"` (the **derived binary projection** persisted in history). The Elo update is driven by a **continuous `score ∈ [0,1]`** (partial credit; free-form = fraction of criteria met); `Grade = score ≥ passThreshold ? "correct" : "incorrect"`. Both are produced per answer; only `Grade` + `score` are stored (no raw answer text).
 
 ## Content Catalog (read-only at runtime)
 

@@ -51,7 +51,7 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 ### Tunable config + pure engine (research.md OD-005; engine is IO-free, clock injected — E5)
 
-- [ ] T009 [P] Create tunable assessment config (S=400, θ₀=300, K 64→24 @15 items, tiers/boundaries, hysteresis ±30, dwell 2, decay H=60d, stale 30d, selection windows) in `packages/server/src/config.ts`
+- [ ] T009 [P] Create tunable assessment config (S=400, θ₀=300, K 64→24 @15 items, tiers/boundaries, hysteresis ±30, dwell 2, decay H=60d, stale 30d, selection windows, **decline-mute N=3 + backoff curve**, free-form `passThreshold=0.6`, default `quizLength=4`) in `packages/server/src/config.ts`
 - [ ] T010 [P] Implement pure Elo ability update (`expectedScore`, `updateAbility` against FIXED item rating — items never self-update, FR-006/E3; partial-credit score∈[0,1]) in `packages/server/src/engine/elo.ts`
 - [ ] T011 [P] Implement difficulty-targeted item selection (target `min(θ+50,nextBoundary+30)`, ±60 window, one ±20 anchor, info-weighted, avoid recent `lastItemIds`) in `packages/server/src/engine/selection.ts`
 - [ ] T012 [P] Unit tests for `elo.ts` + `selection.ts` (monotonicity, fixed-difficulty invariant, window/anchor selection, determinism) in `packages/server/test/unit/engine.test.ts`
@@ -126,7 +126,7 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 ### Observation → offer (trigger-only) + non-interrupting delivery
 
-- [ ] T034 [US1] Implement `record_observation` tool: match derived signals to topics via `TriggerSignal`, produce offer candidates, award NOTHING (FR-005/SC-003), in `packages/server/src/tools/recordObservation.ts` (depends on T017/T018, T015)
+- [ ] T034 [US1] Implement `record_observation` tool: match derived signals to topics via `TriggerSignal`, produce offer candidates, award NOTHING (FR-005/SC-003); accept `toolUseId` for correlation. **Scope note (analyze C2):** v1 ships the single real-time hook source only; two-source transcript-backfill correlation by `tool_use_id` (FR-017) is architecture-ready via `ObservationSource` (FR-016) and NOT built in v1. In `packages/server/src/tools/recordObservation.ts` (depends on T017/T018, T015)
 - [ ] T035 [US1] Implement offer engine + `OfferLedger` (cadence per-session/per-topic/off FR-020a; within-session decline suppression; **cross-session backoff + global mute** FR-020b) in `packages/server/src/observation/offers.ts`
 - [ ] T036 [US1] Implement `get_offer` + `record_offer_response` tools (resolve/suppress offer; record accept/decline/defer) in `packages/server/src/tools/offers.ts` (depends on T035)
 - [ ] T037 [US1] Author Claude Code **Stop hook** (thin shell → `get_offer` → surface end-of-work offer; all logic in MCP — E7) in `hooks/claude-code/stop-offer.sh` + document install
@@ -152,7 +152,7 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 - [ ] T043 [P] [US3] Implement graduation logic (tier thresholds + **hysteresis band ±30 + dwell 2**, FR-008) in `packages/server/src/engine/graduation.ts`
 - [ ] T044 [P] [US3] Implement lapse model (staleness ≥30d + exponential ability decay H=60d → due-for-review, FR-009/010, OD-003) in `packages/server/src/engine/lapse.ts`
 - [ ] T045 [P] [US3] Unit tests: hysteresis prevents flip-flop (SC-014), dwell blocks single-fluke, decay triggers review at the right boundary, in `packages/server/test/unit/graduation.test.ts`
-- [ ] T046 [US3] Wire graduation + lapse into `submit_answer`/`get_status` (emit `graduation.changed`, set `due_for_review`) — extends T032/T025, in `packages/server/src/tools/submitAnswer.ts` & `status.ts`
+- [ ] T046 [US3] Wire graduation + lapse into `submit_answer`/`get_status`; **own all `reviewSchedule` writes** — on graduation enqueue a proactive `ReviewEntry{reason:"spaced"}` (FR-010), and on decay/staleness enqueue `{reason:"lapsed"}` (FR-009); emit `graduation.changed`, set `due_for_review`, and surface the schedule in `get_status` — extends T032/T025, in `packages/server/src/tools/submitAnswer.ts` & `status.ts`
 - [ ] T047 [P] [US3] Integration test: independent graduation state per tool for the same general concept (SC-010), in `packages/server/test/integration/us3-graduation.test.ts`
 
 **Checkpoint**: full loop incl. graduation + review on Claude Code content — satisfies the MVP success criterion.

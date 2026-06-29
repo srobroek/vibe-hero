@@ -54,10 +54,10 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 **Independent Test**: from a clean Claude Code, add `srobroek/vibe-hero` marketplace + install → MCP tools present, skills present, Stop hook registered, offline quiz works — no config-file edits (quickstart V4; manual e2e for the live install).
 
-- [ ] T008 [US1] Author/modify root `apm.yml` (FR-005/008/009): identity + `marketplace` block (owner, the vibe-hero plugin listed by `source`) + plugin `dependencies.mcp: [{ name: vibe-hero, registry: false, transport: stdio, command: npx, args: ["-y","@vibe-hero/server"] }]` + skills surfaced via the APM skills convention (the four `skills/*`).
-- [ ] T009 [US1] Generate the plugin/marketplace artifacts via `apm pack` (OD-001) → committed `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json`, top-level `.mcp.json` (`mcpServers.vibe-hero` → `npx -y @vibe-hero/server`, floating latest per FR-012). Verify `plugin.json` carries identity + skills path and NO name-only `{name}` deps (standalone plugin has none).
-- [ ] T010 [P] [US1] Marketplace/manifest test `packages/server/test/integration/plugin-manifests.test.ts` (or a repo-root check script): assert `.mcp.json` npx shape, `plugin.json` has no `{name}`-only deps, marketplace lists the plugin by source. (Quickstart V4 automated portion.)
-- [ ] T011 [US1] Document the install gesture in the distribution doc (T001 target): `apm marketplace add srobroek/vibe-hero` → install plugin → run setup; note offline content works, first server launch needs the npx package cached (FR-019c).
+- [X] T008 [US1] Author/modify root `apm.yml` (FR-005/008/009): identity + `marketplace` block (owner, the vibe-hero plugin listed by `source`) + plugin `dependencies.mcp: [{ name: vibe-hero, registry: false, transport: stdio, command: npx, args: ["-y","@vibe-hero/server"] }]` + skills surfaced via the APM skills convention (the four `skills/*`).
+- [X] T009 [US1] Generate the plugin/marketplace artifacts via `apm pack` (OD-001) → committed `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json`, top-level `.mcp.json` (`mcpServers.vibe-hero` → `npx -y @vibe-hero/server`, floating latest per FR-012). Verify `plugin.json` carries identity + skills path and NO name-only `{name}` deps (standalone plugin has none).
+- [X] T010 [P] [US1] Marketplace/manifest test `packages/server/test/integration/plugin-manifests.test.ts` (or a repo-root check script): assert `.mcp.json` npx shape, `plugin.json` has no `{name}`-only deps, marketplace lists the plugin by source. (Quickstart V4 automated portion.)
+- [X] T011 [US1] Document the install gesture in the distribution doc (T001 target): `apm marketplace add srobroek/vibe-hero` → install plugin → run setup; note offline content works, first server launch needs the npx package cached (FR-019c).
 
 **Checkpoint**: installing the plugin wires MCP + skills + hook with zero manual config (manifests verified).
 

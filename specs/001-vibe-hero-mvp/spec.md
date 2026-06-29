@@ -26,6 +26,14 @@ The v1 goal is to prove the **full adaptive loop end-to-end on Claude Code** for
 - Q: Is product configuration required before use, and how is it gated? → A: Configuration is driven by a **required, interactive setup skill** that runs a Q&A on user preferences. It is a **hard gate**: if config is missing, any vibe-hero action first routes the user into setup and nothing else proceeds until setup completes once. The setup skill is the intended first thing a new user does.
 - Q: How is the content catalog organized for authoring? → A: **One file per (topic × class)** (e.g. `content/claude-code/subagents.<ext>`) containing all tiers and that topic's trigger-signal declarations, in a structured, human-editable, schema-validated format. (Exact serialization format — YAML/JSON/TOML — is a plan-level decision; see OD-004.)
 
+### Session 2026-06-29 (post-critique remediation)
+
+- Q: Concurrent sessions share one global profile — how to avoid lost updates? → A: Profile writes MUST be **atomic and serialized** (write-temp + rename, under an advisory lock), so simultaneous host sessions cannot clobber each other's ability/graduation updates.
+- Q: For free-form items, the host agent both answers and judges — how to prevent it just passing itself? → A: **Free-form stays in v1.** Design around gaming: the **MCP provides the reference answer and explicit per-criterion rubric**; the host agent MUST return a **per-criterion verdict** (which criteria met/missed), not a single boolean, and steering mandates strict rubric-based judging. The reference/criteria come from the MCP (authoritative), not invented by the agent.
+- Q: Should item difficulty self-update from answers (Elo two-way)? → A: **No.** Each item has a **fixed expected Elo rating** (authored). Answering moves **only the user's** ability up/down against that fixed item rating; items never self-update. (Avoids single-learner difficulty corruption.)
+- Q: Privacy — what about hook tool input/output? → A: The observation layer MUST **never store `tool_input`/`tool_output`** (or any raw prompt/code); only derived signals `{tool_name, topicKeys, success, timestamp, tool_use_id}` are extracted. A test MUST assert no raw payload field is persisted.
+- Q: Decline anti-nag — only within a session? → A: No — add **cross-session backoff**: repeated declines increase the interval before re-offering, with a **global mute after N consecutive declines**, in addition to the within-session suppression.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 0 - First-run setup (required, skill-driven) (Priority: P1)
@@ -155,7 +163,7 @@ The curriculum is maintained centrally and improves over time. A user on a plane
 **Competence, scoring, and graduation**
 
 - **FR-005**: The system MUST award progress **only** for demonstrated knowledge (correctly answered quiz items). Observed tool usage MUST NOT award points or change graduation state under any circumstance.
-- **FR-006**: The system MUST maintain a user **ability estimate per (topic × class)** that increases when harder items are answered correctly and decreases when easier items are missed (adaptive/Elo-style estimation against item difficulty).
+- **FR-006**: The system MUST maintain a user **ability estimate per (topic × class)** that increases when harder items are answered correctly and decreases when easier items are missed (adaptive/Elo-style estimation against item difficulty). Each content item has a **fixed expected difficulty rating** (authored); answering moves **only the user's** ability against that fixed rating — item ratings MUST NOT self-update from a single learner's answers.
 - **FR-007**: The system MUST track tier graduation **independently per tool and per topic** (and for the general class), never as a single global level.
 - **FR-008**: The system MUST graduate a (topic, tool/class) to a tier when the user's ability crosses that tier's threshold **by a defined margin (hysteresis band)**, and MUST inform the user when graduation occurs. The graduation margin and the (separate, lower) demotion threshold MUST differ so a user hovering at the boundary does not flip-flop between graduated and not-graduated.
 - **FR-008a**: A quiz session MUST consist of a small, bounded number of items (default **3–5**), adaptively selected near the user's current ability for the topic. Each answered item updates the ability estimate; there is **no single-session pass/fail gate** — graduation is solely a function of accumulated ability crossing the FR-008 threshold-plus-margin.
@@ -165,8 +173,8 @@ The curriculum is maintained centrally and improves over time. A user on a plane
 **Grading**
 
 - **FR-011**: The system MUST grade deterministic question types (multiple-choice, short-answer/keyword) itself, producing an objective, reproducible result without requiring the host agent.
-- **FR-012**: For free-form questions, the system MUST support a host-agent judging handshake: it provides the judging agent a rubric and reference answer, receives a structured verdict, and records that verdict equivalently to a deterministic grade. (The system MUST NOT rely on the assistant client calling back into the model directly, as that capability is unavailable in the target clients.)
-- **FR-013**: The system MUST instruct the judging agent (via steering) to evaluate honestly against the rubric and MUST record the verdict it returns.
+- **FR-012**: For free-form questions, the system MUST support a host-agent judging handshake: it provides the judging agent the **authoritative reference answer and an explicit per-criterion rubric** (supplied by the system, not invented by the agent), receives a **per-criterion structured verdict** (which criteria were met/missed, not a single boolean), and records the resulting score equivalently to a deterministic grade. (The system MUST NOT rely on the assistant client calling back into the model directly — MCP sampling is unavailable in the target clients.)
+- **FR-013**: The system MUST instruct the judging agent (via steering) to evaluate **strictly** against the supplied rubric, justify each criterion verdict, and MUST record the per-criterion verdict it returns. The design assumes the agent may be lenient; mitigations are the system-supplied reference + per-criterion structure (a single self-pass is not accepted as a verdict).
 - **FR-014**: The system MUST degrade gracefully when free-form judging is unavailable (defer or substitute a deterministic item) rather than failing the quiz.
 
 **Observation (trigger only)**
@@ -174,25 +182,27 @@ The curriculum is maintained centrally and improves over time. A user on a plane
 - **FR-015**: The system MUST be able to observe a session's activity to detect when a curriculum topic was exercised, for the sole purpose of **triggering an offer** to quiz — never for scoring.
 - **FR-016**: Observation MUST sit behind an abstraction so additional sources (transcript backfill, other tools' telemetry) can be added without redesign, and a **manual/self-report path MUST always work** even when no telemetry source is present.
 - **FR-017**: When both a real-time event source and a session record are available, the system MUST be able to correlate them deterministically (by a shared per-action identifier) to attribute activity to topics.
-- **FR-018**: Observation MUST NOT persist raw prompts, tool inputs, or tool outputs; it MUST extract only derived signals (e.g. which tool/topic was touched, success/failure, timestamp).
+- **FR-018**: Observation MUST NOT persist raw prompts, tool inputs (`tool_input`), or tool outputs (`tool_output`), nor any code/content from them; it MUST extract only derived signals: `{ tool_name, topicKeys, success, timestamp, tool_use_id }`. This boundary MUST be covered by a test asserting no raw payload field is ever written to disk.
 
 **Quiz delivery (non-interrupting)**
 
 - **FR-019**: The system MUST offer quizzes only at end-of-work breakpoints (after the agent finishes a unit of work), never interrupting an in-progress task.
 - **FR-020**: The user MUST be able to accept, decline, or defer an offered quiz, and a decline MUST be respected without nagging (no further offers for the remainder of the session after a decline).
 - **FR-020a**: Offer cadence MUST be **configurable** (set during setup, FR-031) across at least: offers off; at most one offer per session; and at most one offer per surfaced topic (multiple per session permitted). The configured cadence MUST be honored by the offer engine.
+- **FR-020b**: Beyond within-session suppression, the system MUST apply **cross-session decline backoff**: repeated declines increase the interval before a topic (or offers generally) are re-offered, and after **N consecutive declines** offers are **globally muted** until the user re-enables or requests one. This prevents persistent nagging across sessions.
 - **FR-021**: The user MUST be able to request a quiz, status, or guidance on demand at any time, independent of any offer (subject to the first-run setup gate, FR-031).
 
 **First-run setup and configuration**
 
 - **FR-031**: The product MUST be configured via a dedicated, interactive **setup skill** that conducts a Q&A on user preferences (at minimum: tool(s) being learned, offer cadence per FR-020a, and whether proactive offers are enabled) and persists a configuration the rest of the system reads.
-- **FR-032**: Setup MUST be a **hard gate**: when configuration is missing, any vibe-hero action (offer, on-demand quiz, status, guidance) MUST first route the user into setup, and no other behavior proceeds until setup completes once.
+- **FR-032**: Setup MUST be a **hard gate** on **vibe-hero actions only** (offer, on-demand quiz, status, guidance) — NOT on the host session or the user's actual coding work. When configuration is missing, any vibe-hero action MUST first route the user into setup, and no other vibe-hero behavior proceeds until setup completes once. The gate MUST NOT block or interrupt the user's non-vibe-hero work.
 - **FR-033**: The user MUST be able to re-run setup to update preferences when configuration already exists, without losing learning progress in the profile.
 
 **Profile store and privacy**
 
 - **FR-022**: The system MUST persist a **single per-user profile** that spans all projects (learning the tool is a user-level skill), recording per-(topic × class) ability, tier graduation state, review schedule, and quiz history.
 - **FR-023**: The profile MUST initialize cleanly on first run and MUST tolerate a missing/partial profile without losing unrelated data.
+- **FR-023a**: Because a single global profile may be written by **multiple concurrent host sessions**, all profile writes MUST be **atomic and serialized** (e.g. write-temp + atomic rename under an advisory lock, or an append-only event log projected into the profile) so concurrent updates cannot silently lose ability or graduation changes.
 - **FR-024**: The system MUST NOT transmit user content (prompts, code, tool I/O) over the network; only the user's local profile and the (public) curriculum are involved in network activity, and curriculum fetch is one-directional (download only).
 
 **Content delivery**

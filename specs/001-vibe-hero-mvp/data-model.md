@@ -43,7 +43,7 @@ Matching is **trigger-only** (selects which topic to *offer*); it never scores.
 | `id` | string | unique within topic |
 | `tier` | `Tier` | |
 | `bloom` | `BloomLevel` | depth tag |
-| `difficulty` | number | Elo item-difficulty (see research defaults) |
+| `difficulty` | number | **Fixed** authored Elo item-rating (see research defaults); never self-updates — only the user's ability moves against it |
 | `type` | `QuestionType` | |
 | `prompt` | string | the question text |
 | `choices` | `Choice[]?` | required iff `type === "multiple_choice"` |
@@ -53,7 +53,7 @@ Matching is **trigger-only** (selects which topic to *offer*); it never scores.
 
 - `Choice` — `{ id: string; text: string }`.
 - `AnswerKey` — discriminated: `{ kind: "choice"; correctChoiceId: string }` | `{ kind: "keyword"; anyOf: string[]; normalize?: "lower"|"trim"|"both" }`.
-- `Rubric` — `{ criteria: string[]; referenceAnswer: string; passThreshold?: number }`. The reference answer + criteria are handed to the host agent for the judging handshake; they are NOT shown to the user before answering.
+- `Rubric` — `{ criteria: Array<{ id: string; text: string }>; referenceAnswer: string; passThreshold?: number /* fraction of criteria, default 0.6 */ }`. The reference answer + identified criteria are handed to the host agent for the judging handshake (the agent returns a per-criterion verdict keyed by `id`; the MCP computes the score). They are NOT shown to the user before answering.
 
 **Validation rules**: a `multiple_choice` item MUST have ≥2 `choices` and a `correctChoiceId` that exists; `short_answer` MUST have a keyword `answerKey`; `free_form` MUST have a `rubric` and NO `answerKey`. Catalog load rejects violations with a path-qualified diagnostic (FR-004).
 
@@ -123,9 +123,11 @@ Graduation uses a **hysteresis band**: ability must exceed `tierThreshold + marg
 
 - `AnsweredItem` — `{ itemId, tier, difficulty, grade: Grade, gradedBy: "engine" | "host_agent", answeredAt }`. **No raw answer text persisted** (privacy, FR-018/024) — only the derived grade.
 
-### OfferLedger (anti-fatigue, FR-020/020a)
+### OfferLedger (anti-fatigue, FR-020/020a/020b)
 
-`{ sessionId: string, offersThisSession: int, declinedThisSession: boolean, offeredTopicKeys: AbilityKey[] }`. Reset per session id. Under `per_session` cadence: max 1 offer; a decline sets `declinedThisSession=true` and suppresses further offers; under `per_topic`: at most one offer per distinct `AbilityKey` per session.
+Per-session: `{ sessionId: string, offersThisSession: int, declinedThisSession: boolean, offeredTopicKeys: AbilityKey[] }` — reset per session id. Under `per_session` cadence: max 1 offer; a decline sets `declinedThisSession=true` and suppresses further offers; under `per_topic`: at most one offer per distinct `AbilityKey` per session.
+
+Cross-session backoff (FR-020b), persisted in the profile: `{ consecutiveDeclines: int, mutedUntil?: ISO datetime, perTopicNextEligibleAt: Record<AbilityKey, ISO datetime> }`. Each decline increases the next-eligible interval (e.g. exponential); after `N` consecutive declines (config/default) offers are globally muted (`mutedUntil` far future / until user re-enables). An accept resets `consecutiveDeclines`.
 
 ### ObservationEvent (transient, privacy-safe — NOT persisted as content)
 
@@ -144,5 +146,5 @@ ObservationEvent ──> matches TriggerSignal ──> AbilityKey (offer candida
 
 ## Storage notes
 
-- Profile persisted as a single JSON document (Zod-validated on read/write) under `~/.vibe-hero/profile.json`; corruption/missing ⇒ initialize empty (FR-023). SQLite is a possible later optimization; JSON is sufficient for a single-user MVP.
+- Profile persisted as a single JSON document (Zod-validated on read/write) under `~/.vibe-hero/profile.json`; corruption/missing ⇒ initialize empty (FR-023). **Writes are atomic + serialized** (write-temp + atomic rename under an advisory lock) so concurrent host sessions cannot clobber each other (FR-023a). An append-only quiz-result event log (projected into the profile) is an acceptable alternative implementation if locking proves contentious. SQLite is a possible later optimization; JSON is sufficient for a single-user MVP.
 - Catalog cached under `~/.vibe-hero/content/` with the `CatalogManifest.version`/`etag`; bundled snapshot shipped in the package as fallback (FR-025–027).

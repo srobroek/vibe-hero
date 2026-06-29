@@ -23,13 +23,19 @@ Resolves the Open Design Decisions (OD-001..005) from `spec.md` and the Technica
 
 **Alternatives**: CC-only subagent with `initialPrompt: dontAsk` (truly auto-gated but non-portable) — rejected for the same portability reason.
 
-## OD-002 — Free-form judging: v1 vs fast-follow → **Deterministic loop in v1; free-form handshake behind a flag, populated as fast-follow**
+## OD-002 — Free-form judging in v1 → **IN v1, designed against gaming** *(revised post-critique)*
 
-**Decision**: v1 ships the **deterministic** grading loop (multiple-choice + short-answer) end-to-end. The **host-agent judging handshake** for free-form items (FR-012/013/014) is built as a defined tool contract (`get_question` may return a `rubric`, `submit_answer` accepts a `verdict`) but the **v1 Claude Code curriculum is authored with deterministic items only**, so free-form is exercised by tests/fixtures and lights up when free-form content is added — no rework.
+**Decision**: Free-form judging **ships in v1** (not deferred). It is designed so the host agent cannot trivially pass itself:
+- The **MCP supplies the authoritative reference answer + an explicit per-criterion rubric** (the agent does not invent grading standards).
+- The agent MUST return a **per-criterion verdict** (each criterion met/missed with a short justification), not a single boolean. The MCP computes the score from the per-criterion results.
+- Steering mandates **strict** rubric-based judging.
+- Deterministic items (MC/short-answer) remain the in-engine, reproducible backbone; free-form complements them at higher tiers.
 
-**Rationale**: Satisfies the MVP success criterion (SC-009 full loop) with objective, reproducible grading (SC-004), while the handshake contract is cheap to define now and avoids a later breaking change. Free-form depth (tiers 400–500) is genuinely valuable but not required to prove the loop.
+**Rationale**: The user wants free-form depth in v1 and is comfortable designing around the gaming risk rather than deferring. MCP sampling is unavailable (verified), so the host-agent handshake is the only mechanism; the per-criterion + system-supplied-reference structure makes a lazy single-pass verdict non-conformant and gives the MCP a structured result to score and audit.
 
-**Alternatives**: Ship free-form in v1 (more content + judging UX work, slower to first proof) — deferred. Omit the handshake contract entirely (would force a breaking tool-schema change later) — rejected.
+**Residual risk (accepted)**: a determined/sycophantic host model can still mis-judge. Mitigations limit but do not eliminate this; per-criterion justifications make mis-grading visible and auditable. Revisit with an independent-verifier pass if abuse appears.
+
+**Alternatives**: Defer free-form to fast-follow (rejected by user — wanted it in v1). Single-boolean verdict (rejected — trivially gameable).
 
 ## OD-003 — Spaced-review / lapse model → **Staleness threshold + exponential ability decay** (reuse Elo, no separate scheduler)
 
@@ -61,7 +67,7 @@ A correct review resets the clock and restores ability; a wrong review lets norm
 |---|---|
 | Logistic scale `S` | 400 |
 | Starting ability `θ₀` | 300 (mid-scale) |
-| Item difficulty seed | by tag: easy 200 / med 300 / hard 400 |
+| Item difficulty (FIXED) | by tag: easy 200 / med 300 / hard 400 — **authored, never self-updates** (single-learner Elo would corrupt a two-way scale; only the user's ability moves) |
 | K (provisional) | 64 |
 | K (settled) | 24 |
 | provisional→settled | after 15 graded items (per topic×tool) |
@@ -74,7 +80,7 @@ A correct review resets the clock and restores ability; a wrong review lets norm
 | Staleness window | 30 days |
 | Item-selection target | `min(θ+50, next_boundary+30)`, window ±60, one anchor within ±20 of θ, weight ∝ p·(1−p) |
 
-**Rationale**: Elo is the only model that **jointly self-calibrates learner ability and item difficulty online** with a single cheap update and **no calibration corpus** — exactly the single-learner, low-volume, no-dataset situation here. The hysteresis band (±30) + dwell (2 items) directly satisfy the user's anti-flip-flop requirement (FR-008, SC-014). Difficulty-targeting at the promotion bar (not raw ability) means "passing a set" ≈ "ready to graduate," and the ±60 window + information-weighted sampling avoids always serving the hardest item.
+**Rationale**: Elo gives a single cheap online ability update against authored item difficulty with **no calibration corpus** — exactly the single-learner, low-volume, no-dataset situation here. **Item difficulty is FIXED (authored), not online-updated** (post-critique E3): with one learner, two-way Elo would conflate "hard item" with "this user got it wrong" and corrupt both scales. The hysteresis band (±30) + dwell (2 items) directly satisfy the user's anti-flip-flop requirement (FR-008, SC-014). Difficulty-targeting at the promotion bar (not raw ability) means "passing a set" ≈ "ready to graduate," and the ±60 window + information-weighted sampling avoids always serving the hardest item.
 
 **Alternatives**: Rasch/1PL (needs a calibration dataset — none available), BKT (needs per-skill learn/slip/guess fitting; latent-binary, no continuous tradeable score), Glicko-2 (adds an uncertainty term but the provisional/settled K already approximates its main benefit) — Glicko-2 noted as a clean drop-in upgrade if uncertainty estimates later matter.
 

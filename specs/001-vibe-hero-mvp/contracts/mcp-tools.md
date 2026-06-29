@@ -38,8 +38,8 @@ Begin a quiz session for a topic (offered or on-demand). Selects 3–5 items by 
 ## `submit_answer`
 Grade one item and update ability. The core scoring entry point.
 - **in (deterministic)**: `{ quizId, itemId, answer: { choiceId?: string, text?: string } }`
-- **in (free-form, host-agent verdict)**: `{ quizId, itemId, verdict: { pass: boolean, score?: number /*0..1*/, notes?: string } }`
-  - The host agent computes the verdict from the rubric/referenceAnswer returned by `start_quiz`, then reports it here (FR-012/013). Steering instructs honest judging.
+- **in (free-form, host-agent verdict)**: `{ quizId, itemId, verdict: { criteria: Array<{ id: string, met: boolean, justification: string }> } }`
+  - The host agent judges the user's answer against the **MCP-supplied** rubric criteria + reference answer (returned by `start_quiz`) and reports a **per-criterion** verdict (FR-012/013). The **MCP computes the score** from the criteria (e.g. fraction met vs `passThreshold`) — the agent does NOT return a bare pass/score. A single-boolean verdict is rejected as non-conformant (anti-gaming, critique E2). Steering mandates strict judging with justifications.
 - **out**: `{ grade: Grade, score: number, correctAnswer?: string, guidance: string, ability: { before, after }, graduation?: { changed: boolean, tier?: Tier, status?: string, reason?: string } }`
 - Engine grades deterministic types itself (FR-011, instant, reproducible). Updates Elo, applies hysteresis+dwell, may emit a `graduation` change. Persists only the derived `Grade` (no raw answer text — FR-018).
 

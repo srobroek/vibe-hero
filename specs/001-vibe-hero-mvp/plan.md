@@ -44,6 +44,14 @@ Self-imposed engineering guardrails adopted for this feature (to be ratified int
 
 Re-check after Phase 1: **PASS** — design artifacts (data-model, contracts, quickstart) honor all four guardrails; no new complexity requiring justification.
 
+**Post-critique hardening (applied to spec/design before tasks):**
+- **E1 / FR-023a**: profile writes are atomic + lock-serialized (concurrent host sessions); `profile/store.ts` owns this.
+- **E2 / FR-012-013**: free-form **stays in v1**; anti-gaming via MCP-supplied reference + per-criterion verdict (MCP computes the score); `grading/freeform.ts`.
+- **E3 / FR-006**: item difficulty is **fixed/authored**, never self-updates; only user ability moves (`engine/elo.ts`).
+- **E4 / FR-018**: observation persists only derived signals; a test asserts no `tool_input`/`tool_output` is ever written (`observation/`).
+- **E5**: `now()` is injected into the pure engine; no clock reads inside `engine/`.
+- **P4 / FR-020b**: cross-session decline backoff + global mute after N declines (`observation/offers.ts`).
+
 ## Project Structure
 
 ### Documentation (this feature)

@@ -104,10 +104,12 @@ describe("US-0 first-run setup (T024 / quickstart V0)", () => {
     expect(typeof savedConfig["createdAt"]).toBe("string");
     expect(typeof savedConfig["updatedAt"]).toBe("string");
 
-    // 3. The gated tool now runs (gate cleared → placeholder handler executes).
+    // 3. The gated tool now runs (gate cleared → the real get_status handler
+    //    executes and reports standing for the configured tool).
     const afterSetup = await getStatus({});
-    expect(afterSetup["status"]).toBe("NOT_IMPLEMENTED");
-    expect(afterSetup["tool"]).toBe("get_status");
+    expect(afterSetup["status"]).toBeUndefined();
+    expect(afterSetup["tool"]).toBe("claude-code");
+    expect(Array.isArray(afterSetup["topics"])).toBe(true);
 
     // 4. get_config reflects configured:true with the saved values.
     const reported = await getConfig({});

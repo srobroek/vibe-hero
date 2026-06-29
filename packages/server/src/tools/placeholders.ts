@@ -4,14 +4,15 @@
  * This wires all 10 MCP tools into a single {@link TOOL_REGISTRY} that
  * `index.ts` iterates over to register them. Each module carries its real input
  * schema (from `schemas/tools.ts`) so the host-facing tool signatures are
- * already correct. `save_config` / `get_config` are now the real US-0
- * implementations (imported from `./config.js`, T022); the remaining 8 handlers
- * are still placeholders returning a structured "not implemented yet" result.
+ * already correct. `save_config` / `get_config` are the real US-0
+ * implementations (`./config.js`, T022) and `get_status` / `list_topics` /
+ * `get_guidance` are the real US-2 read tools (`./status.js`, `./listTopics.js`,
+ * `./guidance.js`, T025–T027); the remaining 5 handlers are still placeholders
+ * returning a structured "not implemented yet" result.
  *
  * Later tasks replace the rest in place (US-1 → start_quiz/submit_answer;
- * US-2 → get_status/list_topics/get_guidance; offers → record_observation/
- * get_offer/record_offer_response). The registration architecture and gate
- * wiring delivered here stay unchanged.
+ * offers → record_observation/get_offer/record_offer_response). The
+ * registration architecture and gate wiring delivered here stay unchanged.
  *
  * Source of truth: specs/001-vibe-hero-mvp/contracts/mcp-tools.md.
  */
@@ -19,9 +20,6 @@
 import { z } from "zod";
 
 import {
-  GetStatusInputSchema,
-  ListTopicsInputSchema,
-  GetGuidanceInputSchema,
   StartQuizInputSchema,
   RecordObservationInputSchema,
   GetOfferInputSchema,
@@ -29,6 +27,9 @@ import {
 } from "../schemas/tools.js";
 import { defineTool, type AnyToolModule, type ToolResult } from "./types.js";
 import { saveConfigTool, getConfigTool } from "./config.js";
+import { getStatusTool } from "./status.js";
+import { listTopicsTool } from "./listTopics.js";
+import { getGuidanceTool } from "./guidance.js";
 
 /**
  * `submit_answer`'s contract input is a *union* (deterministic answer XOR
@@ -92,21 +93,10 @@ const placeholder = <Schema extends z.ZodObject<z.ZodRawShape>>(
  * later tasks; this list is the single source of which tools exist.
  */
 export const TOOL_REGISTRY: readonly AnyToolModule[] = [
-  placeholder(
-    "get_status",
-    "Show the user's learning standing for a tool (or all). Read-only.",
-    GetStatusInputSchema,
-  ),
-  placeholder(
-    "list_topics",
-    "Enumerate catalog topics, optionally filtered by tool or class. Read-only.",
-    ListTopicsInputSchema,
-  ),
-  placeholder(
-    "get_guidance",
-    "Return teaching guidance and what to learn next for a topic or the weakest area. Read-only.",
-    GetGuidanceInputSchema,
-  ),
+  // Real US-2 read tools (T025–T027); replace their former placeholders.
+  getStatusTool,
+  listTopicsTool,
+  getGuidanceTool,
   placeholder(
     "start_quiz",
     "Begin a quiz session for a topic, selecting 3-5 difficulty-targeted items.",

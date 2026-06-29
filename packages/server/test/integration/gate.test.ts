@@ -26,6 +26,7 @@ import {
 } from "../../src/tools/gate.js";
 import { TOOL_REGISTRY } from "../../src/tools/placeholders.js";
 import { makeGetConfigTool, makeSaveConfigTool } from "../../src/tools/config.js";
+import { makeGetStatusTool } from "../../src/tools/status.js";
 import { saveProfile } from "../../src/profile/store.js";
 import { emptyProfile, type Profile } from "../../src/schemas/profile.js";
 
@@ -124,13 +125,16 @@ describe("setup gate (T021)", () => {
   it("runs a non-exempt tool once config is present", async () => {
     await saveProfile(configuredProfile(), home);
 
-    const tool = toolByName("get_status");
-    const gated = withSetupGate(tool.name, tool.handler, home);
+    // get_status is the real US-2 handler now; build a dir-scoped instance so it
+    // reads the test's temp home rather than env/~ (the registry default).
+    const gated = withSetupGate("get_status", makeGetStatusTool(home).handler, home);
 
     const result = await gated({});
 
-    // Gate cleared → placeholder handler runs.
-    expect(result["status"]).toBe("NOT_IMPLEMENTED");
-    expect(result["tool"]).toBe("get_status");
+    // Gate cleared → the real handler runs and reports standing for the
+    // configured tool (no SETUP_REQUIRED / NOT_IMPLEMENTED sentinel).
+    expect(result["status"]).toBeUndefined();
+    expect(result["tool"]).toBe("claude-code");
+    expect(Array.isArray(result["topics"])).toBe(true);
   });
 });

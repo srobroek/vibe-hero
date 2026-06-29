@@ -101,11 +101,11 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Independent Test**: with a seeded profile, `get_status`/`get_guidance` return per-tool standing and recommendations; on-demand quiz works without any observation (quickstart V1 pull path).
 
-- [ ] T025 [P] [US2] Implement `get_status` tool (per-(topic×tool) tier/status/ability, due-for-review, suggestions) in `packages/server/src/tools/status.ts`
-- [ ] T026 [P] [US2] Implement `list_topics` tool (catalog enumeration + version) in `packages/server/src/tools/listTopics.ts`
-- [ ] T027 [P] [US2] Implement `get_guidance` tool (teaching text + next-step; weakest/stale pick when no key) in `packages/server/src/tools/guidance.ts`
-- [ ] T028 [US2] Author portable `vibe-hero-status` + `vibe-hero-learn` skills (SKILL.md) driving status/guidance, in `skills/vibe-hero-status/SKILL.md` and `skills/vibe-hero-learn/SKILL.md`
-- [ ] T029 [P] [US2] Integration test: status/guidance scoped per tool, weak/stale surfaced, telemetry-free path works, in `packages/server/test/integration/us2-status.test.ts`
+- [X] T025 [P] [US2] Implement `get_status` tool (per-(topic×tool) tier/status/ability, due-for-review, suggestions) in `packages/server/src/tools/status.ts`
+- [X] T026 [P] [US2] Implement `list_topics` tool (catalog enumeration + version) in `packages/server/src/tools/listTopics.ts`
+- [X] T027 [P] [US2] Implement `get_guidance` tool (teaching text + next-step; weakest/stale pick when no key) in `packages/server/src/tools/guidance.ts`
+- [X] T028 [US2] Author portable `vibe-hero-status` + `vibe-hero-learn` skills (SKILL.md) driving status/guidance, in `skills/vibe-hero-status/SKILL.md` and `skills/vibe-hero-learn/SKILL.md`
+- [X] T029 [P] [US2] Integration test: status/guidance scoped per tool, weak/stale surfaced, telemetry-free path works, in `packages/server/test/integration/us2-status.test.ts`
 
 **Checkpoint**: pull-based status/guidance fully functional with no telemetry.
 

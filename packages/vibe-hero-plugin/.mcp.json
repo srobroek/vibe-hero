@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "vibe-hero": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vibe-hero/server"
+      ]
+    }
+  }
+}

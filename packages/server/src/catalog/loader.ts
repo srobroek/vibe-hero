@@ -15,8 +15,8 @@
  * spec FR-001/003a/004/004a/025, research.md OD-004.
  */
 
-import { globSync, readFileSync } from "node:fs";
-import { relative } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { load as parseYaml } from "js-yaml";
 import { z } from "zod";
 import {
@@ -194,6 +194,35 @@ export const loadTopicFromYaml = (filePath: string): Topic => {
 };
 
 /**
+ * Recursively collect absolute paths of every `.yaml`/`.yml` file under `dir`.
+ * A portable replacement for `fs.globSync` (Node 22+ only) using `readdirSync`
+ * with `withFileTypes`, which is available on every supported Node version.
+ * A missing root directory yields an empty list (the caller treats "no files"
+ * the same as "no topics"); other IO errors propagate.
+ *
+ * @param dir - Directory root to scan.
+ */
+const walkYamlFiles = (dir: string): string[] => {
+  let entries;
+  try {
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch (cause) {
+    if ((cause as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw cause;
+  }
+  const out: string[] = [];
+  for (const entry of entries) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...walkYamlFiles(full));
+    } else if (entry.isFile() && /\.ya?ml$/i.test(entry.name)) {
+      out.push(full);
+    }
+  }
+  return out;
+};
+
+/**
  * Recursively load every `.yaml`/`.yml` topic file under `dir`, validating each
  * independently. One bad file does NOT abort the load: valid topics are
  * collected and every failure is reported as a {@link CatalogLoadError} so the
@@ -207,11 +236,12 @@ export const loadTopicFromYaml = (filePath: string): Topic => {
  * @param dir - Directory root to scan for topic files.
  */
 export const loadCatalogFromDir = (dir: string): CatalogLoadResult => {
-  const matches = globSync("**/*.{yaml,yml}", { cwd: dir });
-  // Resolve to absolute paths and sort for deterministic, reproducible loads.
-  const files = matches
-    .map((m) => `${dir}/${m}`)
-    .sort((a, b) => a.localeCompare(b));
+  // Portable recursive walk for `.yaml`/`.yml` files. Avoids `fs.globSync`,
+  // which only exists on Node 22+ — the published server runs via `npx` on
+  // arbitrary user machines (Node 18/20 still common), so it must not depend
+  // on a bleeding-edge fs API. Resolve to absolute paths and sort for
+  // deterministic, reproducible loads.
+  const files = walkYamlFiles(dir).sort((a, b) => a.localeCompare(b));
 
   const topics: Topic[] = [];
   const errors: CatalogLoadError[] = [];

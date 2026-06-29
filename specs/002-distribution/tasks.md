@@ -69,11 +69,11 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 **Independent Test**: run the hook with a synthetic Stop payload → emits the nudge JSON, spawns no process, references no local `dist` (quickstart V5).
 
-- [ ] T012 [US3] Rewrite `hooks/claude-code/stop-offer.sh` to be agent-mediated (FR-011): pure shell, no `npx`/`node`/`get-offer` call; read the Stop payload, honor `stop_hook_active` loop guard, print `{"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"…call the get_offer MCP tool…"}}`, exit 0 always. Remove the `node dist/cli/getOffer.js` invocation and the `VIBE_HERO_SERVER_DIST` dependency.
-- [ ] T013 [US3] Author `.apm/hooks/vibe-hero-claude-hooks.json` (+ byte-identical codex variant if needed) declaring the `Stop` hook `command: ${PLUGIN_ROOT}/scripts/stop-offer.sh` (FR-007, `${PLUGIN_ROOT}` token); regenerate `hooks/hooks.json` via `apm pack` so it auto-registers on install. Ensure the plugin ships `stop-offer.sh` at the path the hook references.
-- [ ] T014 [US3] Reinforce end-of-work offering in the quiz skill steering (`skills/vibe-hero-quiz/SKILL.md`) as the backstop for when `additionalContext` can't trigger a follow-up (FR-011 degrade-safe).
-- [ ] T015 [P] [US3] Hook test `packages/server/test/integration/stop-hook.test.ts` (or a shell test): feed a synthetic Stop payload → assert the script emits the `additionalContext` JSON, spawns NO subprocess, and exits 0; with `stop_hook_active` set → emits nothing. (Quickstart V5.)
-- [ ] T016 [US3] Update `hooks/claude-code/README.md`: auto-registration via the plugin is the norm; manual steps are dev-only; document the agent-mediated flow.
+- [X] T012 [US3] Rewrite `hooks/claude-code/stop-offer.sh` to be agent-mediated (FR-011): pure shell, no `npx`/`node`/`get-offer` call; read the Stop payload, honor `stop_hook_active` loop guard, print `{"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"…call the get_offer MCP tool…"}}`, exit 0 always. Remove the `node dist/cli/getOffer.js` invocation and the `VIBE_HERO_SERVER_DIST` dependency.
+- [X] T013 [US3] Author `.apm/hooks/vibe-hero-claude-hooks.json` (+ byte-identical codex variant if needed) declaring the `Stop` hook `command: ${PLUGIN_ROOT}/scripts/stop-offer.sh` (FR-007, `${PLUGIN_ROOT}` token); regenerate `hooks/hooks.json` via `apm pack` so it auto-registers on install. Ensure the plugin ships `stop-offer.sh` at the path the hook references.
+- [X] T014 [US3] Reinforce end-of-work offering in the quiz skill steering (`skills/vibe-hero-quiz/SKILL.md`) as the backstop for when `additionalContext` can't trigger a follow-up (FR-011 degrade-safe).
+- [X] T015 [P] [US3] Hook test `packages/server/test/integration/stop-hook.test.ts` (or a shell test): feed a synthetic Stop payload → assert the script emits the `additionalContext` JSON, spawns NO subprocess, and exits 0; with `stop_hook_active` set → emits nothing. (Quickstart V5.)
+- [X] T016 [US3] Update `hooks/claude-code/README.md`: auto-registration via the plugin is the norm; manual steps are dev-only; document the agent-mediated flow.
 
 **Checkpoint**: end-of-work offer works in an npx-only install with zero process spawn.
 
@@ -85,10 +85,10 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 **Independent Test**: simulate a release (release-please PR merge) → npm publish via OIDC at the new version + marketplace artifacts updated; token in zero logs (quickstart V6; CI dry-run).
 
-- [ ] T017 [US2] Add `.github/workflows/ci.yml` (FR-015/019/019a): on PR/push — `pnpm install`, build, `pnpm --filter @vibe-hero/server test` (144 green), run the packaging tests (T006/T010), and a **staleness gate** that regenerates the marketplace/plugin/.mcp/hooks artifacts via `apm pack` and fails if committed ≠ regenerated.
-- [ ] T018 [US2] Add `.github/workflows/release-please.yml` (FR-013/017): release-please in **single-package mode** (one component, `v{version}` tag, single version source of truth) maintaining the release PR on pushes to `main`.
-- [ ] T019 [US2] Add `.github/workflows/release.yml` (FR-013/014/016): triggered on the release-please release/tag — `permissions: id-token: write`; `pnpm build`; `pnpm publish --access public --provenance --no-git-checks` authenticating via **OIDC Trusted Publishers** (NO `NPM_TOKEN`); THEN regenerate + commit the marketplace pointer. Publish-before-marketplace ordering; fail the job (no marketplace advance) if publish fails (FR-016, npm = source of truth, idempotent reconcile on next run).
-- [ ] T020 [P] [US2] CI/release validation (quickstart V6/V7, SC-005): a dry-run or inspection check asserting the publish workflow uses OIDC (no `NPM_TOKEN` referenced anywhere), includes `--provenance`, triggers only on the release event, and the staleness gate fails on a hand-edited generated artifact.
+- [X] T017 [US2] Add `.github/workflows/ci.yml` (FR-015/019/019a): on PR/push — `pnpm install`, build, `pnpm --filter @vibe-hero/server test` (144 green), run the packaging tests (T006/T010), and a **staleness gate** that regenerates the marketplace/plugin/.mcp/hooks artifacts via `apm pack` and fails if committed ≠ regenerated.
+- [X] T018 [US2] Add `.github/workflows/release-please.yml` (FR-013/017): release-please in **single-package mode** (one component, `v{version}` tag, single version source of truth) maintaining the release PR on pushes to `main`.
+- [X] T019 [US2] Add `.github/workflows/release.yml` (FR-013/014/016): triggered on the release-please release/tag — `permissions: id-token: write`; `pnpm build`; `pnpm publish --access public --provenance --no-git-checks` authenticating via **OIDC Trusted Publishers** (NO `NPM_TOKEN`); THEN regenerate + commit the marketplace pointer. Publish-before-marketplace ordering; fail the job (no marketplace advance) if publish fails (FR-016, npm = source of truth, idempotent reconcile on next run).
+- [X] T020 [P] [US2] CI/release validation (quickstart V6/V7, SC-005): a dry-run or inspection check asserting the publish workflow uses OIDC (no `NPM_TOKEN` referenced anywhere), includes `--provenance`, triggers only on the release event, and the staleness gate fails on a hand-edited generated artifact.
 
 **Checkpoint**: a release is fully automated (after the one-time bootstrap), token-free, with a working staleness gate.
 
@@ -96,10 +96,10 @@ Monorepo. npm package = `packages/server/`. Plugin/marketplace = repo root (`apm
 
 ## Phase 6: Polish & Cross-Cutting
 
-- [ ] T021 [P] Write the maintainer bootstrap doc (T001 target, FR-014a): the exact one-time steps — create `@vibe-hero` org, `pnpm publish` first version manually (logged in, 2FA), configure the Trusted Publisher (repo + `release.yml`); note the bootstrap publish has no provenance (only CI publishes do — critique E6).
-- [ ] T022 [P] Document the rollback procedure (FR-012a/017a): `npm deprecate` a bad version and/or move the `latest` dist-tag to last-good + publish a fixed patch; note floating-`latest` users pick up the fix on next resolution.
-- [ ] T023 [P] Document the agentic-packages cross-publish as a FAST-FOLLOW (FR-009, OD-004): the direct remote-git `source: srobroek/vibe-hero` + `ref:` marketplace entry, gated on the agentic-packages local-generator refactor preserving external-source entries. Do NOT implement here.
-- [ ] T024 Final verification pass: run quickstart V1–V8 (V1–V3 package, V4 plugin manifests, V5 hook, V6 release inspection, V7 staleness, V8 144-test regression); fix gaps. Confirm `pnpm --filter @vibe-hero/server test` green + build clean.
+- [X] T021 [P] Write the maintainer bootstrap doc (T001 target, FR-014a): the exact one-time steps — create `@vibe-hero` org, `pnpm publish` first version manually (logged in, 2FA), configure the Trusted Publisher (repo + `release.yml`); note the bootstrap publish has no provenance (only CI publishes do — critique E6).
+- [X] T022 [P] Document the rollback procedure (FR-012a/017a): `npm deprecate` a bad version and/or move the `latest` dist-tag to last-good + publish a fixed patch; note floating-`latest` users pick up the fix on next resolution.
+- [X] T023 [P] Document the agentic-packages cross-publish as a FAST-FOLLOW (FR-009, OD-004): the direct remote-git `source: srobroek/vibe-hero` + `ref:` marketplace entry, gated on the agentic-packages local-generator refactor preserving external-source entries. Do NOT implement here.
+- [X] T024 Final verification pass: run quickstart V1–V8 (V1–V3 package, V4 plugin manifests, V5 hook, V6 release inspection, V7 staleness, V8 144-test regression); fix gaps. Confirm `pnpm --filter @vibe-hero/server test` green + build clean.
 
 ---
 

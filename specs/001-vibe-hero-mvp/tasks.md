@@ -27,10 +27,10 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Purpose**: TypeScript MCP-server project initialization.
 
-- [ ] T001 Create `packages/server/` TypeScript project (package.json `@vibe-hero/server`, `tsconfig.json` strict ES2022, `src/` + `test/`) per plan.md structure
-- [ ] T002 Add dependencies: `@modelcontextprotocol/sdk`, `zod`, `js-yaml`, `proper-lockfile`; dev: `vitest`, `typescript`, `@types/node`, `@types/js-yaml` (pnpm)
-- [ ] T003 [P] Configure `vitest.config.ts` (unit/integration/e2e projects) and `package.json` scripts (`build`, `test`, `start`)
-- [ ] T004 [P] Create top-level `content/general/` and `content/claude-code/` dirs and `skills/` + `hooks/claude-code/` dirs with `.gitkeep`
+- [X] T001 Create `packages/server/` TypeScript project (package.json `@vibe-hero/server`, `tsconfig.json` strict ES2022, `src/` + `test/`) per plan.md structure
+- [X] T002 Add dependencies: `@modelcontextprotocol/sdk`, `zod`, `js-yaml`, `proper-lockfile`; dev: `vitest`, `typescript`, `@types/node`, `@types/js-yaml` (pnpm)
+- [X] T003 [P] Configure `vitest.config.ts` (unit/integration/e2e projects) and `package.json` scripts (`build`, `test`, `start`)
+- [X] T004 [P] Create top-level `content/general/` and `content/claude-code/` dirs and `skills/` + `hooks/claude-code/` dirs with `.gitkeep`
 
 **Checkpoint**: project builds and `pnpm --filter @vibe-hero/server test` runs (no tests yet).
 

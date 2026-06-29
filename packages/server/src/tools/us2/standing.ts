@@ -19,6 +19,7 @@
  */
 
 import { ASSESSMENT_CONFIG } from "../../config.js";
+import { isDueForReview } from "../../engine/lapse.js";
 import {
   abilityKey,
   type AbilityKey,
@@ -96,6 +97,50 @@ export const computeStandings = (
   topics
     .filter((topic) => topicInScope(topic, tool))
     .map((topic) => standingFor(topic, profile));
+
+/**
+ * Detect knowledge lapse (FR-009 / OD-003) across a set of standings, given the
+ * caller-injected `now` (the engine math is PURE; status.ts reads the clock and
+ * passes it in — E5). For each currently-graduated topic that has gone stale and
+ * whose decayed effective ability has fallen near/under its lower band
+ * ({@link isDueForReview}), the topic is surfaced for review:
+ *
+ *  - its status row is overlaid to `due_for_review` (so `get_status` reports the
+ *    stale topic correctly even before the profile is rewritten), and
+ *  - its key is collected as `newlyLapsed` so the caller can enqueue a
+ *    `ReviewEntry{reason:"lapsed"}` and persist the `due_for_review` status.
+ *
+ * Topics already flagged `due_for_review` are skipped (idempotent — they are
+ * already surfaced). Ungraduated / `not_started` topics never lapse.
+ *
+ * Pure (clock injected). Returns NEW standing objects for the overlaid rows; the
+ * input array is not mutated.
+ *
+ * @param standings - In-scope standings (from {@link computeStandings}).
+ * @param profile - The learner profile (reads `abilities`/`graduations`).
+ * @param now - Reference ISO datetime, injected by the caller (E5).
+ * @returns The (possibly overlaid) standings plus the keys newly found lapsed.
+ */
+export const detectLapses = (
+  standings: readonly TopicStanding[],
+  profile: Profile,
+  now: string,
+): { standings: TopicStanding[]; newlyLapsed: AbilityKey[] } => {
+  const newlyLapsed: AbilityKey[] = [];
+  const overlaid = standings.map((standing): TopicStanding => {
+    const graduation = profile.graduations[standing.key];
+    const ability = profile.abilities[standing.key];
+    if (graduation === undefined || ability === undefined) return standing;
+    if (!isDueForReview(graduation, ability, now)) return standing;
+
+    newlyLapsed.push(standing.key);
+    return {
+      ...standing,
+      row: { ...standing.row, status: "due_for_review" },
+    };
+  });
+  return { standings: overlaid, newlyLapsed };
+};
 
 /**
  * Weakness ordering for suggestions / weakest-pick (lower ⇒ weaker ⇒ surfaced

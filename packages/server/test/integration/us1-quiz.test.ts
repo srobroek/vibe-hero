@@ -282,8 +282,10 @@ describe("US-1 deterministic quiz loop (T031/T032 / SC-004)", () => {
     expect(result.guidance.length).toBeGreaterThan(0);
     // Correct answer ⇒ ability rises.
     expect(result.ability.after).toBeGreaterThan(result.ability.before);
-    // T046 wires graduation; for now it is absent.
-    expect(result.graduation).toBeUndefined();
+    // T046 now wires graduation: a single in-band correct answer doesn't change
+    // the tier (ability ≈ 360 sits inside the tier-300 band), so the engine
+    // reports no change rather than an absent field.
+    expect(result.graduation).toEqual({ changed: false });
   });
 
   it("submit_answer grades a wrong multiple_choice answer and lowers ability", async () => {

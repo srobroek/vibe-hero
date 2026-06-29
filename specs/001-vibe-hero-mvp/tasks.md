@@ -149,11 +149,11 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Independent Test**: feed graded sequences → graduate only on `boundary+30` for 2 consecutive items; demote/review only below `boundary−30`; no flip-flop in the band (quickstart V1 graduation + SC-014).
 
-- [ ] T043 [P] [US3] Implement graduation logic (tier thresholds + **hysteresis band ±30 + dwell 2**, FR-008) in `packages/server/src/engine/graduation.ts`
-- [ ] T044 [P] [US3] Implement lapse model (staleness ≥30d + exponential ability decay H=60d → due-for-review, FR-009/010, OD-003) in `packages/server/src/engine/lapse.ts`
-- [ ] T045 [P] [US3] Unit tests: hysteresis prevents flip-flop (SC-014), dwell blocks single-fluke, decay triggers review at the right boundary, in `packages/server/test/unit/graduation.test.ts`
-- [ ] T046 [US3] Wire graduation + lapse into `submit_answer`/`get_status`; **own all `reviewSchedule` writes** — on graduation enqueue a proactive `ReviewEntry{reason:"spaced"}` (FR-010), and on decay/staleness enqueue `{reason:"lapsed"}` (FR-009); emit `graduation.changed`, set `due_for_review`, and surface the schedule in `get_status` — extends T032/T025, in `packages/server/src/tools/submitAnswer.ts` & `status.ts`
-- [ ] T047 [P] [US3] Integration test: independent graduation state per tool for the same general concept (SC-010), in `packages/server/test/integration/us3-graduation.test.ts`
+- [X] T043 [P] [US3] Implement graduation logic (tier thresholds + **hysteresis band ±30 + dwell 2**, FR-008) in `packages/server/src/engine/graduation.ts`
+- [X] T044 [P] [US3] Implement lapse model (staleness ≥30d + exponential ability decay H=60d → due-for-review, FR-009/010, OD-003) in `packages/server/src/engine/lapse.ts`
+- [X] T045 [P] [US3] Unit tests: hysteresis prevents flip-flop (SC-014), dwell blocks single-fluke, decay triggers review at the right boundary, in `packages/server/test/unit/graduation.test.ts`
+- [X] T046 [US3] Wire graduation + lapse into `submit_answer`/`get_status`; **own all `reviewSchedule` writes** — on graduation enqueue a proactive `ReviewEntry{reason:"spaced"}` (FR-010), and on decay/staleness enqueue `{reason:"lapsed"}` (FR-009); emit `graduation.changed`, set `due_for_review`, and surface the schedule in `get_status` — extends T032/T025, in `packages/server/src/tools/submitAnswer.ts` & `status.ts`
+- [X] T047 [P] [US3] Integration test: independent graduation state per tool for the same general concept (SC-010), in `packages/server/test/integration/us3-graduation.test.ts`
 
 **Checkpoint**: full loop incl. graduation + review on Claude Code content — satisfies the MVP success criterion.
 

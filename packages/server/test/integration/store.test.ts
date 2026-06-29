@@ -124,6 +124,9 @@ describe("saveProfile / round-trip", () => {
           itemsSeen: 4,
           lastAssessedAt: "2026-01-01T00:00:00.000Z",
           lastItemIds: ["i1", "i2"],
+          // `dwell` (T043/T046) defaults to 0 on load — spell it out so the
+          // round-trip strict-equality holds.
+          dwell: 0,
         },
       },
     };

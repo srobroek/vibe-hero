@@ -36,12 +36,20 @@ export type Config = z.infer<typeof ConfigSchema>;
 /**
  * Elo-style ability estimate for one {@link AbilityKey}. `itemsSeen` drives the
  * provisional → settled K-factor; `lastItemIds` avoids back-to-back repeats.
+ *
+ * `dwell` is the consecutive count of recent graded items that satisfied the
+ * promotion-crossing condition (FR-008 / SC-014). It is the dwell counter the
+ * pure graduation engine threads across `submit_answer` calls so a single fluke
+ * item cannot promote — incremented while θ stays above the promotion bar and
+ * reset to 0 the moment an item fails it. Defaulted to `0` so profiles written
+ * before this field read forward without migration (additive, forward-compat).
  */
 export const AbilityEstimateSchema = z.object({
   value: z.number(),
   itemsSeen: z.number().int().nonnegative(),
   lastAssessedAt: IsoDateTimeSchema,
   lastItemIds: z.array(z.string().min(1)),
+  dwell: z.number().int().nonnegative().default(0),
 });
 /** An Elo-style ability estimate. */
 export type AbilityEstimate = z.infer<typeof AbilityEstimateSchema>;

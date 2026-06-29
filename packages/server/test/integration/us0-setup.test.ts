@@ -54,6 +54,9 @@ const seededAbility: AbilityEstimate = {
   itemsSeen: 9,
   lastAssessedAt: "2026-01-15T10:00:00.000Z",
   lastItemIds: ["i-1", "i-2"],
+  // `dwell` is the consecutive promotion-crossing counter (T043/T046); it
+  // defaults to 0 on load, so spell it out here for round-trip equality.
+  dwell: 0,
 };
 
 describe("US-0 first-run setup (T024 / quickstart V0)", () => {

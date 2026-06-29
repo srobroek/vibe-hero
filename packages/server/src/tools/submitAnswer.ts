@@ -23,9 +23,17 @@
  * idempotent in grade (SC-004) though it appends another graded item — quiz
  * sessions are append-only event logs.
  *
+ * Graduation (T046, US-3): after the ability update, the PURE
+ * {@link evaluateGraduation} engine decides whether this graded item promotes
+ * the learner to the next tier (hysteresis band + `dwell` consecutive
+ * qualifying items — SC-014) or demotes/flags below the lower band (FR-008/009).
+ * The decision updates `profile.graduations[key]` and the dwell counter on the
+ * AbilityEstimate; on a promotion a proactive spaced {@link ReviewEntry} is
+ * enqueued (FR-010) so a one-time streak is later re-verified, and the
+ * `graduation` field is surfaced on the result so the host informs the user.
+ *
  * Scope: free-form verdict grading is T048; a `verdict` payload here is rejected
- * as not-yet-supported. `graduation` is intentionally left `undefined` — T046
- * wires hysteresis/dwell graduation + the review schedule into this same handler.
+ * as not-yet-supported.
  *
  * Gated (FR-032): NOT exempt — the gate runs before this handler.
  *
@@ -41,18 +49,25 @@ import { loadBundledCatalog } from "../catalog/bundled/index.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
 import { updateAbility } from "../engine/elo.js";
 import {
+  evaluateGraduation,
+  type GraduationDecision,
+  type TierOrZero,
+} from "../engine/graduation.js";
+import {
   gradeMultipleChoice,
   gradeShortAnswer,
   toGrade,
 } from "../grading/deterministic.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
-import { abilityKey, type Grade } from "../schemas/common.js";
+import { abilityKey, type AbilityKey, type Grade } from "../schemas/common.js";
 import type { ContentItem, Topic } from "../schemas/content.js";
 import type {
   AbilityEstimate,
   AnsweredItem,
   Profile,
   QuizRecord,
+  ReviewEntry,
+  TierGraduation,
 } from "../schemas/profile.js";
 import { z } from "zod";
 
@@ -188,8 +203,108 @@ const advanceEstimate = (
       itemsSeen: update.itemsSeen,
       lastAssessedAt: answeredAt,
       lastItemIds: [...(prior?.lastItemIds ?? []), item.id],
+      // Carry the prior dwell forward unchanged here; the graduation step
+      // (applyGraduation) reads it, then overwrites with the engine's next
+      // dwell so the consecutive-streak counter advances/resets per item.
+      dwell: prior?.dwell ?? 0,
     },
   };
+};
+
+/**
+ * Apply the PURE graduation decision (T046, US-3) to one ability key inside the
+ * store transaction. Reads the just-updated ability + the prior dwell counter,
+ * asks {@link evaluateGraduation} for the decision, then returns the next
+ * `graduations[key]`, the dwell to persist on the estimate, and (on a
+ * promotion) a proactive spaced {@link ReviewEntry} to enqueue (FR-010).
+ *
+ * - On `"graduated"`: write a `current` graduation at the new tier and enqueue a
+ *   `reason: "spaced"` review one staleness window out (so a one-time streak is
+ *   later re-verified — durable-knowledge semantics).
+ * - On `"demoted"`: step the tier down and flag `due_for_review` (FR-009). No
+ *   spaced entry — the lapse path (status/standing, T046) owns lapsed entries.
+ * - On no change: leave the existing graduation untouched, but still persist the
+ *   engine's dwell so the consecutive streak carries across items.
+ *
+ * @returns The decision plus the derived graduation/dwell/review side-outputs.
+ */
+const applyGraduation = (
+  key: AbilityKey,
+  newAbility: number,
+  priorDwell: number,
+  existing: TierGraduation | undefined,
+  answeredAt: string,
+): {
+  decision: GraduationDecision;
+  graduation: TierGraduation | undefined;
+  dwell: number;
+  spacedReview?: ReviewEntry;
+} => {
+  const currentTier: TierOrZero = existing?.currentTier ?? 0;
+  const decision = evaluateGraduation({
+    ability: newAbility,
+    currentTier,
+    dwell: priorDwell,
+  });
+
+  if (decision.reason === "graduated") {
+    const dueAt = new Date(
+      Date.parse(answeredAt) +
+        ASSESSMENT_CONFIG.stalenessWindowDays * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    return {
+      decision,
+      dwell: decision.dwell,
+      graduation: {
+        currentTier: decision.tier,
+        status: "current",
+        graduatedAt: answeredAt,
+        lastChangeReason: "graduated",
+      },
+      spacedReview: { key, dueAt, reason: "spaced" },
+    };
+  }
+
+  if (decision.reason === "demoted") {
+    return {
+      decision,
+      dwell: decision.dwell,
+      graduation: {
+        currentTier: decision.tier,
+        status: "due_for_review",
+        // Preserve the original graduation timestamp if we have one; this is an
+        // audit field, and a demotion is a status change, not a re-graduation.
+        graduatedAt: existing?.graduatedAt ?? answeredAt,
+        lastChangeReason: "demoted",
+      },
+    };
+  }
+
+  // No change: keep the existing graduation row but persist the (possibly
+  // advanced) dwell streak.
+  return { decision, dwell: decision.dwell, graduation: existing };
+};
+
+/**
+ * Project a {@link GraduationDecision} into the `submit_answer` result's
+ * `graduation` field `{ changed, tier?, status?, reason? }`. On a change the
+ * `status` reflects the resulting graduation state (`current` on promotion,
+ * `due_for_review` on demotion); `tier` is included only when the resulting tier
+ * is a real tier (100–500) — a demotion all the way to `0` (un-graduated) omits
+ * it, matching the result schema (`TierSchema.optional()`). A no-change decision
+ * reports `changed: false` and nothing else.
+ */
+const toGraduationResult = (
+  decision: GraduationDecision,
+): NonNullable<SubmitAnswerResult["graduation"]> => {
+  if (!decision.changed) return { changed: false };
+  const status = decision.reason === "graduated" ? "current" : "due_for_review";
+  const base = {
+    changed: true,
+    status,
+    ...(decision.reason !== null ? { reason: decision.reason } : {}),
+  };
+  return decision.tier === 0 ? base : { ...base, tier: decision.tier };
 };
 
 /**
@@ -208,8 +323,10 @@ const persistGrade = async (
   grade: Grade,
   answeredAt: string,
   dirOverride: string | undefined,
-): Promise<{ before: number; after: number }> => {
-  let abilities: { before: number; after: number } | undefined;
+): Promise<{ before: number; after: number; decision: GraduationDecision }> => {
+  let outcome:
+    | { before: number; after: number; decision: GraduationDecision }
+    | undefined;
 
   await updateProfile((current: Profile): Profile => {
     const recordIndex = current.quizHistory.findIndex((q) => q.id === quizId);
@@ -226,13 +343,23 @@ const persistGrade = async (
     }
 
     const key = record.key;
-    const { before, estimate } = advanceEstimate(
-      current.abilities[key],
-      item,
-      score,
+    const prior = current.abilities[key];
+    const { before, estimate } = advanceEstimate(prior, item, score, answeredAt);
+
+    // Graduation (T046): evaluate hysteresis/dwell against the JUST-updated
+    // ability, threading the prior dwell counter through the pure engine.
+    const grad = applyGraduation(
+      key,
+      estimate.value,
+      prior?.dwell ?? 0,
+      current.graduations[key],
       answeredAt,
     );
-    abilities = { before, after: estimate.value };
+    // Persist the engine's next dwell on the estimate so the consecutive streak
+    // carries across submit_answer calls (advanceEstimate seeded it from prior).
+    const estimateWithDwell: AbilityEstimate = { ...estimate, dwell: grad.dwell };
+
+    outcome = { before, after: estimate.value, decision: grad.decision };
 
     const answered = buildAnsweredItem(item, score, grade, answeredAt);
     const updatedRecord: QuizRecord = {
@@ -243,18 +370,37 @@ const persistGrade = async (
     const quizHistory = [...current.quizHistory];
     quizHistory[recordIndex] = updatedRecord;
 
+    const graduations =
+      grad.graduation === undefined
+        ? current.graduations
+        : { ...current.graduations, [key]: grad.graduation };
+
+    // On promotion, enqueue a proactive spaced review (FR-010), de-duped by key
+    // so repeated promotions don't pile up duplicate spaced entries.
+    const reviewSchedule =
+      grad.spacedReview === undefined
+        ? current.reviewSchedule
+        : [
+            ...current.reviewSchedule.filter(
+              (e) => !(e.key === key && e.reason === "spaced"),
+            ),
+            grad.spacedReview,
+          ];
+
     return {
       ...current,
-      abilities: { ...current.abilities, [key]: estimate },
+      abilities: { ...current.abilities, [key]: estimateWithDwell },
+      graduations,
+      reviewSchedule,
       quizHistory,
     };
   }, dirOverride);
 
-  if (abilities === undefined) {
-    // Unreachable: the transform either set `abilities` or threw above.
+  if (outcome === undefined) {
+    // Unreachable: the transform either set `outcome` or threw above.
     throw new Error("submit_answer: ability update did not run");
   }
-  return abilities;
+  return outcome;
 };
 
 /**
@@ -325,7 +471,7 @@ export const makeSubmitAnswerTool = (
       const grade = toGrade(score, ASSESSMENT_CONFIG.freeFormPassThreshold);
 
       const answeredAt = new Date().toISOString();
-      const { before, after } = await persistGrade(
+      const { before, after, decision } = await persistGrade(
         input.quizId,
         item,
         score,
@@ -339,7 +485,10 @@ export const makeSubmitAnswerTool = (
         score,
         guidance: item.guidance,
         ability: { before, after },
-        // graduation intentionally omitted — T046 wires hysteresis/dwell + review.
+        // Surface the graduation outcome so the host can congratulate (on a
+        // promotion) or flag for review (on a demotion). When nothing changed we
+        // still report `changed: false` with the holding tier (US-3).
+        graduation: toGraduationResult(decision),
       };
       // Only surface the correct answer for MC (where `correctAnswer` is set).
       return correctAnswer !== undefined

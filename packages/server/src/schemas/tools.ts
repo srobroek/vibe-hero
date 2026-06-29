@@ -140,10 +140,19 @@ export type GetGuidanceOutput = z.infer<typeof GetGuidanceOutputSchema>;
 // start_quiz
 // ---------------------------------------------------------------------------
 
-/** Input for `start_quiz`. */
+/**
+ * Input for `start_quiz`.
+ *
+ * `allowFreeForm` is the graceful-degradation switch (FR-014, T049): when the
+ * host agent cannot judge a free-form answer (no judging capability), the caller
+ * passes `false` and the selection EXCLUDES `free_form` items, preferring
+ * deterministic ones so the quiz still completes rather than serving an
+ * unjudgeable item. It defaults to `true` (free-form judging is available).
+ */
 export const StartQuizInputSchema = z.object({
   key: AbilityKeySchema,
   length: z.union([z.literal(3), z.literal(4), z.literal(5)]).optional(),
+  allowFreeForm: z.boolean().optional(),
 });
 export type StartQuizInput = z.infer<typeof StartQuizInputSchema>;
 

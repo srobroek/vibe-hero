@@ -245,6 +245,80 @@ items:
       or sleep — the notification arrives when the subagent finishes.
 
   # ── Tier 500 — Evaluate / Create ────────────────────────────────────────
+  - id: subagents-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: free_form
+    prompt: >-
+      Explain when you should NOT spawn parallel subagents, and why. Give at
+      least three distinct situations where parallelising with the Agent/Task
+      tool would be the wrong choice, and describe the failure mode each
+      situation produces.
+    rubric:
+      criteria:
+        - id: shared-state-conflict
+          text: >-
+            Identifies that tasks sharing mutable state (the same files,
+            database rows, or in-memory structures) are unsafe to parallelize
+            because concurrent writes produce race conditions, corrupt output,
+            or silently overwrite each other's work.
+        - id: dependency-ordering
+          text: >-
+            Identifies that tasks with a dependency relationship — where the
+            output of one is the required input of the next — must run
+            sequentially; launching the downstream agent before the upstream
+            result is ready means the downstream prompt is under-specified or
+            based on stale information.
+        - id: context-cost-overhead
+          text: >-
+            Recognises that each subagent carries a full, independent context
+            window and token budget; spawning many agents for trivial or
+            fast-finishing tasks wastes money and latency relative to doing the
+            work directly in the parent context.
+        - id: sequential-simpler
+          text: >-
+            Recognises that when tasks are few, small, or tightly coupled,
+            sequential execution in the parent is simpler to reason about,
+            easier to debug, and avoids the "trust but verify" overhead that
+            every subagent result imposes on the parent.
+      referenceAnswer: >-
+        Parallel subagents are wrong in at least three situations:
+
+        1. Shared mutable state. If two agents write to the same file, the same
+        database record, or the same in-memory store, their changes race. The
+        second writer silently overwrites the first, or both produce a partially
+        merged, corrupt result. Example: spawning a migration writer and a test
+        updater in parallel when both need to edit the same schema file.
+
+        2. Sequential dependency. If agent B needs agent A's output as its
+        input, launching them together means B operates on missing or stale
+        information. The result is an under-specified prompt, a hallucinated
+        implementation, or a second pass that undoes what the first did.
+        Example: research-then-write tasks where the write agent must read the
+        research findings before it can produce an accurate implementation.
+
+        3. Trivial tasks where overhead exceeds benefit. Each subagent opens a
+        new context window, pays full prompt-token cost, and returns a result
+        the parent must verify. For a quick grep, a small edit, or a single
+        file read, doing the work directly in the parent is faster, cheaper,
+        and requires no trust-but-verify round-trip. Spawning subagents for
+        tiny tasks multiplies cost without multiplying useful throughput.
+
+        A fourth valid situation: when the total number of tasks is small (two
+        or three) and they are tightly coupled, sequential execution in the
+        parent keeps the full context in one place, produces one coherent
+        history, and is simpler to debug if something goes wrong.
+      passThreshold: 0.75
+    guidance: >-
+      Parallelism is powerful but has hard limits. Candidates who only recite
+      "use background agents for independent tasks" without articulating the
+      failure modes of over-parallelisation have not internalised the tradeoffs.
+      Key signals: shared-state races, dependency ordering, and cost-vs-benefit
+      for trivial tasks. Full marks require at least three distinct situations
+      with their failure modes, not just a list of slogans.
+
+
   - id: subagents-500-mc-a
     tier: 500
     bloom: evaluate

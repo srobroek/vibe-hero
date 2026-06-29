@@ -1,5 +1,6 @@
 /**
- * @file Real `submit_answer` tool module — DETERMINISTIC path (T032, US-1).
+ * @file Real `submit_answer` tool module — DETERMINISTIC + FREE-FORM paths
+ * (T032 deterministic, US-1; T048 free-form, US-4).
  *
  * The core scoring entry point. For a deterministic item (`multiple_choice` /
  * `short_answer`) it: finds the live {@link QuizRecord} + catalog item by
@@ -32,16 +33,25 @@
  * enqueued (FR-010) so a one-time streak is later re-verified, and the
  * `graduation` field is surfaced on the result so the host informs the user.
  *
- * Scope: free-form verdict grading is T048; a `verdict` payload here is rejected
- * as not-yet-supported.
+ * Free-form path (T048, US-4): when the item is `free_form` and the input carries
+ * a per-criterion `verdict`, the host agent's verdict is scored by the PURE
+ * {@link scoreVerdict} against the item's MCP-supplied rubric — the MCP computes
+ * the score (fraction of criteria met) and derives the grade; the agent never
+ * returns a bare score/boolean (anti-gaming, FR-012/013). The graded result then
+ * flows through the SAME ability-update / persistence / graduation pipeline as a
+ * deterministic grade, recorded as `gradedBy: "host_agent"` with NO raw answer
+ * text (FR-018). The two paths cross-guard: a deterministic answer on a free-form
+ * item, or a free-form verdict on a deterministic item, is rejected with a clear
+ * error.
  *
  * Gated (FR-032): NOT exempt — the gate runs before this handler.
  *
  * Exposed as a `dirOverride`-closing factory mirroring `config.ts` / `status.ts`.
  *
  * Source of truth: specs/001-vibe-hero-mvp/contracts/mcp-tools.md
- * (`submit_answer` deterministic path), spec.md FR-005 / FR-011 / FR-018 /
- * SC-004, data-model.md (AnsweredItem / AbilityEstimate), research.md (OD-005).
+ * (`submit_answer` deterministic + free-form paths), spec.md FR-005 / FR-011 /
+ * FR-012 / FR-013 / FR-018 / SC-004, data-model.md (AnsweredItem /
+ * AbilityEstimate), research.md (OD-002 / OD-005).
  */
 
 import { ASSESSMENT_CONFIG } from "../config.js";
@@ -58,6 +68,7 @@ import {
   gradeShortAnswer,
   toGrade,
 } from "../grading/deterministic.js";
+import { scoreVerdict } from "../grading/freeform.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import { abilityKey, type AbilityKey, type Grade } from "../schemas/common.js";
 import type { ContentItem, Topic } from "../schemas/content.js";
@@ -136,8 +147,9 @@ const findItem = (
  * Grade a deterministic item, returning the continuous score plus (for MC) the
  * authored correct choice id so the caller can surface `correctAnswer`.
  *
- * @throws {Error} if `item` is `free_form` (handled by T048) — the deterministic
- *   path must not be asked to grade a rubric item.
+ * @throws {Error} if `item` is `free_form` — a deterministic answer was submitted
+ *   for a free-form item; the caller must send a per-criterion `verdict` instead
+ *   (cross-guard, T048).
  */
 const gradeDeterministic = (
   item: ContentItem,
@@ -154,21 +166,23 @@ const gradeDeterministic = (
     }
     case "free_form":
       throw new Error(
-        `submit_answer: free-form grading is not supported on the deterministic path (item ${JSON.stringify(item.id)}); a per-criterion verdict is required (T048)`,
+        `submit_answer: item ${JSON.stringify(item.id)} is free_form; submit a per-criterion \`verdict\`, not a deterministic \`answer\` (T048)`,
       );
   }
 };
 
 /**
  * Build the AnsweredItem persisted in history. Derived fields ONLY — never the
- * raw answer text / chosen id (FR-018). The item's authored `tier` + fixed
- * `difficulty` are recorded so history is self-describing without re-joining the
- * catalog.
+ * raw answer text / chosen id / verdict justifications (FR-018). The item's
+ * authored `tier` + fixed `difficulty` are recorded so history is
+ * self-describing without re-joining the catalog. `gradedBy` records WHO graded:
+ * the engine (deterministic) or the host agent (free-form verdict).
  */
 const buildAnsweredItem = (
   item: ContentItem,
   score: number,
   grade: Grade,
+  gradedBy: AnsweredItem["gradedBy"],
   answeredAt: string,
 ): AnsweredItem => ({
   itemId: item.id,
@@ -176,7 +190,7 @@ const buildAnsweredItem = (
   difficulty: item.difficulty,
   grade,
   score,
-  gradedBy: "engine",
+  gradedBy,
   answeredAt,
 });
 
@@ -321,6 +335,7 @@ const persistGrade = async (
   item: ContentItem,
   score: number,
   grade: Grade,
+  gradedBy: AnsweredItem["gradedBy"],
   answeredAt: string,
   dirOverride: string | undefined,
 ): Promise<{ before: number; after: number; decision: GraduationDecision }> => {
@@ -361,7 +376,7 @@ const persistGrade = async (
 
     outcome = { before, after: estimate.value, decision: grad.decision };
 
-    const answered = buildAnsweredItem(item, score, grade, answeredAt);
+    const answered = buildAnsweredItem(item, score, grade, gradedBy, answeredAt);
     const updatedRecord: QuizRecord = {
       ...record,
       items: [...record.items, answered],
@@ -411,8 +426,55 @@ const persistGrade = async (
  */
 export type CatalogLoader = () => CatalogLoadResult;
 
+/** The graded outcome of one item, agnostic of which path produced it. */
+interface GradedOutcome {
+  /** Continuous score in `[0, 1]` that drives the Elo update. */
+  readonly score: number;
+  /** Binary projection persisted in history. */
+  readonly grade: Grade;
+  /** Who graded: the in-engine grader or the host agent's verdict. */
+  readonly gradedBy: AnsweredItem["gradedBy"];
+  /** Authored correct choice id (MC only) to surface for teaching. */
+  readonly correctAnswer?: string;
+}
+
 /**
- * Build the `submit_answer` tool module (US-1, deterministic path).
+ * Grade one item, dispatching on the input variant AND cross-guarding against
+ * the item type (so a deterministic answer on a free-form item, or a free-form
+ * verdict on a deterministic item, is rejected — never silently mis-graded):
+ *
+ * - DETERMINISTIC input (`answer`) → {@link gradeDeterministic}; all-or-nothing
+ *   score graded `"engine"`. The `free_form` branch there throws the cross-guard.
+ * - FREE-FORM input (`verdict`) → the item MUST be `free_form` with a rubric;
+ *   the PURE {@link scoreVerdict} computes the fraction-met score + grade against
+ *   the MCP-supplied rubric (FR-012/013), graded `"host_agent"`. A bare/partial
+ *   verdict is rejected inside `scoreVerdict` (anti-gaming, E2).
+ */
+const gradeItem = (input: SubmitAnswerInput, item: ContentItem): GradedOutcome => {
+  if (isDeterministic(input)) {
+    const { score, correctAnswer } = gradeDeterministic(item, input.answer);
+    // Deterministic items are all-or-nothing: any threshold in (0,1] suffices.
+    // Use the free-form pass threshold so there is one "correct" definition.
+    const grade = toGrade(score, ASSESSMENT_CONFIG.freeFormPassThreshold);
+    return correctAnswer !== undefined
+      ? { score, grade, gradedBy: "engine", correctAnswer }
+      : { score, grade, gradedBy: "engine" };
+  }
+
+  // Free-form verdict path (T048): the item must be free_form with a rubric.
+  if (item.type !== "free_form" || item.rubric === undefined) {
+    throw new Error(
+      `submit_answer: item ${JSON.stringify(item.id)} is not free_form; submit a deterministic \`answer\`, not a \`verdict\``,
+    );
+  }
+  // The MCP computes the score from the per-criterion verdict against its own
+  // rubric — the agent never returns a bare score/boolean (FR-012/013).
+  const { score, grade } = scoreVerdict(input.verdict, item.rubric);
+  return { score, grade, gradedBy: "host_agent" };
+};
+
+/**
+ * Build the `submit_answer` tool module (US-1 deterministic + US-4 free-form).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
  * @param catalogLoader - Catalog source override (test seam); defaults to the
@@ -433,12 +495,9 @@ export const makeSubmitAnswerTool = (
       raw: SubmitAnswerToolInput,
     ): Promise<SubmitAnswerResult> => {
       // Authoritative validation: deterministic answer XOR free-form verdict.
+      // A bare-boolean / shapeless verdict fails the union here (anti-gaming,
+      // E2) before it ever reaches grading.
       const input: SubmitAnswerInput = SubmitAnswerInputSchema.parse(raw);
-      if (!isDeterministic(input)) {
-        throw new Error(
-          "submit_answer: free-form verdict grading is not implemented yet (T048); submit a deterministic answer",
-        );
-      }
 
       // Resolve the quiz's topic key so we can find the item in catalog scope.
       const profile = await loadProfile(dirOverride);
@@ -465,10 +524,9 @@ export const makeSubmitAnswerTool = (
         );
       }
 
-      const { score, correctAnswer } = gradeDeterministic(item, input.answer);
-      // Deterministic items are all-or-nothing: any threshold in (0,1] suffices.
-      // Use the item's free-form pass threshold default for one consistent rule.
-      const grade = toGrade(score, ASSESSMENT_CONFIG.freeFormPassThreshold);
+      // Grade via the path matching the input + item type (deterministic engine
+      // or free-form host verdict); both yield a continuous score + binary grade.
+      const { score, grade, gradedBy, correctAnswer } = gradeItem(input, item);
 
       const answeredAt = new Date().toISOString();
       const { before, after, decision } = await persistGrade(
@@ -476,6 +534,7 @@ export const makeSubmitAnswerTool = (
         item,
         score,
         grade,
+        gradedBy,
         answeredAt,
         dirOverride,
       );
@@ -490,7 +549,8 @@ export const makeSubmitAnswerTool = (
         // still report `changed: false` with the holding tier (US-3).
         graduation: toGraduationResult(decision),
       };
-      // Only surface the correct answer for MC (where `correctAnswer` is set).
+      // Only surface the correct answer for MC (where `correctAnswer` is set);
+      // free-form items have no single key to reveal.
       return correctAnswer !== undefined
         ? { ...result, correctAnswer }
         : result;

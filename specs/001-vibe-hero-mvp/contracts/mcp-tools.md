@@ -30,7 +30,8 @@ Return teaching guidance + what-to-learn-next for a topic or the weakest area. R
 
 ## `start_quiz`
 Begin a quiz session for a topic (offered or on-demand). Selects 3–5 items by difficulty-targeting (research §OD-005).
-- **in**: `{ key: AbilityKey, length?: 3|4|5 }`
+- **in**: `{ key: AbilityKey, length?: 3|4|5, allowFreeForm?: boolean }`
+  - `allowFreeForm` (default true) is the graceful-degradation switch (FR-014): when the host cannot judge free-form answers, pass `false` and selection excludes `free_form` items so the quiz still completes on deterministic items.
 - **out**: `{ quizId: string, items: PresentedItem[] }`
   - `PresentedItem` = `{ itemId, tier, type, prompt, choices?: Choice[], rubric?: { criteria: {id,text}[] }, referenceAnswer?: string }` — for deterministic items, **answer keys are NOT included** and `rubric`/`referenceAnswer` are absent; for `free_form` items, `rubric` (criteria with ids) **and** `referenceAnswer` ARE included so the host agent can judge (see `submit_answer`).
 - Covers US-1/US-2 quiz start; partial sessions never count (only completed via `submit_answer` accumulate).

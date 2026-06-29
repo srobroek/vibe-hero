@@ -18,13 +18,19 @@
  * SC-004 reproducibility relies on grading server-side, not the client knowing
  * the key).
  *
- * Free-form decision (v1): `start_quiz` SKIPS `free_form` items in selection.
- * The deterministic MC/short-answer backbone is what US-1 proves; free-form
- * judging (the rubric + referenceAnswer handshake) is finalized in T048. Because
- * the bundled v1 catalog ships only deterministic items this is a no-op today,
- * but the filter makes the policy explicit and prevents a higher-tier free-form
- * item from being presented without its judging path wired. (The PresentedItem
- * schema already carries `rubric`/`referenceAnswer` for when T048 enables them.)
+ * Free-form (v1, T048/T049): `start_quiz` now SUPPORTS `free_form` items in
+ * selection. A presented `free_form` item carries `rubric.criteria` (with ids)
+ * AND `referenceAnswer` so the host agent can run the judging handshake
+ * (`submit_answer` free-form path, T048). Deterministic items still strip every
+ * answer key — the engine grades them server-side (SC-004).
+ *
+ * Graceful degradation (FR-014, T049): when free-form judging is UNAVAILABLE —
+ * the host agent can't judge an open answer — the caller passes
+ * `allowFreeForm: false`. Selection then EXCLUDES `free_form` items, preferring
+ * deterministic ones so the quiz still completes rather than serving an
+ * unjudgeable item. The flag defaults to `true` (judging available); a quiz
+ * therefore never gets stuck with only an unjudgeable item — if the topic has
+ * deterministic items they are served instead.
  *
  * Gated (FR-032): NOT exempt — `index.ts`/`withSetupGate` returns SETUP_REQUIRED
  * before this handler runs when `profile.config` is absent.
@@ -95,10 +101,10 @@ export const nextBoundaryFor = (currentTier: number): number => {
  * Strip an item to its presented form. Deterministic items (`multiple_choice` /
  * `short_answer`) carry NO answer key and NO rubric/referenceAnswer — the host
  * agent and user must never see the correct answer before grading. MC keeps its
- * `choices` (without marking the correct one). `free_form` items would carry
- * `rubric.criteria` + `referenceAnswer` for the judging handshake (T048); they
- * are filtered out of selection in v1 (see file header), so this branch is not
- * exercised by the bundled catalog yet but is shaped for when it is.
+ * `choices` (without marking the correct one). `free_form` items carry
+ * `rubric.criteria` (ids + text) + `referenceAnswer` so the host agent can run
+ * the judging handshake (T048) — the rubric here is the agent's INSTRUCTION, not
+ * a leaked deterministic key.
  */
 const toPresentedItem = (item: ContentItem): PresentedItem => {
   const base: PresentedItem = {
@@ -166,8 +172,15 @@ export const makeStartQuizTool = (
       const ability = estimate?.value ?? ASSESSMENT_CONFIG.startingAbility;
       const currentTier = profile.graduations[key]?.currentTier ?? 0;
 
-      // v1: deterministic items only — free-form selection waits on T048.
-      const candidates = topic.items.filter((item) => item.type !== "free_form");
+      // Graceful degradation (FR-014, T049): free-form items are eligible only
+      // when the host can judge them (`allowFreeForm`, default true). When
+      // judging is unavailable the caller passes `false` and we EXCLUDE
+      // `free_form`, leaving the deterministic backbone so the quiz still
+      // completes rather than serving an unjudgeable item.
+      const allowFreeForm = input.allowFreeForm ?? true;
+      const candidates = allowFreeForm
+        ? topic.items
+        : topic.items.filter((item) => item.type !== "free_form");
 
       const length = input.length ?? ASSESSMENT_CONFIG.defaultQuizLength;
       const selected = selectItems({

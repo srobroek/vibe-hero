@@ -165,11 +165,11 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Independent Test**: free-form item → `start_quiz` returns rubric+reference → host returns per-criterion verdict → `submit_answer` records score like a deterministic grade; degrade gracefully if judging unavailable (quickstart V4).
 
-- [ ] T048 [US4] Implement free-form handshake in grading (`start_quiz` includes `rubric`+`referenceAnswer` for free-form; `submit_answer` accepts **per-criterion verdict**, MCP computes score vs `passThreshold`; reject bare-boolean — E2/FR-012/013) in `packages/server/src/grading/freeform.ts` + extend `startQuiz.ts`/`submitAnswer.ts`
-- [ ] T049 [US4] Implement graceful degradation when free-form judging unavailable (defer/substitute deterministic item — FR-014) in `packages/server/src/tools/startQuiz.ts`
-- [ ] T050 [P] [US4] Update `vibe-hero-quiz` skill with strict per-criterion judging instructions (steering mandates rubric-based justification) in `skills/vibe-hero-quiz/SKILL.md`
-- [ ] T051 [P] [US4] Integration test V4: per-criterion verdict scored correctly; bare-boolean rejected; degradation path, in `packages/server/test/integration/us4-freeform.test.ts`
-- [ ] T052 [P] [US4] Add ≥1 free-form item (tier 400/500) to a Claude Code content file with rubric criteria + reference answer
+- [X] T048 [US4] Implement free-form handshake in grading (`start_quiz` includes `rubric`+`referenceAnswer` for free-form; `submit_answer` accepts **per-criterion verdict**, MCP computes score vs `passThreshold`; reject bare-boolean — E2/FR-012/013) in `packages/server/src/grading/freeform.ts` + extend `startQuiz.ts`/`submitAnswer.ts`
+- [X] T049 [US4] Implement graceful degradation when free-form judging unavailable (defer/substitute deterministic item — FR-014) in `packages/server/src/tools/startQuiz.ts`
+- [X] T050 [P] [US4] Update `vibe-hero-quiz` skill with strict per-criterion judging instructions (steering mandates rubric-based justification) in `skills/vibe-hero-quiz/SKILL.md`
+- [X] T051 [P] [US4] Integration test V4: per-criterion verdict scored correctly; bare-boolean rejected; degradation path, in `packages/server/test/integration/us4-freeform.test.ts`
+- [X] T052 [P] [US4] Add ≥1 free-form item (tier 400/500) to a Claude Code content file with rubric criteria + reference answer
 
 **Checkpoint**: free-form judging works end-to-end without MCP sampling.
 

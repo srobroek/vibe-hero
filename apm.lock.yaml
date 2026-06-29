@@ -1,5 +1,5 @@
 lockfile_version: '2'
-generated_at: '2026-06-29T07:03:22.055917+00:00'
+generated_at: '2026-06-29T16:02:32.108602+00:00'
 apm_version: 0.22.0
 dependencies:
 - repo_url: srobroek/agentic-packages
@@ -22,16 +22,6 @@ dependencies:
   package_type: marketplace_plugin
   content_hash: sha256:148593c2112b54b680f327ffca07ca71ec533e4f3b23c552e20929b44984e727
   declared_license: Apache-2.0
-- repo_url: srobroek/agentic-packages
-  name: governance
-  host: github.com
-  resolved_commit: 74d45434ccd0247c4e980e7cf23b00bb0ffa779b
-  version: 1.1.0
-  virtual_path: packages/governance
-  is_virtual: true
-  package_type: marketplace_plugin
-  content_hash: sha256:2d200d8e70cdb599d283abca8dba63f9fdd9e5a0341b275686ca471814a5ac51
-  declared_license: MIT
 - repo_url: srobroek/agentic-packages
   name: language-steering-typescript
   host: github.com
@@ -146,6 +136,12 @@ dependencies:
   - .claude/skills/speckit-setup/scripts/workflows/speckit-full/workflow.yml
   - .claude/skills/speckit-setup/scripts/workflows/speckit-quality/workflow.yml
   - .claude/skills/speckit-setup/scripts/workflows/speckit/workflow.yml
+  - .codex/agents/speckit-implement-task.toml
+  - .codex/agents/speckit-research.toml
+  - .codex/agents/speckit-sync-conflicts.toml
+  - .codex/agents/speckit-sync.toml
+  - .codex/agents/speckit-verify-tasks.toml
+  - .codex/agents/speckit-verify.toml
   - .codex/hooks/speckit/scripts/speckit-task-commit-check.sh
   - .codex/hooks/speckit/scripts/speckit-task-issue-sync.sh
   deployed_file_hashes:
@@ -174,6 +170,12 @@ dependencies:
     .claude/skills/speckit-setup/scripts/workflows/speckit-full/workflow.yml: sha256:15728b6286d5c2c3b72dc8667a92828952e218e4d6e9f1c410427e3ff68712eb
     .claude/skills/speckit-setup/scripts/workflows/speckit-quality/workflow.yml: sha256:87ac72170ebeca7c476154abb1e78ce39ce1f729158e70d4a2aaa89ae11c5977
     .claude/skills/speckit-setup/scripts/workflows/speckit/workflow.yml: sha256:6e108d67a29512d9159bea250ec1dd47fd25d25c1b46cb0c5870a71b4cfddc2b
+    .codex/agents/speckit-implement-task.toml: sha256:cb04b5ec6ff677a5978b3a88b9b174421874fe638a067cbd3a0cc55707f215cc
+    .codex/agents/speckit-research.toml: sha256:02893a8e0ea3075d660fe1bd285c85e511f58a3b350ced7ba3dbede402d153b7
+    .codex/agents/speckit-sync-conflicts.toml: sha256:535b4fd7d113035cf6fbdcc508bf8b021f92434d441da9994cd338726dabd5d3
+    .codex/agents/speckit-sync.toml: sha256:572e2995ddf06c1900a144f4f393a3f71f7471abd7ff0888873a8261a2e9db37
+    .codex/agents/speckit-verify-tasks.toml: sha256:6c957a25d211a06e9792d02b51e32adb9f7bcb0aa0c87cc1c3faea61f7a54303
+    .codex/agents/speckit-verify.toml: sha256:863cfdc9c3c0ad67a1ed3c28cec6efaec8603fc99f4cb475a77a0b554b432511
     .codex/hooks/speckit/scripts/speckit-task-commit-check.sh: sha256:8270264dae03a623b9ac5e6c185a2eb4eba3d7d0ebd5055438ea89cc8c6445f0
     .codex/hooks/speckit/scripts/speckit-task-issue-sync.sh: sha256:038162a50bc0404bd534c8b7cf240644ebbbcb31765f800ae818bd455324a5ae
   content_hash: sha256:139975258498bed4fbdf5243f933647379afb75fe2b5d45f1bd856be11e8baed
@@ -211,7 +213,7 @@ dependencies:
 - repo_url: mattpocock/skills
   name: skills
   host: github.com
-  resolved_commit: 5d78bd0903420f97c791f834201e550c765699f8
+  resolved_commit: 448d0adee7cb797db5a2ad278e9e8d6c874e12af
   resolved_ref: main
   version: unknown
   virtual_path: skills/engineering/grill-with-docs
@@ -231,7 +233,7 @@ dependencies:
 - repo_url: mattpocock/skills
   name: skills
   host: github.com
-  resolved_commit: 5d78bd0903420f97c791f834201e550c765699f8
+  resolved_commit: 448d0adee7cb797db5a2ad278e9e8d6c874e12af
   resolved_ref: main
   version: unknown
   virtual_path: skills/productivity/grill-me
@@ -381,32 +383,11 @@ dependencies:
   - .claude/commands/multi-agent-optimize.md
   - .codex/agents/context-manager.toml
   deployed_file_hashes:
-    .claude/agents/context-manager.md: sha256:24efe4654f96c52335e6d02482e8111d3cffdc0e5bd76037be264a5dba668b4c
+    .claude/agents/context-manager.md: sha256:3df4e5089fb21bb3b754fc3a127b5168b9f16facccfd1128b31d4816a99d6e99
     .claude/commands/improve-agent.md: sha256:f68cca3935b12ce43d03fe6351d2533a74602e3d7957e8a3810a071a7f8414fc
     .claude/commands/multi-agent-optimize.md: sha256:e825095060a5c0ace0772391417d22f0b0378babfbc4057412dfbba0b27dd0e9
-    .codex/agents/context-manager.toml: sha256:e1ff1ebedd1871e743af47bf198cac9ee6edba7d70cc2eec3ffd723397f2910a
+    .codex/agents/context-manager.toml: sha256:e472e969db11b3dd66f7ee2367810a08474fab4a33a6d0dd98af3a0dff50409d
   content_hash: sha256:b29f57cdd3858bb363820e78515a67adfa93765ca46e37638ef677a169d6d8ce
-  declared_license: MIT
-- repo_url: wshobson/agents
-  name: block-no-verify
-  host: github.com
-  resolved_commit: 5cc2549a50fc672230efd0a0307e2fd27ffba792
-  resolved_ref: main
-  version: 1.0.1
-  virtual_path: plugins/block-no-verify
-  is_virtual: true
-  depth: 2
-  resolved_by: srobroek/agentic-packages
-  package_type: marketplace_plugin
-  deployed_files:
-  - .agents/skills/block-no-verify-hook
-  - .agents/skills/block-no-verify-hook/SKILL.md
-  - .claude/skills/block-no-verify-hook
-  - .claude/skills/block-no-verify-hook/SKILL.md
-  deployed_file_hashes:
-    .agents/skills/block-no-verify-hook/SKILL.md: sha256:110e5e8ca259eee24ee5372c186cc2f080677269c88ee82d007a73f85993ea5d
-    .claude/skills/block-no-verify-hook/SKILL.md: sha256:110e5e8ca259eee24ee5372c186cc2f080677269c88ee82d007a73f85993ea5d
-  content_hash: sha256:bdb5849117c40116c355fff3d5fecdeeb8c359d81e3c1cd43f9d4249b9eea3ba
   declared_license: MIT
 - repo_url: wshobson/agents
   name: context-management
@@ -420,11 +401,15 @@ dependencies:
   resolved_by: srobroek/agentic-packages
   package_type: marketplace_plugin
   deployed_files:
+  - .claude/agents/context-manager.md
   - .claude/commands/context-restore.md
   - .claude/commands/context-save.md
+  - .codex/agents/context-manager.toml
   deployed_file_hashes:
+    .claude/agents/context-manager.md: sha256:3df4e5089fb21bb3b754fc3a127b5168b9f16facccfd1128b31d4816a99d6e99
     .claude/commands/context-restore.md: sha256:f923f531a4065e712cba56ee1ffcffc1f44c3224213e7cf8c83b3209195866bd
     .claude/commands/context-save.md: sha256:eea6c3f2f4fc99ee01fbf99869044d95447f5a65b7be213255f0122384283cf4
+    .codex/agents/context-manager.toml: sha256:e472e969db11b3dd66f7ee2367810a08474fab4a33a6d0dd98af3a0dff50409d
   content_hash: sha256:218d104a947ef7cf5fc2bacf9509472617944b5d32483d580f0f133fdd9a7625
   declared_license: MIT
 - repo_url: wshobson/agents
@@ -478,7 +463,7 @@ dependencies:
     .agents/skills/dbt-transformation-patterns/references/details.md: sha256:f560a1ba857fdf4a2a78ac3c634c1a952afaee2ffc3a13baa21811284586d6e2
     .agents/skills/spark-optimization/SKILL.md: sha256:6af24df5e512113dac3238dcd9ed862c0a866ff91af92b95d024cf995959ac01
     .agents/skills/spark-optimization/references/details.md: sha256:1ea455732366d868059dfba807169336df1db75acf4e7f558aee3b41b7f8d210
-    .claude/agents/backend-architect.md: sha256:739adbd9734a94672d5f2473fa7827e6611634bd88dab88d09701dd8aace0078
+    .claude/agents/backend-architect.md: sha256:bb6b771d44773e6827dcf80c760da1b79c4ecaba1e62b240e86e87ef62eb6710
     .claude/agents/data-engineer.md: sha256:c88021cb4b2e2e432cb5df36d90db46e872fa7d28c64d10aad7b4c4334683ab6
     .claude/commands/data-driven-feature.md: sha256:694ae03b263fcf5ff60552d99958ed37a19d28ee6bedb0ec3c30b4724822da68
     .claude/commands/data-pipeline.md: sha256:a03fc33739381ae8ca36d01670e6438a21b88bb5b2d62074dc0f309b421b7ec0
@@ -490,7 +475,7 @@ dependencies:
     .claude/skills/dbt-transformation-patterns/references/details.md: sha256:f560a1ba857fdf4a2a78ac3c634c1a952afaee2ffc3a13baa21811284586d6e2
     .claude/skills/spark-optimization/SKILL.md: sha256:6af24df5e512113dac3238dcd9ed862c0a866ff91af92b95d024cf995959ac01
     .claude/skills/spark-optimization/references/details.md: sha256:1ea455732366d868059dfba807169336df1db75acf4e7f558aee3b41b7f8d210
-    .codex/agents/backend-architect.toml: sha256:3213b1a2fdb862bf5e8e2b1fc46e652050a9dd0778782f0eb6be8a8c287e571d
+    .codex/agents/backend-architect.toml: sha256:1e006bae0905929ed8a4cb008996f64432a3df05a92f5cfe404146f18eb6c40e
     .codex/agents/data-engineer.toml: sha256:67de25a609fd62de88091daa264ad2024d2bd0c96ed3ee4660caf54240ac094c
   content_hash: sha256:c032dac3bcde48e13986e69e980afd8500c9786265733d2eb5012204ccefaa45
   declared_license: MIT
@@ -506,21 +491,25 @@ dependencies:
   resolved_by: srobroek/agentic-packages
   package_type: marketplace_plugin
   deployed_files:
+  - .claude/agents/backend-architect.md
   - .claude/agents/cloud-architect.md
   - .claude/agents/database-architect.md
   - .claude/agents/database-optimizer.md
   - .claude/commands/cost-optimize.md
+  - .codex/agents/backend-architect.toml
   - .codex/agents/cloud-architect.toml
   - .codex/agents/database-architect.toml
   - .codex/agents/database-optimizer.toml
   deployed_file_hashes:
+    .claude/agents/backend-architect.md: sha256:bb6b771d44773e6827dcf80c760da1b79c4ecaba1e62b240e86e87ef62eb6710
     .claude/agents/cloud-architect.md: sha256:9a30542d6097a3b494796e773c7da04599e444c03cc314b6251d14e8bdf802ad
-    .claude/agents/database-architect.md: sha256:8918aa93c34473f906251497ee5907a4ef81abe1a1fb2bbd87637906936af3b7
-    .claude/agents/database-optimizer.md: sha256:4be26ef22f389a267b6b61bdc0d661101b602aa2fed162ade7110df3fe124488
+    .claude/agents/database-architect.md: sha256:cada2f67ad4c0e6788007a8d0cef92ba333d88820cb0845e415c7a5d03151f4b
+    .claude/agents/database-optimizer.md: sha256:fc3afa4b622ec767278e31ebd8fc2dfed4ba87cf3226683813ca52666d9f1855
     .claude/commands/cost-optimize.md: sha256:759c549751f67f0ab148e98416ffa7a5b0b0c1a0f37f1d09fec00bbc1b505ad0
+    .codex/agents/backend-architect.toml: sha256:1e006bae0905929ed8a4cb008996f64432a3df05a92f5cfe404146f18eb6c40e
     .codex/agents/cloud-architect.toml: sha256:f0134982062c41f12fcf0dd9ceca5301f4f4b3a6212211096619d6a9f6a57ee2
-    .codex/agents/database-architect.toml: sha256:5305fcb8d62370de9dc62dc7e489a8ee00542980a3dabf5c008496ae86cd4f6c
-    .codex/agents/database-optimizer.toml: sha256:d7892c762205aa9fa409957b2b71e65de2d772c376ef5724eb5ae7c2430eda52
+    .codex/agents/database-architect.toml: sha256:66f36c58bcc0287fe8bef76b63765e659e9c9a79128c3c0eee9b6234e3b74c68
+    .codex/agents/database-optimizer.toml: sha256:8f52df64667f9a8a67d07d7b33b0f7790fe8bc79f21ef13b7d51674f5806c7b4
   content_hash: sha256:c4f66ba2ab9bef4fc8e3d87589a92b4d44f765704b5a6b8c19d6cd9d2fc6022d
   declared_license: MIT
 - repo_url: wshobson/agents
@@ -537,14 +526,18 @@ dependencies:
   deployed_files:
   - .agents/skills/postgresql
   - .agents/skills/postgresql/SKILL.md
+  - .claude/agents/database-architect.md
   - .claude/agents/sql-pro.md
   - .claude/skills/postgresql
   - .claude/skills/postgresql/SKILL.md
+  - .codex/agents/database-architect.toml
   - .codex/agents/sql-pro.toml
   deployed_file_hashes:
     .agents/skills/postgresql/SKILL.md: sha256:3170aed913a522ca10e0f94bcfbef61e4284dd7c9e6aabb5ffaed2dbfb3173b4
+    .claude/agents/database-architect.md: sha256:cada2f67ad4c0e6788007a8d0cef92ba333d88820cb0845e415c7a5d03151f4b
     .claude/agents/sql-pro.md: sha256:6eb2fdb139b7971ae98b604ad7d22f6710f904ca74cf00e8961dbe81159513d7
     .claude/skills/postgresql/SKILL.md: sha256:3170aed913a522ca10e0f94bcfbef61e4284dd7c9e6aabb5ffaed2dbfb3173b4
+    .codex/agents/database-architect.toml: sha256:66f36c58bcc0287fe8bef76b63765e659e9c9a79128c3c0eee9b6234e3b74c68
     .codex/agents/sql-pro.toml: sha256:262e8e7319e02c89a60261230f5655f6db6c7744e677c868e9824b1a1cc8ed55
   content_hash: sha256:d27b048b081427fb1804bedb5eff95a7558d974b031daf5a566035f78e098365
   declared_license: MIT
@@ -561,14 +554,18 @@ dependencies:
   package_type: marketplace_plugin
   deployed_files:
   - .claude/agents/database-admin.md
+  - .claude/agents/database-optimizer.md
   - .claude/commands/migration-observability.md
   - .claude/commands/sql-migrations.md
   - .codex/agents/database-admin.toml
+  - .codex/agents/database-optimizer.toml
   deployed_file_hashes:
     .claude/agents/database-admin.md: sha256:b376aa6ce872d9e63d9b75668916a00b8488c7ad5cbe0af2cbb63cf59e690860
+    .claude/agents/database-optimizer.md: sha256:fc3afa4b622ec767278e31ebd8fc2dfed4ba87cf3226683813ca52666d9f1855
     .claude/commands/migration-observability.md: sha256:1d76e29f305af033326ed890d76c67de9c26ba7332529578f93f9e1029fac5d2
     .claude/commands/sql-migrations.md: sha256:9338bfb1f67f06ecb0a0d694055a58159f2197c191ea7d6a70ebaa96dcd4f19d
     .codex/agents/database-admin.toml: sha256:5880a7d3ac0460aa635fe8b91529534c2245d3e01002caa65df033477e740a04
+    .codex/agents/database-optimizer.toml: sha256:8f52df64667f9a8a67d07d7b33b0f7790fe8bc79f21ef13b7d51674f5806c7b4
   content_hash: sha256:4d5bcef08b486e7326c5eafb312b43e8d154a2de239bac226986d85e1037048d
   declared_license: MIT
 - repo_url: wshobson/agents
@@ -829,75 +826,6 @@ dependencies:
     .codex/agents/ml-engineer.toml: sha256:c4558a3e18d7078fdd3c8c36e5ee0e0c1b0552c52c17878d304a3b8e267f7d82
     .codex/agents/mlops-engineer.toml: sha256:b7fd5cb98ca372b52e6b9993a1ec342333b3283da185f4b183be797f25cde331
   content_hash: sha256:07d4de37c01df8bf159ca24712b3e60fa296007dea21d855bcb608d86b00838b
-  declared_license: MIT
-- repo_url: wshobson/agents
-  name: protect-mcp
-  host: github.com
-  resolved_commit: 5cc2549a50fc672230efd0a0307e2fd27ffba792
-  resolved_ref: main
-  version: 0.1.1
-  virtual_path: plugins/protect-mcp
-  is_virtual: true
-  depth: 2
-  resolved_by: srobroek/agentic-packages
-  package_type: marketplace_plugin
-  deployed_files:
-  - .agents/skills/protect-mcp-setup
-  - .agents/skills/protect-mcp-setup/SKILL.md
-  - .claude/agents/policy-enforcer.md
-  - .claude/agents/receipt-verifier.md
-  - .claude/skills/protect-mcp-setup
-  - .claude/skills/protect-mcp-setup/SKILL.md
-  deployed_file_hashes:
-    .agents/skills/protect-mcp-setup/SKILL.md: sha256:3a15eb2b5197ffc8fcef9f79a85b4c294c7ccbb9eac6a26d86719265c61be07c
-    .claude/agents/policy-enforcer.md: sha256:06fa6f8a86cfec953fbdeb2023bd0a75c3d18dbd809c6148a2062b22a34975ce
-    .claude/agents/receipt-verifier.md: sha256:20918043344659b2946006e1543b667d2757a9fff67c597aca99082f183b8172
-    .claude/skills/protect-mcp-setup/SKILL.md: sha256:3a15eb2b5197ffc8fcef9f79a85b4c294c7ccbb9eac6a26d86719265c61be07c
-  content_hash: sha256:8e33b78f3ac3e22d6f0775553314effcc0827532bedbb966bad3b369b1b546a2
-  declared_license: MIT
-- repo_url: wshobson/agents
-  name: review-agent-governance
-  host: github.com
-  resolved_commit: 5cc2549a50fc672230efd0a0307e2fd27ffba792
-  resolved_ref: main
-  version: 0.1.1
-  virtual_path: plugins/review-agent-governance
-  is_virtual: true
-  depth: 2
-  resolved_by: srobroek/agentic-packages
-  package_type: marketplace_plugin
-  deployed_files:
-  - .agents/skills/review-agent-setup
-  - .agents/skills/review-agent-setup/SKILL.md
-  - .claude/agents/review-policy-author.md
-  - .claude/skills/review-agent-setup
-  - .claude/skills/review-agent-setup/SKILL.md
-  deployed_file_hashes:
-    .agents/skills/review-agent-setup/SKILL.md: sha256:df715cf3273098142dcdec19c366c3ac71d684e25e1e6d33a88282db4dd9ae1a
-    .claude/agents/review-policy-author.md: sha256:8895ecc87159dd0c1f3642a7a464c4c5990324f81306b8fb3cf67577ac335ce1
-    .claude/skills/review-agent-setup/SKILL.md: sha256:df715cf3273098142dcdec19c366c3ac71d684e25e1e6d33a88282db4dd9ae1a
-  content_hash: sha256:661b7f7cb642849dabf117952eda2a3795d1eb1dd2317739679ec71bd6c88793
-  declared_license: MIT
-- repo_url: wshobson/agents
-  name: signed-audit-trails
-  host: github.com
-  resolved_commit: 5cc2549a50fc672230efd0a0307e2fd27ffba792
-  resolved_ref: main
-  version: 0.1.1
-  virtual_path: plugins/signed-audit-trails
-  is_virtual: true
-  depth: 2
-  resolved_by: srobroek/agentic-packages
-  package_type: marketplace_plugin
-  deployed_files:
-  - .agents/skills/signed-audit-trails-recipe
-  - .agents/skills/signed-audit-trails-recipe/SKILL.md
-  - .claude/skills/signed-audit-trails-recipe
-  - .claude/skills/signed-audit-trails-recipe/SKILL.md
-  deployed_file_hashes:
-    .agents/skills/signed-audit-trails-recipe/SKILL.md: sha256:bf65a3d58a483e9ebae9da950748f24f73af0e7080a95cfd12466cf29e31acca
-    .claude/skills/signed-audit-trails-recipe/SKILL.md: sha256:bf65a3d58a483e9ebae9da950748f24f73af0e7080a95cfd12466cf29e31acca
-  content_hash: sha256:dd57e833670ed557e0967b5cd09a0be9ef6b9db4f57bc7b70e09fa9a153c9984
   declared_license: MIT
 - repo_url: srobroek/agentic-packages
   name: agent-coder
@@ -1458,13 +1386,13 @@ dependencies:
   - .codex/agents/tutorial-engineer.toml
   deployed_file_hashes:
     .claude/agents/code-reviewer.md: sha256:7d3eb3cf36f5dc156bf4d39e59b8869af5ae506f16c75d87b79420ad82e01064
-    .claude/agents/docs-architect.md: sha256:cafadb5c85b45eaff0ec9d16808774b5e0c81034f1e06d0fbacb3a6c12f60dad
-    .claude/agents/tutorial-engineer.md: sha256:c207e1a58016ddad11d41d66b9d876576464a04385dbcd9c826c0a797ead278b
+    .claude/agents/docs-architect.md: sha256:435520e293fa4b997a39b7455d7131351598f4cbaf4813135ab5182e6554005b
+    .claude/agents/tutorial-engineer.md: sha256:511494783d7ac1ac90cd090a3c0a8a53ff6e5792f74346c6e4fc161dc9d42a36
     .claude/commands/code-explain.md: sha256:710690c2c446bb19b7920b131409d330a2b53ad5b4768ad462788c580e846306
     .claude/commands/doc-generate.md: sha256:b2d1d72505ddacb72fae1212ee0e9b7ee6b5ce33a4e4691dbe0d50900f4b4d00
     .codex/agents/code-reviewer.toml: sha256:06972c9051fce53a868d760d325b6ffec18709a1b25042e235a282c1a44f64ca
-    .codex/agents/docs-architect.toml: sha256:a67d775a1b76704f8c67eb0552581a0cd9cce7be35fc6343609007a4c46e88d9
-    .codex/agents/tutorial-engineer.toml: sha256:fcd63d475d9bda6df45af88611cf4aded21eba1eccfc178581656a606c0efc0f
+    .codex/agents/docs-architect.toml: sha256:398bf81a4013352f48c11137b170fb39c460f37cf347939458d75b5800f164a0
+    .codex/agents/tutorial-engineer.toml: sha256:36c77eee18f6a1c0fa89b2076031d1ad52f35fbe222654eea247c2e9dd890d8d
   content_hash: sha256:2a9f0d489b2fb11da354c35458ab7cd31517267318eefb139b58e5daba98d598
   declared_license: MIT
 - repo_url: wshobson/agents
@@ -1489,8 +1417,11 @@ dependencies:
   - .agents/skills/openapi-spec-generation/references/code-first-and-tooling.md
   - .agents/skills/openapi-spec-generation/references/details.md
   - .claude/agents/api-documenter.md
+  - .claude/agents/docs-architect.md
   - .claude/agents/mermaid-expert.md
   - .claude/agents/reference-builder.md
+  - .claude/agents/tutorial-engineer.md
+  - .claude/commands/doc-generate.md
   - .claude/skills/architecture-decision-records
   - .claude/skills/architecture-decision-records/SKILL.md
   - .claude/skills/changelog-automation
@@ -1501,8 +1432,10 @@ dependencies:
   - .claude/skills/openapi-spec-generation/references/code-first-and-tooling.md
   - .claude/skills/openapi-spec-generation/references/details.md
   - .codex/agents/api-documenter.toml
+  - .codex/agents/docs-architect.toml
   - .codex/agents/mermaid-expert.toml
   - .codex/agents/reference-builder.toml
+  - .codex/agents/tutorial-engineer.toml
   deployed_file_hashes:
     .agents/skills/architecture-decision-records/SKILL.md: sha256:f8928e30d37eb7654e18adc93c752b43e7272f88054fba5a7813b434779c50e6
     .agents/skills/changelog-automation/SKILL.md: sha256:b9748be2063023ba754d47ab9e727bcfa053041fd6f83c524eb8ae4a257cb6a1
@@ -1511,8 +1444,11 @@ dependencies:
     .agents/skills/openapi-spec-generation/references/code-first-and-tooling.md: sha256:533398d65b933040d13e642414e6b9846adbe7d5c95947223beffdb3ebe1590f
     .agents/skills/openapi-spec-generation/references/details.md: sha256:f653781def324ce13ba73879282ae5ae78c15d57b5f665f2c20b8d6332569e55
     .claude/agents/api-documenter.md: sha256:2024e996680fd8f3347f5f052cb0d031b1c142f89308f93314ce6ba186683bd7
+    .claude/agents/docs-architect.md: sha256:435520e293fa4b997a39b7455d7131351598f4cbaf4813135ab5182e6554005b
     .claude/agents/mermaid-expert.md: sha256:13efaddbe882b125326855ebc616a6896723ec3d7f988f90132da99ce29fcea0
     .claude/agents/reference-builder.md: sha256:666031b1453bfca265c39191f96d25911ebde0b9170659d67215e315ca81965e
+    .claude/agents/tutorial-engineer.md: sha256:511494783d7ac1ac90cd090a3c0a8a53ff6e5792f74346c6e4fc161dc9d42a36
+    .claude/commands/doc-generate.md: sha256:b2d1d72505ddacb72fae1212ee0e9b7ee6b5ce33a4e4691dbe0d50900f4b4d00
     .claude/skills/architecture-decision-records/SKILL.md: sha256:f8928e30d37eb7654e18adc93c752b43e7272f88054fba5a7813b434779c50e6
     .claude/skills/changelog-automation/SKILL.md: sha256:b9748be2063023ba754d47ab9e727bcfa053041fd6f83c524eb8ae4a257cb6a1
     .claude/skills/changelog-automation/references/details.md: sha256:bb85b108b101f76ec02cd678e34e83181148a2bb49e240f23131c51288c76c32
@@ -1520,8 +1456,10 @@ dependencies:
     .claude/skills/openapi-spec-generation/references/code-first-and-tooling.md: sha256:533398d65b933040d13e642414e6b9846adbe7d5c95947223beffdb3ebe1590f
     .claude/skills/openapi-spec-generation/references/details.md: sha256:f653781def324ce13ba73879282ae5ae78c15d57b5f665f2c20b8d6332569e55
     .codex/agents/api-documenter.toml: sha256:b8e38e4fe8b5970a95b01959a4a3ac17214ddad25120415e40d49d6b714d2c22
+    .codex/agents/docs-architect.toml: sha256:398bf81a4013352f48c11137b170fb39c460f37cf347939458d75b5800f164a0
     .codex/agents/mermaid-expert.toml: sha256:93f9374a7201bff91052fab36c021d6f14d45e3c1cb0ae24258faf45e06e3c3b
     .codex/agents/reference-builder.toml: sha256:352563faa9e760651170eb273bd07db7d45373dc77575b08dd015143acf089ed
+    .codex/agents/tutorial-engineer.toml: sha256:36c77eee18f6a1c0fa89b2076031d1ad52f35fbe222654eea247c2e9dd890d8d
   content_hash: sha256:a724cae9708c50211db67adefa60850eba24ef5b2ef5c556ac8340b79995aa02
   declared_license: MIT
 - repo_url: wshobson/agents

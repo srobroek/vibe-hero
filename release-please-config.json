@@ -8,7 +8,23 @@
   "packages": {
     "packages/server": {
       "package-name": "@vibe-hero/server",
-      "changelog-path": "CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "packages/vibe-hero-plugin/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[0].version"
+        },
+        {
+          "type": "generic",
+          "path": "packages/vibe-hero-plugin/apm.yml"
+        }
+      ]
     }
   }
 }

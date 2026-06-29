@@ -71,6 +71,29 @@ describe("release pipeline workflows (spec 002, US2)", () => {
         "npm publish must precede the marketplace-pointer commit (atomic ordering)",
       ).toBeLessThan(commitIdx);
     });
+
+    it("F3: checks out the release tag (not main) for the build+publish steps", () => {
+      // The initial checkout must use github.event.release.tag_name, not 'main',
+      // so the built+attested artifact is exactly the tagged commit.
+      expect(release).toMatch(/ref:\s*\$\{\{\s*github\.event\.release\.tag_name\s*\}\}/);
+      // 'ref: main' must NOT appear as a checkout ref (the safe push step uses
+      // 'git checkout -B main origin/main' in a shell script, not a checkout action).
+      expect(release).not.toMatch(/ref:\s*main/);
+    });
+
+    it("F4: marketplace push retries on non-fast-forward (safe push)", () => {
+      // The commit-back step must fetch + rebase/reset onto origin/main and retry
+      // so a transient push race does not fail the job after a successful publish.
+      expect(release).toMatch(/git fetch origin main/);
+      expect(release).toMatch(/git rebase origin\/main/);
+      // At least 3 attempts.
+      expect(release).toMatch(/for attempt in 1 2 3/);
+    });
+
+    it("F7: publish job is gated on the canonical repo and non-prerelease", () => {
+      expect(release).toMatch(/github\.repository\s*==\s*['"]srobroek\/vibe-hero['"]/);
+      expect(release).toMatch(/!github\.event\.release\.prerelease/);
+    });
   });
 
   describe("ci.yml — tests + staleness gate", () => {
@@ -85,10 +108,18 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(ci).toMatch(/git diff --exit-code/);
     });
 
-    it("runs on pull_request and push to main, not on tags", () => {
+    it("runs on pull_request and push to main, not on tag-push triggers", () => {
       expect(ci).toMatch(/pull_request/);
       expect(ci).toMatch(/push:\s*\n\s*branches:\s*\[main\]/);
-      expect(ci).not.toMatch(/\btags:/);
+      // Must NOT have a `tags:` trigger under the `on:` block.
+      // Use a negative lookahead that excludes `fetch-tags:` (a checkout option)
+      // so that F6's `fetch-tags: true` doesn't trip this assertion.
+      expect(ci).not.toMatch(/(?<!fetch-)tags:/);
+    });
+
+    it("F6: checkout uses fetch-depth: 0 and fetch-tags: true for reproducible version resolution", () => {
+      expect(ci).toMatch(/fetch-depth:\s*0/);
+      expect(ci).toMatch(/fetch-tags:\s*true/);
     });
   });
 

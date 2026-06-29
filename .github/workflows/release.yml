@@ -41,15 +41,22 @@ env:
 
 jobs:
   publish:
+    # F7: gate on the canonical repo and skip pre-releases so forks and
+    # draft/pre-release tags never trigger a real npm publish.
+    if: >-
+      github.repository == 'srobroek/vibe-hero' &&
+      !github.event.release.prerelease
     name: publish to npm (OIDC) + advance marketplace pointer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # F3: check out the EXACT release tag so the build is attested to the
+      # tagged commit, not whatever HEAD of main happens to be at run time
+      # (TOCTOU: a concurrent merge or the marketplace-pointer commit could
+      # otherwise make us build/publish an un-released tree).
+      - name: Checkout release tag
         uses: actions/checkout@v4
         with:
-          # Need full history + the default branch ref so we can commit the
-          # regenerated marketplace pointer back to main after publish.
-          ref: main
+          ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
 
       - name: Set up pnpm
@@ -91,6 +98,9 @@ jobs:
         run: pnpm --filter @vibe-hero/server publish --access public --provenance --no-git-checks
 
       # ---- STEP 2: advance the marketplace pointer ONLY after a good publish ----
+      # F3/F4: this step must operate on main (not the release tag) because it
+      # commits back to main. We fetch latest main here rather than doing a
+      # second checkout, to avoid a separate checkout step clobbering the build.
       - name: Set up Python (for apm-cli)
         uses: actions/setup-python@v5
         with:
@@ -107,14 +117,45 @@ jobs:
         # from apm.yml. Runs only because the publish above succeeded.
         run: apm pack --offline --marketplace claude
 
-      - name: Commit and push marketplace pointer (idempotent)
+      # F4: fetch + reset to latest origin/main before committing the
+      # marketplace pointer so we do not push on top of a stale base (the tag
+      # checkout and any concurrent merge would otherwise cause a non-fast-
+      # forward reject). The marketplace.json regeneration is idempotent, so
+      # regenerating on top of main is safe. Retries up to 3 times to handle
+      # a transient push race without failing after a successful npm publish.
+      - name: Commit and push marketplace pointer (idempotent, safe push)
         run: |
-          if git diff --quiet -- .claude-plugin/marketplace.json; then
-            echo "Marketplace pointer already current; nothing to commit (idempotent no-op)."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Stash the regenerated marketplace.json before we move to main.
+          REGEN=$(git diff -- .claude-plugin/marketplace.json)
+
+          # Switch to latest origin/main.
+          git fetch origin main
+          git checkout -B main origin/main
+
+          # Re-apply the regenerated marketplace.json (it may already match main,
+          # in which case it is a no-op).
+          apm pack --offline --marketplace claude
+
+          if git diff --quiet -- .claude-plugin/marketplace.json; then
+            echo "Marketplace pointer already current on main; nothing to commit (idempotent no-op)."
+            exit 0
+          fi
+
           git add .claude-plugin/marketplace.json
           git commit -m "chore: advance marketplace pointer for ${{ github.event.release.tag_name }} [skip ci]"
-          git push origin HEAD:main
+
+          # Push with up to 3 retries to handle a transient concurrent push.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Marketplace pointer pushed successfully (attempt ${attempt})."
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; rebasing onto latest origin/main and retrying..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "::error::Failed to push marketplace pointer after 3 attempts."
+          exit 1

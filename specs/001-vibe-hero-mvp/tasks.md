@@ -87,9 +87,9 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Independent Test**: empty `VIBE_HERO_HOME` → any tool returns `SETUP_REQUIRED`; `save_config` → tools proceed; re-run skips setup (quickstart V0).
 
-- [ ] T022 [US0] Implement `save_config` + `get_config` tools (persist/read `Config`, clear gate, re-runnable without wiping progress — FR-031/033) in `packages/server/src/tools/config.ts`
-- [ ] T023 [US0] Author portable `vibe-hero-setup` skill (SKILL.md) — interactive Q&A (tools learning, offer cadence per/​session vs per/​topic vs off, proactive on/off, quiz length) → calls `save_config`, in `skills/vibe-hero-setup/SKILL.md`
-- [ ] T024 [P] [US0] Integration test V0: gate→setup→cleared, re-run skips, reconfigure preserves progress, in `packages/server/test/integration/us0-setup.test.ts`
+- [X] T022 [US0] Implement `save_config` + `get_config` tools (persist/read `Config`, clear gate, re-runnable without wiping progress — FR-031/033) in `packages/server/src/tools/config.ts`
+- [X] T023 [US0] Author portable `vibe-hero-setup` skill (SKILL.md) — interactive Q&A (tools learning, offer cadence per/​session vs per/​topic vs off, proactive on/off, quiz length) → calls `save_config`, in `skills/vibe-hero-setup/SKILL.md`
+- [X] T024 [P] [US0] Integration test V0: gate→setup→cleared, re-run skips, reconfigure preserves progress, in `packages/server/test/integration/us0-setup.test.ts`
 
 **Checkpoint**: first-run gate works end-to-end; config persisted.
 

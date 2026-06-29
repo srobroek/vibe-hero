@@ -4,13 +4,14 @@
  * This wires all 10 MCP tools into a single {@link TOOL_REGISTRY} that
  * `index.ts` iterates over to register them. Each module carries its real input
  * schema (from `schemas/tools.ts`) so the host-facing tool signatures are
- * already correct, but every `handler` is a placeholder returning a structured
- * "not implemented yet" result.
+ * already correct. `save_config` / `get_config` are now the real US-0
+ * implementations (imported from `./config.js`, T022); the remaining 8 handlers
+ * are still placeholders returning a structured "not implemented yet" result.
  *
- * Later tasks replace handlers in place (US-0 setup → save/get_config;
- * US-1 → start_quiz/submit_answer; US-2 → get_status/list_topics/get_guidance;
- * offers → record_observation/get_offer/record_offer_response). The registration
- * architecture and gate wiring delivered here stay unchanged.
+ * Later tasks replace the rest in place (US-1 → start_quiz/submit_answer;
+ * US-2 → get_status/list_topics/get_guidance; offers → record_observation/
+ * get_offer/record_offer_response). The registration architecture and gate
+ * wiring delivered here stay unchanged.
  *
  * Source of truth: specs/001-vibe-hero-mvp/contracts/mcp-tools.md.
  */
@@ -22,13 +23,12 @@ import {
   ListTopicsInputSchema,
   GetGuidanceInputSchema,
   StartQuizInputSchema,
-  SaveConfigInputSchema,
-  GetConfigInputSchema,
   RecordObservationInputSchema,
   GetOfferInputSchema,
   RecordOfferResponseInputSchema,
 } from "../schemas/tools.js";
 import { defineTool, type AnyToolModule, type ToolResult } from "./types.js";
+import { saveConfigTool, getConfigTool } from "./config.js";
 
 /**
  * `submit_answer`'s contract input is a *union* (deterministic answer XOR
@@ -117,16 +117,9 @@ export const TOOL_REGISTRY: readonly AnyToolModule[] = [
     "Grade one quiz item (deterministic answer or free-form host verdict) and update ability.",
     SubmitAnswerToolInputSchema,
   ),
-  placeholder(
-    "save_config",
-    "Persist setup configuration and clear the setup gate. Re-callable to update preferences.",
-    SaveConfigInputSchema,
-  ),
-  placeholder(
-    "get_config",
-    "Read the current configuration (or report its absence / gate state).",
-    GetConfigInputSchema,
-  ),
+  // Real US-0 implementations (T022); the other 8 remain placeholders.
+  saveConfigTool,
+  getConfigTool,
   placeholder(
     "record_observation",
     "Intake derived activity signals and map them to candidate offer topics. Never scores.",

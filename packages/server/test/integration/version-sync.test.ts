@@ -81,6 +81,14 @@ describe("cross-artifact version sync (spec 002, FR-017)", () => {
     // run. This guard resolves each entry exactly as release-please does and
     // asserts the file exists, so a wrong (or non-traversing) path fails CI
     // instead of shipping a half-bumped release. See release-please-config.json.
+    //
+    // Note which files are (and are NOT) in extra-files:
+    //   - apm.yml + plugin.json ARE bumped by release-please here — nothing else
+    //     touches their version.
+    //   - marketplace.json is deliberately NOT in extra-files: `apm pack`
+    //     regenerates its plugin version FROM apm.yml, and the CI staleness gate
+    //     enforces that. Adding it here would create two writers for one value.
+    //     The "all artifacts agree" test above still covers marketplace.json.
     const config = readJson<{
       packages: Record<
         string,

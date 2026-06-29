@@ -119,25 +119,25 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 ### Quiz + deterministic grading
 
-- [ ] T030 [P] [US1] Implement deterministic grading (MC exact, short-answer keyword/normalize) — reproducible (SC-004) in `packages/server/src/grading/deterministic.ts`
-- [ ] T031 [US1] Implement `start_quiz` tool (select 3–5 items via `engine/selection`, return `PresentedItem`s WITHOUT answer keys; create `QuizRecord`) in `packages/server/src/tools/startQuiz.ts` (depends on T011, T013, T015)
-- [ ] T032 [US1] Implement `submit_answer` tool (deterministic path): grade → `engine/elo` ability update → persist derived `Grade` only (no raw text, FR-018) → return guidance + ability before/after, in `packages/server/src/tools/submitAnswer.ts` (depends on T030, T010, T013)
-- [ ] T033 [P] [US1] Author portable `vibe-hero-quiz` skill (SKILL.md) — runs the start_quiz→present→submit_answer loop, in `skills/vibe-hero-quiz/SKILL.md`
+- [X] T030 [P] [US1] Implement deterministic grading (MC exact, short-answer keyword/normalize) — reproducible (SC-004) in `packages/server/src/grading/deterministic.ts`
+- [X] T031 [US1] Implement `start_quiz` tool (select 3–5 items via `engine/selection`, return `PresentedItem`s WITHOUT answer keys; create `QuizRecord`) in `packages/server/src/tools/startQuiz.ts` (depends on T011, T013, T015)
+- [X] T032 [US1] Implement `submit_answer` tool (deterministic path): grade → `engine/elo` ability update → persist derived `Grade` only (no raw text, FR-018) → return guidance + ability before/after, in `packages/server/src/tools/submitAnswer.ts` (depends on T030, T010, T013)
+- [X] T033 [P] [US1] Author portable `vibe-hero-quiz` skill (SKILL.md) — runs the start_quiz→present→submit_answer loop, in `skills/vibe-hero-quiz/SKILL.md`
 
 ### Observation → offer (trigger-only) + non-interrupting delivery
 
-- [ ] T034 [US1] Implement `record_observation` tool: match derived signals to topics via `TriggerSignal`, produce offer candidates, award NOTHING (FR-005/SC-003); accept `toolUseId` for correlation. **Scope note (analyze C2):** v1 ships the single real-time hook source only; two-source transcript-backfill correlation by `tool_use_id` (FR-017) is architecture-ready via `ObservationSource` (FR-016) and NOT built in v1. In `packages/server/src/tools/recordObservation.ts` (depends on T017/T018, T015)
-- [ ] T035 [US1] Implement offer engine + `OfferLedger` (cadence per-session/per-topic/off FR-020a; within-session decline suppression; **cross-session backoff + global mute** FR-020b) in `packages/server/src/observation/offers.ts`
-- [ ] T036 [US1] Implement `get_offer` + `record_offer_response` tools (resolve/suppress offer; record accept/decline/defer) in `packages/server/src/tools/offers.ts` (depends on T035)
-- [ ] T037 [US1] Author Claude Code **Stop hook** (thin shell → `get_offer` → surface end-of-work offer; all logic in MCP — E7) in `hooks/claude-code/stop-offer.sh` + document install
-- [ ] T038 [P] [US1] Integration tests V2/V3: usage-without-quiz scores nothing; offers only at end-of-work; cadence + within/cross-session suppression honored, in `packages/server/test/integration/us1-offers.test.ts`
-- [ ] T039 [P] [US1] e2e test V1: exercise topic → offer → accept → deterministic quiz → ability rises; identical answer ⇒ identical grade, in `packages/server/test/e2e/loop.test.ts`
+- [X] T034 [US1] Implement `record_observation` tool: match derived signals to topics via `TriggerSignal`, produce offer candidates, award NOTHING (FR-005/SC-003); accept `toolUseId` for correlation. **Scope note (analyze C2):** v1 ships the single real-time hook source only; two-source transcript-backfill correlation by `tool_use_id` (FR-017) is architecture-ready via `ObservationSource` (FR-016) and NOT built in v1. In `packages/server/src/tools/recordObservation.ts` (depends on T017/T018, T015)
+- [X] T035 [US1] Implement offer engine + `OfferLedger` (cadence per-session/per-topic/off FR-020a; within-session decline suppression; **cross-session backoff + global mute** FR-020b) in `packages/server/src/observation/offers.ts`
+- [X] T036 [US1] Implement `get_offer` + `record_offer_response` tools (resolve/suppress offer; record accept/decline/defer) in `packages/server/src/tools/offers.ts` (depends on T035)
+- [X] T037 [US1] Author Claude Code **Stop hook** (thin shell → `get_offer` → surface end-of-work offer; all logic in MCP — E7) in `hooks/claude-code/stop-offer.sh` + document install
+- [X] T038 [P] [US1] Integration tests V2/V3: usage-without-quiz scores nothing; offers only at end-of-work; cadence + within/cross-session suppression honored, in `packages/server/test/integration/us1-offers.test.ts`
+- [X] T039 [P] [US1] e2e test V1: exercise topic → offer → accept → deterministic quiz → ability rises; identical answer ⇒ identical grade, in `packages/server/test/e2e/loop.test.ts`
 
 ### v1 Claude Code content (≥3 topics — SC-009)
 
-- [ ] T040 [P] [US1] Author `content/claude-code/subagents.yaml` (tiers 100–500, trigger signals, deterministic items + difficulty tags)
-- [ ] T041 [P] [US1] Author `content/claude-code/context-management.yaml` (same shape)
-- [ ] T042 [P] [US1] Author `content/claude-code/planning.yaml` (same shape)
+- [X] T040 [P] [US1] Author `content/claude-code/subagents.yaml` (tiers 100–500, trigger signals, deterministic items + difficulty tags)
+- [X] T041 [P] [US1] Author `content/claude-code/context-management.yaml` (same shape)
+- [X] T042 [P] [US1] Author `content/claude-code/planning.yaml` (same shape)
 
 **Checkpoint**: the core adaptive loop runs end-to-end on real Claude Code content (ability moves; not yet graduating tiers).
 

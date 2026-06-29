@@ -1,0 +1,6 @@
+# typos (crate-ci) configuration.
+# "mis" is the prefix in legitimate hyphenated words our code comments use
+# (mis-graded, mis-served, mis-routed). typos flags the bare "mis" token as a
+# misspelling of "miss"/"mist"; allow it as a valid identifier/word.
+[default.extend-words]
+mis = "mis"

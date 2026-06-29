@@ -105,6 +105,14 @@ export type QuizRecord = z.infer<typeof QuizRecordSchema>;
  * id. Under `per_session`: max 1 offer; a decline sets `declinedThisSession`
  * and suppresses further offers. Under `per_topic`: at most one offer per
  * distinct {@link AbilityKey} per session.
+ *
+ * `candidateKeys` is the per-session pool of topics that observed activity has
+ * flagged as offer-worthy (accumulated by `record_observation` as signals
+ * arrive). `get_offer` — which receives no signals of its own — resolves the
+ * surfaced offer from this pool. It is distinct from `offeredTopicKeys`, which
+ * records topics that have ALREADY surfaced (driving the `per_topic` cadence cap
+ * and the cross-session backoff). Defaulted to `[]` so older persisted profiles
+ * read forward without migration.
  */
 export const OfferLedgerSchema = z.object({
   // Empty string denotes "no session bound yet" (fresh / reset profile); a real
@@ -113,6 +121,7 @@ export const OfferLedgerSchema = z.object({
   offersThisSession: z.number().int().nonnegative(),
   declinedThisSession: z.boolean(),
   offeredTopicKeys: z.array(AbilityKeySchema),
+  candidateKeys: z.array(AbilityKeySchema).default([]),
 });
 /** Per-session offer ledger. */
 export type OfferLedger = z.infer<typeof OfferLedgerSchema>;
@@ -189,6 +198,7 @@ export const emptyProfile = (now: string = new Date().toISOString()): Profile =>
     offersThisSession: 0,
     declinedThisSession: false,
     offeredTopicKeys: [],
+    candidateKeys: [],
   },
   backoff: {
     consecutiveDeclines: 0,

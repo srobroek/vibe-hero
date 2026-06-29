@@ -1,0 +1,313 @@
+# Topic: planning (claude-code)
+#
+# Covers Claude Code's planning mode (ExitPlanMode), the TodoWrite/TodoRead
+# task list as a planning primitive, when to plan vs. act, and how to
+# structure multi-step work. Tiers 100–500.
+
+id: planning
+class:
+  kind: tool
+  tool: claude-code
+title: Planning Mode & Task Management
+summary: >-
+  Using Claude Code's plan mode and the TodoWrite task list to structure complex
+  work — when to plan before acting, how to break tasks down, and how to
+  maintain progress across a long session.
+
+triggerSignals:
+  - tool: claude-code
+    match:
+      toolName: ExitPlanMode
+    weight: 1
+  - tool: claude-code
+    match:
+      toolName: TodoWrite
+    weight: 0.9
+  - tool: claude-code
+    match:
+      toolName: TodoRead
+    weight: 0.7
+  - tool: claude-code
+    match:
+      toolNamePattern: "^ExitPlanMode$"
+    weight: 1
+
+items:
+  # ── Tier 100 — Remember ──────────────────────────────────────────────────
+  - id: planning-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      What does Claude Code's "plan mode" mean in practice?
+    choices:
+      - id: a
+        text: >-
+          The model runs a special subprocess that generates a plan file
+      - id: b
+        text: >-
+          Claude Code reads files and reasons about a task without executing
+          any changes, then awaits approval before acting
+      - id: c
+        text: >-
+          A scheduled background job that plans the next day's work
+      - id: d
+        text: >-
+          A restricted mode where only Bash commands are allowed
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In plan mode, Claude Code explores the problem space (reading files,
+      thinking through the approach) without making any edits or running
+      commands. It presents the plan for user review. Calling ExitPlanMode
+      signals that planning is complete and implementation can begin.
+
+  - id: planning-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: >-
+      Which tool call signals that Claude Code is done planning and ready to
+      begin implementing?
+    choices:
+      - id: a
+        text: TodoWrite with status "in_progress"
+      - id: b
+        text: Bash with "start"
+      - id: c
+        text: ExitPlanMode
+      - id: d
+        text: Read with the implementation file path
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      ExitPlanMode is the explicit tool call that ends the planning phase and
+      transitions Claude Code into implementation. Observing this call in the
+      transcript is a strong signal that the agent has finished scoping the
+      work and is about to start making changes.
+
+  # ── Tier 200 — Understand ───────────────────────────────────────────────
+  - id: planning-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      Why should you mark a TodoWrite task as "in_progress" before starting it,
+      rather than marking it "completed" only when you finish?
+    choices:
+      - id: a
+        text: >-
+          The MCP server requires it to track billing
+      - id: b
+        text: >-
+          Marking in_progress signals to the user that work is happening and
+          creates a recovery checkpoint if the session is interrupted
+      - id: c
+        text: >-
+          It prevents other agents from picking up the same task
+      - id: d
+        text: >-
+          TodoWrite ignores status unless you use in_progress first
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The in_progress status serves two purposes: it shows the user that the
+      agent is actively working on something (not silently idle), and it leaves
+      a clear recovery marker if context is compacted or the session is
+      interrupted mid-task. If you only mark completed at the end, a
+      compaction event could erase all progress signals.
+
+  - id: planning-200-sa-a
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: short_answer
+    prompt: >-
+      What are the three valid status values for a task in the Claude Code
+      Todo list (TodoWrite)?
+    answerKey:
+      kind: keyword
+      anyOf:
+        - "pending, in_progress, completed"
+        - "pending in_progress completed"
+        - "pending"
+        - "in_progress"
+        - "completed"
+      normalize: lower
+    guidance: >-
+      The three Todo task statuses are: `pending` (not yet started),
+      `in_progress` (currently being worked on), and `completed` (done).
+      Transitioning through these statuses as you work lets both the user and
+      future context reconstruction understand what has been accomplished.
+
+  # ── Tier 300 — Apply ────────────────────────────────────────────────────
+  - id: planning-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      A user asks you to implement a new API endpoint. This requires: (1) adding
+      a route, (2) writing a handler, (3) adding a test, and (4) updating docs.
+      In what order should you use TodoWrite?
+    choices:
+      - id: a
+        text: >-
+          Write all four tasks at once before starting any of them; then mark
+          each in_progress → completed as you go
+      - id: b
+        text: >-
+          Write one task, complete it, then write the next task
+      - id: c
+        text: >-
+          Write all tasks and immediately mark them all completed to show the
+          full plan
+      - id: d
+        text: >-
+          Skip TodoWrite — four steps is small enough to hold in context
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The right pattern is to write all tasks upfront (creating the full
+      checklist), then work through them one at a time: mark each in_progress
+      before starting, completed when done. Writing tasks one at a time loses
+      the upfront clarity; marking all completed immediately is dishonest.
+      Even four tasks benefits from explicit tracking — sessions can be
+      interrupted.
+
+  - id: planning-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      You are in plan mode researching a complex feature request. You have read
+      three files. The user has NOT yet approved your plan. Should you call
+      ExitPlanMode and start editing?
+    choices:
+      - id: a
+        text: >-
+          Yes — you have enough information to proceed
+      - id: b
+        text: >-
+          Yes — plan mode is just a suggestion, not a gate
+      - id: c
+        text: >-
+          No — ExitPlanMode should only be called after presenting the plan
+          and receiving user confirmation to proceed
+      - id: d
+        text: >-
+          No — you must read every file in the repo before exiting plan mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Plan mode is a human-in-the-loop gate. Its purpose is to surface the
+      proposed approach for review before any changes are made. Calling
+      ExitPlanMode without user confirmation undermines that gate. The correct
+      flow is: explore → present plan → wait for approval → ExitPlanMode →
+      implement.
+
+  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
+  - id: planning-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      Mid-way through a large implementation, context is compacted. You had five
+      Todo tasks; two were completed. What should you do immediately after
+      compaction to recover correctly?
+    choices:
+      - id: a
+        text: >-
+          Restart the entire task from scratch — compaction invalidates all
+          previous work
+      - id: b
+        text: >-
+          Call TodoRead to inspect the current task list, confirm which tasks
+          are completed, then resume from the first pending/in_progress task
+      - id: c
+        text: >-
+          Trust that the summary captured everything and continue from where
+          you think you left off
+      - id: d
+        text: >-
+          Ask the user to list what was done
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Todo list is the canonical state that survives compaction — it is
+      persisted separately from the conversation history. After compaction,
+      call TodoRead first to see what is completed vs. pending, then continue
+      from the first incomplete task. "Trusting the summary" risks duplicating
+      completed work or skipping tasks the summary glossed over.
+
+  - id: planning-400-sa-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: short_answer
+    prompt: >-
+      A task is straightforward and can be completed in a single tool call.
+      Should you use TodoWrite for it? Give the principle behind your answer.
+    answerKey:
+      kind: keyword
+      anyOf:
+        - "no"
+        - "not necessary"
+        - "unnecessary"
+        - "simple tasks"
+        - "single step"
+        - "overhead"
+      normalize: lower
+    guidance: >-
+      TodoWrite adds value for multi-step or interruptible work. For a single,
+      simple, instantly-completable task it is unnecessary overhead — the tool
+      call costs context without providing a meaningful recovery checkpoint or
+      progress signal. Apply TodoWrite when the work has meaningful sub-steps,
+      spans multiple files, or could be interrupted.
+
+  # ── Tier 500 — Evaluate ─────────────────────────────────────────────────
+  - id: planning-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A teammate's workflow always enters plan mode for every task, even trivial
+      one-liner fixes. Evaluate this approach and identify the main cost.
+    choices:
+      - id: a
+        text: >-
+          Good discipline — plan mode prevents all implementation mistakes
+      - id: b
+        text: >-
+          Acceptable — the overhead is negligible because plan mode is free
+      - id: c
+        text: >-
+          Over-engineering: for trivial changes plan mode adds a round-trip
+          latency and a user-confirmation burden with no commensurate reduction
+          in risk
+      - id: d
+        text: >-
+          Dangerous — plan mode can modify files if not used carefully
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Plan mode is most valuable for non-trivial changes where the approach
+      is not obvious and mistakes are costly. Applying it to trivial fixes
+      (renaming a variable, fixing a typo) imposes a confirmation round-trip
+      and interrupts flow without meaningful risk reduction. The judgment call
+      is: does the complexity/risk of this change warrant a planning gate? If
+      not, proceed directly. Good tooling use requires calibrating tool
+      overhead against the value it delivers.

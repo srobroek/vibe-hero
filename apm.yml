@@ -23,7 +23,6 @@ dependencies:
   - srobroek/agentic-packages/packages/mcp-repomix
   - srobroek/agentic-packages/packages/mcp-serena
   - srobroek/agentic-packages/packages/data-ai
-  - srobroek/agentic-packages/packages/governance
   - srobroek/agentic-packages/packages/language-typescript
   - srobroek/agentic-packages/packages/language-steering-typescript
   - srobroek/agentic-packages/packages/typescript-quality

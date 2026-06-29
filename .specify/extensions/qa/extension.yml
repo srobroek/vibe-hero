@@ -1,0 +1,32 @@
+schema_version: "1.0"
+
+extension:
+  id: "qa"
+  name: "QA Testing"
+  version: "1.0.0"
+  description: "Systematic QA testing with browser-driven or CLI-based validation of acceptance criteria from spec"
+  author: "arunt14"
+  repository: "https://github.com/arunt14/spec-kit-qa"
+  license: "MIT"
+  homepage: "https://github.com/arunt14/spec-kit-qa"
+
+requires:
+  speckit_version: ">=0.1.0"
+
+provides:
+  commands:
+    - name: "speckit.qa.run"
+      file: "commands/run.md"
+      description: "Run systematic QA testing against the implemented feature"
+
+hooks:
+  after_implement:
+    command: "speckit.qa.run"
+    optional: true
+    prompt: "Run QA testing?"
+    description: "Validates acceptance criteria through browser-driven or CLI-based testing"
+
+tags:
+  - "code"
+  - "testing"
+  - "qa"

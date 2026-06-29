@@ -1,0 +1,27 @@
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # Single source of releases — do NOT cut GitHub Releases or tags by hand.
+          # On merge of the release PR, release-please tags the version AND publishes a
+          # GitHub Release (with the generated changelog as the body); `extra-files`
+          # bumps extension.yml's extension.version in the same PR.
+          #
+          # Config: release-please-config.json + .release-please-manifest.json (repo root).
+          # The manifest is seeded at 0.0.0; the first 0.1.0 release is driven by a
+          # `Release-As: 0.1.0` commit footer so release-please itself creates the
+          # 0.1.0 tag + GitHub Release (the catalog download_url depends on that release
+          # archive existing).
+          token: ${{ secrets.GITHUB_TOKEN }}

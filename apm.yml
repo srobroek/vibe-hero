@@ -1,0 +1,25 @@
+name: vibe-hero
+version: 1.0.0
+description: APM project for vibe-hero
+author: Sjors Robroek
+targets:
+- agent-skills
+- claude
+- codex
+dependencies:
+  apm:
+  - srobroek/agentic-packages/packages/speckit
+  - srobroek/agentic-packages/packages/core
+  - srobroek/agentic-packages/packages/mcp-codebase-memory
+  - srobroek/agentic-packages/packages/mcp-context7
+  - srobroek/agentic-packages/packages/mcp-package-version
+  - srobroek/agentic-packages/packages/mcp-repomix
+  - srobroek/agentic-packages/packages/mcp-serena
+  - srobroek/agentic-packages/packages/data-ai
+  - srobroek/agentic-packages/packages/governance
+  - srobroek/agentic-packages/packages/language-typescript
+  - srobroek/agentic-packages/packages/language-steering-typescript
+  - srobroek/agentic-packages/packages/typescript-quality
+  mcp: []
+includes: auto
+scripts: {}

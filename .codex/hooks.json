@@ -1,0 +1,194 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git switch -c*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git switch --create*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git checkout -b*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git checkout -B*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git worktree add*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git merge*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git pull*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/mcp-repomix/scripts/repomix-refresh-snapshot.sh",
+            "async": true,
+            "timeout": 30,
+            "if": "Bash(git rebase*)"
+          }
+        ],
+        "_apm_source": "mcp-repomix"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/speckit/scripts/speckit-task-commit-check.sh",
+            "if": "Bash(git commit*)"
+          }
+        ],
+        "_apm_source": "speckit"
+      },
+      {
+        "matcher": "apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/speckit/scripts/speckit-task-issue-sync.sh"
+          }
+        ],
+        "_apm_source": "speckit"
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/code-intelligence/scripts/reindex-after-commit.sh",
+            "if": "Bash(git commit*)"
+          }
+        ],
+        "_apm_source": "code-intelligence"
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx protect-mcp@0.5.5 sign --tool \"$TOOL_NAME\" --input \"$TOOL_INPUT\" --output \"$TOOL_OUTPUT\" --receipts \"${PROTECT_MCP_RECEIPTS:-./receipts/}\" --key \"${PROTECT_MCP_KEY:-./protect-mcp.key}\""
+          }
+        ],
+        "_apm_source": "protect-mcp"
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx protect-mcp@0.5.5 sign --tool \"$TOOL_NAME\" --input \"$TOOL_INPUT\" --output \"$TOOL_OUTPUT\" --receipts \"${REVIEW_GOVERNANCE_RECEIPTS:-./review-receipts/}\" --key \"${REVIEW_GOVERNANCE_KEY:-./review-governance.key}\""
+          }
+        ],
+        "_apm_source": "review-agent-governance"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx protect-mcp@0.5.5 evaluate --policy \"${PROTECT_MCP_POLICY:-./protect.cedar}\" --tool \"$TOOL_NAME\" --input \"$TOOL_INPUT\" --fail-on-missing-policy false"
+          }
+        ],
+        "_apm_source": "protect-mcp"
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -f \"${REVIEW_APPROVAL_FLAG:-./.review-approved}\" ]; then exit 0; fi; npx protect-mcp@0.5.5 evaluate --policy \"${REVIEW_GOVERNANCE_POLICY:-./review-governance.cedar}\" --tool \"$TOOL_NAME\" --input \"$TOOL_INPUT\" --fail-on-missing-policy false"
+          }
+        ],
+        "_apm_source": "review-agent-governance"
+      },
+      {
+        "matcher": "apply_patch|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".codex/hooks/agent-coder/scripts/coder-delegation-reminder.sh"
+          }
+        ],
+        "_apm_source": "agent-coder"
+      }
+    ]
+  }
+}

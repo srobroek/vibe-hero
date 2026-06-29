@@ -1,0 +1,47 @@
+schema_version: "1.0"
+
+extension:
+  id: "fix-findings"
+  name: "Fix Findings"
+  version: "1.0.0"
+  description: "Automated analyze-fix-reanalyze loop that resolves spec findings until clean"
+  author: "Quratulain-bilal"
+  repository: "https://github.com/Quratulain-bilal/spec-kit-fix-findings"
+  license: "MIT"
+  homepage: "https://github.com/Quratulain-bilal/spec-kit-fix-findings"
+
+requires:
+  speckit_version: ">=0.1.0"
+
+  commands:
+    - "speckit.analyze"
+    - "speckit.implement"
+    - "speckit.tasks"
+
+provides:
+  commands:
+    - name: "speckit.fix-findings.run"
+      file: "commands/fix-findings.md"
+      description: "Iteratively analyze and fix spec findings until no issues remain"
+      aliases: ["speckit.fix-findings"]
+
+hooks:
+  after_implement:
+    command: "speckit.fix-findings.run"
+    optional: true
+    prompt: "Run fix-findings to analyze and resolve spec findings automatically?"
+    description: "Post-implementation automated finding resolution"
+
+tags:
+  - "code"
+  - "analysis"
+  - "quality"
+  - "automation"
+  - "findings"
+
+defaults:
+  max_iterations: 5
+  fix_severity:
+    critical: true
+    warning: true
+    info: false

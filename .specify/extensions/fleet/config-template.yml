@@ -1,0 +1,37 @@
+# Fleet Orchestrator Configuration
+# Copy this file to .specify/extensions/fleet/fleet-config.yml and customize.
+
+# Parallel execution settings
+parallel:
+  # Maximum number of subagents dispatched simultaneously during Plan & Implement phases.
+  # Tasks marked [P] in tasks.md that form independent groups will be fanned out
+  # up to this limit. Range: 1-3.
+  max_concurrency: 3
+
+# Model preferences
+# On first run, the fleet will ask you to configure these.
+# Set "auto" to be prompted each time, or specify exact model names for your IDE.
+#
+# Examples by platform:
+#   VS Code Copilot:  "Claude Opus 4.6 (copilot)", "Claude Sonnet 4.6 (copilot)"
+#   Claude Code:      "claude-sonnet-4-20250514", "claude-opus-4-20250514"
+#   Cursor:           "claude-sonnet-4", "gpt-4o"
+#   Other:            Use whatever model identifier your IDE supports
+models:
+  # Primary model for the fleet orchestrator (Phase 1-6, 8-10)
+  # Set to "auto" to use whatever model the IDE defaults to.
+  primary: "auto"
+
+  # Review model (Phase 7) -- should be DIFFERENT from primary for blind-spot detection.
+  # Set to "ask" to be prompted on first run.
+  # Can be a single string or a list (tries in order until one is available).
+  review: "ask"
+
+# Verify extension settings
+verify:
+  # If the verify extension is not installed, prompt the user to install it.
+  # Set to false to always skip Phase 9 (Verify).
+  auto_prompt_install: true
+
+  # URL for the verify extension archive (used in the install prompt).
+  install_url: "https://github.com/ismaelJimenez/spec-kit-verify/archive/refs/tags/v1.0.3.zip"

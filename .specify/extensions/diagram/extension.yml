@@ -1,0 +1,39 @@
+schema_version: "1.0"
+
+extension:
+  id: diagram
+  name: "Spec Diagram"
+  version: "1.0.0"
+  description: "Auto-generate Mermaid diagrams of SDD workflow state, feature progress, and task dependencies"
+  author: "Quratulain-bilal"
+  repository: "https://github.com/Quratulain-bilal/spec-kit-diagram-"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.4.0"
+
+provides:
+  commands:
+    - name: speckit.diagram.workflow
+      file: commands/speckit.diagram.workflow.md
+      description: "Generate a Mermaid flowchart of the full SDD workflow for the current project"
+    - name: speckit.diagram.status
+      file: commands/speckit.diagram.status.md
+      description: "Generate a Mermaid diagram showing feature progress across SDD phases"
+    - name: speckit.diagram.dependencies
+      file: commands/speckit.diagram.dependencies.md
+      description: "Generate a Mermaid DAG of task dependencies from tasks.md"
+
+hooks:
+  after_tasks:
+    command: speckit.diagram.dependencies
+    optional: true
+    prompt: "Generate task dependency diagram after task breakdown?"
+    description: "Auto-generate dependency DAG after tasks are created"
+
+tags:
+  - "diagram"
+  - "mermaid"
+  - "visualization"
+  - "workflow"
+  - "dependencies"

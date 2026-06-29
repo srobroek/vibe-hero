@@ -72,4 +72,31 @@ describe("cross-artifact version sync (spec 002, FR-017)", () => {
       "packages/vibe-hero-plugin/apm.yml version must match packages/server/package.json",
     ).toBe(npmVersion);
   });
+
+  it("every release-please extra-file path resolves to a real file (F1)", () => {
+    // release-please resolves each package's `extra-files` path RELATIVE TO THE
+    // PACKAGE DIR (it does path.join(packageDir, extraFilePath) before fetching
+    // from the branch). A repo-root-relative path therefore gets the package dir
+    // prepended and silently 404s — the version bump no-ops without failing the
+    // run. This guard resolves each entry exactly as release-please does and
+    // asserts the file exists, so a wrong (or non-traversing) path fails CI
+    // instead of shipping a half-bumped release. See release-please-config.json.
+    const config = readJson<{
+      packages: Record<
+        string,
+        { "extra-files"?: Array<{ path: string }> }
+      >;
+    }>("release-please-config.json");
+
+    for (const [pkgDir, pkgCfg] of Object.entries(config.packages)) {
+      for (const entry of pkgCfg["extra-files"] ?? []) {
+        // Mirror release-please: join(packageDir, entry.path), normalized.
+        const resolved = resolve(REPO_ROOT, pkgDir, entry.path);
+        expect(
+          () => readFileSync(resolved, "utf8"),
+          `extra-file '${entry.path}' (package '${pkgDir}') must resolve to a real file at ${resolved}`,
+        ).not.toThrow();
+      }
+    }
+  });
 });

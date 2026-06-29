@@ -103,6 +103,15 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(ci).toContain("pnpm --filter @vibe-hero/server test");
     });
 
+    it("tests across the Node range the package supports (engines.node floor)", () => {
+      // Regression guard: the server is published and launched via `npx` on
+      // arbitrary machines, and declares `engines.node: >=18`. CI must exercise
+      // the floor (18) plus current LTS lines so a runtime dependency on a
+      // newer Node API (e.g. fs.globSync, Node 22+) cannot slip through a
+      // single-version build. See loader.ts walkYamlFiles.
+      expect(ci).toMatch(/matrix:\s*\n\s*node:\s*\[18,\s*20,\s*22\]/);
+    });
+
     it("regenerates artifacts and enforces a staleness/diff gate (FR-015)", () => {
       expect(ci).toContain("apm pack");
       expect(ci).toMatch(/git diff --exit-code/);

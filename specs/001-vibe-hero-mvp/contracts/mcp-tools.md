@@ -1,0 +1,78 @@
+# Contract: vibe-hero MCP tools
+
+The MCP server is the product's external interface and the **enforcement chokepoint** (gating, scoring, persistence). The host agent calls these tools; portable skills steer when/how. All inputs/outputs are Zod-validated. Tools are pure with respect to the model — **no MCP sampling is used** (unsupported in CC/Codex); free-form grading is a two-call host-agent handshake.
+
+Every tool may return the gate sentinel instead of its normal result:
+
+```jsonc
+// SETUP_REQUIRED gate (FR-032) — returned by any tool when profile.config is absent
+{ "status": "SETUP_REQUIRED",
+  "message": "Run vibe-hero setup first.",
+  "setupSkill": "vibe-hero-setup" }
+```
+
+## `get_status`
+Show the user's standing for a tool (or all). Read-only.
+- **in**: `{ tool?: ToolId }`
+- **out**: `{ tool: ToolId, topics: Array<{ key, title, tier, status: "current"|"due_for_review"|"not_started", ability }>, dueForReview: string[], suggestions: Array<{ key, reason }> }`
+- Covers US-2 status; never requires telemetry (SC-011).
+
+## `list_topics`
+Enumerate catalog topics, optionally filtered. Read-only.
+- **in**: `{ tool?: ToolId, class?: "general"|"tool" }`
+- **out**: `{ topics: Array<{ key, id, class, title, tiers: Tier[], itemCount }>, catalogVersion: string }`
+
+## `get_guidance`
+Return teaching guidance + what-to-learn-next for a topic or the weakest area. Read-only.
+- **in**: `{ key?: AbilityKey, tool?: ToolId }`  (no `key` ⇒ pick weakest/stale for `tool`)
+- **out**: `{ key, title, currentTier, guidance: string, nextStep: { action: "quiz"|"read", detail } }`
+- Covers US-2 guidance.
+
+## `start_quiz`
+Begin a quiz session for a topic (offered or on-demand). Selects 3–5 items by difficulty-targeting (research §OD-005).
+- **in**: `{ key: AbilityKey, length?: 3|4|5 }`
+- **out**: `{ quizId: string, items: PresentedItem[] }`
+  - `PresentedItem` = `{ itemId, tier, type, prompt, choices?: Choice[] }` — **answer keys/rubrics are NOT included** for deterministic items; for `free_form`, includes `rubric` + `referenceAnswer` so the host agent can judge (see `submit_answer`).
+- Covers US-1/US-2 quiz start; partial sessions never count (only completed via `submit_answer` accumulate).
+
+## `submit_answer`
+Grade one item and update ability. The core scoring entry point.
+- **in (deterministic)**: `{ quizId, itemId, answer: { choiceId?: string, text?: string } }`
+- **in (free-form, host-agent verdict)**: `{ quizId, itemId, verdict: { pass: boolean, score?: number /*0..1*/, notes?: string } }`
+  - The host agent computes the verdict from the rubric/referenceAnswer returned by `start_quiz`, then reports it here (FR-012/013). Steering instructs honest judging.
+- **out**: `{ grade: Grade, score: number, correctAnswer?: string, guidance: string, ability: { before, after }, graduation?: { changed: boolean, tier?: Tier, status?: string, reason?: string } }`
+- Engine grades deterministic types itself (FR-011, instant, reproducible). Updates Elo, applies hysteresis+dwell, may emit a `graduation` change. Persists only the derived `Grade` (no raw answer text — FR-018).
+
+## `save_config`
+Persist the configuration produced by the setup skill Q&A. Clears the gate.
+- **in**: `{ toolsLearning: ToolId[], offerCadence: "off"|"per_session"|"per_topic", proactiveOffers: boolean, quizLength?: 3|4|5 }`
+- **out**: `{ ok: true, config: Config }`
+- Covers US-0 (FR-031/033). Re-callable to update prefs; never wipes learning progress.
+
+## `get_config`
+Read current config (or absence). Used by skills/hooks to know gate state.
+- **in**: `{}` → **out**: `{ configured: boolean, config?: Config }`
+
+## `record_observation` (trigger-only; never scores)
+Intake for the hook/transcript observation source. Maps activity → candidate topics for offers.
+- **in**: `{ tool: ToolId, signals: Array<{ toolName?, mcpTool?, success?: boolean, toolUseId?: string }>, sessionId: string }`
+- **out**: `{ offerCandidates: Array<{ key, title, reason }> }`  (empty if cadence exhausted / proactiveOffers off / topic recently offered)
+- Stores only derived signals (FR-018); applies `OfferLedger` cadence (FR-020a). Awards **nothing** (FR-005, SC-003).
+
+## `get_offer`
+Resolve whether to surface an end-of-work offer (called by the Stop hook path).
+- **in**: `{ sessionId: string, tool: ToolId }`
+- **out**: `{ offer?: { key, title, prompt: string }, suppressed?: "cadence"|"declined"|"offers_off"|"no_candidate" }`
+
+## `record_offer_response`
+Record accept/decline so cadence + anti-nag are honored.
+- **in**: `{ sessionId, key, response: "accept"|"decline"|"defer" }`
+- **out**: `{ ok: true }` — a `decline` suppresses further offers this session (FR-020).
+
+---
+
+### Notes
+- All tool results are JSON-serializable and Zod-validated both directions.
+- `AbilityKey` is the serialized `(class, topicId)`; `ToolId`/`Tier` per `data-model.md`.
+- The gate (`SETUP_REQUIRED`) precedes every behavior except `get_config`/`save_config`.
+- Grading determinism: identical deterministic answer ⇒ identical grade (SC-004). Free-form verdicts are host-judged and recorded verbatim as a binary/continuous `score`.

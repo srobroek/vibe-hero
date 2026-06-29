@@ -12,21 +12,27 @@
  * profile's observation/offer state. Gated (FR-032) — `index.ts` returns
  * SETUP_REQUIRED before the handler runs when unconfigured.
  *
+ * Catalog source: resolves via {@link resolveCatalog} (fresh-fetch → cache →
+ * bundled, T054). With no `VIBE_HERO_CONTENT_URL` configured this is exactly the
+ * prior bundled behavior; when a source is configured the reported
+ * `catalogVersion` advances after a published update (SC-007). All remote
+ * failures degrade silently to cache/bundled (FR-027).
+ *
  * Filters:
  * - `class` ("general" | "tool") matches a topic's `class.kind`.
  * - `tool` keeps `general` topics (they apply to every tool) plus tool-scoped
  *   topics whose tool matches — the same scoping rule `get_status` uses.
  *
- * Exposed as a `dirOverride`-closing factory mirroring `config.ts` (the catalog
- * itself ignores the override; the seam is kept uniform across tool factories so
- * the registry and tests wire every tool identically).
+ * Exposed as a `(dirOverride, resolver)` factory: `dirOverride` flows to the
+ * content-cache dir (sibling of the profile home), and `resolver` is the catalog
+ * source seam (defaults to {@link resolveCatalog}) so tests can inject a fake
+ * fetch/cache without touching the network.
  *
  * Source of truth: specs/001-vibe-hero-mvp/contracts/mcp-tools.md (`list_topics`),
- * spec.md US-2 / FR-025 / SC-007.
+ * spec.md US-2 / FR-025 / FR-026 / FR-027 / SC-006 / SC-007.
  */
 
-import { loadBundledCatalog } from "../catalog/bundled/index.js";
-import { buildManifest } from "../catalog/loader.js";
+import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import { abilityKey } from "../schemas/common.js";
 import type { Topic } from "../schemas/content.js";
 import {
@@ -38,6 +44,15 @@ import {
 import { defineTool, type AnyToolModule } from "./types.js";
 import { topicInScope } from "./us2/standing.js";
 
+/**
+ * Catalog-resolution seam for {@link makeListTopicsTool}. Mirrors
+ * {@link resolveCatalog}'s signature so tests can inject a fake fetch/cache while
+ * production uses the real fresh-fetch → cache → bundled resolution.
+ */
+export type CatalogResolver = (
+  dirOverride?: string,
+) => Promise<ResolvedCatalog>;
+
 /** The narrowed `class` discriminator surfaced in a {@link ListTopicsRow}. */
 const classKind = (topic: Topic): "general" | "tool" => topic.class.kind;
 
@@ -48,23 +63,27 @@ const topicTiers = (topic: Topic): ListTopicsRow["tiers"] =>
 /**
  * Build the `list_topics` tool module (US-2).
  *
- * @param _dirOverride - Profile-directory override (test seam); unused here (the
- *   catalog is read-only and not under the profile home), kept for a uniform
- *   factory signature across the tool modules.
+ * @param dirOverride - Profile-home override (test seam); flows to the content
+ *   cache dir used by {@link resolveCatalog}.
+ * @param resolver - Catalog-resolution seam (test seam); defaults to
+ *   {@link resolveCatalog} (fresh-fetch → cache → bundled). Tests inject a fake
+ *   resolver/fetch so no real network is hit.
  * @returns The erased registry entry for `list_topics`.
  */
-export const makeListTopicsTool = (_dirOverride?: string): AnyToolModule =>
+export const makeListTopicsTool = (
+  dirOverride?: string,
+  resolver: CatalogResolver = resolveCatalog,
+): AnyToolModule =>
   defineTool({
     name: "list_topics",
     description:
       "Enumerate catalog topics, optionally filtered by tool or class. Read-only.",
     inputSchema: ListTopicsInputSchema,
     handler: async (input: ListTopicsInput): Promise<ListTopicsResult> => {
-      const { topics } = loadBundledCatalog();
-
-      // `catalogVersion` is derived from the FULL catalog, independent of the
-      // caller's filter, so the reported version is stable across queries.
-      const { version } = buildManifest(topics);
+      // Resolve via fresh-fetch → cache → bundled (T054). `catalogVersion` is
+      // the winning source's version, independent of the caller's filter, so it
+      // stays stable across queries and advances after a published update.
+      const { topics, catalogVersion } = await resolver(dirOverride);
 
       const filtered = topics
         .filter((topic) => topicInScope(topic, input.tool))
@@ -81,7 +100,7 @@ export const makeListTopicsTool = (_dirOverride?: string): AnyToolModule =>
         itemCount: topic.items.length,
       }));
 
-      return { topics: rows, catalogVersion: version };
+      return { topics: rows, catalogVersion };
     },
   });
 

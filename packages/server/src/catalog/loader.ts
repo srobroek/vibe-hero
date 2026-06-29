@@ -71,7 +71,44 @@ const formatZodError = (filePath: string, error: z.ZodError): string => {
 };
 
 /**
+ * Parse + Zod-validate a single topic from in-memory YAML text into a
+ * {@link Topic}. This is the shared content-validation core used by BOTH the
+ * on-disk loader ({@link loadTopicFromYaml}) and the network fetcher
+ * (`fetcher.ts`), so fetched content runs through the **exact same**
+ * {@link TopicSchema} validation before it can ever be cached or served
+ * (research E8, FR-004).
+ *
+ * @param raw - The YAML document text.
+ * @param sourceLabel - A label for diagnostics (a file path or a URL); appears
+ *   in the thrown error messages so failures stay path/source-qualified.
+ * @returns The validated topic.
+ * @throws {Error} with a source-qualified, human-readable diagnostic if the text
+ *   is not valid YAML or fails {@link TopicSchema} validation (FR-004). A
+ *   malformed topic is rejected outright — never partially returned.
+ */
+export const parseTopicYaml = (raw: string, sourceLabel: string): Topic => {
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(raw, { filename: sourceLabel });
+  } catch (cause) {
+    const reason = cause instanceof Error ? cause.message : String(cause);
+    throw new Error(`Invalid YAML in ${sourceLabel}: ${reason}`, { cause });
+  }
+
+  const result = TopicSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(formatZodError(sourceLabel, result.error), {
+      cause: result.error,
+    });
+  }
+  return result.data;
+};
+
+/**
  * Read, parse, and validate a single topic YAML file into a {@link Topic}.
+ *
+ * Thin IO wrapper over {@link parseTopicYaml}: it only adds the file read; the
+ * parse + validation (and thus all diagnostics) are shared with the fetcher.
  *
  * @param filePath - Path to a `.yaml`/`.yml` file describing one topic × class.
  * @returns The validated topic.
@@ -90,22 +127,7 @@ export const loadTopicFromYaml = (filePath: string): Topic => {
       cause,
     });
   }
-
-  let parsed: unknown;
-  try {
-    parsed = parseYaml(raw, { filename: filePath });
-  } catch (cause) {
-    const reason = cause instanceof Error ? cause.message : String(cause);
-    throw new Error(`Invalid YAML in ${filePath}: ${reason}`, { cause });
-  }
-
-  const result = TopicSchema.safeParse(parsed);
-  if (!result.success) {
-    throw new Error(formatZodError(filePath, result.error), {
-      cause: result.error,
-    });
-  }
-  return result.data;
+  return parseTopicYaml(raw, filePath);
 };
 
 /**

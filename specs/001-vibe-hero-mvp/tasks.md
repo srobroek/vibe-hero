@@ -181,9 +181,9 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 **Independent Test**: no network → bundled quizzes succeed; newer published catalog → fetched+cached+served; unreachable → cached/bundled, no user-facing error (quickstart V5).
 
-- [ ] T053 [US5] Implement GitHub catalog fetcher (download-only) + local cache with version/ETag under `~/.vibe-hero/content/`, periodic refresh (FR-026), in `packages/server/src/catalog/fetcher.ts`
-- [ ] T054 [US5] Wire resolution order fetch→cache→bundled with **Zod validation of fetched content before cache** and silent fallback on unreachable/invalid source (FR-027, E8), extending `catalog/loader.ts`
-- [ ] T055 [P] [US5] Integration test V5: offline serves bundled (SC-006); update picked up (SC-007); unreachable/malformed → fallback, no error, in `packages/server/test/integration/us5-content.test.ts`
+- [X] T053 [US5] Implement GitHub catalog fetcher (download-only) + local cache with version/ETag under `~/.vibe-hero/content/`, periodic refresh (FR-026), in `packages/server/src/catalog/fetcher.ts`
+- [X] T054 [US5] Wire resolution order fetch→cache→bundled with **Zod validation of fetched content before cache** and silent fallback on unreachable/invalid source (FR-027, E8), extending `catalog/loader.ts`
+- [X] T055 [P] [US5] Integration test V5: offline serves bundled (SC-006); update picked up (SC-007); unreachable/malformed → fallback, no error, in `packages/server/test/integration/us5-content.test.ts`
 
 **Checkpoint**: content delivery resilient + updatable independent of releases.
 

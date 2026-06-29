@@ -12,12 +12,12 @@
       "extra-files": [
         {
           "type": "json",
-          "path": "../vibe-hero-plugin/.claude-plugin/plugin.json",
+          "path": "/packages/vibe-hero-plugin/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {
           "type": "generic",
-          "path": "../vibe-hero-plugin/apm.yml"
+          "path": "/packages/vibe-hero-plugin/apm.yml"
         }
       ]
     }

@@ -74,21 +74,26 @@ describe("cross-artifact version sync (spec 002, FR-017)", () => {
   });
 
   it("every release-please extra-file path resolves to a real file (F1)", () => {
-    // release-please resolves each package's `extra-files` path RELATIVE TO THE
-    // PACKAGE DIR (it does path.join(packageDir, extraFilePath) before fetching
-    // from the branch). A repo-root-relative path therefore gets the package dir
-    // prepended and silently 404s — the version bump no-ops without failing the
-    // run. This guard resolves each entry exactly as release-please does and
-    // asserts the file exists, so a wrong (or non-traversing) path fails CI
-    // instead of shipping a half-bumped release. See release-please-config.json.
+    // Mirror release-please's actual path resolution (src/strategies/base.ts
+    // `addPath`) so a misconfigured extra-file fails CI instead of silently
+    // no-op'ing a version bump:
+    //   - A path WITH a leading "/" (or when the package is the repo root ".")
+    //     is repo-root-relative: the leading slash is stripped and the package
+    //     dir is NOT prepended.
+    //   - Otherwise the path is STRING-CONCATENATED onto the package dir (NOT
+    //     path.join — so "../" is NOT normalized).
+    //   - release-please then REJECTS any "." / ".." segment ("illegal pathing
+    //     characters"), so "../" escapes do not work — they throw at release
+    //     time. plugin.json + apm.yml live outside packages/server, so they MUST
+    //     use leading-slash repo-root paths.
     //
-    // Note which files are (and are NOT) in extra-files:
-    //   - apm.yml + plugin.json ARE bumped by release-please here — nothing else
+    // Which files are (and are NOT) in extra-files:
+    //   - apm.yml + plugin.json ARE bumped by release-please — nothing else
     //     touches their version.
-    //   - marketplace.json is deliberately NOT in extra-files: `apm pack`
-    //     regenerates its plugin version FROM apm.yml, and the CI staleness gate
-    //     enforces that. Adding it here would create two writers for one value.
-    //     The "all artifacts agree" test above still covers marketplace.json.
+    //   - marketplace.json is deliberately NOT here: `apm pack` regenerates its
+    //     plugin version FROM apm.yml and the CI staleness gate enforces it.
+    //     Adding it would create two writers for one value. The "all artifacts
+    //     agree" test above still covers marketplace.json.
     const config = readJson<{
       packages: Record<
         string,
@@ -96,10 +101,31 @@ describe("cross-artifact version sync (spec 002, FR-017)", () => {
       >;
     }>("release-please-config.json");
 
+    // The escape guard from release-please's addPath (base.ts) — rejects any
+    // "."/".."/"~" segment or absolute-after-join path.
+    const ILLEGAL = /((^|\/)\.{1,2}|^~|^\/*)+\//;
+
+    // Faithful port of addPath: returns the repo-root-relative path release-
+    // please will fetch, or throws the same "illegal pathing" error it would.
+    const addPath = (pkgDir: string, file: string): string => {
+      let f: string;
+      if (!pkgDir || pkgDir === "." || file.startsWith("/")) {
+        f = file.replace(/^\/+/, "");
+      } else {
+        f = `${pkgDir.replace(/\/+$/, "")}/${file}`;
+      }
+      if (ILLEGAL.test(f)) {
+        throw new Error(`illegal pathing characters in path: ${f}`);
+      }
+      return f.replace(/\/+$/, "");
+    };
+
     for (const [pkgDir, pkgCfg] of Object.entries(config.packages)) {
       for (const entry of pkgCfg["extra-files"] ?? []) {
-        // Mirror release-please: join(packageDir, entry.path), normalized.
-        const resolved = resolve(REPO_ROOT, pkgDir, entry.path);
+        // addPath throws on an illegal ("../") path exactly as release-please
+        // would — surfacing the misconfig instead of a silent no-op.
+        const repoRelative = addPath(pkgDir, entry.path);
+        const resolved = resolve(REPO_ROOT, repoRelative);
         expect(
           () => readFileSync(resolved, "utf8"),
           `extra-file '${entry.path}' (package '${pkgDir}') must resolve to a real file at ${resolved}`,

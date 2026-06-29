@@ -44,38 +44,38 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 ### Schemas (Zod — single source of truth, data-model.md)
 
-- [ ] T005 [P] Define identifier/enum schemas (`ToolId`, `ContentClass`, `Tier`, `BloomLevel`, `QuestionType`, `Grade`, `AbilityKey` codec) in `packages/server/src/schemas/common.ts`
-- [ ] T006 [P] Define content schemas (`Topic`, `ContentItem`, `Choice`, `AnswerKey`, `Rubric` with `criteria:{id,text}[]`, `TriggerSignal`, `CatalogManifest`) + cross-field validation rules (FR-003/003a/004) in `packages/server/src/schemas/content.ts`
-- [ ] T007 [P] Define profile schemas (`Profile`, `Config`, `AbilityEstimate`, `TierGraduation`, `ReviewEntry`, `QuizRecord`, `AnsweredItem`, `OfferLedger` incl. cross-session backoff fields, `ObservationEvent`) in `packages/server/src/schemas/profile.ts`
-- [ ] T008 [P] Define MCP tool I/O schemas (one per contract tool, incl. `SETUP_REQUIRED` sentinel + per-criterion free-form verdict) in `packages/server/src/schemas/tools.ts`
+- [X] T005 [P] Define identifier/enum schemas (`ToolId`, `ContentClass`, `Tier`, `BloomLevel`, `QuestionType`, `Grade`, `AbilityKey` codec) in `packages/server/src/schemas/common.ts`
+- [X] T006 [P] Define content schemas (`Topic`, `ContentItem`, `Choice`, `AnswerKey`, `Rubric` with `criteria:{id,text}[]`, `TriggerSignal`, `CatalogManifest`) + cross-field validation rules (FR-003/003a/004) in `packages/server/src/schemas/content.ts`
+- [X] T007 [P] Define profile schemas (`Profile`, `Config`, `AbilityEstimate`, `TierGraduation`, `ReviewEntry`, `QuizRecord`, `AnsweredItem`, `OfferLedger` incl. cross-session backoff fields, `ObservationEvent`) in `packages/server/src/schemas/profile.ts`
+- [X] T008 [P] Define MCP tool I/O schemas (one per contract tool, incl. `SETUP_REQUIRED` sentinel + per-criterion free-form verdict) in `packages/server/src/schemas/tools.ts`
 
 ### Tunable config + pure engine (research.md OD-005; engine is IO-free, clock injected — E5)
 
-- [ ] T009 [P] Create tunable assessment config (S=400, θ₀=300, K 64→24 @15 items, tiers/boundaries, hysteresis ±30, dwell 2, decay H=60d, stale 30d, selection windows, **decline-mute N=3 + backoff curve**, free-form `passThreshold=0.6`, default `quizLength=4`) in `packages/server/src/config.ts`
-- [ ] T010 [P] Implement pure Elo ability update (`expectedScore`, `updateAbility` against FIXED item rating — items never self-update, FR-006/E3; partial-credit score∈[0,1]) in `packages/server/src/engine/elo.ts`
-- [ ] T011 [P] Implement difficulty-targeted item selection (target `min(θ+50,nextBoundary+30)`, ±60 window, one ±20 anchor, info-weighted, avoid recent `lastItemIds`) in `packages/server/src/engine/selection.ts`
-- [ ] T012 [P] Unit tests for `elo.ts` + `selection.ts` (monotonicity, fixed-difficulty invariant, window/anchor selection, determinism) in `packages/server/test/unit/engine.test.ts`
+- [X] T009 [P] Create tunable assessment config (S=400, θ₀=300, K 64→24 @15 items, tiers/boundaries, hysteresis ±30, dwell 2, decay H=60d, stale 30d, selection windows, **decline-mute N=3 + backoff curve**, free-form `passThreshold=0.6`, default `quizLength=4`) in `packages/server/src/config.ts`
+- [X] T010 [P] Implement pure Elo ability update (`expectedScore`, `updateAbility` against FIXED item rating — items never self-update, FR-006/E3; partial-credit score∈[0,1]) in `packages/server/src/engine/elo.ts`
+- [X] T011 [P] Implement difficulty-targeted item selection (target `min(θ+50,nextBoundary+30)`, ±60 window, one ±20 anchor, info-weighted, avoid recent `lastItemIds`) in `packages/server/src/engine/selection.ts`
+- [X] T012 [P] Unit tests for `elo.ts` + `selection.ts` (monotonicity, fixed-difficulty invariant, window/anchor selection, determinism) in `packages/server/test/unit/engine.test.ts`
 
 ### Profile store (atomic + locked — E1/FR-023a)
 
-- [ ] T013 [US-shared] Implement profile store: load/validate/init-empty (FR-023), **atomic write-temp+rename under advisory lock** (`proper-lockfile`), `VIBE_HERO_HOME` override, in `packages/server/src/profile/store.ts`
-- [ ] T014 [P] Integration test: concurrent writers do not lose updates; corrupt/missing profile re-initializes cleanly, in `packages/server/test/integration/store.test.ts`
+- [X] T013 [US-shared] Implement profile store: load/validate/init-empty (FR-023), **atomic write-temp+rename under advisory lock** (`proper-lockfile`), `VIBE_HERO_HOME` override, in `packages/server/src/profile/store.ts`
+- [X] T014 [P] Integration test: concurrent writers do not lose updates; corrupt/missing profile re-initializes cleanly, in `packages/server/test/integration/store.test.ts`
 
 ### Catalog (load + bundled; fetch/cache deferred to US5)
 
-- [ ] T015 [P] Implement YAML catalog loader → Zod-validated `Topic[]` with path-qualified diagnostics on malformed items (FR-004), in `packages/server/src/catalog/loader.ts`
-- [ ] T016 [P] Create bundled baseline catalog snapshot scaffold + loader wiring (`packages/server/src/catalog/bundled/`) so the server works offline first-run (FR-025)
+- [X] T015 [P] Implement YAML catalog loader → Zod-validated `Topic[]` with path-qualified diagnostics on malformed items (FR-004), in `packages/server/src/catalog/loader.ts`
+- [X] T016 [P] Create bundled baseline catalog snapshot scaffold + loader wiring (`packages/server/src/catalog/bundled/`) so the server works offline first-run (FR-025)
 
 ### Observation abstraction (trigger-only; privacy boundary — E4/FR-018)
 
-- [ ] T017 [P] Define `ObservationSource` interface + self-report source (FR-016) in `packages/server/src/observation/source.ts`
-- [ ] T018 [P] Implement hook-payload → derived-signal extractor that emits ONLY `{tool_name, topicKeys, success, timestamp, tool_use_id}` and NEVER `tool_input`/`tool_output` (FR-018) in `packages/server/src/observation/hookEvents.ts`
-- [ ] T019 [P] Privacy test: feed a hook payload containing secrets in `tool_input`/`tool_output`; assert no raw payload field is ever persisted/returned (FR-018, SC-008) in `packages/server/test/unit/privacy.test.ts`
+- [X] T017 [P] Define `ObservationSource` interface + self-report source (FR-016) in `packages/server/src/observation/source.ts`
+- [X] T018 [P] Implement hook-payload → derived-signal extractor that emits ONLY `{tool_name, topicKeys, success, timestamp, tool_use_id}` and NEVER `tool_input`/`tool_output` (FR-018) in `packages/server/src/observation/hookEvents.ts`
+- [X] T019 [P] Privacy test: feed a hook payload containing secrets in `tool_input`/`tool_output`; assert no raw payload field is ever persisted/returned (FR-018, SC-008) in `packages/server/test/unit/privacy.test.ts`
 
 ### MCP server bootstrap + gate
 
-- [ ] T020 Implement stdio MCP server bootstrap + tool registration scaffold in `packages/server/src/index.ts` (depends on T008)
-- [ ] T021 Implement the `SETUP_REQUIRED` gate middleware (every tool except `get_config`/`save_config` returns the sentinel when `profile.config` absent — FR-032, gates vibe-hero actions only) in `packages/server/src/tools/gate.ts`
+- [X] T020 Implement stdio MCP server bootstrap + tool registration scaffold in `packages/server/src/index.ts` (depends on T008)
+- [X] T021 Implement the `SETUP_REQUIRED` gate middleware (every tool except `get_config`/`save_config` returns the sentinel when `profile.config` absent — FR-032, gates vibe-hero actions only) in `packages/server/src/tools/gate.ts`
 
 **Checkpoint**: server starts, schemas validate, engine math + store + privacy tests green. User stories can begin.
 

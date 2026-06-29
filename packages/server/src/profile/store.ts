@@ -22,6 +22,7 @@ import * as fs from "node:fs/promises";
 import * as lockfile from "proper-lockfile";
 
 import { ProfileSchema, emptyProfile, type Profile } from "../schemas/profile.js";
+import { migrateProfile } from "./migrate.js";
 
 /** Basename of the profile document within the profile directory. */
 const PROFILE_FILENAME = "profile.json";
@@ -78,10 +79,15 @@ export const profilePath = (dirOverride?: string): string =>
  * Read and validate the profile.
  *
  * Never throws: a missing, unreadable, or schema-invalid file degrades to a
- * fresh {@link emptyProfile} so the server can always operate (FR-023). A
- * corrupt file is logged to stderr (without printing its contents — it may hold
- * profile data) and left on disk untouched; the next successful
- * {@link saveProfile} / {@link updateProfile} overwrites it.
+ * fresh {@link emptyProfile} so the server can always operate (FR-023). Version
+ * handling is centralized in {@link migrateProfile} (T056): a same-version doc
+ * passes through, an older known version is migrated up, and a *newer* version
+ * (written by a future build) degrades to an empty profile for this run WITHOUT
+ * overwriting the file — `loadProfile` never writes, so a forward-compatible
+ * profile we don't understand is preserved on disk. A corrupt file is logged to
+ * stderr (without printing its contents — it may hold profile data) and left on
+ * disk untouched; the next successful {@link saveProfile} / {@link updateProfile}
+ * overwrites it.
  *
  * @param dirOverride - Explicit directory (test seam); see {@link profileDir}.
  * @returns The validated profile, or an empty profile on any failure.
@@ -102,14 +108,24 @@ export const loadProfile = async (dirOverride?: string): Promise<Profile> => {
     return emptyProfile();
   }
 
-  const parsed = parseProfile(raw);
-  if (parsed === undefined) {
+  const json = parseJson(raw);
+  if (json === undefined) {
     process.stderr.write(
       `vibe-hero: profile at ${file} is corrupt or invalid; starting from an empty profile (file left untouched).\n`,
     );
     return emptyProfile();
   }
-  return parsed;
+
+  // Centralized version policy (T056). migrateProfile owns same/older/newer
+  // routing and emits its own newer-version warning. We only add a stderr note
+  // for the corrupt-at-version case to preserve the prior diagnostic.
+  const result = migrateProfile(json);
+  if (result.reset && !result.preserved) {
+    process.stderr.write(
+      `vibe-hero: profile at ${file} is corrupt or invalid; starting from an empty profile (file left untouched).\n`,
+    );
+  }
+  return result.profile;
 };
 
 /**
@@ -194,7 +210,10 @@ const acquireLock = async (dir: string, file: string): Promise<() => Promise<voi
  * Read the on-disk profile while holding the lock, degrading to an empty
  * profile if the file is missing, unreadable, or invalid. Unlike
  * {@link loadProfile} this stays quiet (no stderr) — it runs inside the
- * write path where a fresh-start is expected on first write.
+ * write path where a fresh-start is expected on first write. Version handling
+ * goes through the same {@link migrateProfile} policy so an older profile is
+ * migrated forward before a read-modify-write, and a newer one degrades to
+ * empty (the subsequent write is the caller's explicit choice).
  */
 const readUnderLock = async (file: string): Promise<Profile> => {
   let raw: string;
@@ -203,7 +222,9 @@ const readUnderLock = async (file: string): Promise<Profile> => {
   } catch {
     return emptyProfile();
   }
-  return parseProfile(raw) ?? emptyProfile();
+  const json = parseJson(raw);
+  if (json === undefined) return emptyProfile();
+  return migrateProfile(json).profile;
 };
 
 /**
@@ -246,16 +267,17 @@ const ensureExists = async (file: string): Promise<void> => {
   }
 };
 
-/** Parse + validate raw JSON into a {@link Profile}, or `undefined` on failure. */
-const parseProfile = (raw: string): Profile | undefined => {
-  let json: unknown;
+/**
+ * Parse raw profile text into a JSON value, or `undefined` if it is not valid
+ * JSON. Schema/version validation is deferred to {@link migrateProfile} so the
+ * version policy (same/older/newer) is centralized in one place (T056).
+ */
+const parseJson = (raw: string): unknown => {
   try {
-    json = JSON.parse(raw);
+    return JSON.parse(raw);
   } catch {
     return undefined;
   }
-  const result = ProfileSchema.safeParse(json);
-  return result.success ? result.data : undefined;
 };
 
 /** Type-narrowing helper: is this a Node `ENOENT` error? */

@@ -34,6 +34,69 @@ import {
  */
 export const PLACEHOLDER_CATALOG_VERSION = "0.0.0-bundled";
 
+/**
+ * Highest catalog **major** version this engine can read (T056, analyze finding
+ * E6). The `CatalogManifest.version` is a semver string; its MAJOR component is
+ * the content-format compatibility axis.
+ *
+ * **Compatibility rule:** the engine accepts a manifest whose major version is
+ * `<= SUPPORTED_CONTENT_MAJOR` and REJECTS one whose major is strictly greater
+ * (an unknown, future, potentially-incompatible content format). Minor/patch
+ * bumps within a supported major are always accepted — content is additive
+ * within a major, mirroring the additive-via-Zod-defaults policy on the profile
+ * side. The bundled baseline (`0.0.0-bundled`, major 0) therefore always passes;
+ * only a major we *predate* is rejected.
+ *
+ * The ceiling is intentionally GENEROUS. The catalog `version` is a plain semver
+ * with no historical breaking-format change, so every major published so far is
+ * readable by the current YAML/Zod pipeline; the guard exists to fail safe
+ * against a hypothetical *far*-future incompatible format rather than to gate
+ * routine content bumps. Raise it deliberately when (and only when) a real
+ * breaking content-format change ships with a new major.
+ *
+ * A rejected (too-new) fetched/cached manifest is treated as **invalid remote
+ * content** and reuses the existing soft-fallback path (resolve.ts): the fetch
+ * fails softly and the resolver falls through to cache → bundled with no
+ * user-facing error (FR-027). We never serve content we cannot guarantee we
+ * understand, and we never crash on it (FR-025–027).
+ */
+export const SUPPORTED_CONTENT_MAJOR = 9;
+
+/**
+ * Parse the MAJOR component of a semver-ish version string. Tolerant by design:
+ * it reads the leading integer before the first `.` (e.g. `"1.2.3"` → 1,
+ * `"0.0.0-bundled"` → 0). Returns `undefined` when no leading integer is present
+ * so the caller can decide how to treat an unparseable version.
+ */
+export const parseMajorVersion = (version: string): number | undefined => {
+  const match = /^(\d+)\b/.exec(version.trim());
+  if (match === null) return undefined;
+  const major = Number.parseInt(match[1] as string, 10);
+  return Number.isNaN(major) ? undefined : major;
+};
+
+/**
+ * Whether a {@link CatalogManifest} version is readable by this engine per the
+ * {@link SUPPORTED_CONTENT_MAJOR} compatibility rule. An unparseable version is
+ * conservatively treated as readable (`true`) — it will still face full Zod
+ * validation elsewhere; the major-version guard only ever *rejects* a clearly
+ * too-new major, it does not gate on version-string formatting.
+ */
+export const isContentVersionSupported = (version: string): boolean => {
+  const major = parseMajorVersion(version);
+  if (major === undefined) return true;
+  return major <= SUPPORTED_CONTENT_MAJOR;
+};
+
+/**
+ * Build a clear diagnostic for a content version this engine cannot read
+ * (major newer than {@link SUPPORTED_CONTENT_MAJOR}). Used as the soft-failure
+ * `detail` so logs/tests can see *why* a fetch/cache was rejected (FR-004).
+ */
+export const contentVersionRejection = (version: string): string =>
+  `catalog version "${version}" has a major newer than this engine supports ` +
+  `(max major ${SUPPORTED_CONTENT_MAJOR}); refusing to serve unknown content format`;
+
 /** A per-file load failure: which file failed and a human-readable reason. */
 export interface CatalogLoadError {
   /** Absolute or caller-relative path of the file that failed to load. */

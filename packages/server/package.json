@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && pnpm run copy-assets",
+    "copy-assets": "node -e \"const{cpSync,existsSync}=require('node:fs');const s='src/catalog/bundled';const d='dist/catalog/bundled';if(existsSync(s))cpSync(s,d,{recursive:true,filter:p=>!p.endsWith('.ts')});\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "node dist/index.js",

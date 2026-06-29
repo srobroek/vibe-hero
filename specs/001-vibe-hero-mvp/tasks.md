@@ -191,11 +191,11 @@ Monorepo: MCP server in `packages/server/src/`, tests in `packages/server/test/`
 
 ## Phase 9: Polish & Cross-Cutting Concerns
 
-- [ ] T056 [P] Schema-version/migration policy for profile + content (reject unknown major, migrate minor — E6) in `packages/server/src/profile/migrate.ts` + `catalog/loader.ts`
-- [ ] T057 [P] Author `packages/server/README.md` (install, `VIBE_HERO_HOME`, host wiring for MCP + skills + Stop hook) and a root usage doc in `docs/`
-- [ ] T058 [P] Author `content/general/` seed topic(s) (≥1 tool-agnostic topic) to exercise the general class
-- [ ] T059 Run full `quickstart.md` V0–V6 validation pass; fix gaps
-- [ ] T060 [P] Final unit-coverage sweep for engine/grading + `pnpm test` green; tidy exports
+- [X] T056 [P] Schema-version/migration policy for profile + content (reject unknown major, migrate minor — E6) in `packages/server/src/profile/migrate.ts` + `catalog/loader.ts`
+- [X] T057 [P] Author `packages/server/README.md` (install, `VIBE_HERO_HOME`, host wiring for MCP + skills + Stop hook) and a root usage doc in `docs/`
+- [X] T058 [P] Author `content/general/` seed topic(s) (≥1 tool-agnostic topic) to exercise the general class
+- [X] T059 Run full `quickstart.md` V0–V6 validation pass; fix gaps
+- [X] T060 [P] Final unit-coverage sweep for engine/grading + `pnpm test` green; tidy exports
 
 ---
 

@@ -63,7 +63,11 @@ import {
   type CatalogManifest,
   type Topic,
 } from "../schemas/content.js";
-import { parseTopicYaml } from "./loader.js";
+import {
+  parseTopicYaml,
+  isContentVersionSupported,
+  contentVersionRejection,
+} from "./loader.js";
 
 /**
  * Default published content base URL. Documented for operators; **not used
@@ -352,6 +356,18 @@ export const fetchCatalog = async (
     };
   }
 
+  // Content-version compatibility guard (T056, E6): refuse a manifest whose
+  // MAJOR is newer than this engine supports BEFORE fetching any topic files.
+  // Treated as invalid remote content so the resolver falls back to
+  // cache/bundled with no user-facing error (FR-027).
+  if (!isContentVersionSupported(manifest.version)) {
+    return {
+      ok: false,
+      reason: "invalid",
+      detail: contentVersionRejection(manifest.version),
+    };
+  }
+
   // Prefer the HTTP ETag header; fall back to a manifest-embedded etag if any.
   const effectiveEtag = responseEtag ?? manifest.etag;
 
@@ -491,6 +507,11 @@ export const readCachedCatalog = async (
   } catch {
     return undefined;
   }
+
+  // Content-version compatibility guard (T056, E6): a cache written by a future
+  // engine (major newer than we support) is unreadable — fall through to bundled
+  // rather than serve an unknown content format.
+  if (!isContentVersionSupported(manifest.version)) return undefined;
 
   const topics: Topic[] = [];
   for (const entry of manifest.topics) {

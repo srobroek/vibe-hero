@@ -1,0 +1,357 @@
+# Topic: subagents (claude-code)
+#
+# Covers Claude Code's subagent / Task tool: spawning isolated agent threads,
+# when to use isolation vs. direct edits, passing context, background execution,
+# and interpreting results. Tiers 100–500.
+
+id: subagents
+class:
+  kind: tool
+  tool: claude-code
+title: Subagents & the Task Tool
+summary: >-
+  Understanding when and how to spawn isolated subagent threads with the Task
+  tool — isolation modes, context passing, background execution, and result
+  handling.
+
+triggerSignals:
+  - tool: claude-code
+    match:
+      toolName: Task
+    weight: 1
+  - tool: claude-code
+    match:
+      toolNamePattern: "^Agent$"
+    weight: 0.9
+  - tool: claude-code
+    match:
+      mcpToolPattern: ".*subagent.*"
+    weight: 0.6
+
+items:
+  # ── Tier 100 — Remember ──────────────────────────────────────────────────
+  - id: subagents-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      What is the primary purpose of the Task tool in Claude Code?
+    choices:
+      - id: a
+        text: To run shell commands in a subprocess
+      - id: b
+        text: To spawn an isolated subagent thread that runs independently
+      - id: c
+        text: To create a new git branch for each change
+      - id: d
+        text: To open a second terminal session
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Task tool launches a new, context-isolated agent thread. Unlike Bash
+      (which runs shell commands) it gives the subagent its own context window,
+      its own tool access, and returns a single result message when done.
+
+  - id: subagents-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: >-
+      Which parameter on the Agent/Task tool call signals that the subagent
+      should write files into a separate git worktree rather than the parent's
+      working tree?
+    choices:
+      - id: a
+        text: run_in_background
+      - id: b
+        text: isolation
+      - id: c
+        text: worktree
+      - id: d
+        text: fork
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Setting `isolation: "worktree"` on an Agent call tells Claude Code to
+      create a temporary git worktree for the subagent. Its file changes stay
+      isolated from the parent working tree and the path/branch are returned in
+      the result.
+
+  # ── Tier 200 — Understand ───────────────────────────────────────────────
+  - id: subagents-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      A subagent spawned with `isolation: "worktree"` makes no file changes
+      during its run. What happens to the worktree when the subagent finishes?
+    choices:
+      - id: a
+        text: The worktree is committed and merged automatically
+      - id: b
+        text: The worktree is automatically cleaned up (deleted)
+      - id: c
+        text: The worktree persists as a stash entry
+      - id: d
+        text: The parent is asked whether to keep or delete it
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When a worktree-isolated subagent makes no changes, Claude Code cleans up
+      the temporary worktree automatically. A worktree is only preserved (and
+      its path/branch returned) when the subagent actually wrote files.
+
+  - id: subagents-200-sa-a
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: short_answer
+    prompt: >-
+      You want a subagent to do read-only research across the codebase without
+      touching any files in the parent's working tree. Which iso:skip sentinel
+      should you add to the description field so the worktree guard is
+      satisfied — and why is a worktree unnecessary here?
+    answerKey:
+      kind: keyword
+      anyOf:
+        - "iso:skip"
+        - "[iso:skip]"
+      normalize: trim
+    guidance: >-
+      For read-only subagents (inspection, search, no file writes) you append
+      `[iso:skip]` to the description rather than setting isolation. A worktree
+      is only needed when the subagent writes files that must stay separate from
+      the parent tree. Read-only work needs neither isolation.
+
+  # ── Tier 300 — Apply ────────────────────────────────────────────────────
+  - id: subagents-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      You spawn two subagents in parallel — one to write a migration script and
+      one to validate existing tests. Which combination of isolation settings
+      is correct?
+    choices:
+      - id: a
+        text: >-
+          Migration: isolation "worktree" — Validator: [iso:skip] in description
+      - id: b
+        text: >-
+          Migration: [iso:skip] in description — Validator: isolation "worktree"
+      - id: c
+        text: Both use isolation "worktree"
+      - id: d
+        text: Both use [iso:skip] in description
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The migration agent writes files that should stay isolated until reviewed,
+      so it gets `isolation: "worktree"`. The validator only reads test output
+      and never writes to the repo, so it gets `[iso:skip]` in the description
+      — no worktree needed for read-only work.
+
+  - id: subagents-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      A subagent must edit files directly in the parent's working tree (its
+      changes are meant to land in the current checkout immediately). Which
+      isolation choice is correct?
+    choices:
+      - id: a
+        text: isolation "worktree" — changes land in the parent tree via merge
+      - id: b
+        text: >-
+          [iso:skip] in description, no isolation field — the subagent writes
+          to the parent working tree directly
+      - id: c
+        text: isolation "remote" — uses a cloud environment
+      - id: d
+        text: Any isolation mode; the parent always sees the changes
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When you need a subagent's edits to land in the current checkout
+      immediately, use `[iso:skip]` (no isolation field). A worktree would
+      put the changes in a separate branch, preventing the parent from seeing
+      them directly. "Otherwise writes to parent tree" is exactly the third
+      case for skipping isolation.
+
+  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
+  - id: subagents-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      You receive a subagent summary saying "I fixed the bug and updated the
+      tests." Before reporting the work as done to the user, what should you
+      verify and why?
+    choices:
+      - id: a
+        text: >-
+          Nothing — if the subagent says it's done, the work is complete
+      - id: b
+        text: >-
+          Rerun all CI checks to be sure, but the file changes can be trusted
+      - id: c
+        text: >-
+          Inspect the actual file changes; a subagent's summary describes intent,
+          not necessarily what it did
+      - id: d
+        text: >-
+          Ask the user to verify — the parent agent cannot read subagent output
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      "Trust but verify" is a key subagent principle. A subagent's result
+      message describes what it *intended* to do. You must check the actual
+      diff/file state before reporting success. Summaries can be optimistic or
+      incomplete; the files are the ground truth.
+
+  - id: subagents-400-sa-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: short_answer
+    prompt: >-
+      Name the parameter you set on an Agent tool call to let it run
+      concurrently with other work, so you are notified when it completes
+      rather than waiting for it.
+    answerKey:
+      kind: keyword
+      anyOf:
+        - run_in_background
+        - "run_in_background: true"
+        - run_in_background=true
+      normalize: lower
+    guidance: >-
+      Setting `run_in_background: true` on an Agent call starts the subagent
+      asynchronously. The parent continues with other work and is notified
+      automatically when the background agent completes. You should NOT poll
+      or sleep — the notification arrives when the subagent finishes.
+
+  # ── Tier 500 — Evaluate / Create ────────────────────────────────────────
+  - id: subagents-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: free_form
+    prompt: >-
+      Explain when you should NOT spawn parallel subagents, and why. Give at
+      least three distinct situations where parallelising with the Agent/Task
+      tool would be the wrong choice, and describe the failure mode each
+      situation produces.
+    rubric:
+      criteria:
+        - id: shared-state-conflict
+          text: >-
+            Identifies that tasks sharing mutable state (the same files,
+            database rows, or in-memory structures) are unsafe to parallelize
+            because concurrent writes produce race conditions, corrupt output,
+            or silently overwrite each other's work.
+        - id: dependency-ordering
+          text: >-
+            Identifies that tasks with a dependency relationship — where the
+            output of one is the required input of the next — must run
+            sequentially; launching the downstream agent before the upstream
+            result is ready means the downstream prompt is under-specified or
+            based on stale information.
+        - id: context-cost-overhead
+          text: >-
+            Recognises that each subagent carries a full, independent context
+            window and token budget; spawning many agents for trivial or
+            fast-finishing tasks wastes money and latency relative to doing the
+            work directly in the parent context.
+        - id: sequential-simpler
+          text: >-
+            Recognises that when tasks are few, small, or tightly coupled,
+            sequential execution in the parent is simpler to reason about,
+            easier to debug, and avoids the "trust but verify" overhead that
+            every subagent result imposes on the parent.
+      referenceAnswer: >-
+        Parallel subagents are wrong in at least three situations:
+
+        1. Shared mutable state. If two agents write to the same file, the same
+        database record, or the same in-memory store, their changes race. The
+        second writer silently overwrites the first, or both produce a partially
+        merged, corrupt result. Example: spawning a migration writer and a test
+        updater in parallel when both need to edit the same schema file.
+
+        2. Sequential dependency. If agent B needs agent A's output as its
+        input, launching them together means B operates on missing or stale
+        information. The result is an under-specified prompt, a hallucinated
+        implementation, or a second pass that undoes what the first did.
+        Example: research-then-write tasks where the write agent must read the
+        research findings before it can produce an accurate implementation.
+
+        3. Trivial tasks where overhead exceeds benefit. Each subagent opens a
+        new context window, pays full prompt-token cost, and returns a result
+        the parent must verify. For a quick grep, a small edit, or a single
+        file read, doing the work directly in the parent is faster, cheaper,
+        and requires no trust-but-verify round-trip. Spawning subagents for
+        tiny tasks multiplies cost without multiplying useful throughput.
+
+        A fourth valid situation: when the total number of tasks is small (two
+        or three) and they are tightly coupled, sequential execution in the
+        parent keeps the full context in one place, produces one coherent
+        history, and is simpler to debug if something goes wrong.
+      passThreshold: 0.75
+    guidance: >-
+      Parallelism is powerful but has hard limits. Candidates who only recite
+      "use background agents for independent tasks" without articulating the
+      failure modes of over-parallelisation have not internalised the tradeoffs.
+      Key signals: shared-state races, dependency ordering, and cost-vs-benefit
+      for trivial tasks. Full marks require at least three distinct situations
+      with their failure modes, not just a list of slogans.
+
+
+  - id: subagents-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A task requires searching the codebase (read-only) and then, based on
+      the findings, writing a new module. Which subagent strategy is most
+      efficient and why?
+    choices:
+      - id: a
+        text: >-
+          Use one subagent with [iso:skip] for both steps — simplest path
+      - id: b
+        text: >-
+          Use a foreground read-only subagent first ([iso:skip]), wait for its
+          findings, then make an informed decision on how to write the module
+          either directly or via a second worktree-isolated subagent
+      - id: c
+        text: >-
+          Use two background subagents in parallel — one reads, one writes —
+          so they finish faster
+      - id: d
+        text: >-
+          Always use isolation "worktree" for any task that may write files,
+          even if the read phase comes first
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The read step must complete before the write step can be designed well —
+      they are sequential, not parallel. Using a foreground read-only subagent
+      with [iso:skip] for the research phase, then synthesizing what was
+      learned before spawning a writer, gives the parent agent maximum
+      information to write a self-contained, accurate prompt for the second
+      agent. Launching a writer in parallel before reading is premature.

@@ -1,0 +1,390 @@
+# Topic: task-decomposition (general)
+#
+# Tool-agnostic agentic-coding concept: how to break complex work into bounded,
+# verifiable units before delegating or implementing. Tiers 100–500.
+#
+# triggerSignals is empty: this concept is not tied to any one tool's tool-calls.
+# It surfaces via the pull-based path (status / on-demand quiz / guidance).
+
+id: task-decomposition
+class:
+  kind: general
+title: Task Decomposition & Planning
+summary: >-
+  How to break complex agentic work into bounded, sequenced, verifiable units
+  before delegating or implementing — and how to recognise when decomposition
+  has gone wrong.
+
+triggerSignals: []
+
+items:
+  # ── Tier 100 — Remember ──────────────────────────────────────────────────
+  - id: task-decomposition-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      What is the primary goal of task decomposition in agentic coding?
+    choices:
+      - id: a
+        text: To reduce the number of files changed in a single commit
+      - id: b
+        text: >-
+          To break work into units small enough that each can be independently
+          implemented, verified, and rolled back
+      - id: c
+        text: To assign each task to a different AI model
+      - id: d
+        text: To produce a Gantt chart for project management
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Decomposition serves verifiability and recoverability. When each unit of
+      work is bounded, you can confirm it is done (or not done) without reading
+      all surrounding code, and you can undo it without unravelling unrelated
+      changes. Reducing file count or cross-model assignment are incidental; the
+      core purpose is making each piece independently checkable.
+
+  - id: task-decomposition-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: >-
+      Which of the following is a key property of a well-decomposed task?
+    choices:
+      - id: a
+        text: It is as large as possible to minimise the number of handoffs
+      - id: b
+        text: It has a clear, observable completion criterion
+      - id: c
+        text: It must always be implemented by a subagent, never inline
+      - id: d
+        text: It never touches existing code — only adds new files
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A well-decomposed task has a completion criterion you can actually observe:
+      a test passes, a file is present, a command returns a specific output. Without
+      that criterion you cannot tell whether the task is done, making it impossible
+      to verify, sequence, or hand off reliably. Size, delegation strategy, and
+      file-change scope are secondary concerns.
+
+  # ── Tier 200 — Understand ───────────────────────────────────────────────
+  - id: task-decomposition-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      You have a feature request: "Add user authentication with OAuth, a profile
+      page, and email notifications." Why is this a poor unit of work for a
+      single agentic task?
+    choices:
+      - id: a
+        text: >-
+          It spans multiple concerns, making it impossible to verify any one
+          piece without finishing all of them
+      - id: b
+        text: It involves OAuth, which agents cannot implement
+      - id: c
+        text: Profile pages require UI work that agents should never do
+      - id: d
+        text: Email notifications always introduce external API complexity
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The problem is scope and verifiability, not the technologies involved.
+      When a task bundles three distinct concerns — authentication, profile
+      rendering, and notification delivery — there is no single observable signal
+      that marks any one concern as done. If authentication fails mid-way, the
+      entire task is unverifiable. Decomposing into three sequential tasks gives
+      you checkpoints: OAuth done (tests pass), profile done (page renders), and
+      notifications done (email sent in test).
+
+  - id: task-decomposition-200-sa-a
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: short_answer
+    prompt: >-
+      What term describes the type of dependency between two tasks when Task B
+      requires Task A's output before it can be meaningfully specified or
+      started?
+    answerKey:
+      kind: keyword
+      anyOf:
+        - sequential dependency
+        - sequential
+        - data dependency
+        - ordering dependency
+        - dependency ordering
+      normalize: lower
+    guidance: >-
+      When Task B's inputs come from Task A's outputs the two tasks have a
+      sequential dependency (also called a data dependency or ordering
+      dependency). This means B cannot run in parallel with A and its prompt
+      cannot be fully written until A finishes. Recognising this dependency
+      pattern is what separates tasks that must be sequenced from tasks that
+      can be parallelised safely.
+
+  # ── Tier 300 — Apply ────────────────────────────────────────────────────
+  - id: task-decomposition-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      You need to: (1) research the existing API contract, (2) write a migration
+      script, and (3) write tests for the migration. Which sequencing is correct
+      and why?
+    choices:
+      - id: a
+        text: >-
+          All three in parallel — they are independent enough to run concurrently
+      - id: b
+        text: >-
+          Research first (must finish before writing), then migration and tests
+          in parallel — both use the research findings but do not depend on each
+          other
+      - id: c
+        text: >-
+          Migration first, then research, then tests — implementation defines
+          what needs researching
+      - id: d
+        text: >-
+          Tests first (TDD), then research, then migration
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Research is a prerequisite for both the migration script and the tests:
+      you cannot write either accurately without knowing the API contract. Once
+      research is complete, the migration and tests have independent inputs and
+      no shared mutable state, so they can run in parallel. Running research in
+      parallel with the others would produce an under-specified migration
+      (missing contract knowledge) and useless tests (validating against assumed
+      rather than real behaviour).
+
+  - id: task-decomposition-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      A task is described as "refactor the data layer and fix the three open
+      bugs while you're in there." What is the main decomposition problem with
+      this description?
+    choices:
+      - id: a
+        text: Refactoring and bug-fixing are the same activity; no decomposition is needed
+      - id: b
+        text: >-
+          Combining refactoring (behaviour-preserving) with bug fixes
+          (behaviour-changing) in one task makes it impossible to isolate which
+          change caused any regression
+      - id: c
+        text: Bugs should always be fixed before any refactoring occurs
+      - id: d
+        text: The data layer is too large a scope for any single task
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Refactoring means changing structure without changing observable behaviour;
+      bug-fixing deliberately changes observable behaviour. Mixing them in a
+      single task destroys the ability to diff-bisect a regression: if something
+      breaks, you cannot tell whether the refactor or the bug fix caused it.
+      Correct decomposition: refactor first (verify all tests still pass), then
+      apply each bug fix as a separate task. This gives you a clean causal chain.
+
+  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
+  - id: task-decomposition-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      A tasks.md file has 20 items all marked [X] (complete). Before reporting
+      the feature as done, what is the most important verification step and why?
+    choices:
+      - id: a
+        text: >-
+          Count that all 20 items exist — if the list is intact, the work is done
+      - id: b
+        text: >-
+          Re-run the full test suite; if it passes, the checkboxes can be trusted
+      - id: c
+        text: >-
+          Spot-check 3–4 completed tasks against actual code evidence, because
+          checkboxes reflect intent, not implementation
+      - id: d
+        text: >-
+          Ask the implementing agent to confirm — it has the best context about
+          what it did
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Checkboxes in a task list are claimed completions, not verified ones.
+      An agent may mark a task done optimistically, or it may have completed a
+      subtly different scope than intended. The ground truth is the code.
+      Spot-checking means finding the function, file, or test that the task
+      said would exist and confirming it is actually there and does what the
+      task specified. Asking the implementing agent reintroduces confirmation
+      bias; it will tend to endorse its own claimed work. Tests help but may not
+      cover every task's success criterion.
+
+  - id: task-decomposition-400-sa-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: short_answer
+    prompt: >-
+      Name the failure mode where an agent marks tasks complete based on its
+      intent or partial output rather than verifying the implementation actually
+      exists and functions correctly.
+    answerKey:
+      kind: keyword
+      anyOf:
+        - phantom completion
+        - phantom completions
+        - phantom
+        - false completion
+        - false positive completion
+      normalize: lower
+    guidance: >-
+      "Phantom completion" (also called a false completion) is when a task is
+      marked done but the backing code is missing, dead, or does not satisfy the
+      task's acceptance criterion. It occurs because the agent that completed the
+      task is subject to confirmation bias — it is more likely to conclude its
+      own work is correct than an independent reviewer would be. The counter-
+      measure is external verification: checking the actual code against the
+      task's stated criterion rather than re-reading the task list.
+
+  # ── Tier 500 — Evaluate ─────────────────────────────────────────────────
+  - id: task-decomposition-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A plan has 40 tasks, each scoped to a single function change, with
+      explicit sequential dependencies between every pair of consecutive tasks.
+      An experienced engineer flags this plan as over-decomposed. What is the
+      most likely cost of this granularity?
+    choices:
+      - id: a
+        text: >-
+          It is impossible to over-decompose; finer granularity always improves
+          verifiability
+      - id: b
+        text: >-
+          At this granularity, the overhead of task handoffs, context
+          re-establishment, and sequential blocking exceeds the value of
+          independent verifiability for each unit
+      - id: c
+        text: >-
+          40 tasks is too many for any AI to reason about, so it will refuse to
+          execute the plan
+      - id: d
+        text: >-
+          Single-function tasks are never the right decomposition because
+          functions are too small to test in isolation
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Decomposition has diminishing returns. Each task boundary introduces
+      context-switching cost: the implementing agent (or human) must reload
+      intent, re-read the relevant code, and establish local context before
+      making a one-line change. When every pair is sequentially dependent there
+      is no parallelism benefit either. The right granularity is the smallest
+      unit that has a meaningful, independently observable outcome — typically a
+      coherent behaviour change, not a single function edit. The goal is
+      verifiability per unit of work, not maximising unit count.
+
+  - id: task-decomposition-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: free_form
+    prompt: >-
+      You are handed a tasks.md with 15 tasks for a new feature. Describe the
+      process you would use to evaluate whether the decomposition is correct
+      before any implementation begins. What signals would tell you the plan
+      needs to be revised, and what specific revisions would you make?
+    rubric:
+      criteria:
+        - id: checks-completion-criteria
+          text: >-
+            Checks that each task has an observable completion criterion (a test,
+            a command output, a file's existence) rather than describing only
+            activity ("write the function").
+        - id: identifies-dependency-ordering
+          text: >-
+            Verifies that sequentially dependent tasks are ordered correctly and
+            that tasks claimed to be parallelisable do not share mutable state
+            (files, schema, in-memory objects).
+        - id: flags-mixed-concerns
+          text: >-
+            Identifies tasks that bundle behaviour-preserving changes with
+            behaviour-changing changes (e.g. refactor + bug fix) and recommends
+            splitting them.
+        - id: flags-granularity-extremes
+          text: >-
+            Flags both under-decomposition (tasks too large to verify
+            independently) and over-decomposition (tasks so small that handoff
+            overhead exceeds verifiability benefit), and explains the appropriate
+            scope.
+        - id: revision-specificity
+          text: >-
+            Proposes concrete revisions — not just "fix the dependencies" but
+            specific re-orderings, splits, or merges with reasoning tied to the
+            signals found.
+      referenceAnswer: >-
+        Before implementation begins, review each of the 15 tasks against five
+        criteria:
+
+        1. Observable completion criterion. Each task should state what you can
+        check when it is done: a test name that passes, a route that returns a
+        specific status code, a file at a given path. A task that says "implement
+        the service layer" with no checkable outcome is under-specified. Revision:
+        rewrite the task with an explicit acceptance criterion.
+
+        2. Correct dependency ordering. For each pair of tasks, ask: "Could Task B
+        be fully specified today, without Task A's output?" If no, they are
+        sequentially dependent and must be ordered accordingly. If yes, check
+        whether they write to any shared resource (the same file, the same
+        database table, the same in-memory structure). Shared mutable state makes
+        parallel execution unsafe. Revision: re-order sequential dependencies;
+        split tasks that share state into a shared-state task followed by
+        independent tasks.
+
+        3. No mixed concerns. Flag any task that combines a behaviour-preserving
+        change (refactor, rename, move) with a behaviour-changing change (new
+        feature, bug fix). These cannot be safely merged: a regression from one
+        cannot be attributed to a cause. Revision: split into a refactoring task
+        (verified by no test failures) followed by a feature/fix task.
+
+        4. Granularity check. Flag tasks covering multiple subsystems or requiring
+        changes to more than 3–4 files as candidates for splitting. Equally, flag
+        runs of tasks that each change a single line in a single file with no
+        observable intermediate outcome — these are candidates for merging. The
+        right granularity is one coherent, testable behaviour change per task.
+
+        5. Completeness of coverage. Read the feature's acceptance criteria and
+        confirm every criterion maps to at least one task. Gaps mean the plan will
+        produce code that passes its tasks but misses user-visible requirements.
+        Revision: add tasks for uncovered criteria.
+      passThreshold: 0.6
+    guidance: >-
+      Strong answers engage with all five signals: missing completion criteria,
+      dependency misordering, mixed concerns, granularity extremes, and coverage
+      gaps. Weak answers describe only one or two of these and offer vague
+      revisions ("make tasks smaller"). The key differentiator is specificity:
+      the candidate should name what to look for AND what to do when they find it.

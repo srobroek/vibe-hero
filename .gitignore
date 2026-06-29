@@ -293,3 +293,14 @@ repomix.txt
 
 # APM dependencies
 apm_modules/
+
+# Node / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.vitest/
+*.log
+.pnpm-store/
+# vibe-hero local runtime (profile + content cache) — never commit user state
+.vibe-hero/

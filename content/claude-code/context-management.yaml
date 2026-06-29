@@ -1,0 +1,302 @@
+# Topic: context-management (claude-code)
+#
+# Covers Claude Code context window hygiene: reading strategically, avoiding
+# unnecessary re-reads, compaction, the TodoWrite/TodoRead pattern, and how
+# large context affects performance and cost. Tiers 100–500.
+
+id: context-management
+class:
+  kind: tool
+  tool: claude-code
+title: Context Window Management
+summary: >-
+  Keeping the context window lean and effective — strategic reads, avoiding
+  re-reads, compaction signals, the Todo list as working memory, and what
+  happens when context fills up.
+
+triggerSignals:
+  - tool: claude-code
+    match:
+      toolName: TodoWrite
+    weight: 1
+  - tool: claude-code
+    match:
+      toolName: TodoRead
+    weight: 0.8
+  - tool: claude-code
+    match:
+      toolNamePattern: "^Read$"
+    weight: 0.5
+  - tool: claude-code
+    match:
+      mcpToolPattern: ".*compact.*"
+    weight: 0.7
+
+items:
+  # ── Tier 100 — Remember ──────────────────────────────────────────────────
+  - id: ctx-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      After successfully writing a file with the Edit or Write tool, should you
+      immediately re-read the file to verify the change?
+    choices:
+      - id: a
+        text: >-
+          Yes — always re-read to confirm the file on disk matches what you
+          intended
+      - id: b
+        text: >-
+          No — Edit/Write would have errored if the change failed; re-reading
+          wastes context
+      - id: c
+        text: >-
+          Only re-read files larger than 100 lines
+      - id: d
+        text: >-
+          Re-read only when using Write, not Edit
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Edit and Write tools error on failure; if they return successfully the
+      change landed. Immediately re-reading the file after a successful edit
+      adds the full file content to context for no benefit — a costly habit at
+      scale.
+
+  - id: ctx-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: >-
+      What is the TodoWrite tool used for in Claude Code?
+    choices:
+      - id: a
+        text: Writing TODO comments into source code files
+      - id: b
+        text: >-
+          Maintaining an in-session task list that tracks planned, in-progress,
+          and completed work
+      - id: c
+        text: Scheduling background tasks for later sessions
+      - id: d
+        text: Sending task notifications to the user
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      TodoWrite (paired with TodoRead) is Claude Code's in-session task list.
+      It acts as working memory — externalizing what needs to be done so the
+      model doesn't have to hold the full plan in context. Mark tasks
+      in_progress when starting and completed when done.
+
+  # ── Tier 200 — Understand ───────────────────────────────────────────────
+  - id: ctx-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      You need to understand a function defined in a 2000-line file. What is
+      the most context-efficient approach?
+    choices:
+      - id: a
+        text: Read the entire file first, then locate the function
+      - id: b
+        text: >-
+          Use Read with offset and limit parameters to read only the relevant
+          section, or use Grep/a symbolic tool to find the function first
+      - id: c
+        text: Ask the user to paste the function into the chat
+      - id: d
+        text: Read the first 100 lines, then guess the rest
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Reading an entire large file when you only need a section is one of the
+      most common context-wasting patterns. Use Read with `offset`/`limit`, or
+      use Grep/symbolic tools to find the exact location first, then read only
+      that range. The instructions explicitly say to prefer dedicated tools over
+      cat/head/tail for this reason.
+
+  - id: ctx-200-sa-a
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: short_answer
+    prompt: >-
+      What happens to a Claude Code session's context when it gets very full,
+      and what is the term for the automatic process that trims it?
+    answerKey:
+      kind: keyword
+      anyOf:
+        - compaction
+        - compact
+        - context compaction
+        - auto-compaction
+      normalize: lower
+    guidance: >-
+      When the context window fills up, Claude Code performs *compaction* —
+      it summarizes the conversation history to free space. Compaction is
+      automatic but lossy: details from earlier in the session may be
+      summarized away. Keeping context lean from the start delays compaction
+      and reduces information loss.
+
+  # ── Tier 300 — Apply ────────────────────────────────────────────────────
+  - id: ctx-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      You are starting a multi-file refactor that will span many steps. Before
+      writing a single line of code, which TodoWrite action is most valuable?
+    choices:
+      - id: a
+        text: >-
+          Write a single "refactor everything" task and mark it in_progress
+      - id: b
+        text: >-
+          Break the work into discrete tasks (each file or logical unit), write
+          them all to the Todo list, then start the first one
+      - id: c
+        text: Skip TodoWrite — it adds tool calls that cost context
+      - id: d
+        text: >-
+          Write all tasks as completed so the user sees the plan immediately
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Using TodoWrite to lay out discrete, ordered tasks before starting serves
+      as a lightweight project plan external to context. It lets you mark tasks
+      in_progress and completed as you go, which both keeps you on track and
+      signals to the user that progress is being made. One coarse task gives no
+      recovery point if context is compacted mid-session.
+
+  - id: ctx-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      Your session's context contains the full text of five large files you
+      read earlier but no longer need. You are about to start a complex new
+      subtask. What is the best strategy?
+    choices:
+      - id: a
+        text: >-
+          Continue normally — the model handles large context automatically
+      - id: b
+        text: >-
+          Ask the user to run /compact or /clear before proceeding so stale
+          large-file content is removed from context
+      - id: c
+        text: >-
+          Re-read the files you still need, which signals to the model what is
+          important
+      - id: d
+        text: >-
+          Open a new terminal session and start over
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Stale large-file content sitting in context is pure waste — it uses
+      tokens, may mislead later reasoning, and accelerates compaction. For a
+      fresh subtask, prompting the user to run /compact (summarize history) or
+      /clear (reset) is the correct hygiene move. The model does not
+      automatically prune irrelevant earlier reads.
+
+  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
+  - id: ctx-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      In a long session you notice the model is forgetting instructions given
+      at the start of the conversation. What is the most likely cause?
+    choices:
+      - id: a
+        text: A bug in Claude Code
+      - id: b
+        text: >-
+          Compaction has summarized away the early instructions to free context
+          space
+      - id: c
+        text: The CLAUDE.md file was not loaded
+      - id: d
+        text: The model intentionally ignores earlier turns in long sessions
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When context fills and compaction runs, the summary may lose or dilute
+      instructions given early in the session. Key persistent instructions
+      belong in CLAUDE.md (loaded fresh each session) or in the system prompt,
+      not only in early conversation turns. Compaction is expected behavior, not
+      a bug.
+
+  - id: ctx-400-sa-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: short_answer
+    prompt: >-
+      You must read a PDF file that is 25 pages long. Which Read tool parameter
+      must you provide (besides file_path) to avoid a failure, and what is the
+      maximum number of pages per request?
+    answerKey:
+      kind: keyword
+      anyOf:
+        - pages
+        - "pages parameter"
+        - "20"
+        - "20 pages"
+      normalize: lower
+    guidance: >-
+      The Read tool requires the `pages` parameter for large PDFs (more than 10
+      pages) and allows a maximum of 20 pages per request. Attempting to read a
+      large PDF without `pages` will fail. For a 25-page document you would need
+      two reads: e.g., pages "1-20" then pages "21-25".
+
+  # ── Tier 500 — Evaluate ─────────────────────────────────────────────────
+  - id: ctx-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      You are designing a workflow where Claude Code repeatedly re-reads the
+      same configuration file at the start of each subtask "to make sure it has
+      the latest content." Evaluate this pattern.
+    choices:
+      - id: a
+        text: >-
+          Good practice — always read fresh to avoid acting on stale data
+      - id: b
+        text: >-
+          Acceptable for small files; wasteful for large ones
+      - id: c
+        text: >-
+          Anti-pattern: the file was already read and unchanged reads just
+          inflate context with duplicate content; only re-read when the file
+          might have changed
+      - id: d
+        text: >-
+          Required — the Read tool does not cache content between tool calls
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Re-reading a file that has not changed since the last read is pure context
+      inflation. Each re-read copies the full file text into context again,
+      accelerating compaction and increasing cost. The correct pattern is to
+      read once, act on the result, and only re-read if an intervening action
+      (Edit/Write/Bash) has modified the file — or if the file is produced
+      externally and genuinely may have changed.

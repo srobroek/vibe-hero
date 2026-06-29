@@ -1,0 +1,95 @@
+# Agent Assignments
+# Feature: vibe-hero — Adaptive Learning for Agentic Coding Tools (001-vibe-hero-mvp)
+# Generated: 2026-06-29
+# Command: /speckit.agent-assign.assign
+
+agents_scanned:
+  - name: "typescript-pro"
+    source: "project"
+    description: "Master TypeScript with advanced types, generics, strict type safety; Zod modeling, pure logic, vitest."
+  - name: "backend-architect"
+    source: "project"
+    description: "Backend/API architecture — MCP server, tool/protocol layer, service boundaries."
+  - name: "tutorial-engineer"
+    source: "project"
+    description: "Educational content + step-by-step learning material; curriculum and skill authoring."
+  - name: "coder"
+    source: "project"
+    description: "Implementation subagent for bounded code changes, setup, glue, refactors."
+  - name: "prompt-engineer"
+    source: "project"
+    description: "Advanced prompting / LLM steering — rubric-judging instructions."
+  - name: "docs-architect"
+    source: "project"
+    description: "Technical documentation and references."
+
+assignments:
+  # Phase 1 — Setup
+  T001: { agent: "coder", reason: "General project init (package.json/tsconfig/dirs)" }
+  T002: { agent: "coder", reason: "Add pnpm dependencies; bounded setup" }
+  T003: { agent: "typescript-pro", reason: "vitest + TS toolchain config" }
+  T004: { agent: "coder", reason: "Create top-level content/skills/hook dirs" }
+  # Phase 2 — Foundational
+  T005: { agent: "typescript-pro", reason: "Zod enum/identifier schemas" }
+  T006: { agent: "typescript-pro", reason: "Content Zod schemas + cross-field validation" }
+  T007: { agent: "typescript-pro", reason: "Profile Zod schemas" }
+  T008: { agent: "typescript-pro", reason: "MCP tool I/O Zod schemas" }
+  T009: { agent: "coder", reason: "Plain tunable constants module" }
+  T010: { agent: "typescript-pro", reason: "Pure Elo math (fixed item difficulty)" }
+  T011: { agent: "typescript-pro", reason: "Pure item-selection logic" }
+  T012: { agent: "typescript-pro", reason: "Engine unit tests (vitest)" }
+  T013: { agent: "typescript-pro", reason: "Atomic+locked profile store (concurrency, fs)" }
+  T014: { agent: "typescript-pro", reason: "Concurrency/store integration test" }
+  T015: { agent: "typescript-pro", reason: "YAML→Zod catalog loader" }
+  T016: { agent: "typescript-pro", reason: "Bundled catalog snapshot + loader wiring" }
+  T017: { agent: "typescript-pro", reason: "ObservationSource interface + self-report" }
+  T018: { agent: "typescript-pro", reason: "Hook payload → derived-signal extractor" }
+  T019: { agent: "typescript-pro", reason: "Privacy redaction test" }
+  T020: { agent: "backend-architect", reason: "stdio MCP server bootstrap + registration" }
+  T021: { agent: "backend-architect", reason: "SETUP_REQUIRED gate middleware" }
+  # Phase 3 — US0 first-run setup
+  T022: { agent: "backend-architect", reason: "save_config/get_config MCP tools" }
+  T023: { agent: "tutorial-engineer", reason: "Interactive setup Q&A skill (SKILL.md)" }
+  T024: { agent: "typescript-pro", reason: "US0 gate integration test" }
+  # Phase 4 — US2 status & guidance
+  T025: { agent: "backend-architect", reason: "get_status MCP tool" }
+  T026: { agent: "backend-architect", reason: "list_topics MCP tool" }
+  T027: { agent: "backend-architect", reason: "get_guidance MCP tool" }
+  T028: { agent: "tutorial-engineer", reason: "status + learn skills (SKILL.md)" }
+  T029: { agent: "typescript-pro", reason: "US2 integration test" }
+  # Phase 5 — US1 core loop
+  T030: { agent: "typescript-pro", reason: "Deterministic grading (pure TS)" }
+  T031: { agent: "backend-architect", reason: "start_quiz MCP tool" }
+  T032: { agent: "backend-architect", reason: "submit_answer MCP tool" }
+  T033: { agent: "tutorial-engineer", reason: "quiz-runner skill (SKILL.md)" }
+  T034: { agent: "backend-architect", reason: "record_observation MCP tool (trigger-only)" }
+  T035: { agent: "backend-architect", reason: "offer engine + OfferLedger backoff" }
+  T036: { agent: "backend-architect", reason: "get_offer/record_offer_response tools" }
+  T037: { agent: "coder", reason: "Thin Claude Code Stop-hook shell" }
+  T038: { agent: "typescript-pro", reason: "US1 offers integration tests (V2/V3)" }
+  T039: { agent: "typescript-pro", reason: "US1 e2e loop test (V1)" }
+  T040: { agent: "tutorial-engineer", reason: "Claude Code 'subagents' curriculum" }
+  T041: { agent: "tutorial-engineer", reason: "Claude Code 'context-management' curriculum" }
+  T042: { agent: "tutorial-engineer", reason: "Claude Code 'planning' curriculum" }
+  # Phase 6 — US3 graduation
+  T043: { agent: "typescript-pro", reason: "Graduation + hysteresis + dwell (pure TS)" }
+  T044: { agent: "typescript-pro", reason: "Lapse/decay model (pure TS)" }
+  T045: { agent: "typescript-pro", reason: "Graduation unit tests (SC-014)" }
+  T046: { agent: "backend-architect", reason: "Wire graduation/review into tools; own reviewSchedule" }
+  T047: { agent: "typescript-pro", reason: "US3 per-tool graduation integration test (SC-010)" }
+  # Phase 7 — US4 free-form
+  T048: { agent: "backend-architect", reason: "Free-form handshake grading (per-criterion verdict)" }
+  T049: { agent: "backend-architect", reason: "Graceful degradation when judging unavailable" }
+  T050: { agent: "prompt-engineer", reason: "Strict per-criterion judging steering in quiz skill" }
+  T051: { agent: "typescript-pro", reason: "US4 free-form integration test (V4)" }
+  T052: { agent: "tutorial-engineer", reason: "Free-form content item + rubric" }
+  # Phase 8 — US5 content delivery
+  T053: { agent: "typescript-pro", reason: "GitHub catalog fetcher + cache" }
+  T054: { agent: "typescript-pro", reason: "Resolution order + fetched-content validation" }
+  T055: { agent: "typescript-pro", reason: "US5 content integration test (V5)" }
+  # Phase 9 — Polish
+  T056: { agent: "typescript-pro", reason: "Profile/content schema migration policy" }
+  T057: { agent: "docs-architect", reason: "README + usage docs" }
+  T058: { agent: "tutorial-engineer", reason: "General-class seed topic" }
+  T059: { agent: "coder", reason: "Run quickstart V0–V6 validation pass" }
+  T060: { agent: "typescript-pro", reason: "Final coverage sweep + tidy exports" }

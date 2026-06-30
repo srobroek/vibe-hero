@@ -81,6 +81,31 @@ On success (`{ ok: true }`) confirm to the user, for example:
 > You can re-run setup at any time to change these preferences — your learning
 > progress is never affected."
 
+## After setup: show what vibe-hero can do
+
+Immediately after `save_config` succeeds, give the user a short "what can you do
+with vibe-hero" overview so they know how to use it right away. Do **not** wait
+to be asked. Present it as a brief, natural list (not a tool dump) — something
+like:
+
+> "Here's what you can do with vibe-hero — just ask me in plain language:
+> - **Quiz me** — "quiz me on subagents" (or hooks, MCP, git, testing, …): a
+>   short adaptive quiz that raises your ability as you answer correctly.
+> - **How am I doing?** — your progress dashboard: a topic × tool matrix with
+>   tiers, plus trend graphs.
+> - **What should I learn next?** — guidance toward your weakest or stalest
+>   topic.
+> - **List topics** — everything available to practice, across the tools you use
+>   and general software engineering.
+>
+> You'll also get the occasional end-of-work quiz offer (you can decline any
+> time). Want to start with a quick quiz on something?"
+
+Tailor the topic examples to the detected tool when you know it (e.g. lead with
+Claude Code topics on Claude Code). Keep it to a handful of bullets — the goal is
+orientation, not an exhaustive feature list. End by inviting them to try one
+thing (a quiz, the dashboard, or guidance).
+
 ## Notes for the host agent
 
 - Do not skip or pre-fill answers on the user's behalf; each preference is

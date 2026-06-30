@@ -21,6 +21,7 @@
  */
 
 import { fileURLToPath } from "node:url";
+import { realpathSync } from "node:fs";
 import { argv } from "node:process";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -34,6 +35,7 @@ import {
   setDetectedTool,
   setRawClientName,
 } from "./detection.js";
+import { debug } from "./log.js";
 
 // Re-export detection helpers so callers that import from "index.ts" still work.
 export { detectToolFromClientName, getDetectedTool } from "./detection.js";
@@ -67,7 +69,16 @@ export const registerToolModule = (
       // `registerTool` wants a raw Zod shape, not a wrapped object schema.
       inputSchema: tool.inputSchema.shape,
     },
-    async (args: unknown) => toCallToolResult(await gated(args)),
+    async (args: unknown) => {
+      debug(`tool call: ${tool.name}`, args);
+      const result = await gated(args);
+      const status =
+        result && typeof result === "object" && "status" in result
+          ? (result as { status?: unknown }).status
+          : "ok";
+      debug(`tool result: ${tool.name}`, { status });
+      return toCallToolResult(result);
+    },
   );
 };
 
@@ -99,6 +110,11 @@ export const createServer = (dirOverride?: string): McpServer => {
  * and tools degrade gracefully (no crash, no forced config).
  */
 export const main = async (): Promise<void> => {
+  debug(`starting MCP server ${SERVER_NAME} v${SERVER_VERSION}`, {
+    node: process.version,
+    argv: process.argv,
+    tools: TOOL_REGISTRY.length,
+  });
   const server = createServer();
   const transport = new StdioServerTransport();
 
@@ -115,11 +131,19 @@ export const main = async (): Promise<void> => {
     const clientVersion = server.server.getClientVersion();
     if (clientVersion?.name !== undefined) {
       setRawClientName(clientVersion.name);
-      setDetectedTool(detectToolFromClientName(clientVersion.name));
+      const detected = detectToolFromClientName(clientVersion.name);
+      setDetectedTool(detected);
+      debug("handshake complete", {
+        clientName: clientVersion.name,
+        detectedTool: detected ?? "(unsupported — UNSUPPORTED_TOOL until configured)",
+      });
+    } else {
+      debug("handshake complete but client sent no name", {});
     }
   };
 
   await server.connect(transport);
+  debug("connected over stdio; awaiting tool calls");
 };
 
 /**
@@ -130,7 +154,15 @@ export const main = async (): Promise<void> => {
 const isEntrypoint = (): boolean => {
   const entry = argv[1];
   if (entry === undefined) return false;
-  return fileURLToPath(import.meta.url) === entry;
+  const self = fileURLToPath(import.meta.url);
+  // Resolve symlinks on both sides: a node_modules/.bin or npx launch invokes
+  // this through a symlink, so argv[1] (symlink) != import.meta.url (realpath).
+  if (self === entry) return true;
+  try {
+    return realpathSync(self) === realpathSync(entry);
+  } catch {
+    return false;
+  }
 };
 
 if (isEntrypoint()) {

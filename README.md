@@ -116,6 +116,53 @@ at build/CI time from the source content in `content/<tool>/*.yaml`.
   across 29 topics (Claude Code, Codex, Kiro CLI, Kiro IDE, and general software
   engineering), authored from primary sources and adversarially reviewed.
 
+## Debugging & logging
+
+The MCP server has structured logging, off by default. Logs are newline-delimited
+JSON written to **stderr only** (stdout is reserved for the JSON-RPC stream, so
+logging there would corrupt the protocol). Two environment variables control it:
+
+| Variable | Effect |
+|---|---|
+| `VIBE_HERO_DEBUG=1` | Turn logging on at `debug` level. |
+| `VIBE_HERO_DEBUG=/path/to/file.log` | Turn logging on **and** tee every line to that file — the reliable way to capture output when a host swallows the server's stderr. |
+| `VIBE_HERO_LOG_LEVEL=trace\|debug\|info\|warn\|error\|silent` | Set the level explicitly (overrides the level implied by `VIBE_HERO_DEBUG`). Default is `silent`. |
+
+Run it directly and watch the logs:
+
+```bash
+# logs to your terminal (stderr)
+VIBE_HERO_DEBUG=1 npx -y @vibe-hero/server
+
+# logs to a file you can tail (pretty-print NDJSON with jq)
+VIBE_HERO_DEBUG=/tmp/vibe-hero.log npx -y @vibe-hero/server
+tail -f /tmp/vibe-hero.log | jq .
+```
+
+You'll see startup (Node version, tool count), the client handshake + detected tool,
+and every tool call + result.
+
+### Enabling logs inside Claude Code
+
+The plugin launches the server from its `.mcp.json`. To turn logging on for a real
+session, add an `env` block there (env vars are passed to the spawned server):
+
+```json
+{
+  "mcpServers": {
+    "vibe-hero": {
+      "command": "npx",
+      "args": ["-y", "@vibe-hero/server"],
+      "env": { "VIBE_HERO_DEBUG": "/tmp/vibe-hero.log" }
+    }
+  }
+}
+```
+
+Then `tail -f /tmp/vibe-hero.log | jq .` while you use vibe-hero. The same `env`
+block is how you'd set `VIBE_HERO_CONTENT_URL` (remote catalog) or `VIBE_HERO_HOME`
+(profile location) for the plugin-launched server.
+
 ## License
 
 Apache-2.0

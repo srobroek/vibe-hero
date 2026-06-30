@@ -27,7 +27,7 @@
  */
 
 import { spawn, execFile } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -95,6 +95,38 @@ describe("packaging: built + packed artifact (T006 / V1–V3 / FR-019a)", () => 
         await client.close().catch(() => undefined);
         await transport.close().catch(() => undefined);
         await rm(home, { recursive: true, force: true });
+      }
+    },
+    SPAWN_TIMEOUT_MS,
+  );
+
+  it(
+    "starts the MCP server when launched via a SYMLINK (the npx / node_modules/.bin path)",
+    async () => {
+      // npx and node_modules/.bin invoke the bin through a symlink, so argv[1]
+      // (symlink path) != import.meta.url (realpath). A naive entrypoint guard
+      // then never dispatches and the server silently exits doing nothing. This
+      // test launches the built bin via a symlink and asserts it still serves
+      // tools/list — guarding the entrypoint guard's realpath resolution.
+      const home = await mkdtemp(path.join(tmpdir(), "vibe-hero-pkg-symlink-"));
+      const linkDir = await mkdtemp(path.join(tmpdir(), "vibe-hero-bin-"));
+      const link = path.join(linkDir, "vibe-hero");
+      await symlink(CLI_DIST, link);
+      const transport = new StdioClientTransport({
+        command: process.execPath,
+        args: [link], // launch through the symlink, exactly like npx
+        env: { ...process.env, VIBE_HERO_HOME: home } as Record<string, string>,
+      });
+      const client = new Client({ name: "packaging-symlink-test", version: "0.0.0" });
+      try {
+        await client.connect(transport);
+        const { tools } = await client.listTools();
+        expect(tools).toHaveLength(EXPECTED_TOOL_COUNT);
+      } finally {
+        await client.close().catch(() => undefined);
+        await transport.close().catch(() => undefined);
+        await rm(home, { recursive: true, force: true });
+        await rm(linkDir, { recursive: true, force: true });
       }
     },
     SPAWN_TIMEOUT_MS,

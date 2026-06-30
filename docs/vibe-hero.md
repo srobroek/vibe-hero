@@ -57,7 +57,7 @@ Pull-based path (always available, no telemetry needed):
 ```
 packages/server/          @vibe-hero/server — the MCP server (TypeScript)
   src/
-    index.ts              stdio MCP bootstrap; registers all 10 tools
+    index.ts              stdio MCP bootstrap; registers all 11 tools
     config.ts             Elo parameters, tier boundaries, hysteresis (OD-005)
     schemas/              Zod schemas — single source of truth for all shapes
     catalog/              YAML loader, GitHub fetcher, bundled baseline
@@ -137,7 +137,7 @@ Every MCP tool except `get_config` and `save_config` returns:
 when the profile has no configuration. The gate blocks only vibe-hero actions —
 it never interrupts the user's normal coding work.
 
-## The 10 MCP tools
+## The 11 MCP tools
 
 | Tool | What it does |
 |---|---|
@@ -145,12 +145,17 @@ it never interrupts the user's normal coding work.
 | `list_topics` | Catalog topics, optionally filtered by tool or class. |
 | `get_guidance` | Teaching text + next-step recommendation for a topic or the weakest area. |
 | `start_quiz` | Start a quiz session. Returns 3–5 `PresentedItem`s selected by difficulty-targeting. Answer keys are never exposed for deterministic items. Free-form items include `rubric` + `referenceAnswer` for host-agent judging. |
-| `submit_answer` | Grade one item, update ability, check graduation. Engine grades deterministic types; host agent returns a per-criterion verdict for free-form types and the engine computes the score. |
+| `submit_answer` | Grade one item, update ability, check graduation, append an ability snapshot. Engine grades deterministic types; host agent returns a per-criterion verdict for free-form types and the engine computes the score. |
 | `save_config` | Persist setup preferences. Clears the gate. Never wipes learning progress. |
 | `get_config` | Read current config or absence. Used by skills and the hook to check gate state. |
 | `record_observation` | Telemetry intake. Stores only derived signals; awards nothing. Returns offer candidates. |
-| `get_offer` | Resolve whether to surface an end-of-work offer for a session. |
+| `get_offer` | Resolve whether to surface an end-of-work offer for a session. Due-for-review topics are offered first. |
 | `record_offer_response` | Record accept / decline / defer. A decline suppresses further offers for the session; repeated cross-session declines apply backoff and eventually mute globally. |
+| `get_dashboard` | Progress dashboard data: a topics × scopes matrix (tier + ability), summary metadata, and per-scope ability-over-time series. |
+
+Tools are gated: until setup completes they return `SETUP_REQUIRED`; on an
+unsupported host (one whose `clientInfo.name` does not map to a known tool) they
+return `UNSUPPORTED_TOOL` rather than guessing.
 
 Full input/output contracts: `specs/001-vibe-hero-mvp/contracts/mcp-tools.md`.
 
@@ -162,7 +167,7 @@ Claude Code, Codex, and Kiro.
 
 | Skill | Trigger / purpose |
 |---|---|
-| `vibe-hero-setup` | Run first, or when `SETUP_REQUIRED` is returned. Asks four questions (tools, cadence, proactive offers, quiz length) and calls `save_config`. |
+| `vibe-hero-setup` | Run first, or when `SETUP_REQUIRED` is returned. Asks three questions (offer cadence, proactive offers, quiz length) and calls `save_config`. The tool being learned is auto-detected from the host's MCP `clientInfo` — it is not asked. |
 | `vibe-hero-quiz` | "Quiz me", "test me", or when the user accepts an offer. Drives the `start_quiz` / `submit_answer` loop; judges free-form answers strictly against the MCP-supplied rubric. |
 | `vibe-hero-status` | "Where am I with Claude Code?", "what's my progress". Calls `get_status` and presents per-topic standing. |
 | `vibe-hero-learn` | "What should I learn next?", "teach me about subagents". Calls `get_guidance`; offers to hand off to the quiz skill if the user wants to practice. |

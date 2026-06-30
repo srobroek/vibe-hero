@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.1](https://github.com/srobroek/vibe-hero/compare/v0.4.0...v0.4.1) (2026-06-30)
+
+
+### Features
+
+* present end-of-work quiz offers silently and show a "what can you do with vibe-hero" overview right after setup ([#17](https://github.com/srobroek/vibe-hero/issues/17))
+
+
+### Miscellaneous
+
+* version-only republish of @vibe-hero/server (engine unchanged) to keep the lockstep version artifacts in sync with the plugin-only changes in #17
+
 ## [0.4.0](https://github.com/srobroek/vibe-hero/compare/v0.3.2...v0.4.0) (2026-06-30)
 
 

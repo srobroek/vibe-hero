@@ -1,0 +1,494 @@
+{
+  "version": "0.2.1",
+  "publishedAt": "2026-06-30T07:04:17.465Z",
+  "topics": [
+    {
+      "id": "agentic-workflows",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/agentic-workflows.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "03551685b1f47c4c7b156e9e572ce6b68ef2b6089f47aab57783054821fecce5"
+    },
+    {
+      "id": "context-management",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/context-management.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "eb376d73ee9e3284f1ee27c1d6f9cc31c02ad07a1dfea22b42934dc22b3f9a0d"
+    },
+    {
+      "id": "hooks",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/hooks.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "2d8cbebaaad86aabbc81d3bedd85534ddb62e444841d676f09519959a55c9e2e"
+    },
+    {
+      "id": "mcp-servers",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/mcp-servers.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "d15039a43be85fee151145a834cc9e9b9082f82c2c8691e312ce93da9bbbd25e"
+    },
+    {
+      "id": "permissions-and-settings",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/permissions-and-settings.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "1290d8871045636b6fd6f02294f38910864b3d0f2bc47a80d2305e5ad37a1090"
+    },
+    {
+      "id": "planning",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/planning.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "9ea0db1ca21ce7abfe69cdf766f3200d68345478da2e6f27b9c59efb47ac0eca"
+    },
+    {
+      "id": "slash-commands-and-skills",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/slash-commands-and-skills.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "f4a9e9b2bd81885058e3c7a740673fe7357ec20ed9b00f3f6c162f5aeb1eddf7"
+    },
+    {
+      "id": "subagents",
+      "class": {
+        "kind": "tool",
+        "tool": "claude-code"
+      },
+      "file": "claude-code/subagents.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "3e0a2e6bd17246d18834eac38677a3927f3ff63b624afe0c0822a898a1c53126"
+    },
+    {
+      "id": "codex-approval-and-sandbox",
+      "class": {
+        "kind": "tool",
+        "tool": "codex"
+      },
+      "file": "codex/codex-approval-and-sandbox.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "154e201f0c87af3d9e2712711397877ec392847267d3fa02c36b5b496555cd12"
+    },
+    {
+      "id": "codex-cli-basics",
+      "class": {
+        "kind": "tool",
+        "tool": "codex"
+      },
+      "file": "codex/codex-cli-basics.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "e0c13d2e2f67c6b94acb5794550d0e0a843e1f97b32b821c7faa38597974bbc9"
+    },
+    {
+      "id": "codex-config-and-agents-md",
+      "class": {
+        "kind": "tool",
+        "tool": "codex"
+      },
+      "file": "codex/codex-config-and-agents-md.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "5ecf852983189b71bc213cf87cb329ec961173e91acf89298e60e77050fea4b0"
+    },
+    {
+      "id": "codex-mcp-and-tools",
+      "class": {
+        "kind": "tool",
+        "tool": "codex"
+      },
+      "file": "codex/codex-mcp-and-tools.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "76902aaea128c99e44f662e9513bc8c1a76e1dc7f344d348f9d95a57ce6fc9a7"
+    },
+    {
+      "id": "debugging",
+      "class": {
+        "kind": "general"
+      },
+      "file": "general/debugging.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "98e0487aa6db09b47df2f6334be8f353504084d6ab0c634f719e7a2dfeefc734"
+    },
+    {
+      "id": "git-and-version-control",
+      "class": {
+        "kind": "general"
+      },
+      "file": "general/git-and-version-control.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "4e43dc34d800d56afab39c49a81c9a63f1b18753f3de53df95c3b0499e42c12c"
+    },
+    {
+      "id": "refactoring-and-code-review",
+      "class": {
+        "kind": "general"
+      },
+      "file": "general/refactoring-and-code-review.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "324945dd352a1f7fe1e6e553e7b4ba6df46648d63122c27ff345c5d690004084"
+    },
+    {
+      "id": "task-decomposition",
+      "class": {
+        "kind": "general"
+      },
+      "file": "general/task-decomposition.yaml",
+      "itemCount": 10,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "32af8ae509670ae849e371b728c2537e58578f0fa57c1c8ea3dbbb3189ec837e"
+    },
+    {
+      "id": "testing-and-verification",
+      "class": {
+        "kind": "general"
+      },
+      "file": "general/testing-and-verification.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "31a2002d9ac786e65761b00a6660817bdedce288316113ffd50d3510218a76bb"
+    },
+    {
+      "id": "kiro-cli-autopilot-and-trust",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-autopilot-and-trust.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "99a8b1c443d8547522f5fd1899a22dd7e9561a16b2c629951352e6d9f29b8f62"
+    },
+    {
+      "id": "kiro-cli-basics",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-basics.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "c149c5f58d2b2b9ddac1d3d447ef36cede8ffcfd875f28b9bca36c7e4c8e23b9"
+    },
+    {
+      "id": "kiro-cli-hooks",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-hooks.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "3bda86da5372aa6188e906e404c414ad0d8929a08f6a62c516e6474a5de5768f"
+    },
+    {
+      "id": "kiro-cli-mcp",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-mcp.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "f5a771328213ef077ad3ba6cca2d267100187c8221e1714014873ba0ac57b4ad"
+    },
+    {
+      "id": "kiro-cli-specs-and-steering",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-specs-and-steering.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "2f2b7a1fae91b191aa7e04eb25e9ad3220f75ffe7d867f3799bd8cdb4ba0c317"
+    },
+    {
+      "id": "kiro-cli-workflows",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-cli"
+      },
+      "file": "kiro-cli/kiro-cli-workflows.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "f7fa6ef466e3711fc9be37a16be2cb85a0b397cd9e272d0e35a4511d30458ec4"
+    },
+    {
+      "id": "kiro-ide-agent-hooks",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-agent-hooks.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "58b770df7a652dbe751c71ba91d93372f8870644e8b5579252e1e24a6b627c0c"
+    },
+    {
+      "id": "kiro-ide-ears-requirements",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-ears-requirements.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "9ce786c798af1919cea4c8cd73831948f78d170ecbf768fd75b82c6c0cc1ff09"
+    },
+    {
+      "id": "kiro-ide-mcp-and-tools",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-mcp-and-tools.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "5eeac02c2b3dd6f0416bf3969d78d8d4db57bb33b58287af141fbd6b68176595"
+    },
+    {
+      "id": "kiro-ide-spec-driven-dev",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-spec-driven-dev.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "0d70ba7f79c67b13d01eb277afd73a25e6317b90e717e4b6a859f4631bf3e830"
+    },
+    {
+      "id": "kiro-ide-steering",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-steering.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "9f4ec966f603cb38cf85547bac45bdd3654541cf12ba77d084375850a5e10de8"
+    },
+    {
+      "id": "kiro-ide-task-execution",
+      "class": {
+        "kind": "tool",
+        "tool": "kiro-ide"
+      },
+      "file": "kiro-ide/kiro-ide-task-execution.yaml",
+      "itemCount": 100,
+      "tiers": [
+        100,
+        200,
+        300,
+        400,
+        500
+      ],
+      "sha256": "4f7c43cabf440be8b3219b2448984099403428e875213e90f6efc8532945d10f"
+    }
+  ]
+}

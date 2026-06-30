@@ -1,0 +1,2573 @@
+# Topic: kiro-ide-agent-hooks (kiro-ide)
+# Agent hooks in the Kiro IDE — event-triggered automation.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-agent-hooks
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE Agent Hooks
+summary: Agent hooks in the Kiro IDE — event-triggered automation.
+triggerSignals: []
+items:
+  - id: kah-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: What are Kiro IDE Agent Hooks?
+    choices:
+      - id: a
+        text: Event-driven automations that detect an IDE event and then run an action automatically
+      - id: b
+        text: Keyboard shortcuts that insert reusable code snippets into the editor
+      - id: c
+        text: A panel that lists every Claude model available to your account
+      - id: d
+        text: Markdown files that store persistent project knowledge for the agent
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Agent hooks follow a two-step detect-then-act model: Kiro detects an IDE event and then runs
+      an action automatically. Markdown project knowledge describes steering, not hooks, and the
+      model list and snippets are unrelated features.
+  - id: kah-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: In what file format are Kiro agent hooks stored?
+    choices:
+      - id: a
+        text: YAML files
+      - id: b
+        text: JSON files
+      - id: c
+        text: Markdown files
+      - id: d
+        text: TOML files
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Hooks are stored as JSON files. Markdown is used for specs and steering, not for hook
+      definitions. YAML front matter appears in steering files, but hooks themselves are JSON.
+  - id: kah-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: In which workspace directory are Kiro agent hooks stored?
+    choices:
+      - id: a
+        text: .kiro/specs/
+      - id: b
+        text: .kiro/steering/
+      - id: c
+        text: .kiro/hooks/
+      - id: d
+        text: .kiro/settings/
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Workspace hooks live in .kiro/hooks/. The .kiro/specs/ folder holds spec artifacts,
+      .kiro/steering/ holds steering docs, and .kiro/settings/ holds settings such as mcp.json.
+  - id: kah-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Where are user-level (global) Kiro hooks stored, as opposed to workspace hooks?
+    choices:
+      - id: a
+        text: /etc/kiro/hooks/
+      - id: b
+        text: .kiro/global/hooks/
+      - id: c
+        text: ~/.config/kiro/hooks.json
+      - id: d
+        text: ~/.kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      User-level hooks live in ~/.kiro/hooks/ in the home directory, mirroring the workspace
+      .kiro/hooks/ location. The other paths are invented.
+  - id: kah-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: free_form
+    prompt: Name three IDE events that can trigger a Kiro agent hook.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names a file event such as file save (PostFileSave)
+        - id: c2
+          text: >-
+            Names a second valid trigger (file create, file delete, manual/on-demand, tool use, or
+            agent stop)
+        - id: c3
+          text: Names a third valid distinct trigger
+      referenceAnswer: >-
+        Valid triggers include file save (PostFileSave), file create (PostFileCreate), file delete
+        (PostFileDelete), and manual/on-demand triggers. Broader events include UserPromptSubmit,
+        Stop (agent turn completion), PreToolUse/PostToolUse, and PreTaskExec/PostTaskExec.
+      passThreshold: 0.6
+    guidance: >-
+      The durable core set is file save, file create, file delete, and manual triggers. Kiro also
+      exposes UserPromptSubmit, Stop, tool pre/post, and spec task pre/post events. Any three
+      distinct valid triggers earn full credit.
+  - id: kah-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: A Kiro hook action can be one of two kinds. Which pair is correct?
+    choices:
+      - id: a
+        text: An agent prompt (run an AI task) or a shell command
+      - id: b
+        text: A git commit or a git push
+      - id: c
+        text: A REST webhook or a database query
+      - id: d
+        text: A keyboard macro or a clipboard paste
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A hook action is either an agent action (type "agent" with a prompt) or a shell command (type
+      "command" with a command). The other pairs are not how hook actions are defined.
+  - id: kah-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: Which company developed the Kiro IDE that provides agent hooks?
+    choices:
+      - id: a
+        text: Microsoft
+      - id: b
+        text: AWS (Amazon)
+      - id: c
+        text: Google
+      - id: d
+        text: JetBrains
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro is an agentic IDE developed by AWS (Amazon). It is built on Code OSS, the open-source
+      base of VS Code, but it is an AWS product, not Microsoft's.
+  - id: kah-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: List two ways a user can create an agent hook in Kiro besides editing the JSON file directly.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions natural-language creation (describe the behavior and Kiro generates the config)
+        - id: c2
+          text: Mentions the form-based / UI creation method in the IDE
+      referenceAnswer: >-
+        You can create a hook by describing the desired behavior in natural language so Kiro
+        generates the configuration, or by filling out a form-based hook UI in the IDE (accessible
+        via the Kiro panel or Command Palette).
+      passThreshold: 0.6
+    guidance: >-
+      The two assisted methods are natural-language description and the form-based UI. Direct JSON
+      editing is the third method but is excluded by the prompt.
+  - id: kah-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: Which field in a hook JSON definition specifies the event that triggers the hook?
+    choices:
+      - id: a
+        text: matcher
+      - id: b
+        text: action
+      - id: c
+        text: trigger
+      - id: d
+        text: timeout
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The trigger field names the event type (for example PostFileSave). matcher filters which
+      files/tools apply, action defines what runs, and timeout bounds execution time.
+  - id: kah-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: >-
+      A canonical example use case for a Kiro agent hook is to do what when a component file is
+      saved?
+    choices:
+      - id: a
+        text: Push the file to the remote git branch
+      - id: b
+        text: Open the file in a browser preview
+      - id: c
+        text: Delete the previous version of the file
+      - id: d
+        text: Automatically update or generate the matching test file
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A signature example is keeping tests in sync: on save of a component, the hook generates or
+      updates the corresponding test file. The other options are not the documented canonical use.
+  - id: kah-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: Which boolean field lets you turn a hook off without deleting its JSON file?
+    choices:
+      - id: a
+        text: enabled
+      - id: b
+        text: active
+      - id: c
+        text: visible
+      - id: d
+        text: paused
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The enabled field toggles a hook on or off while keeping the definition on disk. The other
+      field names are not part of the hook schema.
+  - id: kah-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: free_form
+    prompt: What is the purpose of the matcher field in a hook definition?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that matcher filters which files or tools the hook applies to
+        - id: c2
+          text: >-
+            Mentions it is a regular-expression (regex) pattern matched against the file path or
+            tool name
+      referenceAnswer: >-
+        The matcher is an optional regular expression that filters which events actually fire the
+        hook by matching against the file path (for file triggers) or the tool name (for tool
+        triggers), so the hook only runs for the files or tools you care about.
+      passThreshold: 0.6
+    guidance: >-
+      matcher is the scoping filter: a regex such as "\\.ts$" for file-path triggers, or a tool-name
+      regex for PreToolUse/PostToolUse. It is optional; without it the trigger always matches.
+  - id: kah-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: multiple_choice
+    prompt: Kiro's three signature differentiating features are Specs, Steering, and which third feature?
+    choices:
+      - id: a
+        text: Live Share
+      - id: b
+        text: Agent Hooks
+      - id: c
+        text: IntelliSense
+      - id: d
+        text: Remote Containers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The three signature features are Specs, Steering, and Agent Hooks, alongside agentic chat and
+      MCP integration. The other options are general IDE features not unique to Kiro.
+  - id: kah-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: What does the Stop trigger correspond to in Kiro?
+    choices:
+      - id: a
+        text: The user pressing the editor stop button to kill the IDE
+      - id: b
+        text: A file being deleted from the workspace
+      - id: c
+        text: Agent turn completion (the agent finishes responding)
+      - id: d
+        text: The MCP server disconnecting
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The Stop trigger fires on agent turn completion, which is why a secret-scan hook on Stop can
+      review work before a commit. It is not tied to deleting files or stopping the IDE.
+  - id: kah-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: Which trigger fires when a brand-new file is added to the workspace?
+    choices:
+      - id: a
+        text: PostFileSave
+      - id: b
+        text: PostFileDelete
+      - id: c
+        text: SessionStart
+      - id: d
+        text: PostFileCreate
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      PostFileCreate fires on file creation. PostFileSave fires on save of an existing file,
+      PostFileDelete on deletion, and SessionStart at the start of a session.
+  - id: kah-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: free_form
+    prompt: >-
+      Besides name and trigger, name the one other field every individual hook object must include
+      to be valid, and separately name the top-level field that wraps the hooks array and declares
+      the format version.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the action field as the third required per-hook field (what the hook runs)
+        - id: c2
+          text: Names the top-level version field (e.g. "v1") that wraps the hooks array
+      referenceAnswer: >-
+        Each individual hook object requires name, trigger, and action (the object describing the
+        agent prompt or shell command to run). The version field (such as "v1") is not part of each
+        hook object; it sits at the top level alongside the hooks array and declares the file format
+        version.
+      passThreshold: 0.6
+    guidance: >-
+      Per-hook required fields are name, trigger, and action; matcher, timeout, and enabled are
+      optional. version is a top-level wrapper for the whole hooks array, not a field inside each
+      hook. The prompt asks for action (per-hook) and version (top-level).
+  - id: kah-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: Another canonical agent-hook use case scans for what kind of risk before a commit?
+    choices:
+      - id: a
+        text: Leaked credentials or secrets
+      - id: b
+        text: Spelling mistakes in comments
+      - id: c
+        text: Unused CSS classes
+      - id: d
+        text: Outdated copyright years
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A documented use case is scanning for leaked credentials/secrets (API keys, tokens, private
+      keys) before a commit proceeds. The other checks are not the canonical security example.
+  - id: kah-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: Kiro is built on which open-source codebase?
+    choices:
+      - id: a
+        text: Eclipse Theia built from scratch
+      - id: b
+        text: Code OSS (the open-source base of VS Code)
+      - id: c
+        text: The Atom editor core
+      - id: d
+        text: A proprietary engine with no VS Code lineage
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro is built on Code OSS, so it can import VS Code settings, themes, and Open VSX-compatible
+      plugins. It is a VS Code-lineage fork, not a from-scratch editor.
+  - id: kah-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: free_form
+    prompt: >-
+      What is the default timeout (in seconds) for a Kiro hook if the timeout field is not
+      specified?
+    rubric:
+      criteria:
+        - id: c1
+          text: States the default timeout is 60 seconds
+      referenceAnswer: If the timeout field is omitted, the default hook timeout is 60 seconds.
+      passThreshold: 0.6
+    guidance: >-
+      The timeout field is optional and defaults to 60 seconds. It bounds how long the hook action
+      may run before Kiro stops it.
+  - id: kah-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: >-
+      Why do agent hooks give more reliable automation than simply asking the agent in chat to
+      "remember to run tests after editing"?
+    choices:
+      - id: a
+        text: >-
+          Hooks fire deterministically on a defined IDE event, so the action is not left to the
+          model's discretion
+      - id: b
+        text: Hooks run on a faster model than chat does
+      - id: c
+        text: Hooks bypass the approval system entirely
+      - id: d
+        text: Hooks store their output in the steering files automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The value of the detect-then-act model is determinism: when the configured event occurs, the
+      action runs every time, instead of relying on the model remembering an in-chat instruction.
+      Hooks do not change the model or auto-write steering.
+  - id: kah-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: How does a hook with action type "agent" differ from one with type "command"?
+    choices:
+      - id: a
+        text: An agent action runs synchronously; a command action always runs in the background
+      - id: b
+        text: An agent action runs an AI task from a prompt; a command action runs a shell command
+      - id: c
+        text: An agent action requires no matcher; a command action always requires one
+      - id: d
+        text: An agent action is workspace-scoped; a command action is always user-scoped
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      type "agent" runs an AI task defined by a prompt; type "command" runs a shell command. Scope
+      is determined by directory (.kiro vs ~/.kiro), not by action type, and matcher is optional for
+      both.
+  - id: kah-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: >-
+      Explain the difference between a Kiro agent hook and a steering file, in terms of what each
+      one does for the agent.
+    rubric:
+      criteria:
+        - id: c1
+          text: States hooks are event-driven automations that run an action when an IDE event occurs
+        - id: c2
+          text: States steering files supply persistent project knowledge/context to the agent
+        - id: c3
+          text: Makes clear they are distinct mechanisms (active automation vs passive context)
+      referenceAnswer: >-
+        An agent hook is an active, event-driven automation: when an IDE event such as a file save
+        occurs, Kiro runs an action (an AI prompt or shell command). A steering file is passive
+        persistent context: markdown that gives the agent durable project knowledge so you do not
+        have to re-explain conventions each conversation. Hooks act; steering informs.
+      passThreshold: 0.6
+    guidance: >-
+      Key contrast: hooks fire on events and do something; steering files are
+      always-or-conditionally loaded context that shapes how the agent responds. They live in
+      different folders (.kiro/hooks vs .kiro/steering) and serve different roles.
+  - id: kah-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      The matcher for a PreToolUse hook and the matcher for a PostFileSave hook are both regular
+      expressions. What actually differs between them?
+    choices:
+      - id: a
+        text: PreToolUse matchers must be JSON arrays, while file matchers must be plain strings
+      - id: b
+        text: PreToolUse cannot use a matcher at all, so the field is ignored
+      - id: c
+        text: >-
+          They use the same regex syntax, but a PreToolUse matcher is matched against the tool name
+          while a file-trigger matcher is matched against the file path
+      - id: d
+        text: File matchers run case-sensitively while tool matchers ignore case
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The matcher is always a regular expression; what changes with the trigger is the string it is
+      tested against -- the tool name for tool events, the file path for file events. The other
+      distinctions are fabricated.
+  - id: kah-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      A team puts a hook in .kiro/hooks/ and commits it. What does this achieve compared to placing
+      it in ~/.kiro/hooks/?
+    choices:
+      - id: a
+        text: The workspace hook runs faster because it is local
+      - id: b
+        text: The user hook is shared and the workspace hook is private
+      - id: c
+        text: There is no difference; both locations are per-machine only
+      - id: d
+        text: >-
+          The workspace hook is shared with everyone who checks out the repo; the user hook applies
+          only to that one user across their projects
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Hooks in .kiro/hooks/ are part of the repository, so committing them shares the automation
+      with the whole team. Hooks in ~/.kiro/hooks/ are personal and follow the individual user
+      across all their workspaces.
+  - id: kah-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      Describe why creating a hook in natural language still results in a deterministic automation,
+      even though the description was written in plain English.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains natural language is used only at authoring time to generate the JSON config
+        - id: c2
+          text: >-
+            States the resulting JSON hook fires deterministically on its event, independent of the
+            original prose
+      referenceAnswer: >-
+        The natural-language step happens only once, at authoring time: Kiro converts the
+        description into a concrete JSON hook definition (trigger, matcher, action). After that, the
+        hook fires deterministically whenever its trigger event occurs. The prose is not
+        re-interpreted at runtime, so behavior is repeatable.
+      passThreshold: 0.6
+    guidance: >-
+      The separation of authoring from execution is the key idea: NL drives config generation, then
+      the stored JSON is what runs. This is why NL-authored hooks are still deterministic event
+      automations.
+  - id: kah-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: >-
+      Why is a Stop-triggered secret-scan hook a sensible design for catching leaked credentials
+      before a commit?
+    choices:
+      - id: a
+        text: >-
+          Stop fires at agent turn completion, so the scan runs after the agent has finished making
+          edits but before the human commits
+      - id: b
+        text: Stop fires only when the repository is pushed, which is the last safe moment
+      - id: c
+        text: Stop disables all other hooks so the scan has exclusive access
+      - id: d
+        text: Stop guarantees the scan runs inside the git pre-commit hook chain
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Because Stop fires when the agent finishes its turn, it is a natural checkpoint to review the
+      just-completed work for secrets before the developer commits. It is not the same as a git
+      pre-commit hook and does not disable other hooks.
+  - id: kah-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: How should you think about the relationship between a hook's trigger and its matcher?
+    choices:
+      - id: a
+        text: The matcher selects the event class; the trigger narrows it to specific files
+      - id: b
+        text: The trigger selects the event class; the matcher narrows it to specific files or tools
+      - id: c
+        text: They are interchangeable aliases for the same filter
+      - id: d
+        text: The matcher overrides the trigger when both are present
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The trigger answers "which event," and the optional matcher answers "which files or tools
+      within that event." They compose; neither overrides the other, and they are not
+      interchangeable.
+  - id: kah-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      Explain why a hook is described as following a two-step "detect then act" model, and what each
+      step corresponds to in the JSON definition.
+    rubric:
+      criteria:
+        - id: c1
+          text: Maps "detect" to the trigger (and optional matcher) recognizing an IDE event
+        - id: c2
+          text: Maps "act" to the action object (agent prompt or shell command) that runs
+      referenceAnswer: >-
+        Detect corresponds to the trigger (plus optional matcher): Kiro watches for the configured
+        IDE event and checks whether the matcher applies. Act corresponds to the action object: once
+        the event is detected, Kiro runs the agent prompt or shell command. The two-step model
+        separates what to watch for from what to do.
+      passThreshold: 0.6
+    guidance: >-
+      Detect = trigger/matcher; act = action. This framing maps directly onto the JSON fields and
+      explains why hooks behave like "an experienced developer catching things you miss."
+  - id: kah-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      A hook is set up but you do not want it to run for now, and you may re-enable it next sprint.
+      What is the cleanest approach?
+    choices:
+      - id: a
+        text: Delete the JSON file and recreate it later from memory
+      - id: b
+        text: Set the timeout to 0 so it instantly fails
+      - id: c
+        text: Set enabled to false in its JSON so the definition is preserved but inactive
+      - id: d
+        text: Move it to .kiro/specs/ so Kiro ignores it
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      enabled: false toggles the hook off while keeping it on disk, which is exactly the
+      preserve-but-deactivate case. Deleting loses the definition, timeout 0 is a misuse, and moving
+      it to specs is not a supported disable mechanism.
+  - id: kah-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      Why might you prefer a command-type hook action over an agent-type action for a fixed,
+      well-defined check?
+    choices:
+      - id: a
+        text: A command action can read steering files but an agent action cannot
+      - id: b
+        text: A command action ignores the timeout field
+      - id: c
+        text: An agent action cannot be triggered on file save
+      - id: d
+        text: >-
+          A shell command is deterministic and cheaper, with no model variability, for a check that
+          does not need reasoning
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      For a deterministic, well-specified task (run a linter, run a test command), a shell command
+      is exact and avoids model cost and variability. Agent actions shine when the task needs
+      reasoning or code understanding. Both honor timeout and both can fire on file save.
+  - id: kah-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      Kiro can also store an AGENTS.md file for context. How do hooks differ from AGENTS.md in how
+      they engage the agent?
+    choices:
+      - id: a
+        text: >-
+          Hooks actively run an action on an event; AGENTS.md is passive context loaded into the
+          conversation
+      - id: b
+        text: Hooks and AGENTS.md are both event-triggered and interchangeable
+      - id: c
+        text: AGENTS.md fires on file save while hooks only run manually
+      - id: d
+        text: Hooks are markdown while AGENTS.md is JSON
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hooks are active automations driven by events; AGENTS.md (and steering generally) is passive
+      context that informs responses. AGENTS.md does not fire on events, and hooks are JSON while
+      AGENTS.md is markdown.
+  - id: kah-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      A developer says "agent hooks are just git pre-commit hooks under a new name." Explain why
+      this is a misconception.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States agent hooks are IDE-event-driven (save/create/delete/manual/turn events), not
+            limited to git commit time
+        - id: c2
+          text: States their action can be an AI agent prompt, not only a shell script
+      referenceAnswer: >-
+        Git pre-commit hooks run only at commit time and execute shell scripts. Kiro agent hooks
+        fire on a wide range of IDE events (file save, create, delete, manual trigger, agent turn
+        completion, tool use, task execution) and their action can be an AI agent prompt that
+        reasons about code, not just a shell command. They overlap in spirit but are a broader,
+        IDE-integrated, AI-capable mechanism.
+      passThreshold: 0.6
+    guidance: >-
+      Two distinguishing points: the breadth of triggers (far beyond commit time) and the ability to
+      run an agent prompt rather than only a script. Mentioning either the trigger breadth or the
+      agent action capability, plus the contrast with commit-only scripts, earns credit.
+  - id: kah-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: >-
+      Why does Kiro store hooks as discrete JSON files rather than embedding them all in one
+      settings blob?
+    choices:
+      - id: a
+        text: JSON files load faster than a single settings object
+      - id: b
+        text: >-
+          Per-file definitions are individually version-controllable, shareable, and toggleable
+          without touching unrelated hooks
+      - id: c
+        text: It is required by the Code OSS plugin system
+      - id: d
+        text: It prevents hooks from being committed to git
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Discrete files in .kiro/hooks/ let each hook be reviewed, diffed, shared, enabled, or disabled
+      independently. The other reasons are not the rationale and are partly false (the files are
+      designed to be committed).
+  - id: kah-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: What does it mean that some hook triggers are "blocking"?
+    choices:
+      - id: a
+        text: A blocking trigger prevents any other hook from firing during the session
+      - id: b
+        text: A blocking trigger forces the agent to wait for user input forever
+      - id: c
+        text: >-
+          On a blocking trigger, an exit code of 2 from the action can stop the gated operation from
+          proceeding
+      - id: d
+        text: A blocking trigger disables the timeout
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For blocking trigger types, an exit code of 2 signals that the gated action should be stopped
+      (for example, blocking a tool call). Exit code 0 means success. Blocking does not freeze other
+      hooks or remove the timeout.
+  - id: kah-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Compare a PreToolUse hook and a PostToolUse hook: when does each fire and what is each
+      typically good for?
+    rubric:
+      criteria:
+        - id: c1
+          text: States PreToolUse fires before a tool invocation (and can gate/block it)
+        - id: c2
+          text: States PostToolUse fires after a tool invocation (good for follow-up actions)
+      referenceAnswer: >-
+        PreToolUse fires before a tool is invoked, so it is good for guardrails such as validating
+        or blocking a risky tool call before it runs. PostToolUse fires after the tool completes, so
+        it is good for follow-up work like formatting or logging the result of the tool's effect.
+      passThreshold: 0.6
+    guidance: >-
+      Pre = before (gate/validate, can block); Post = after (react/clean up). Mentioning the timing
+      of each and a sensible use earns credit.
+  - id: kah-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 324
+    type: multiple_choice
+    prompt: >-
+      You want a hook that, whenever any TypeScript source file under src/ is saved, asks the agent
+      to update the matching test. Which trigger and matcher pairing is correct (matchers are
+      regular expressions)?
+    choices:
+      - id: a
+        text: trigger PostFileSave with matcher "^src/.*\\.ts$" and an agent action
+      - id: b
+        text: trigger PreToolUse with matcher "^src/.*\\.ts$" and a command action
+      - id: c
+        text: trigger Stop with matcher "^src/.*\\.ts$" and an agent action
+      - id: d
+        text: trigger SessionStart with matcher "\\.ts$" and a command action
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Saving a file is PostFileSave; restricting to TypeScript sources under src/ uses the regex
+      matcher ^src/.*\\.ts$ (matchers are regular expressions, not globs); generating/updating tests
+      is reasoning work, so an agent action fits. PreToolUse, Stop, and SessionStart fire on the
+      wrong events.
+  - id: kah-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      Write a hook that runs the shell command "npm run lint" after saving any JavaScript file.
+      Which action object is correct?
+    choices:
+      - id: a
+        text: '{ "type": "agent", "command": "npm run lint" }'
+      - id: b
+        text: '{ "type": "command", "command": "npm run lint" }'
+      - id: c
+        text: '{ "type": "command", "prompt": "npm run lint" }'
+      - id: d
+        text: '{ "type": "shell", "run": "npm run lint" }'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A shell action uses type "command" with the command field. type "agent" pairs with prompt;
+      mixing type "agent" with command, or type "command" with prompt, is invalid, and "shell"/"run"
+      are not the schema keys.
+  - id: kah-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: free_form
+    prompt: >-
+      Sketch (in prose or JSON) a workspace hook that scans for hardcoded secrets when the agent
+      finishes a turn, blocking on detection. Identify the trigger, the action type, and where the
+      file should live.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the Stop trigger (agent turn completion) for the scan
+        - id: c2
+          text: Uses an agent action with a prompt to scan for secrets (or justifies a command action)
+        - id: c3
+          text: Places the JSON in .kiro/hooks/ so the team shares it
+      referenceAnswer: >-
+        Create a JSON file in .kiro/hooks/ with a descriptive name, trigger "Stop", and an action of
+        type "agent" whose prompt instructs Kiro to scan changed files for API keys, tokens, and
+        private keys and surface any findings when the agent finishes its turn, before the developer
+        commits. Note that Stop is not a blocking trigger (only PreToolUse, UserPromptSubmit, and
+        PreTaskExec can hard-block via exit code 2), so a Stop hook flags secrets as fast in-IDE
+        feedback rather than gating the commit; a hard block would require a PreToolUse guard or an
+        external git/CI check. Storing it in .kiro/hooks/ shares it with the whole team via the repo
+        (the top-level version is "v1").
+      passThreshold: 0.6
+    guidance: >-
+      Expect Stop as the trigger, an agent (or command) action that scans, and the .kiro/hooks
+      location. Credit answers that recognize Stop surfaces findings but does not hard-block (Stop
+      is not a blocking trigger); true blocking needs PreToolUse or an external gate.
+  - id: kah-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You want a documentation-update hook that you invoke yourself only when you choose, not on any
+      automatic event. Which trigger should the hook use?
+    choices:
+      - id: a
+        text: PostFileSave on "docs/**"
+      - id: b
+        text: UserPromptSubmit
+      - id: c
+        text: A manual (on-demand) trigger
+      - id: d
+        text: SessionStart
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      On-demand documentation regeneration is exactly the manual trigger use case. PostFileSave
+      would fire automatically, UserPromptSubmit fires on every prompt, and SessionStart fires at
+      session open.
+  - id: kah-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      A hook should only update localization files when English source strings change. The English
+      strings live in src/locales/en/ and end in .json. Since the matcher is a regular expression,
+      which value is the right one?
+    choices:
+      - id: a
+        text: '"\\.json$"'
+      - id: b
+        text: '"^src/locales/"'
+      - id: c
+        text: '"locales/en"'
+      - id: d
+        text: '"^src/locales/en/.*\\.json$"'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The precise regex ^src/locales/en/.*\\.json$ matches exactly the English source JSON.
+      "\\.json$" is too broad (any JSON), "^src/locales/" would also match other languages, and
+      "locales/en" is an unanchored fragment with no file-extension constraint.
+  - id: kah-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      You want a personal hook that runs your own formatting command after saving any file, in every
+      project you open on your machine, without committing it to any repo. Describe where you would
+      put it and the key fields.
+    rubric:
+      criteria:
+        - id: c1
+          text: Places the hook in ~/.kiro/hooks/ (user-level, not workspace)
+        - id: c2
+          text: Uses PostFileSave as the trigger
+        - id: c3
+          text: Uses a command action running the formatter
+      referenceAnswer: >-
+        Put the JSON in ~/.kiro/hooks/ so it is user-level and applies across all your workspaces
+        without being committed to any repo. Use trigger PostFileSave, a matcher regex broad enough
+        to cover the file types you format (or omit the matcher to match everything), and an action
+        of type "command" running your formatter. enabled defaults to true.
+      passThreshold: 0.6
+    guidance: >-
+      The defining choices: user-level path ~/.kiro/hooks/, PostFileSave trigger, and a command
+      action. The personal-and-uncommitted requirement is what forces the user-level location. (The
+      matcher, if used, is a regex.)
+  - id: kah-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      Your agent action hook occasionally needs more than a minute to finish generating tests for
+      large files and is being cut off. Which single field should you adjust?
+    choices:
+      - id: a
+        text: timeout (raise it above the default 60 seconds)
+      - id: b
+        text: matcher (make the regex broader)
+      - id: c
+        text: enabled (set it to true)
+      - id: d
+        text: version (bump it to v2)
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Being cut off at ~60 seconds is the default timeout; raising timeout gives the action more
+      time. matcher scopes files, enabled toggles activity, and version is the format version, none
+      of which address the cutoff.
+  - id: kah-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      A team wants a guardrail that prevents the agent from running a dangerous shell tool with rm
+      -rf. Which hook design best fits this requirement?
+    choices:
+      - id: a
+        text: A PostToolUse hook that logs the deletion after it happens
+      - id: b
+        text: >-
+          A PreToolUse hook whose matcher targets the shell tool and whose command exits 2 when the
+          input contains rm -rf
+      - id: c
+        text: A PostFileDelete hook that recreates deleted files
+      - id: d
+        text: A SessionStart hook that prints a warning banner
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Blocking a dangerous call must happen before it runs, so PreToolUse with a tool matcher and an
+      exit-code-2 block is correct. PostToolUse is too late, recreating files is a poor recovery,
+      and a banner does not enforce anything.
+  - id: kah-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: free_form
+    prompt: >-
+      Describe how you would use Kiro's natural-language hook creation to set up "regenerate the API
+      client whenever the OpenAPI spec file changes," and what JSON Kiro would likely produce.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes prompting Kiro in NL to create the hook (e.g. via the panel/Command Palette)
+        - id: c2
+          text: >-
+            Notes the resulting trigger is a file save/change on the spec path (PostFileSave with a
+            matcher)
+        - id: c3
+          text: Notes the action regenerates the client (agent prompt or command)
+      referenceAnswer: >-
+        Open the hook UI (Kiro panel or Command Palette) and describe in plain English: "When the
+        OpenAPI spec file is saved, regenerate the API client." Kiro generates a JSON hook with
+        trigger PostFileSave, a matcher regex targeting the spec path (for example "openapi\.ya?ml$"
+        or "^api/.*\.yaml$"), and an action (agent prompt to regenerate, or a command running the
+        codegen tool). You then review and enable it.
+      passThreshold: 0.6
+    guidance: >-
+      Expect the NL authoring step, a PostFileSave trigger scoped to the spec file via matcher, and
+      a regeneration action. Either an agent prompt or a codegen command action is acceptable.
+  - id: kah-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      You need a hook to run only when files are deleted so you can warn about orphaned imports.
+      Which trigger fits?
+    choices:
+      - id: a
+        text: PostFileSave
+      - id: b
+        text: PostFileCreate
+      - id: c
+        text: PostFileDelete
+      - id: d
+        text: PostToolUse
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Reacting to deletions is PostFileDelete. Save and create fire on different file events, and
+      PostToolUse fires after tool calls, not file deletions.
+  - id: kah-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      You write a hook with type "agent" but put the instruction text in a "command" field. What is
+      the likely result?
+    choices:
+      - id: a
+        text: It works fine because the fields are aliases
+      - id: b
+        text: It silently converts to a shell command
+      - id: c
+        text: It runs but ignores the matcher
+      - id: d
+        text: The hook is malformed because an agent action expects a "prompt" field, not "command"
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Agent actions read the prompt field; a command field on an agent action is the wrong key, so
+      the action is malformed. The fields are not aliases and there is no silent conversion.
+  - id: kah-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      Design a hook for a React project that keeps Storybook stories in sync: when a component under
+      components/ is saved, the agent should update or create the matching .stories file. Specify
+      trigger, matcher, action type, and storage location.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses PostFileSave as the trigger
+        - id: c2
+          text: >-
+            Uses a matcher regex scoped to the components directory (e.g.
+            ^components/.*\.(tsx|jsx)$)
+        - id: c3
+          text: Uses an agent action with a prompt, stored in .kiro/hooks/
+      referenceAnswer: >-
+        Create a JSON file in .kiro/hooks/ with trigger PostFileSave, a matcher regex like
+        ^components/.*\.(tsx|jsx)$ so only components fire it, and an action of type "agent" whose
+        prompt tells Kiro to find the saved component and update or create its matching .stories
+        file. Keep it workspace-level so the team shares it.
+      passThreshold: 0.6
+    guidance: >-
+      Expect PostFileSave, a components-scoped regex matcher, an agent action, and .kiro/hooks/
+      storage. The reasoning task (write stories) justifies the agent action over a command.
+      (Matchers are regular expressions, not globs.)
+  - id: kah-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      A hook should run after every spec task finishes so it can update a progress log. Which
+      trigger is appropriate?
+    choices:
+      - id: a
+        text: PostTaskExec
+      - id: b
+        text: PreTaskExec
+      - id: c
+        text: Stop
+      - id: d
+        text: PostFileSave
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      PostTaskExec fires after a spec task executes, the right point to log completion. PreTaskExec
+      fires before, Stop fires at agent turn end, and PostFileSave fires on saves.
+  - id: kah-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You want the same lint-on-save hook for a whole team but a teammate also wants their own
+      personal extra hook only for their machine. How do you arrange the two?
+    choices:
+      - id: a
+        text: Put both in .kiro/hooks/ and gitignore the personal one
+      - id: b
+        text: Put the shared hook in .kiro/hooks/ (committed) and the personal one in ~/.kiro/hooks/
+      - id: c
+        text: Put both in ~/.kiro/hooks/ so they sync via the repo
+      - id: d
+        text: Merge them into a single JSON file in .kiro/settings/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Shared automation belongs in the committed .kiro/hooks/; personal automation belongs in
+      ~/.kiro/hooks/. User-level hooks do not sync via the repo, and hooks do not live in
+      .kiro/settings/.
+  - id: kah-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: free_form
+    prompt: >-
+      You have a hook firing far too often because its matcher is too broad. Walk through how you
+      would narrow it so it only triggers for the files you intend, using a concrete example.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that the matcher regex is too broad (or absent) as the cause
+        - id: c2
+          text: Gives a concrete narrower regex (e.g. from ".*" / no matcher to "^src/api/.*\.ts$")
+        - id: c3
+          text: Notes that narrowing matcher does not require changing the trigger
+      referenceAnswer: >-
+        The over-firing comes from a permissive matcher (for example ".*" or no matcher at all,
+        which always matches). Because the matcher is a regular expression, I would replace it with
+        a tighter regex that names the directory and extension I care about, such as
+        "^src/api/.*\.ts$", leaving the trigger (PostFileSave) unchanged. After saving, only
+        matching files fire the hook.
+      passThreshold: 0.6
+    guidance: >-
+      The fix is matcher scoping: diagnose the broad pattern, supply a precise regex (matchers are
+      regular expressions), and recognize the trigger stays the same. A concrete before/after regex
+      earns the example criterion.
+  - id: kah-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: multiple_choice
+    prompt: >-
+      A PostFileSave hook with an agent action that edits files is itself saving files. The team
+      reports it sometimes runs in a loop. What is the most likely root cause?
+    choices:
+      - id: a
+        text: The action saves files that match its own matcher, re-triggering PostFileSave recursively
+      - id: b
+        text: The default timeout is too short to finish
+      - id: c
+        text: The hook is stored in ~/.kiro/hooks/ instead of .kiro/hooks/
+      - id: d
+        text: The version field is missing
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A save-triggered hook that writes files matching its own matcher creates a feedback loop:
+      saving fires the hook, which saves, which fires again. The fix is to scope the matcher to
+      exclude the files the action writes (or use a non-save trigger). Timeout, location, and
+      version do not cause loops.
+  - id: kah-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      Two hooks both fire on PostFileSave with the same matcher regex "^src/.*\\.ts$": one formats
+      with a command, the other asks an agent to refactor. Outputs are inconsistent between runs.
+      What is the deeper issue to diagnose?
+    choices:
+      - id: a
+        text: PostFileSave can only host one hook, so the second is ignored
+      - id: b
+        text: >-
+          Two independent actions on the same event with overlapping scope can race or conflict on
+          the same file, and the agent action introduces nondeterminism
+      - id: c
+        text: The command hook overwrites the agent hook's JSON file
+      - id: d
+        text: Agent actions are not allowed to run on file save
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Multiple hooks can share a trigger, but overlapping scopes on the same file mean their effects
+      interact, and an agent action adds model variability. The cure is to separate scopes or order
+      responsibilities. The other claims (one-hook-per-event, file overwrite, agents-banned-on-save)
+      are false.
+  - id: kah-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: >-
+      A team built a secret-scanning hook on the Stop trigger expecting it to block when it finds
+      secrets, but it never blocks anything. Diagnose the two reasons this design cannot block, and
+      describe a hook placement that actually can stop the flow.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that Stop is not a blocking trigger (only PreToolUse, UserPromptSubmit,
+            PreTaskExec can block via exit code 2)
+        - id: c2
+          text: >-
+            Identifies that an agent action merely printing a warning does not emit a block signal
+            anyway (the block signal is exit code 2 on a blocking-capable trigger)
+        - id: c3
+          text: >-
+            Proposes a placement that can block (a PreToolUse guard exiting 2, or an external git/CI
+            gate)
+      referenceAnswer: >-
+        Two reasons: first, Stop is not a blocking trigger at all -- only PreToolUse,
+        UserPromptSubmit, and PreTaskExec can hard-block, and they do so when the action exits with
+        code 2. Second, even on a blocking trigger, an agent action that just prints a friendly
+        warning and exits successfully emits no block signal. To actually stop a risky action, move
+        the check to a PreToolUse guard whose command exits 2 when secrets are detected, or enforce
+        it outside Kiro with a git pre-commit hook or CI gate. A Stop hook is still useful for fast
+        feedback, but only as a warning, not a gate.
+      passThreshold: 0.6
+    guidance: >-
+      Core insight: Stop cannot block, and detection is not enforcement. The block signal is exit
+      code 2 on a blocking-capable trigger (PreToolUse/UserPromptSubmit/PreTaskExec). A PreToolUse
+      guard that exits 2, or an external CI/pre-commit gate, is the concrete fix; Stop only surfaces
+      warnings.
+  - id: kah-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A hook works on one developer's machine but does nothing on a teammate's checkout. Both pulled
+      the same branch. What is the most likely explanation?
+    choices:
+      - id: a
+        text: The teammate's editor caches hooks for 24 hours
+      - id: b
+        text: Hooks only run for the user who created them, by design
+      - id: c
+        text: >-
+          The working hook lives in the first developer's ~/.kiro/hooks/ and was never committed to
+          .kiro/hooks/
+      - id: d
+        text: The branch name must match the hook name
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      If the hook is in the user-level ~/.kiro/hooks/, it follows the individual and is not in the
+      repo, so a teammate's checkout lacks it. Moving it to the committed .kiro/hooks/ shares it.
+      The other explanations are invented.
+  - id: kah-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse guard hook is meant to block writes outside the workspace, but a
+      malicious-looking write still went through. The matcher was "fs_write" and the actual tool
+      name is "fsWrite". What failed?
+    choices:
+      - id: a
+        text: PreToolUse cannot block writes, only reads
+      - id: b
+        text: The hook needed enabled set to false to activate
+      - id: c
+        text: The timeout expired before the tool ran
+      - id: d
+        text: The matcher regex did not match the real tool name, so the guard never fired
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A matcher is only as good as its pattern: "fs_write" does not match "fsWrite", so PreToolUse
+      never triggered and could not block. The lesson is to match tool names precisely. PreToolUse
+      can block, enabled false would disable it, and timeout is unrelated.
+  - id: kah-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: free_form
+    prompt: >-
+      A team's test-sync hook (agent action, PostFileSave) sometimes leaves tests half-written
+      because Kiro killed it mid-generation. Break down the contributing factors and the trade-offs
+      of each fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the timeout (default 60s) cutting off long agent generations as a factor
+        - id: c2
+          text: Identifies that broad matcher scope makes large/slow files trigger expensive runs
+        - id: c3
+          text: >-
+            Weighs trade-offs (raising timeout costs latency/credits; narrowing scope reduces
+            coverage; splitting into command vs agent)
+      referenceAnswer: >-
+        Contributing factors: the default 60s timeout truncates long agent generations, and a broad
+        matcher means large files trigger heavy runs. Fixes and trade-offs: raise timeout (safer
+        completion but more latency and credit cost); narrow the matcher so only files that truly
+        need tests fire (less wasted work but possible coverage gaps); or split into a fast
+        deterministic command for trivial cases and reserve the agent for complex ones. Each trades
+        reliability against cost or coverage.
+      passThreshold: 0.6
+    guidance: >-
+      Look for timeout and matcher scope as factors plus a genuine trade-off discussion. Killing
+      mid-generation points squarely at timeout; expensive runs point at scope.
+  - id: kah-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >-
+      An auto-format command hook on PostFileSave makes the agent's own multi-file edits unreliable:
+      the agent reads a file, the hook reformats it, and the agent's next edit conflicts. What is
+      the cleanest structural fix?
+    choices:
+      - id: a
+        text: >-
+          Move formatting to a different point (e.g. a manual or Stop-time pass) so it does not fire
+          amid the agent's in-progress edits
+      - id: b
+        text: Lower the timeout so formatting finishes faster
+      - id: c
+        text: Disable the matcher so it formats everything
+      - id: d
+        text: Convert the command action to an agent action with the same trigger
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The conflict is timing: formatting interleaves with the agent's edits. Moving formatting to a
+      less intrusive point (manual, or once at turn completion via Stop) removes the interleaving.
+      Changing timeout, broadening scope, or swapping action type does not address the interleaving.
+  - id: kah-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      A hook fires correctly but its agent action's instructions are vague ("clean up the file"),
+      producing inconsistent edits. Why is this a hook-design problem more than an event problem?
+    choices:
+      - id: a
+        text: The trigger is wrong and should be PreToolUse
+      - id: b
+        text: >-
+          The trigger/matcher are doing their job; the nondeterminism comes from an under-specified
+          agent prompt, which should be made concrete
+      - id: c
+        text: The matcher is too narrow and should be removed
+      - id: d
+        text: The hook should be moved to ~/.kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Detection works; the variability is in the action's prompt. A precise, bounded prompt (what to
+      change, what to leave) makes agent actions reproducible. Trigger, matcher, and location are
+      not the issue here.
+  - id: kah-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: free_form
+    prompt: >-
+      Explain why a PreToolUse blocking hook can enforce a policy that a CLAUDE-style steering note
+      ("never write outside the repo") cannot, and what residual risk remains even with the hook.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States steering is advisory/model-interpreted while a PreToolUse hook is a deterministic
+            gate
+        - id: c2
+          text: States the hook can block (exit 2) before the tool runs, enforcing the policy
+        - id: c3
+          text: >-
+            Notes residual risk (the matcher/regex must be correct and complete or calls slip
+            through)
+      referenceAnswer: >-
+        A steering note is guidance the model may or may not follow; a PreToolUse hook is a
+        deterministic gate that runs before the tool and can block it (exit code 2), so enforcement
+        does not depend on the model's cooperation. The residual risk is that enforcement is only as
+        strong as the matcher: if the tool-name regex or path check is incomplete or wrong, some
+        calls evade the guard.
+      passThreshold: 0.6
+    guidance: >-
+      Two-sided answer: hooks enforce deterministically where steering only advises, but the guard
+      is only as good as its matcher and logic. Mentioning the advisory-vs-deterministic contrast
+      plus a coverage-gap residual risk earns credit.
+  - id: kah-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A hook is supposed to fire on file creation but is configured with trigger PostFileSave and a
+      matcher that also matches new files. It works most of the time but misses files created by an
+      external tool that never trigger a save event. What does this reveal?
+    choices:
+      - id: a
+        text: The matcher should be broadened to catch everything
+      - id: b
+        text: The hook needs a higher timeout
+      - id: c
+        text: >-
+          Trigger choice matters semantically; creation-specific behavior needs PostFileCreate, not
+          PostFileSave
+      - id: d
+        text: External tools cannot trigger any hooks ever
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Relying on PostFileSave to approximate creation breaks when a file appears without a save
+      event. Using PostFileCreate captures creation semantics directly. Broadening the matcher or
+      raising timeout does not fix the wrong-trigger mismatch.
+  - id: kah-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      A reviewer sees a command-action hook on PostFileSave running "git add -A && git commit". Why
+      is this a questionable design choice?
+    choices:
+      - id: a
+        text: Command actions cannot run git at all
+      - id: b
+        text: PostFileSave cannot run command actions
+      - id: c
+        text: The hook would be ignored because git is not a Kiro tool
+      - id: d
+        text: >-
+          Committing on every save produces noisy, non-atomic history and removes human review of
+          what gets committed
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Auto-committing on every save floods history with tiny non-atomic commits and bypasses
+      deliberate review. Command actions can run git and PostFileSave supports command actions, so
+      those objections are false; the issue is the design, not the mechanism.
+  - id: kah-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      A team has fifteen overlapping agent-action hooks on various save events. Builds feel slow and
+      credit usage is high. Diagnose the likely failure modes and outline how you would consolidate.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that many agent actions per save event multiply latency and credit/model cost
+        - id: c2
+          text: Identifies overlapping matchers causing redundant or conflicting runs
+        - id: c3
+          text: >-
+            Proposes consolidation (merge/scope hooks, convert deterministic ones to command
+            actions, reserve agent actions for reasoning)
+      referenceAnswer: >-
+        With many agent-action hooks on save, each save can spawn several model calls, multiplying
+        latency and credit cost; overlapping matchers cause redundant or conflicting work on the
+        same files. I would inventory the hooks, narrow or de-duplicate matchers so each file
+        triggers only the needed work, convert deterministic checks (lint, format) to cheap command
+        actions, and reserve agent actions for tasks that genuinely need reasoning. Some hooks could
+        move to manual or Stop-time to avoid firing on every save.
+      passThreshold: 0.6
+    guidance: >-
+      Expect the cost/latency multiplication from many agent actions, overlap from matchers, and a
+      consolidation plan that pushes deterministic work to command actions and scopes triggers.
+  - id: kah-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      A hook's action sometimes succeeds and sometimes silently does nothing, with no error. The
+      action is a command that depends on an env var set only in the developer's interactive shell.
+      What is the underlying problem?
+    choices:
+      - id: a
+        text: >-
+          Hook command actions do not inherit the interactive shell's environment, so the missing
+          var changes behavior
+      - id: b
+        text: The matcher randomly fails to match
+      - id: c
+        text: The trigger fires only every other save
+      - id: d
+        text: enabled toggles itself between runs
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Command hooks run in their own environment and should not assume interactive-shell exports; a
+      var present only in the dev's terminal yields inconsistent behavior. The fix is to set the env
+      explicitly. Matchers, triggers, and enabled do not behave randomly.
+  - id: kah-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      A manual documentation hook produces good output but a teammate complains it "never runs." On
+      investigation, they expected it to fire on save. What is the conceptual mismatch?
+    choices:
+      - id: a
+        text: Manual triggers are deprecated
+      - id: b
+        text: >-
+          A manual trigger only runs on explicit invocation; expecting automatic save-time firing is
+          the wrong mental model
+      - id: c
+        text: Manual hooks require a matcher to run
+      - id: d
+        text: Manual hooks only run in ~/.kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Manual triggers are on-demand by design; they do not fire automatically on save. The
+      teammate's expectation, not the hook, is wrong. Manual triggers are not deprecated, do not
+      require a matcher, and are not limited to the user-level folder.
+  - id: kah-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A PostToolUse hook is intended to format files the agent just wrote, but it occasionally
+      formats a file the agent is still planning to append to, causing lost edits. Analyze the
+      ordering hazard and how trigger/matcher choices contribute.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the hazard as firing between related tool calls, mid-sequence
+        - id: c2
+          text: Explains a too-broad matcher makes it format files still in flight
+        - id: c3
+          text: >-
+            Proposes mitigations (scope matcher to final outputs, defer to Stop, or make formatting
+            idempotent/safe)
+      referenceAnswer: >-
+        PostToolUse fires after each tool call, so if the agent writes a file in several steps, the
+        hook can format between steps and clobber an edit the agent is about to make. A broad
+        matcher worsens this by formatting any touched file. Mitigations: scope the matcher to files
+        that are final outputs, defer formatting to a Stop-time pass after the whole turn, or make
+        the formatting safe to re-run so interleaving does not lose work.
+      passThreshold: 0.6
+    guidance: >-
+      Core hazard: mid-sequence firing on PostToolUse interleaving with multi-step writes. Credit a
+      matcher-scope contribution and at least one sound mitigation (defer to Stop, scope,
+      idempotency).
+  - id: kah-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 501
+    type: multiple_choice
+    prompt: >-
+      Two designs achieve "tests stay in sync": (A) a PostFileSave agent hook that regenerates tests
+      on every save, (B) a manual hook the developer runs before committing. For a large, actively
+      edited repo, which critique is most defensible?
+    choices:
+      - id: a
+        text: >-
+          A risks high cost and churn from firing on every keystroke-save; B trades immediacy for
+          control and lower cost, often the better default at scale
+      - id: b
+        text: B is strictly worse because manual hooks are deprecated
+      - id: c
+        text: A is strictly better because automatic always beats manual
+      - id: d
+        text: Both are identical since they use the same action
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      At scale, save-time agent regeneration can be costly and noisy, while a manual pre-commit hook
+      gives control and bounds cost. Neither is universally best, but B's trade-off is often
+      preferable for large active repos. "Automatic always wins" and "manual deprecated" are false
+      absolutes.
+  - id: kah-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: >-
+      A team proposes one mega-hook on PostFileSave whose agent prompt says "do whatever maintenance
+      the file needs." Evaluate this against several small focused hooks.
+    choices:
+      - id: a
+        text: The mega-hook is better because fewer files are easier to manage
+      - id: b
+        text: >-
+          The mega-hook is an anti-pattern because vague scope yields nondeterministic,
+          hard-to-review behavior, while small focused hooks are testable and diffable
+      - id: c
+        text: Small hooks are worse because they cannot share a trigger
+      - id: d
+        text: Both are equivalent because the trigger is the same
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A catch-all prompt produces unpredictable, unreviewable actions. Small single-purpose hooks
+      have clear scope, are individually toggleable and diffable, and behave predictably. Hooks can
+      share a trigger, so that objection is false.
+  - id: kah-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: free_form
+    prompt: >-
+      Critique the decision to enforce security policy (block dangerous shell calls) purely through
+      a natural-language steering note versus a PreToolUse blocking hook. Judge which is appropriate
+      and under what conditions you might still want both.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Judges that a steering note alone is insufficient for enforcement because it is
+            advisory/model-dependent
+        - id: c2
+          text: Judges the PreToolUse hook as the enforcement mechanism (deterministic block via exit 2)
+        - id: c3
+          text: >-
+            Recognizes value in combining both (hook enforces, steering guides intent and reduces
+            friction)
+      referenceAnswer: >-
+        For real enforcement, a steering note alone is inadequate: it only advises the model, which
+        may not comply. A PreToolUse blocking hook is the right enforcement layer because it
+        deterministically blocks the call (exit code 2) regardless of the model. The strongest
+        design uses both: the hook provides the hard guarantee, while the steering note communicates
+        intent so the agent avoids the action in the first place, reducing blocked attempts and
+        friction.
+      passThreshold: 0.6
+    guidance: >-
+      Strong answers separate guidance from enforcement: steering shapes behavior but cannot
+      guarantee it; the hook guarantees it. Best practice layers both. Credit a clear judgment plus
+      the both-together rationale.
+  - id: kah-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: >-
+      A reviewer must choose between an agent-action hook and a command-action hook for "fail the
+      save if any TODO without an owner exists." Which evaluation is soundest?
+    choices:
+      - id: a
+        text: An agent action is preferable because it is always more accurate
+      - id: b
+        text: Either is fine since action type never affects determinism
+      - id: c
+        text: >-
+          A command action with a deterministic grep/exit-2 is preferable because the check is
+          exact, cheap, and reproducible, so the model's reasoning adds no value and only variance
+      - id: d
+        text: Neither can block a save, so the requirement is impossible
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A precisely specifiable check (TODO without owner) is best done with a deterministic command
+      that exits 2 on a hit: exact, cheap, reproducible. An agent adds variance without benefit
+      here. Action type does affect determinism, and blocking on save is achievable on
+      blocking-capable triggers.
+  - id: kah-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A team commits a ~/.kiro-style personal hook into .kiro/hooks/ that runs a developer's
+      local-only formatter binary. Evaluate the consequence for the rest of the team.
+    choices:
+      - id: a
+        text: It is fine because committed hooks always install their dependencies
+      - id: b
+        text: It only affects the author since committed hooks are per-user
+      - id: c
+        text: It cannot run because command actions are disabled in committed hooks
+      - id: d
+        text: >-
+          It will fail or behave oddly for teammates who lack that binary; shared hooks should
+          depend only on tools everyone has
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A shared hook that invokes a tool only the author has will break or misbehave for others.
+      Shared automation must depend on commonly available tooling (or document/provision it). Hooks
+      do not auto-install dependencies, committed hooks are shared not per-user, and command actions
+      are not disabled.
+  - id: kah-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: free_form
+    prompt: >-
+      Assess this proposal: "Put all our automation in agent-action hooks because the AI is smart
+      enough to figure out what to do." Identify the strongest objections and when, if ever, the
+      proposal has merit.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Objects on determinism/reproducibility grounds (agent actions vary; deterministic tasks
+            should be commands)
+        - id: c2
+          text: Objects on cost/latency grounds (every fire spends model credits and time)
+        - id: c3
+          text: >-
+            Concedes merit for genuinely reasoning-heavy tasks (code understanding, contextual
+            generation)
+      referenceAnswer: >-
+        The strongest objections are nondeterminism (agent actions vary run to run, undesirable for
+        checks that must be exact) and cost/latency (each fire spends credits and time).
+        Deterministic tasks like linting or grepping for a pattern are better as command actions.
+        The proposal has merit only for tasks that genuinely require reasoning or code
+        understanding, such as drafting tests or refactoring with context, where the model adds
+        value the script cannot.
+      passThreshold: 0.6
+    guidance: >-
+      Look for the determinism and cost objections plus a fair concession that agent actions are
+      right for reasoning-heavy work. A blanket all-agent policy is the anti-pattern being judged.
+  - id: kah-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: multiple_choice
+    prompt: >-
+      Comparing where to put a guardrail that should apply to every project a developer touches
+      personally, regardless of repo: which placement is best and why?
+    choices:
+      - id: a
+        text: >-
+          ~/.kiro/hooks/, because user-level hooks follow the individual across all workspaces
+          without per-repo setup
+      - id: b
+        text: .kiro/hooks/ in one repo, because that is where all hooks belong
+      - id: c
+        text: .kiro/settings/mcp.json, because guardrails are MCP concerns
+      - id: d
+        text: A steering file, because steering applies everywhere automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A personal guardrail that must apply everywhere belongs in the user-level ~/.kiro/hooks/,
+      which follows the developer across workspaces. A single repo's .kiro/hooks/ is per-project,
+      mcp.json is for MCP servers, and a workspace steering file is not global enforcement.
+  - id: kah-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 503
+    type: multiple_choice
+    prompt: >-
+      A design uses a PostFileSave agent hook to auto-fix lint errors by editing the saved file. A
+      skeptic warns of risk. Which is the most legitimate concern?
+    choices:
+      - id: a
+        text: Agent hooks cannot edit files, so it will not work at all
+      - id: b
+        text: >-
+          The agent editing the saved file can re-trigger PostFileSave and the agent may make
+          changes beyond pure lint fixes, so the loop and scope creep are real risks
+      - id: c
+        text: PostFileSave is not a real trigger
+      - id: d
+        text: The fix is impossible because lint tools are command-only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The real risks are a re-trigger loop (the agent's edit fires PostFileSave again) and scope
+      creep (an agent may change more than just lint issues). Agent hooks can edit files,
+      PostFileSave is real, and lint can be invoked from agent actions too; those objections are
+      false.
+  - id: kah-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      Evaluate the trade-offs of setting a very high timeout (e.g. 600s) on agent-action hooks
+      across a project to "make sure they always finish." Recommend a better policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes a very high timeout lets slow/hung actions block work and inflate cost/latency
+        - id: c2
+          text: Notes it can mask underlying problems (over-broad scope, over-large prompts)
+        - id: c3
+          text: >-
+            Recommends a measured policy (right-size per hook, narrow scope, split deterministic
+            work to commands)
+      referenceAnswer: >-
+        A blanket high timeout lets slow or hung actions stall the workflow and run up latency and
+        credit cost, and it masks the real causes (matchers too broad, prompts too ambitious). A
+        better policy is to right-size the timeout per hook based on its real work, narrow matchers
+        so only necessary files fire, and move deterministic steps to fast command actions, raising
+        the timeout only where genuinely complex agent work needs it.
+      passThreshold: 0.6
+    guidance: >-
+      Penalize answers that treat a high timeout as free. Strong answers flag the cost/masking
+      downsides and recommend right-sizing plus scope and action-type discipline.
+  - id: kah-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      Reviewing a PR, you find a hook whose agent prompt embeds a secret API token so the action can
+      call an external service. Even though it works, why is this a poor design?
+    choices:
+      - id: a
+        text: Hooks cannot call external services, so it is wasted effort
+      - id: b
+        text: Agent prompts are encrypted, so the token is safe to embed
+      - id: c
+        text: >-
+          The token is committed in .kiro/hooks/ and shared with everyone, leaking a credential;
+          secrets should come from the environment, not the hook JSON
+      - id: d
+        text: The hook would be rejected automatically for containing a token
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A token in a committed hook JSON is a leaked secret shared with the whole team and version
+      history. Credentials should be injected via environment, not stored in the hook. Hooks can
+      call services, prompts are not encrypted, and there is no automatic token rejection.
+  - id: kah-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A team debates whether their secret-scan logic belongs in a Kiro Stop hook or only in CI.
+      Which judgment best balances the two?
+    choices:
+      - id: a
+        text: The Stop hook fully replaces CI because it runs earlier
+      - id: b
+        text: CI fully replaces the hook because hooks are unreliable
+      - id: c
+        text: Neither is needed if developers are careful
+      - id: d
+        text: >-
+          The Stop hook gives fast in-IDE feedback before commit, but CI must remain the
+          authoritative gate since hooks can be disabled or skipped locally
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Defense in depth: the local Stop hook catches issues early and cheaply, but because a
+      developer can disable or skip a local hook, CI must stay the authoritative enforcement gate.
+      Treating either as a full replacement, or relying on care alone, is weaker.
+  - id: kah-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: >-
+      A startup wants every save in every repo to trigger an agent hook that "reviews the whole
+      codebase for issues." Judge the design's scalability and propose a sounder architecture using
+      triggers, matchers, and action types.
+    rubric:
+      criteria:
+        - id: c1
+          text: Judges whole-codebase review on every save as unscalable (cost, latency, noise)
+        - id: c2
+          text: >-
+            Proposes scoping with matchers to changed files and/or less frequent triggers (manual,
+            Stop, PostTaskExec)
+        - id: c3
+          text: >-
+            Proposes using command actions for deterministic checks and reserving agent review for
+            targeted, smaller scope
+      referenceAnswer: >-
+        Reviewing the entire codebase on every save does not scale: each save would spawn an
+        expensive, slow agent run, flooding the developer with noise and burning credits. A sounder
+        design scopes the matcher to the changed files, moves heavy review to less frequent points
+        (a manual trigger, Stop at turn completion, or PostTaskExec), runs deterministic checks as
+        cheap command actions, and reserves focused agent review for the diff or a single module
+        rather than the whole tree.
+      passThreshold: 0.6
+    guidance: >-
+      The core judgment is that per-save whole-repo agent review is unscalable. Credit matcher
+      scoping to changed files, rarer triggers, and command actions for deterministic parts.
+  - id: kah-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      Evaluate this claim: "Because hooks are deterministic, an agent-action hook will always
+      produce the same output for the same file." How accurate is it?
+    choices:
+      - id: a
+        text: >-
+          Partly true, because the firing is deterministic but the agent action's output is
+          model-driven and can vary, so determinism applies to when it runs, not what it produces
+      - id: b
+        text: Fully accurate, because hooks are deterministic end to end
+      - id: c
+        text: Fully wrong, because nothing about hooks is deterministic
+      - id: d
+        text: Accurate only for command actions stored in ~/.kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Determinism is about the trigger firing reliably on its event, not about the content an agent
+      action generates, which can vary. Command actions are reproducible; agent actions are not
+      guaranteed to be. The claim conflates the two senses.
+  - id: kah-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      Compare and judge three placements for a "block commits containing secrets" control: (1) a
+      Kiro PreToolUse/Stop hook, (2) a git pre-commit hook, (3) a CI check. Recommend a layered
+      strategy and justify the ordering.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Characterizes each layer's strength/weakness (IDE hook = early/skippable; git pre-commit
+            = local/bypassable with --no-verify; CI = authoritative/late)
+        - id: c2
+          text: Recommends layering all three (defense in depth) rather than relying on one
+        - id: c3
+          text: Justifies CI as the non-bypassable backstop while earlier layers give faster feedback
+      referenceAnswer: >-
+        Each layer trades immediacy against authority. A Kiro hook gives the earliest, in-IDE
+        feedback but can be disabled locally. A git pre-commit hook catches secrets at commit time
+        but is bypassable with --no-verify. CI runs last but is the authoritative, non-bypassable
+        gate. The sound strategy is defense in depth: use the Kiro hook for fast feedback, the
+        pre-commit hook as a second local net, and CI as the backstop that actually enforces the
+        policy, because earlier layers optimize developer experience while CI guarantees the rule
+        holds.
+      passThreshold: 0.6
+    guidance: >-
+      Strong answers refuse to pick one layer, characterize each layer's bypassability and timing,
+      and justify CI as the authoritative backstop with earlier layers for speed. This is the
+      canonical defense-in-depth judgment.
+  - id: kah-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 126
+    type: free_form
+    prompt: Name the two action types a Kiro hook action object can declare in its "type" field.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the "agent" action type (runs an AI prompt)
+        - id: c2
+          text: Names the "command" action type (runs a shell command)
+      referenceAnswer: >-
+        The action "type" field is either "agent" (which runs an AI task from a prompt) or "command"
+        (which runs a shell command).
+      passThreshold: 0.6
+    guidance: >-
+      Only two action types exist: agent and command. The agent type pairs with a prompt field; the
+      command type pairs with a command field.
+  - id: kah-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      Why is the agent-action prompt for a hook best written as a concrete, bounded instruction
+      rather than a broad goal?
+    choices:
+      - id: a
+        text: A broad goal runs faster because the model has less to read
+      - id: b
+        text: Concrete prompts are required by the JSON schema validator
+      - id: c
+        text: Broad goals automatically lower the timeout
+      - id: d
+        text: >-
+          A concrete prompt makes the agent action's output more predictable and reviewable across
+          runs
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Agent actions are model-driven and inherently variable; a specific, bounded prompt constrains
+      what the agent does, improving predictability and reviewability. The schema does not require
+      it, and broadness does not affect speed or timeout in the claimed ways.
+  - id: kah-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: How does the manual trigger differ conceptually from the automatic file and tool triggers?
+    choices:
+      - id: a
+        text: >-
+          The manual trigger runs only when the user explicitly invokes it, while the others fire
+          automatically on their IDE events
+      - id: b
+        text: The manual trigger fires on every save, while the others fire once per session
+      - id: c
+        text: The manual trigger can only run command actions
+      - id: d
+        text: The manual trigger ignores the matcher but the others require one
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Manual triggers are on-demand: nothing fires them but explicit user invocation. File and tool
+      triggers fire automatically when their events happen. Manual triggers can run either action
+      type, and matchers are optional throughout.
+  - id: kah-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Explain why workspace-level hooks (.kiro/hooks/) are better suited to team conventions while
+      user-level hooks (~/.kiro/hooks/) suit personal preferences.
+    rubric:
+      criteria:
+        - id: c1
+          text: States workspace hooks are committed to the repo and shared with everyone on the project
+        - id: c2
+          text: >-
+            States user-level hooks follow the individual across all their workspaces and are not in
+            the repo
+      referenceAnswer: >-
+        Workspace hooks live in .kiro/hooks/ inside the repository, so when committed they are
+        shared with everyone who checks out the project, making them ideal for team-wide
+        conventions. User-level hooks live in ~/.kiro/hooks/, follow the individual developer across
+        every workspace, and are not part of any repo, making them ideal for personal preferences.
+      passThreshold: 0.6
+    guidance: >-
+      The distinction is sharing scope: repo-committed and team-wide vs personal and machine-local.
+      Either framing of the two scopes earns credit.
+  - id: kah-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: >-
+      Why might a hook that fires on PostFileSave be a poor choice for a task that should run only
+      once per development session, and what trigger would fit better?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes PostFileSave fires on every save, so a once-per-session task would run far too
+            often
+        - id: c2
+          text: Suggests SessionStart (or a manual trigger) for a once-per-session task
+      referenceAnswer: >-
+        PostFileSave fires on every file save, so a task meant to run once per session would execute
+        repeatedly and waste time and cost. SessionStart fires at the start of a session, which fits
+        a once-per-session task; a manual trigger also works if the developer wants explicit
+        control.
+      passThreshold: 0.6
+    guidance: >-
+      The key idea is matching trigger frequency to task cadence. Per-save is too frequent for a
+      once-per-session need; SessionStart (or manual) is appropriate.
+  - id: kah-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You want a hook to run a deterministic type-check command automatically after every save of
+      any TypeScript file, surfacing any failures to you. Which combination is correct (matchers are
+      regular expressions)?
+    choices:
+      - id: a
+        text: SessionStart, matcher "\\.ts$", agent action describing types
+      - id: b
+        text: PostFileDelete, no matcher, command action running tsc
+      - id: c
+        text: PostFileSave, matcher "\\.ts$", command action running tsc
+      - id: d
+        text: Manual trigger, matcher "\\.ts$", agent action running tsc
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Save-time deterministic checking is PostFileSave + a command action running tsc, scoped to .ts
+      files with the regex matcher "\\.ts$". A non-zero exit on PostFileSave surfaces the failure as
+      a warning (PostFileSave is not a blocking trigger, so it does not hard-gate). SessionStart and
+      PostFileDelete fire on the wrong events, and a manual trigger would not run automatically on
+      save.
+  - id: kah-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      A hook should run before a spec task executes to validate prerequisites. Which trigger do you
+      use?
+    choices:
+      - id: a
+        text: PostTaskExec
+      - id: b
+        text: PreToolUse
+      - id: c
+        text: UserPromptSubmit
+      - id: d
+        text: PreTaskExec
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      PreTaskExec fires before a spec task runs, the right place to validate prerequisites.
+      PostTaskExec runs after, PreToolUse gates tool calls, and UserPromptSubmit fires on prompt
+      submission.
+  - id: kah-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      You want a hook that reacts whenever the agent submits a user prompt so you can log the
+      request. Which trigger is correct?
+    choices:
+      - id: a
+        text: UserPromptSubmit
+      - id: b
+        text: Stop
+      - id: c
+        text: PostFileCreate
+      - id: d
+        text: PreTaskExec
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      UserPromptSubmit fires when a prompt is submitted, the right trigger for logging requests.
+      Stop is turn completion, PostFileCreate is file creation, and PreTaskExec is before a spec
+      task.
+  - id: kah-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      Describe how to configure a hook so it runs your existing shell linter only on Python files in
+      the backend/ directory after they are saved. Give the trigger, matcher, and action type.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses PostFileSave as the trigger
+        - id: c2
+          text: Uses a matcher regex scoped to backend Python files (e.g. ^backend/.*\.py$)
+        - id: c3
+          text: Uses a command action invoking the linter
+      referenceAnswer: >-
+        Create a hook with trigger PostFileSave, a matcher regex like ^backend/.*\.py$ so only
+        backend Python files fire it, and an action of type "command" that runs your linter (for
+        example ruff or flake8). Store it in .kiro/hooks/ to share it or ~/.kiro/hooks/ for personal
+        use.
+      passThreshold: 0.6
+    guidance: >-
+      Expect PostFileSave, a backend Python regex matcher such as ^backend/.*\.py$ (matchers are
+      regular expressions), and a command action. A deterministic linter is best run as a command
+      rather than an agent action.
+  - id: kah-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      You created a hook in the UI form but it is not firing. List the practical checks you would
+      make to get it working, in terms of the hook's fields and location.
+    rubric:
+      criteria:
+        - id: c1
+          text: Checks enabled is true (not disabled)
+        - id: c2
+          text: >-
+            Checks the trigger matches the event you expect and the matcher actually matches the
+            files/tools
+        - id: c3
+          text: Checks the file is in the right location (.kiro/hooks/ or ~/.kiro/hooks/)
+      referenceAnswer: >-
+        First confirm enabled is true. Then verify the trigger is the event you expect (for example
+        PostFileSave, not a manual trigger) and that the matcher regex actually matches the files
+        you are editing rather than being too narrow or mistyped. Finally confirm the JSON sits in
+        the correct directory: .kiro/hooks/ for workspace or ~/.kiro/hooks/ for user-level.
+      passThreshold: 0.6
+    guidance: >-
+      Expect the three practical checks: enabled, correct trigger/matcher, and correct location.
+      These cover the common reasons a hook silently does nothing.
+  - id: kah-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A hook with an over-broad matcher regex of ".*" on PostFileSave fires on every save, including
+      saves to files in node_modules and build output. What is the best diagnosis and fix?
+    choices:
+      - id: a
+        text: The trigger is wrong; switch to SessionStart
+      - id: b
+        text: The timeout is too high; lower it to skip large files
+      - id: c
+        text: >-
+          The matcher is too permissive; tighten the regex to source paths (e.g. "^src/.*") so it
+          only fires where intended
+      - id: d
+        text: The action type is wrong; agent actions never fire on generated files
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Firing on generated and dependency files is a matcher-scope problem; tightening the regex
+      (e.g. to "^src/.*") fixes it. The trigger is correct, timeout does not skip files, and action
+      type does not filter paths.
+  - id: kah-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      A PreTaskExec hook meant to validate prerequisites passes even when a prerequisite is missing,
+      because its agent action returns a friendly message instead of failing. What is the core flaw?
+    choices:
+      - id: a
+        text: PreTaskExec cannot validate anything by design
+      - id: b
+        text: The matcher must be removed for validation to work
+      - id: c
+        text: Agent actions are forbidden on task triggers
+      - id: d
+        text: >-
+          Validation that should gate execution must signal failure (exit code 2 on a blocking
+          trigger), not just emit a message
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A gate must signal failure to block; emitting a friendly message with a success exit lets
+      execution proceed. The fix is to fail with exit code 2 on the blocking-capable trigger.
+      PreTaskExec can validate, and matcher/action-type claims are false.
+  - id: kah-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      A developer has a hook in the workspace's .kiro/hooks/ and another in their personal
+      ~/.kiro/hooks/ that happen to share a name but have different behavior. What is the accurate
+      mental model of how Kiro treats them?
+    choices:
+      - id: a
+        text: >-
+          They are two independent definitions living in two separate scopes (workspace and user),
+          so each is loaded on its own terms rather than one being silently dropped or merged into
+          the other
+      - id: b
+        text: The user hook silently deletes the workspace hook on load
+      - id: c
+        text: Only the alphabetically first name ever runs
+      - id: d
+        text: Hooks with the same name are merged field-by-field into one
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Workspace hooks (.kiro/hooks/) and user hooks (~/.kiro/hooks/) are separate definitions in
+      separate scopes; sharing a name does not make one delete, alphabetically suppress, or
+      auto-merge the other. To avoid confusion, give scope-specific hooks distinct names.
+  - id: kah-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A command-action hook works when run from the developer's terminal but fails when fired by
+      Kiro, reporting "command not found." Diagnose the likely cause and the fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the hook's execution environment differs from the interactive shell
+            (PATH/env not inherited)
+        - id: c2
+          text: >-
+            Proposes a fix (use an absolute path to the binary, or set PATH/env explicitly in the
+            command)
+      referenceAnswer: >-
+        The hook runs in its own environment, which may not include the PATH or shell setup the
+        developer's interactive terminal has, so a binary on the user's PATH is "not found" when
+        Kiro runs it. Fix it by invoking the binary with an absolute path or by exporting the needed
+        PATH/env explicitly within the command rather than assuming the interactive shell's
+        environment.
+      passThreshold: 0.6
+    guidance: >-
+      Core insight: command hooks do not inherit the interactive shell environment. Absolute paths
+      or explicit env setup resolve "command not found."
+  - id: kah-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A PostFileSave agent hook that "improves" code occasionally introduces unrelated refactors the
+      team did not ask for. Break down why this happens and how to constrain the hook.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that a broad/open-ended agent prompt invites scope creep beyond the intended
+            change
+        - id: c2
+          text: Identifies the nondeterminism of agent actions amplifies inconsistency
+        - id: c3
+          text: >-
+            Proposes constraints (tighten the prompt to a specific change, narrow the matcher, or
+            use a deterministic command for the fixed part)
+      referenceAnswer: >-
+        An open-ended prompt like "improve the code" gives the agent latitude to change things
+        beyond the intent, and because agent actions are nondeterministic, the results vary run to
+        run. Constrain it by writing a precise prompt that states exactly what to change and what to
+        leave alone, narrow the matcher so it fires only on the relevant files, and move any
+        deterministic part (formatting, simple lint fixes) to a command action so the agent is
+        reserved for the narrow reasoning task.
+      passThreshold: 0.6
+    guidance: >-
+      Expect prompt-scope-creep plus agent nondeterminism as causes, and tightening the
+      prompt/matcher or offloading deterministic work to a command as the fix.
+  - id: kah-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: multiple_choice
+    prompt: >-
+      A team wants to choose between a PostFileSave hook and a PostTaskExec hook for running an
+      expensive full test suite. Which judgment is soundest?
+    choices:
+      - id: a
+        text: PostFileSave is better because more runs always means more safety
+      - id: b
+        text: >-
+          PostTaskExec runs far less often than per-save, so it bounds cost while still validating
+          after meaningful units of work; per-save would be wastefully frequent
+      - id: c
+        text: Both fire identically often, so it does not matter
+      - id: d
+        text: Neither can run a test suite, so the question is moot
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An expensive suite should not run on every keystroke-save; PostTaskExec fires after a
+      meaningful unit of work, bounding cost while still validating. "More runs always safer"
+      ignores cost and noise, the triggers do not fire equally often, and hooks can run test suites.
+  - id: kah-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: multiple_choice
+    prompt: >-
+      Critique relying solely on an agent-action hook to "ensure code style is consistent" instead
+      of a deterministic formatter command.
+    choices:
+      - id: a
+        text: An agent action is better because it understands intent and never varies
+      - id: b
+        text: A formatter cannot be invoked from a hook, so the agent is the only option
+      - id: c
+        text: >-
+          An agent may apply style inconsistently across runs; a deterministic formatter guarantees
+          identical results, so style enforcement should be a command action
+      - id: d
+        text: Style is not something hooks can address at all
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Consistent style is a deterministic, rule-based concern best handled by a formatter command
+      that yields identical output every time. An agent action can vary run to run. Formatters can
+      be run from hooks, and hooks certainly can address style.
+  - id: kah-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: >-
+      A proposal sets every hook's timeout to 5 seconds "to keep the IDE snappy." Evaluate this
+      blanket policy.
+    choices:
+      - id: a
+        text: It is ideal because shorter timeouts are always safer
+      - id: b
+        text: It has no effect because timeout only applies to command actions
+      - id: c
+        text: It is required for hooks stored in .kiro/hooks/
+      - id: d
+        text: >-
+          It will truncate legitimate longer agent actions mid-run, causing partial work; timeouts
+          should be sized to each hook's real workload, not a blanket minimum
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A uniformly tiny timeout cuts off legitimate longer actions, leaving partial work. Timeouts
+      should match each hook's real workload. Shorter is not always safer, timeout applies to
+      actions generally, and it is not a storage requirement.
+  - id: kah-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 507
+    type: free_form
+    prompt: >-
+      Evaluate whether a single agent-action hook on PostFileSave that both runs tests and updates
+      documentation is a good design, and recommend an alternative if not.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Judges combining two distinct responsibilities in one hook as poor (mixed concerns, hard
+            to disable/diff one part)
+        - id: c2
+          text: >-
+            Notes the two tasks have different ideal cadences/action types (tests deterministic;
+            docs may need reasoning)
+        - id: c3
+          text: Recommends splitting into focused hooks (and/or different triggers/action types)
+      referenceAnswer: >-
+        Combining test running and documentation updates in one hook mixes concerns: you cannot
+        toggle or review one without the other, and a failure in one obscures the other. The tasks
+        also differ in nature: running tests is deterministic and suits a command action, while
+        updating docs may need agent reasoning, and docs probably need not regenerate on every save.
+        The better design is two focused hooks, possibly on different triggers (tests on save or
+        PostTaskExec, docs on a manual or Stop trigger), each independently enableable and diffable.
+      passThreshold: 0.6
+    guidance: >-
+      Expect a single-responsibility critique plus recognition that the two tasks differ in cadence
+      and action type, leading to a split-into-focused-hooks recommendation.
+  - id: kah-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      A team argues that because hooks can run agent prompts, they should move most of their
+      CLAUDE-style steering guidance into hooks "so it actually gets applied." Critique this and
+      clarify the right division of labor between hooks and steering.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Clarifies steering is persistent passive context that shapes every relevant response,
+            not an event action
+        - id: c2
+          text: Clarifies hooks are event-driven actions, not a place to store standing guidance
+        - id: c3
+          text: >-
+            Recommends keeping standing conventions in steering and reserving hooks for
+            event-triggered automation/enforcement
+      referenceAnswer: >-
+        The argument confuses two mechanisms. Steering provides persistent, passive project context
+        that shapes the agent's responses across conversations; it is the right home for standing
+        conventions and knowledge. Hooks are event-driven actions that do something when an IDE
+        event fires; they are not a store for standing guidance. Moving guidance into hooks would
+        mean it only applies when some event happens, losing the always-available context steering
+        provides. The right division keeps conventions and knowledge in steering and reserves hooks
+        for event-triggered automation or enforcement (for example a PreToolUse guard that
+        hard-blocks a forbidden action).
+      passThreshold: 0.6
+    guidance: >-
+      Strong answers separate passive standing context (steering) from active event automation
+      (hooks), and note that enforcement-grade rules can be backed by a hook while the guidance
+      itself stays in steering.
+  - id: kah-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A team wants one hook to be the sole quality gate for the project, replacing CI entirely,
+      arguing the IDE hook catches problems earliest. Evaluate this proposal.
+    choices:
+      - id: a
+        text: >-
+          An IDE hook is local and can be disabled or skipped, so it cannot be the authoritative
+          gate; it should complement, not replace, a CI check that runs regardless of local state
+      - id: b
+        text: It is sound because the earliest gate is always the only one needed
+      - id: c
+        text: It is sound because hooks cannot be disabled once committed
+      - id: d
+        text: It is sound because CI and hooks are functionally identical
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A local IDE hook can be disabled or simply not present on a given machine, so it cannot be the
+      authoritative enforcement point; CI runs independently of local state and must remain the
+      gate. Earliest is not the same as authoritative, committed hooks can still be disabled, and CI
+      and hooks are not identical.

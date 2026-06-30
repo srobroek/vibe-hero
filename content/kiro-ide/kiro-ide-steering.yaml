@@ -1,0 +1,2403 @@
+# Topic: kiro-ide-steering (kiro-ide)
+# Steering documents in the Kiro IDE — persistent project guidance for the agent.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-steering
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE Steering
+summary: Steering documents in the Kiro IDE — persistent project guidance for the agent.
+triggerSignals: []
+items:
+  - id: kis-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: |
+      In Kiro, what is the directory path where workspace-level steering files live?
+    guidance: |
+      Looks for the literal path .kiro/steering/ at the workspace root.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the directory .kiro/steering/ (or .kiro/steering).
+        - id: c2
+          text: Identifies it as workspace/project-level (not user/global).
+      referenceAnswer: |
+        Workspace steering files live in the .kiro/steering/ directory at the
+        root of the project workspace.
+      passThreshold: 0.6
+  - id: kis-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      Which three files does Kiro generate by default as foundation steering documents?
+    guidance: |
+      Recall of the three default foundation files.
+    choices:
+      - id: a
+        text: product.md, tech.md, structure.md
+      - id: b
+        text: requirements.md, design.md, tasks.md
+      - id: c
+        text: overview.md, config.md, rules.md
+      - id: d
+        text: product.md, design.md, hooks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+  - id: kis-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: |
+      The default steering file that documents frameworks, libraries, tools, and
+      technical constraints is named what?
+    guidance: |
+      Recall the role of tech.md.
+    choices:
+      - id: a
+        text: product.md
+      - id: b
+        text: tech.md
+      - id: c
+        text: structure.md
+      - id: d
+        text: stack.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+  - id: kis-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      Which steering inclusion mode causes a file to be loaded in every single
+      interaction with Kiro?
+    choices:
+      - id: a
+        text: 'Manual (inclusion: manual)'
+      - id: b
+        text: 'Conditional (inclusion: fileMatch)'
+      - id: c
+        text: 'Always (inclusion: always)'
+      - id: d
+        text: 'Auto (inclusion: auto)'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Recall that Always mode loads on every interaction.
+  - id: kis-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      Steering inclusion mode is configured using which mechanism at the top of
+      a steering file?
+    choices:
+      - id: a
+        text: A JSON header block
+      - id: b
+        text: An XML <config> tag
+      - id: c
+        text: A shell comment line beginning with the hash character
+      - id: d
+        text: YAML front matter delimited by --- markers
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Recall that inclusion modes are set via YAML front matter.
+  - id: kis-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: free_form
+    prompt: |
+      What is the purpose of steering files in Kiro, in one sentence?
+    guidance: |
+      Looks for the idea of persistent project context/knowledge across conversations.
+    rubric:
+      criteria:
+        - id: c1
+          text: States steering gives Kiro persistent project knowledge/context.
+        - id: c2
+          text: Notes it avoids re-explaining context each conversation, or are markdown docs.
+      referenceAnswer: |
+        Steering files are markdown documents that give Kiro persistent knowledge
+        about a project (patterns, libraries, standards) so the developer does not
+        have to re-explain context in every conversation.
+      passThreshold: 0.6
+  - id: kis-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which syntax embeds a live reference to another workspace file inside a
+      Kiro steering document?
+    choices:
+      - id: a
+        text: '#[[file:relative/path.ext]]'
+      - id: b
+        text: '{{ include: relative/path.ext }}'
+      - id: c
+        text: '@import relative/path.ext'
+      - id: d
+        text: <<file relative/path.ext>>
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Recall the #[[file:...]] file-reference syntax.
+  - id: kis-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Where do global (user-level) steering files live in Kiro?
+    choices:
+      - id: a
+        text: .kiro/steering/
+      - id: b
+        text: ~/.kiro/steering/
+      - id: c
+        text: ~/.config/kiro/global.md
+      - id: d
+        text: /etc/kiro/steering/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Recall the home-directory location for global steering.
+  - id: kis-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: |
+      How is a Manual-mode steering file pulled into context on demand?
+    choices:
+      - id: a
+        text: By saving any file in the workspace
+      - id: b
+        text: It is always loaded automatically
+      - id: c
+        text: 'By typing a #steering-file-name mention of it in a chat message'
+      - id: d
+        text: By restarting the Kiro IDE
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Recall the #steering-file-name mention for manual steering.
+  - id: kis-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: free_form
+    prompt: |
+      Name the three core steering inclusion modes that control when a steering
+      file is loaded.
+    guidance: |
+      Looks for Always, Conditional/fileMatch, and Manual.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Always.
+        - id: c2
+          text: Names Conditional / fileMatch.
+        - id: c3
+          text: Names Manual.
+      referenceAnswer: |
+        The three core inclusion modes are Always, Conditional (fileMatch), and
+        Manual. (Kiro docs also list an Auto/description-matched mode.)
+      passThreshold: 0.6
+  - id: kis-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: multiple_choice
+    prompt: |
+      Which front-matter setting pairs with fileMatch (conditional) inclusion to
+      specify which files trigger the steering doc?
+    choices:
+      - id: a
+        text: triggerEvent
+      - id: b
+        text: autoApprove
+      - id: c
+        text: inclusionGlob
+      - id: d
+        text: fileMatchPattern (a glob such as "components/**/*.tsx")
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Recall fileMatchPattern glob for conditional steering.
+  - id: kis-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: |
+      The default steering file describing file organization, naming conventions,
+      and architecture is named what?
+    choices:
+      - id: a
+        text: structure.md
+      - id: b
+        text: layout.md
+      - id: c
+        text: product.md
+      - id: d
+        text: arch.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Recall structure.md role.
+  - id: kis-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: |
+      Kiro is built on which open-source codebase?
+    choices:
+      - id: a
+        text: Eclipse Theia
+      - id: b
+        text: Code OSS (the open-source base of VS Code)
+      - id: c
+        text: Atom
+      - id: d
+        text: A fully custom editor written from scratch
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Recall Kiro is a VS Code / Code OSS lineage editor.
+  - id: kis-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: |
+      What does the default product.md steering file describe?
+    guidance: |
+      Looks for product purpose, target users, business goals/objectives.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions product purpose / what the product does.
+        - id: c2
+          text: Mentions users and/or business goals/objectives.
+      referenceAnswer: |
+        product.md describes the product's purpose, its target users/key features,
+        and business goals or objectives.
+      passThreshold: 0.6
+  - id: kis-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: |
+      Which special markdown filename does Kiro recognize that loads automatically
+      but does NOT support inclusion modes?
+    choices:
+      - id: a
+        text: README.md
+      - id: b
+        text: CONTEXT.md
+      - id: c
+        text: AGENTS.md
+      - id: d
+        text: STEERING.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Recall AGENTS.md support without inclusion modes.
+  - id: kis-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: |
+      When a workspace steering file and a global steering file conflict, which
+      takes priority in Kiro?
+    choices:
+      - id: a
+        text: The global (~/.kiro/steering/) file
+      - id: b
+        text: Whichever was edited most recently
+      - id: c
+        text: Both are dropped to avoid ambiguity
+      - id: d
+        text: The workspace (.kiro/steering/) file
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Recall workspace-over-global precedence.
+  - id: kis-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: |
+      Kiro's three signature differentiators are Specs, Agent Hooks, and which
+      third feature?
+    choices:
+      - id: a
+        text: Steering
+      - id: b
+        text: Snippets
+      - id: c
+        text: Linting
+      - id: d
+        text: Pair programming
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Recall Specs / Steering / Agent Hooks trio.
+  - id: kis-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: |
+      Under the .kiro/ directory, name two subdirectories besides steering/ that
+      hold Kiro project artifacts.
+    guidance: |
+      Looks for any two of specs/, hooks/, settings/.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names at least two of specs/, hooks/, settings/.
+        - id: c2
+          text: Uses correct .kiro/ relative paths.
+      referenceAnswer: |
+        Besides .kiro/steering/, the .kiro/ directory holds .kiro/specs/,
+        .kiro/hooks/, and .kiro/settings/ (e.g. mcp.json).
+      passThreshold: 0.6
+  - id: kis-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: |
+      Which company develops the Kiro agentic IDE?
+    choices:
+      - id: a
+        text: Microsoft
+      - id: b
+        text: AWS (Amazon)
+      - id: c
+        text: GitHub
+      - id: d
+        text: JetBrains
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Recall Kiro is an AWS product.
+  - id: kis-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: |
+      Which steering inclusion mode requires a fileMatchPattern glob, and what
+      does that glob do?
+    guidance: |
+      Looks for Conditional/fileMatch mode + glob deciding which files trigger loading.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the Conditional / fileMatch mode.
+        - id: c2
+          text: Explains the glob selects which files trigger loading the steering doc.
+      referenceAnswer: |
+        Conditional (fileMatch) inclusion uses a fileMatchPattern glob; the steering
+        file is loaded only when the developer is working on files matching that glob.
+      passThreshold: 0.6
+  - id: kis-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: |
+      Why do teams use Always-mode steering for coding standards but
+      Conditional (fileMatch) steering for framework-specific rules?
+    choices:
+      - id: a
+        text: Always mode is faster to parse than fileMatch mode
+      - id: b
+        text: fileMatch mode cannot reference markdown, only JSON
+      - id: c
+        text: >-
+          Standards apply everywhere so they should always load, while framework rules are only
+          relevant to matching files and would waste context if always loaded
+      - id: d
+        text: Always mode is required for any file containing globs
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Understand the context-economy rationale behind the modes.
+  - id: kis-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      How does steering differ from a spec in Kiro?
+    choices:
+      - id: a
+        text: Steering plans a single feature; a spec stores global coding standards
+      - id: b
+        text: They are identical; "steering" is just the old name for "spec"
+      - id: c
+        text: Steering runs shell commands; specs only store markdown
+      - id: d
+        text: >-
+          Steering is persistent, reusable project guidance; a spec is a per-feature planning
+          artifact
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Understand the steering-vs-spec distinction.
+  - id: kis-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: |
+      Explain why the foundation files (product.md, tech.md, structure.md) being
+      included by default reduces friction in day-to-day Kiro use.
+    guidance: |
+      Looks for the idea that baseline project context loads without re-explaining each time.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains these load automatically/by default in every interaction.
+        - id: c2
+          text: Connects this to not re-stating product/tech/structure context each prompt.
+      referenceAnswer: |
+        Because product.md, tech.md, and structure.md are included by default, Kiro
+        always starts with baseline knowledge of what the product is, what stack it
+        uses, and how it is organized, so the developer never has to re-state that
+        context in each conversation, producing more consistent, on-pattern output.
+      passThreshold: 0.6
+  - id: kis-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      What problem does the #[[file:...]] reference syntax solve compared with
+      pasting a file's contents into a steering doc?
+    choices:
+      - id: a
+        text: >-
+          It keeps a live link so the steering doc stays in sync with the referenced file instead of
+          going stale
+      - id: b
+        text: It encrypts the referenced file's contents
+      - id: c
+        text: It converts the file to JSON automatically
+      - id: d
+        text: It makes the steering file load only on save events
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Understand live references vs. stale copy-paste.
+  - id: kis-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: |
+      A developer says "all steering loads on every prompt." Why is this
+      understanding incomplete?
+    choices:
+      - id: a
+        text: No steering ever loads automatically; everything is manual
+      - id: b
+        text: >-
+          Only foundation files and Always-mode files load every time; Conditional loads on matching
+          files and Manual must be
+      - id: c
+        text: Only Manual-mode files load automatically
+      - id: d
+        text: Steering only loads when MCP servers are connected
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Understand which modes are automatic vs conditional vs manual.
+  - id: kis-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: |
+      Why might a team prefer Manual-mode steering for a rarely-needed but large
+      "legacy migration playbook" document?
+    choices:
+      - id: a
+        text: Manual mode compresses the file so it never costs tokens
+      - id: b
+        text: Manual mode is the only mode that supports markdown headings
+      - id: c
+        text: It avoids consuming context on every prompt and is pulled in only when explicitly
+      - id: d
+        text: Manual mode automatically loads when any file is saved
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Understand the on-demand value of Manual mode.
+  - id: kis-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: free_form
+    prompt: |
+      Explain how workspace steering and global (user) steering relate, including
+      what happens on conflict.
+    guidance: |
+      Looks for both layers existing and workspace taking precedence.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes workspace (.kiro/steering/) and global (~/.kiro/steering/) layers.
+        - id: c2
+          text: States workspace takes precedence on conflict.
+      referenceAnswer: |
+        Kiro supports both project-scoped steering in .kiro/steering/ and personal,
+        cross-project steering in ~/.kiro/steering/. Both layers apply, but when they
+        conflict the workspace file wins, so project rules override personal defaults.
+      passThreshold: 0.6
+  - id: kis-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      How does AGENTS.md differ from a normal Kiro steering file in terms of
+      inclusion behavior?
+    choices:
+      - id: a
+        text: AGENTS.md must always be set to Manual mode
+      - id: b
+        text: AGENTS.md only works inside .kiro/specs/
+      - id: c
+        text: AGENTS.md cannot contain markdown
+      - id: d
+        text: >-
+          AGENTS.md is auto-included but does not support inclusion modes, while normal steering
+          files can use Always/Conditional/Manual/Auto
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Understand AGENTS.md auto-load without modes.
+  - id: kis-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: |
+      Compared with re-explaining conventions in chat each time, what is the main
+      benefit of encoding them in steering?
+    choices:
+      - id: a
+        text: Consistency and reuse across every session and teammate without re-typing context
+      - id: b
+        text: It disables the need for code review
+      - id: c
+        text: It guarantees Kiro never asks clarifying questions
+      - id: d
+        text: It permanently locks the model version used
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Understand reuse/consistency benefit.
+  - id: kis-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 275
+    type: free_form
+    prompt: |
+      Explain how Auto (description-matched) inclusion differs from Conditional
+      (fileMatch) inclusion.
+    guidance: |
+      Looks for Auto matching the request/description vs fileMatch matching file paths.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains fileMatch loads based on the files being worked on (glob match).
+        - id: c2
+          text: Explains Auto loads based on the request matching the file's description/name.
+      referenceAnswer: |
+        Conditional (fileMatch) loads a steering file when the developer is working
+        on files matching a glob pattern. Auto inclusion instead loads the file when
+        the user's request semantically matches the steering file's name/description,
+        regardless of which files are open.
+      passThreshold: 0.6
+  - id: kis-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: |
+      Why is it useful that steering files are plain markdown checked into the
+      repo under .kiro/steering/?
+    choices:
+      - id: a
+        text: Markdown is the only format Kiro can parse at all
+      - id: b
+        text: They are versioned, reviewable, and shared with the whole team like any other source file
+      - id: c
+        text: It prevents the files from ever loading into context
+      - id: d
+        text: It makes them invisible to git so they stay private
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Understand version-control / shareability benefit.
+  - id: kis-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: |
+      A teammate complains Kiro keeps suggesting the wrong test framework. Which
+      foundation steering file is the most natural place to fix this?
+    choices:
+      - id: a
+        text: product.md, by listing target users
+      - id: b
+        text: structure.md, by renaming folders
+      - id: c
+        text: tech.md, by stating the approved test framework and constraints
+      - id: d
+        text: A hook JSON file in .kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Understand which foundation file owns tooling constraints.
+  - id: kis-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: |
+      Explain the relationship between the # manual mention and Manual-mode
+      steering, and why a file set to Manual would otherwise be silent.
+    guidance: |
+      Looks for Manual files not auto-loading and # mention being the activation path.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Manual-mode files do not load automatically.
+        - id: c2
+          text: 'States the #steering-file-name mention is what pulls a Manual file into context.'
+      referenceAnswer: |
+        A Manual-mode steering file is deliberately excluded from automatic loading,
+        so it contributes nothing until invoked. The developer activates it on demand
+        by typing a # mention of the file (e.g. #legacy-playbook), which injects its
+        content into the current context.
+      passThreshold: 0.6
+  - id: kis-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: |
+      Why does Kiro being built on Code OSS matter for steering adoption?
+    choices:
+      - id: a
+        text: It means steering files must be written in C++
+      - id: b
+        text: It forces all steering to live in the user home directory only
+      - id: c
+        text: It removes support for markdown steering files
+      - id: d
+        text: >-
+          Teams keep familiar VS Code settings, themes, and Open VSX plugins while gaining steering,
+          lowering switching cost
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Understand Code OSS lineage lowering adoption friction.
+  - id: kis-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: |
+      How does encoding architecture rules in structure.md help an agent that
+      creates new files?
+    choices:
+      - id: a
+        text: >-
+          The agent follows the documented naming and folder conventions so new files land in the
+          right place
+      - id: b
+        text: It blocks the agent from creating any new files
+      - id: c
+        text: It automatically renames every existing file
+      - id: d
+        text: It converts the project to a monorepo
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Understand structure.md guiding file placement.
+  - id: kis-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: free_form
+    prompt: |
+      Explain why splitting one giant steering file into several mode-tagged files
+      can improve both relevance and context budget.
+    guidance: |
+      Looks for targeted loading reducing noise and token cost.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes targeted (Conditional/Manual) files load only when relevant.
+        - id: c2
+          text: Connects this to less context noise and lower token/context cost.
+      referenceAnswer: |
+        Splitting steering into focused, mode-tagged files lets each file load only
+        when relevant (fileMatch globs or Manual mentions), so Kiro sees the right
+        guidance at the right time, avoids irrelevant rules cluttering its context,
+        and spends fewer tokens on guidance that does not apply to the current task.
+      passThreshold: 0.6
+  - id: kis-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: |
+      What is the conceptual relationship between steering files and the .kiro/
+      directory as a whole?
+    choices:
+      - id: a
+        text: Steering replaces the .kiro/ directory entirely
+      - id: b
+        text: >-
+          Steering is the persistent-guidance part of a broader .kiro/ project-memory layout that
+          also holds specs, hooks, and settings
+      - id: c
+        text: Steering files must live outside .kiro/ to work
+      - id: d
+        text: .kiro/ is only for MCP and never for steering
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Understand steering's place in the .kiro/ memory layout.
+  - id: kis-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: multiple_choice
+    prompt: |
+      Why would a global ~/.kiro/steering/ file for personal style be risky as a
+      place to put team-wide architecture rules?
+    choices:
+      - id: a
+        text: Global steering cannot contain markdown
+      - id: b
+        text: Global steering always wins over workspace steering
+      - id: c
+        text: >-
+          It is not shared with teammates or the repo, so the rules would not reach others and could
+          be overridden by workspace steering
+      - id: d
+        text: Global steering disables Always mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Understand scope: global is personal/unshared.
+  - id: kis-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: |
+      You want a steering file with React component rules to load only while
+      editing .tsx files under src/components. Write the YAML front matter you
+      would put at the top of the steering file.
+    guidance: |
+      Looks for inclusion: fileMatch and a fileMatchPattern glob targeting the tsx files.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses inclusion fileMatch (conditional) mode.
+        - id: c2
+          text: Provides a fileMatchPattern glob targeting src/components and .tsx.
+        - id: c3
+          text: Front matter is delimited by --- markers.
+      referenceAnswer: |
+        ---
+        inclusion: fileMatch
+        fileMatchPattern: "src/components/**/*.tsx"
+        ---
+      passThreshold: 0.6
+  - id: kis-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: |
+      You want your API contract to always reflect the real spec file at
+      api/openapi.yaml inside a steering doc. Which line do you add?
+    choices:
+      - id: a
+        text: 'inclusion: fileMatch'
+      - id: b
+        text: 'autoApprove: ["openapi"]'
+      - id: c
+        text: import api/openapi.yaml
+      - id: d
+        text: '#[[file:api/openapi.yaml]]'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Apply the #[[file:...]] reference.
+  - id: kis-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: |
+      A new hire keeps getting inconsistent error-handling patterns from Kiro
+      across the whole codebase. Which steering setup best fixes it project-wide?
+    choices:
+      - id: a
+        text: 'Add an error-handling steering file with inclusion: always (or fold it into tech.md)'
+      - id: b
+        text: Add it as a Manual-mode file and hope people remember to mention it each time
+      - id: c
+        text: Put it only in ~/.kiro/steering/ on the new hire's laptop
+      - id: d
+        text: Encode it as an MCP autoApprove list
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Apply Always mode for codebase-wide rules.
+  - id: kis-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: |
+      Your repo has a large "incident response runbook" you only want loaded when
+      you explicitly ask for it. Describe how you would configure and then invoke
+      this steering file in Kiro.
+    guidance: |
+      Looks for Manual mode config and # mention invocation.
+    rubric:
+      criteria:
+        - id: c1
+          text: Sets the file to Manual inclusion mode in front matter.
+        - id: c2
+          text: 'Invokes it on demand with a #steering-file-name mention in the prompt.'
+        - id: c3
+          text: Notes it will not load automatically otherwise.
+      referenceAnswer: |
+        Set the file's front matter to inclusion: manual and save it in
+        .kiro/steering/. It then stays out of context automatically; when you need
+        it you pull it in by typing a # mention such as #incident-response-runbook
+        in your prompt.
+      passThreshold: 0.6
+  - id: kis-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      You want database-migration guidance to load only when working on files
+      under db/migrations/. Which front matter is correct?
+    choices:
+      - id: a
+        text: 'inclusion: always'
+      - id: b
+        text: 'inclusion: fileMatch with fileMatchPattern: "db/migrations/**"'
+      - id: c
+        text: 'inclusion: manual'
+      - id: d
+        text: 'inclusion: fileMatch with no fileMatchPattern'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Apply fileMatch + glob to a migrations folder.
+  - id: kis-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      Your personal commit-message preferences should apply to every Kiro project
+      on your machine but not be committed to any repo. Where do you put that
+      steering file?
+    choices:
+      - id: a
+        text: .kiro/steering/ in each repo
+      - id: b
+        text: .kiro/hooks/ in each repo
+      - id: c
+        text: ~/.kiro/steering/ (global/user steering)
+      - id: d
+        text: .kiro/settings/mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Apply the global-steering location for personal, unshared prefs.
+  - id: kis-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: |
+      Write a minimal Always-mode steering file (front matter plus one short rule)
+      that tells Kiro to always use TypeScript strict mode in this project.
+    guidance: |
+      Looks for valid --- front matter with inclusion: always plus a clear rule body.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes YAML front matter delimited by --- with inclusion always.
+        - id: c2
+          text: Body states a clear rule (use TypeScript strict mode).
+      referenceAnswer: |
+        ---
+        inclusion: always
+        ---
+        # TypeScript
+        Always write code assuming strict mode is on. Do not introduce `any`;
+        prefer explicit types and handle null/undefined.
+      passThreshold: 0.6
+  - id: kis-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      A steering file is set to inclusion: fileMatch but never loads while you edit
+      matching files. Which is the most likely fix?
+    choices:
+      - id: a
+        text: Move the file to .kiro/hooks/
+      - id: b
+        text: Change the file extension to .json
+      - id: c
+        text: Add an autoApprove array
+      - id: d
+        text: Add or correct the fileMatchPattern glob so it actually matches the file paths
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Apply troubleshooting: missing/incorrect glob.
+  - id: kis-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      You want one shared steering doc to embed your team's lint config so it
+      never drifts from .eslintrc.json. Which approach in the steering file is best?
+    choices:
+      - id: a
+        text: 'Reference it live with a #[[file:.eslintrc.json]] file reference'
+      - id: b
+        text: Paste the JSON into the steering file and update it manually
+      - id: c
+        text: Put .eslintrc.json into .kiro/hooks/
+      - id: d
+        text: 'Set inclusion: manual so it never goes stale'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Apply live file reference to avoid drift.
+  - id: kis-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 375
+    type: free_form
+    prompt: |
+      Your monorepo has a frontend (apps/web) and a backend (services/api) with
+      very different conventions. Describe a steering layout using inclusion modes
+      that keeps each set of rules scoped to its own area.
+    guidance: |
+      Looks for separate fileMatch-scoped files per area, plus shared Always-mode basics.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Proposes per-area Conditional (fileMatch) steering files with globs scoped to apps/web
+            and services/api.
+        - id: c2
+          text: Keeps truly shared rules in Always-mode/foundation files.
+        - id: c3
+          text: Explains this prevents one area's rules leaking into the other.
+      referenceAnswer: |
+        Keep cross-cutting basics in the foundation/Always files. Add a web steering
+        file with inclusion: fileMatch and fileMatchPattern: "apps/web/**", and an api
+        steering file with fileMatchPattern: "services/api/**". Each loads only when
+        you work in its area, so frontend rules never bleed into backend work and
+        vice versa.
+      passThreshold: 0.6
+  - id: kis-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: |
+      You ask Kiro to scaffold a new feature and want it to honor product goals,
+      stack, and folder layout automatically. What must be true?
+    choices:
+      - id: a
+        text: 'You must manually #-mention product.md, tech.md, and structure.md in every prompt'
+      - id: b
+        text: >-
+          The foundation files product.md, tech.md, and structure.md exist and are populated, since
+          they load by default
+      - id: c
+        text: The foundation files must be set to Manual mode
+      - id: d
+        text: An MCP server must be connected first
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Apply default-loading of foundation files.
+  - id: kis-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      You add `AGENTS.md` at the repo root with mode front matter set to
+      `inclusion: manual`, expecting it to stay out of context. What actually
+      happens?
+    choices:
+      - id: a
+        text: It is ignored entirely because AGENTS.md must live in .kiro/specs/
+      - id: b
+        text: It only loads when an MCP server is connected
+      - id: c
+        text: It loads automatically anyway, because AGENTS.md does not support inclusion modes
+      - id: d
+        text: Kiro raises a fatal error and refuses to start
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Apply AGENTS.md no-modes behavior to a misconfiguration.
+  - id: kis-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: |
+      A reviewer wants Kiro to enforce that all new public functions have JSDoc,
+      but only in src/lib. Outline the steering file you would create, including
+      inclusion mode, pattern, and a sample rule line.
+    guidance: |
+      Looks for fileMatch + glob src/lib plus a concrete JSDoc rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses inclusion fileMatch with a glob scoped to src/lib.
+        - id: c2
+          text: Includes a concrete rule requiring JSDoc on public functions.
+      referenceAnswer: |
+        Create .kiro/steering/lib-docs.md:
+        ---
+        inclusion: fileMatch
+        fileMatchPattern: "src/lib/**/*.ts"
+        ---
+        # Documentation
+        Every exported (public) function in src/lib must have a JSDoc block
+        describing params, return value, and thrown errors.
+      passThreshold: 0.6
+  - id: kis-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: |
+      You moved your React rules from tech.md into a fileMatch steering file, and
+      now general prompts no longer mention React. How do you restore React
+      guidance for a general "design our component strategy" chat?
+    choices:
+      - id: a
+        text: Delete tech.md
+      - id: b
+        text: Convert the file to a hook
+      - id: c
+        text: Add it to .kiro/settings/mcp.json
+      - id: d
+        text: >-
+          #-mention the React steering file in that prompt, or set it to Always/Auto if it should
+          apply broadly
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Apply manual mention / mode change to recover guidance outside the glob.
+  - id: kis-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: |
+      Two steering files set conflicting line-length rules: one in .kiro/steering/
+      and one in ~/.kiro/steering/. Which value will Kiro follow, and how do you
+      intentionally change the winner?
+    choices:
+      - id: a
+        text: >-
+          The workspace file wins; edit the workspace file (or remove the rule there) to let the
+          global value apply
+      - id: b
+        text: The global file wins; you cannot change it
+      - id: c
+        text: Both apply and Kiro averages them
+      - id: d
+        text: Neither applies; conflicts disable both files
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Apply precedence resolution.
+  - id: kis-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: |
+      Describe how you would use a steering file together with a #[[file:...]]
+      reference so Kiro always follows the canonical database schema when writing
+      queries.
+    guidance: |
+      Looks for an Always/foundation steering file embedding a live reference to the schema file.
+    rubric:
+      criteria:
+        - id: c1
+          text: Creates a steering file (Always or tech.md) for DB guidance.
+        - id: c2
+          text: Embeds a live
+        - id: c3
+          text: Notes the live link keeps guidance in sync as the schema changes.
+      referenceAnswer: |
+        Add a steering file (or extend tech.md) set to load broadly that says "write
+        all queries against the canonical schema" and embed the schema with
+        #[[file:db/schema.sql]]. Because the reference is live, when the schema
+        changes the steering automatically reflects it, so Kiro keeps generating
+        column/table-accurate queries without manual updates.
+      passThreshold: 0.6
+  - id: kis-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: |
+      A team's product.md, tech.md, and structure.md have each grown to thousands
+      of lines and Kiro responses feel unfocused and slow. What is the core
+      problem to diagnose first?
+    choices:
+      - id: a
+        text: Foundation files must be JSON, not markdown
+      - id: b
+        text: >-
+          The always-loaded foundation files now flood every prompt with low-relevance context; they
+          should be trimmed and split into Conditional/Manual files
+      - id: c
+        text: The files are in the wrong directory and should move to .kiro/hooks/
+      - id: d
+        text: Steering is disabled because no MCP server is connected
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Analyze context bloat from oversized always-on files.
+  - id: kis-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: |
+      Kiro intermittently ignores a steering rule: it is honored in some chats and
+      ignored in others. Walk through how you would diagnose whether this is an
+      inclusion-mode problem.
+    guidance: |
+      Looks for checking the file's inclusion mode and whether the failing contexts match it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Checks the file's inclusion mode in front matter.
+        - id: c2
+          text: >-
+            Correlates "ignored" cases with fileMatch globs not matching, or Manual not being
+            mentioned.
+        - id: c3
+          text: >-
+            Concludes the fix is to broaden the mode (Always/Auto) or fix the glob/mention rather
+            than reword the rule.
+      referenceAnswer: |
+        First inspect the front matter: if the file is fileMatch, the rule will only
+        apply when open files match the glob, so "ignored" chats are simply ones
+        outside the pattern; if it is Manual, it applies only when #-mentioned. Map
+        the working vs failing sessions onto those conditions. If the rule should be
+        universal, change it to Always (or Auto) or fix the glob; the rule wording is
+        likely fine.
+      passThreshold: 0.6
+  - id: kis-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: |
+      Two steering files give contradictory guidance ("use tabs" vs "use spaces"),
+      both set to inclusion: always at workspace scope. Why is this worse than a
+      workspace-vs-global conflict, and what is the best fix?
+    choices:
+      - id: a
+        text: It is automatically resolved by alphabetical filename order, so no fix is needed
+      - id: b
+        text: The global file always overrides both, so just edit the global file
+      - id: c
+        text: >-
+          Same-scope Always files have no precedence rule to break the tie, so Kiro gets mixed
+          signals; consolidate the rule into one authoritative file
+      - id: d
+        text: Always-mode files cannot contain formatting rules, so delete both
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Analyze why intra-scope conflicts are ambiguous.
+  - id: kis-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: |
+      A steering file uses #[[file:config/secrets.env]] to "keep Kiro aware of our
+      config." What is the subtle risk being introduced?
+    choices:
+      - id: a
+        text: The reference silently disables all other steering files
+      - id: b
+        text: It converts the steering file to Manual mode automatically
+      - id: c
+        text: It prevents the env file from being read by the application
+      - id: d
+        text: >-
+          A live reference pulls that file's contents (possibly secrets) into model context whenever
+          the steering loads
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Analyze the data-exposure risk of live-referencing secrets.
+  - id: kis-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: |
+      A teammate proposes putting all team coding standards in their personal
+      ~/.kiro/steering/ folder. Break down why this will fail to enforce standards
+      across the team and what consequence to expect.
+    guidance: |
+      Looks for global being unshared/per-machine and not version-controlled with the repo.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies global steering as per-user/per-machine, not shipped in the repo.
+        - id: c2
+          text: Concludes teammates without that file get none of the standards (drift/inconsistency).
+        - id: c3
+          text: Recommends moving shared standards to .kiro/steering/ committed to the repo.
+      referenceAnswer: |
+        ~/.kiro/steering/ lives on one developer's machine and is not committed to
+        the repository, so no teammate or CI sees those rules; only that person gets
+        the guidance and even theirs can be overridden by workspace steering. The
+        result is inconsistent output across the team. Shared standards belong in
+        .kiro/steering/ checked into the repo so everyone gets them.
+      passThreshold: 0.6
+  - id: kis-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: |
+      You see a steering file with `inclusion: fileMatch` but no fileMatchPattern.
+      What behavior should you predict and why?
+    choices:
+      - id: a
+        text: >-
+          It likely never loads (or behaves unpredictably) because there is no glob to match files
+          against
+      - id: b
+        text: It loads on every prompt like Always mode
+      - id: c
+        text: It loads only when an MCP tool runs
+      - id: d
+        text: It is treated as an AGENTS.md file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Analyze a misconfigured conditional file.
+  - id: kis-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      A team keeps both a spec under .kiro/specs/checkout/ and steering about
+      checkout conventions. New devs confuse the two. What is the cleanest
+      conceptual distinction to teach?
+    choices:
+      - id: a
+        text: Specs are markdown and steering is JSON
+      - id: b
+        text: >-
+          Specs are per-feature, time-bound planning artifacts that get completed; steering is
+          durable, cross-feature guidance that persists
+      - id: c
+        text: Specs load automatically and steering never does
+      - id: d
+        text: Specs live in the home directory and steering in the repo
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Analyze the durable-vs-feature-scoped distinction.
+  - id: kis-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: free_form
+    prompt: |
+      Kiro keeps re-reading a 4,000-line API reference embedded via #[[file:...]]
+      in an Always-mode steering file, and prompts feel sluggish and expensive.
+      Diagnose the tradeoff and propose a redesign.
+    guidance: >
+      Looks for recognizing the live ref + Always mode inflates every prompt, with a scoped
+      redesign.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the live reference plus Always mode injects the whole file into every
+            prompt.
+        - id: c2
+          text: Explains the cost/latency/context tradeoff this creates.
+        - id: c3
+          text: Proposes scoping it (fileMatch or Manual) or referencing a smaller summary instead.
+      referenceAnswer: |
+        Because the steering file is Always-mode and embeds the full reference via a
+        live link, every prompt drags in ~4,000 lines, inflating tokens, latency, and
+        cost while diluting relevant context. Redesign: move the reference into a
+        fileMatch file scoped to the API code (or a Manual file you mention when
+        needed), or embed a concise summary and link the full reference only on demand.
+      passThreshold: 0.6
+  - id: kis-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: |
+      A "code quality" rule lives only in an AGENTS.md at the repo root, and a
+      contradicting rule lives in an Always-mode .kiro/steering/quality.md. Both
+      load. How should you reason about which Kiro follows?
+    choices:
+      - id: a
+        text: AGENTS.md always wins because it is at the repo root
+      - id: b
+        text: The steering file always wins because AGENTS.md is read-only
+      - id: c
+        text: >-
+          Both inject into context with no formal precedence between them, so the contradiction is
+          ambiguous; eliminate the conflict by making one authoritative
+      - id: d
+        text: Neither loads because two quality rules cannot coexist
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Analyze ambiguity when AGENTS.md and steering both load.
+  - id: kis-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: free_form
+    prompt: |
+      A reviewer wants to know whether a given steering rule actually reached the
+      model for a specific suboptimal generation. Break down the factors you would
+      check to confirm the rule was in context.
+    guidance: |
+      Looks for checking inclusion mode, glob match, manual mention, scope precedence.
+    rubric:
+      criteria:
+        - id: c1
+          text: Checks the inclusion mode and whether its condition was satisfied for that session.
+        - id: c2
+          text: >-
+            For fileMatch, verifies the edited files matched the glob; for Manual, verifies the file
+            was #-mentioned.
+        - id: c3
+          text: Considers workspace-vs-global precedence overriding the rule.
+      referenceAnswer: |
+        Confirm the file's inclusion mode: if Always/foundation it was present; if
+        fileMatch, verify the files in play matched the glob; if Manual, verify
+        someone #-mentioned it. Then check no higher-precedence workspace file
+        overrode the same rule. If all conditions held and the rule still lost, it
+        was in context but outweighed/ambiguous, not absent.
+      passThreshold: 0.6
+  - id: kis-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: |
+      A team sets nearly every steering file to inclusion: always "to be safe."
+      What failure mode does this most directly cause?
+    choices:
+      - id: a
+        text: Kiro refuses to start until modes are removed
+      - id: b
+        text: fileMatch globs stop working repo-wide
+      - id: c
+        text: Steering files are deleted automatically
+      - id: d
+        text: >-
+          Context dilution and higher cost: irrelevant rules crowd out task-relevant context,
+          degrading focus
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Analyze the anti-pattern of over-using Always.
+  - id: kis-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: |
+      After refactoring folders from src/components to src/ui, framework steering
+      stopped applying. What is the precise root cause?
+    choices:
+      - id: a
+        text: >-
+          The fileMatchPattern still points at the old src/components path and no longer matches
+          src/ui files
+      - id: b
+        text: Renaming folders disables Always mode globally
+      - id: c
+        text: Kiro caches steering for 24 hours and will recover on its own
+      - id: d
+        text: The steering file silently converted to Manual mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Analyze stale glob after a refactor.
+  - id: kis-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: free_form
+    prompt: |
+      Compare the failure modes of (a) a fileMatch steering file with too narrow a
+      glob versus (b) one with too broad a glob. What symptom does each produce?
+    guidance: |
+      Looks for too-narrow = rule missing where needed; too-broad = noise/over-application.
+    rubric:
+      criteria:
+        - id: c1
+          text: Too-narrow glob -> rule fails to load in places it should apply (silent gaps).
+        - id: c2
+          text: Too-broad glob -> rule loads where irrelevant, adding noise/over-application.
+      referenceAnswer: |
+        A too-narrow glob means the steering misses files it should cover, so the
+        rule silently fails to apply and Kiro produces off-pattern code in those
+        areas. A too-broad glob means the rule loads even where it is irrelevant,
+        adding context noise and causing the rule to be applied where it should not.
+      passThreshold: 0.6
+  - id: kis-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: |
+      A steering rule and a freshly written #[[file:...]]-referenced doc disagree
+      because the referenced file is outdated. Where is the real defect?
+    choices:
+      - id: a
+        text: In the inclusion mode, which must be switched to Manual
+      - id: b
+        text: >-
+          In the referenced source file itself; because the reference is live, fixing the source
+          file fixes the steering automatically
+      - id: c
+        text: In Kiro's parser, which cannot read references
+      - id: d
+        text: In the .kiro/settings/mcp.json file
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Analyze that live refs mirror the source-of-truth file.
+  - id: kis-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: |
+      You inherit a repo where steering, hooks, and MCP config are all jammed into
+      one giant .kiro/steering/everything.md. Why is this an anti-pattern beyond
+      just size?
+    choices:
+      - id: a
+        text: Markdown files cannot exceed 100 lines in Kiro
+      - id: b
+        text: Steering files must be empty to function
+      - id: c
+        text: >-
+          It conflates distinct concerns; hooks belong in .kiro/hooks/ and MCP config in
+          .kiro/settings/mcp.json, and steering cannot execute hooks or define MCP servers
+      - id: d
+        text: Combining them makes Kiro faster but less accurate
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Analyze conflation of steering/hooks/MCP responsibilities.
+  - id: kis-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: free_form
+    prompt: |
+      Critique this steering strategy: "We put every rule we ever think of into
+      product.md, tech.md, and structure.md and set them all to Always so nothing
+      is ever missed." Judge it and propose a better design.
+    guidance: >
+      Looks for judging context bloat/dilution and recommending scoped modes + lean foundation
+      files.
+    rubric:
+      criteria:
+        - id: c1
+          text: Judges the always-everything approach as causing context bloat, cost, and dilution.
+        - id: c2
+          text: Recommends lean foundation files plus scoped Conditional/Manual files.
+        - id: c3
+          text: Justifies the tradeoff (relevance and budget vs completeness).
+      referenceAnswer: |
+        "Always everything" trades focus for completeness: the foundation files
+        balloon, every prompt carries irrelevant rules, cost and latency rise, and
+        genuinely relevant guidance competes for attention. Better: keep foundation
+        files lean and high-signal, push area-specific rules into fileMatch files
+        scoped by glob, and put rare/large playbooks in Manual files. This delivers
+        the right guidance at the right time without flooding context.
+      passThreshold: 0.6
+  - id: kis-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: |
+      Which steering design best balances coverage and context economy for a
+      medium-sized polyglot monorepo?
+    choices:
+      - id: a
+        text: One Always-mode mega-file containing every rule for every language
+      - id: b
+        text: All rules in ~/.kiro/steering/ so each dev tunes their own
+      - id: c
+        text: All rules as Manual files that must be
+      - id: d
+        text: >-
+          Lean Always-mode foundation files for universal rules, plus per-language/per-area
+          fileMatch files, and Manual files for rare runbooks
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Evaluate the layered design as the best balance.
+  - id: kis-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: |
+      A lead argues "steering is just like git pre-commit hooks, so we don't need
+      Agent Hooks too." Evaluate this claim.
+    choices:
+      - id: a
+        text: >-
+          It conflates two things: steering is passive guidance injected into context, while Agent
+          Hooks are event-driven automations that act on save/create/delete; they serve different
+          purposes
+      - id: b
+        text: Correct, steering and hooks are interchangeable
+      - id: c
+        text: Correct, because steering also runs shell commands on commit
+      - id: d
+        text: Incorrect only because pre-commit hooks do not exist in git
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Evaluate the steering-vs-hooks conflation.
+  - id: kis-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: |
+      Evaluate the decision to embed a project's full coding-standards wiki into a
+      single Always-mode steering file via #[[file:...]] versus distilling it into
+      concise, scoped steering files. Recommend an approach and justify it.
+    guidance: |
+      Looks for judging full-embed cost vs distilled scoped files, recommending distillation.
+    rubric:
+      criteria:
+        - id: c1
+          text: Evaluates the cost/dilution of embedding a full wiki always-on.
+        - id: c2
+          text: Notes a concise distillation is higher-signal and cheaper per prompt.
+        - id: c3
+          text: Recommends distilled, scoped steering (with optional Manual deep-dive) and justifies it.
+      referenceAnswer: |
+        Embedding the whole wiki always-on maximizes recall but is expensive and
+        noisy: most of it is irrelevant to any given task and it crowds out
+        task-specific context. A distilled set of concise, scoped steering files
+        delivers the rules that matter where they matter, at far lower token cost,
+        with higher adherence. Recommend distillation, keeping the full wiki as a
+        Manual-mode reference (or live link) for occasional deep dives.
+      passThreshold: 0.6
+  - id: kis-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: |
+      Team A commits shared standards to .kiro/steering/; Team B keeps them in each
+      member's ~/.kiro/steering/. Which approach is more defensible for enforcing
+      consistency, and why?
+    choices:
+      - id: a
+        text: Team B, because global steering always overrides workspace steering
+      - id: b
+        text: >-
+          Team A, because committed workspace steering is shared, versioned, reviewable, and reaches
+          everyone who clones the repo
+      - id: c
+        text: Neither; steering cannot encode standards
+      - id: d
+        text: Team B, because personal files load faster
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Evaluate committed workspace steering as the defensible choice.
+  - id: kis-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: |
+      A team proposes that the same rules be expressed in both AGENTS.md and an
+      Always-mode steering file "for redundancy." Critique this and decide whether
+      redundancy here is a feature or a liability.
+    guidance: >
+      Looks for judging duplicate-source drift risk and no precedence, recommending single source of
+      truth.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Identifies duplication risk: two sources can drift and contradict.'
+        - id: c2
+          text: Notes no formal precedence between AGENTS.md and steering, creating ambiguity.
+        - id: c3
+          text: Concludes redundancy is a liability; recommends a single source of truth.
+      referenceAnswer: |
+        Redundancy here is a liability. Two copies inevitably drift; once they
+        disagree there is no precedence rule between an auto-loaded AGENTS.md and an
+        Always-mode steering file, so Kiro gets contradictory guidance. Keep one
+        authoritative source and, if both files are needed, have one reference the
+        other rather than duplicate content.
+      passThreshold: 0.6
+  - id: kis-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: |
+      Evaluate: "We should set our 5,000-line security runbook to Always so Kiro
+      never forgets security." What is the strongest counter-argument?
+    choices:
+      - id: a
+        text: Always mode caps files at 5,000 lines so it will be truncated anyway
+      - id: b
+        text: Security rules cannot be expressed in steering at all
+      - id: c
+        text: >-
+          Always-loading 5,000 lines on every prompt wastes context and money for tasks that are not
+          security-related; scope it via fileMatch or Manual instead
+      - id: d
+        text: Always mode disables all other steering files
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Evaluate cost of always-on large doc vs scoping.
+  - id: kis-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: |
+      Two designs are proposed for keeping Kiro aligned with a frequently-changing
+      API contract: (A) paste the contract into tech.md and update it by hand, or
+      (B) keep a steering rule plus a #[[file:openapi.yaml]] live reference. Judge
+      which is more maintainable and under what condition the other could win.
+    guidance: >
+      Looks for judging live reference as lower-drift, with a condition (e.g., wanting a curated
+      subset) favoring manual.
+    rubric:
+      criteria:
+        - id: c1
+          text: Judges the live reference (B) as lower-drift and self-updating.
+        - id: c2
+          text: Notes the manual paste (A) drifts and adds maintenance burden.
+        - id: c3
+          text: >-
+            Identifies a condition where A/curation wins (e.g. wanting a trimmed, annotated subset
+            or avoiding huge context).
+      referenceAnswer: |
+        Design B is more maintainable: the live #[[file:openapi.yaml]] reference
+        tracks the contract automatically, so the steering never drifts. Design A
+        requires manual re-pasting and will silently go stale. The only case where A
+        (or a curated copy) wins is when you deliberately want a trimmed, annotated
+        subset of the contract rather than the full file, or when the full spec is so
+        large that always-loading it would blow the context budget.
+      passThreshold: 0.6
+  - id: kis-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: |
+      Which is the strongest justification for keeping foundation steering files
+      (product/tech/structure) short and high-signal?
+    choices:
+      - id: a
+        text: Kiro rejects foundation files longer than one screen
+      - id: b
+        text: Short files are required for git to track them
+      - id: c
+        text: Long files automatically switch to Manual mode
+      - id: d
+        text: >-
+          They load on every interaction, so every wasted line is a recurring cost across all
+          prompts and dilutes relevant context
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Evaluate the recurring-cost rationale for lean foundation files.
+  - id: kis-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: |
+      A reviewer must choose between encoding "run tests after editing a component"
+      as a steering rule versus an Agent Hook. Which framing best guides the
+      decision?
+    choices:
+      - id: a
+        text: >-
+          If you want guaranteed automatic action on an event, use an Agent Hook; steering only
+          advises the model and may or may not act
+      - id: b
+        text: Always use steering because hooks cannot run tests
+      - id: c
+        text: They are identical, so pick by filename preference
+      - id: d
+        text: Use steering because hooks cannot be triggered on save
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Evaluate guaranteed-action (hook) vs advisory (steering) framing.
+  - id: kis-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: |
+      Assess this anti-pattern: a team disables steering entirely and instead
+      re-pastes the same context paragraph at the start of every Kiro conversation.
+      What are they losing, and what would you recommend?
+    guidance: >
+      Looks for judging the manual re-paste as error-prone/inconsistent and recommending steering
+      files.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the re-paste approach as inconsistent, error-prone, and unshared across
+            teammates.
+        - id: c2
+          text: 'Notes lost benefits: versioning, reuse, conditional/scoped loading, live references.'
+        - id: c3
+          text: Recommends migrating the paragraph into steering files (foundation/Always or scoped).
+      referenceAnswer: |
+        Re-pasting context by hand is exactly what steering exists to eliminate: it
+        is inconsistent between people and prompts, easy to forget or mistype, and
+        not shared or versioned with the repo. They lose reuse, review, scoped
+        loading, and live file references. Recommendation: move the paragraph into
+        .kiro/steering/ (foundation/Always for universal context, scoped files for
+        the rest) so it loads automatically and consistently for everyone.
+      passThreshold: 0.6
+  - id: kis-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: |
+      A platform team wants personal ergonomics (verbosity, commit-message tone) to
+      coexist with mandatory org rules without letting individuals weaken the org
+      rules. Given Kiro's precedence model, which layering is soundest?
+    choices:
+      - id: a
+        text: Put org rules in ~/.kiro/steering/ and personal prefs in the workspace
+      - id: b
+        text: >-
+          Put mandatory org rules in committed workspace steering (which wins on conflict) and let
+          personal preferences live in ~/.kiro/steering/ for non-conflicting tweaks
+      - id: c
+        text: Put everything in AGENTS.md so nothing can conflict
+      - id: d
+        text: Put org rules in .kiro/hooks/ so they cannot be overridden
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Evaluate precedence-aware layering for governance.
+  - id: kis-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: free_form
+    prompt: |
+      Critique using fileMatch globs as a security boundary -- e.g., relying on a
+      glob so that "secret-handling rules only load near sensitive files." Judge
+      whether inclusion modes are an appropriate control here.
+    guidance: |
+      Looks for judging inclusion modes as context-relevance, not enforcement/security controls.
+    rubric:
+      criteria:
+        - id: c1
+          text: Argues inclusion modes control context relevance, not enforcement or access.
+        - id: c2
+          text: >-
+            Notes a glob does not prevent unsafe code elsewhere; the model may still act outside the
+            matched files.
+        - id: c3
+          text: >-
+            Recommends real controls (hooks/CI/secret scanning) for security, using steering only to
+            advise.
+      referenceAnswer: |
+        Inclusion modes are a relevance mechanism, not a security control. A fileMatch
+        glob only decides when advisory guidance enters context; it does not stop
+        Kiro from generating unsafe code in unmatched files, nor does it enforce
+        anything. Treating it as a boundary gives false assurance. For real security,
+        use enforcement: Agent Hooks/CI that scan for secrets, plus repo policies;
+        keep steering as the advisory layer that explains the rules.
+      passThreshold: 0.6
+  - id: kis-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: free_form
+    prompt: |
+      Explain why the Auto (description-matched) inclusion mode requires a name and
+      description in its front matter, while Always mode does not.
+    guidance: |
+      Looks for Auto needing a description to match requests; Always loads unconditionally.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Auto loads based on matching the user's request to the file's description.
+        - id: c2
+          text: Explains Always loads unconditionally so it needs no matching metadata.
+      referenceAnswer: |
+        Auto mode decides whether to load a file by comparing the user's request to
+        the file's name/description, so it must supply that description to match
+        against. Always mode loads on every interaction unconditionally, so there is
+        nothing to match and no description is needed.
+      passThreshold: 0.6
+  - id: kis-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: free_form
+    prompt: |
+      Describe how steering and Agent Hooks play complementary roles in keeping
+      Kiro's output aligned with team conventions.
+    guidance: |
+      Looks for steering = passive in-context guidance; hooks = active event-driven automation.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes steering as passive guidance injected into the model's context.
+        - id: c2
+          text: Describes hooks as active, event-driven automations (e.g. on save).
+        - id: c3
+          text: Notes they complement each other (advise vs enforce/automate).
+      referenceAnswer: |
+        Steering passively shapes what Kiro knows by injecting persistent guidance
+        into context, nudging the model toward conventions. Agent Hooks actively run
+        an agent prompt or shell command when an IDE event fires (save/create/delete),
+        enforcing or automating actions. Together, steering advises and hooks act.
+      passThreshold: 0.6
+  - id: kis-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: |
+      You want a single steering file to apply only when editing either Python or
+      SQL files anywhere in the repo. What is the most direct configuration?
+    choices:
+      - id: a
+        text: Use inclusion always so it covers everything
+      - id: b
+        text: Put it in ~/.kiro/steering/ so it loads globally
+      - id: c
+        text: Use inclusion fileMatch with a glob that matches both **/*.py and **/*.sql
+      - id: d
+        text: Convert it into an Agent Hook on file save
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Apply fileMatch with a multi-extension glob.
+  - id: kis-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: |
+      Your team wants new contributors to immediately get the product context, tech
+      stack, and folder conventions without any manual step. What do you ensure?
+    choices:
+      - id: a
+        text: That an MCP server is configured in .kiro/settings/mcp.json
+      - id: b
+        text: That a hook fires on clone
+      - id: c
+        text: That every steering file is set to Manual mode
+      - id: d
+        text: >-
+          That product.md, tech.md, and structure.md are committed and populated, since they load by
+          default
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Apply default-loading of committed foundation files.
+  - id: kis-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: |
+      You maintain accessibility rules that should apply only to React component
+      files but also want them available on demand in design discussions. What is
+      a clean setup?
+    choices:
+      - id: a
+        text: >-
+          Use fileMatch with a .tsx glob so they load while editing components, and #-mention the
+          same file on demand in design chats
+      - id: b
+        text: Duplicate the rules into product.md and tech.md
+      - id: c
+        text: Put them only in ~/.kiro/steering/
+      - id: d
+        text: Set them to inclusion always so they never miss
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Apply fileMatch plus manual mention for dual access.
+  - id: kis-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: |
+      You want a steering doc that keeps Kiro aware of your canonical environment
+      variables by referencing the real .env.example file. Write the steering body
+      line (the reference) and state which inclusion mode you would pick and why.
+    guidance: |
+      Looks for the #[[file:.env.example]] reference and a justified mode choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Uses the #[[file:.env.example]] live file reference in the steering body.'
+        - id: c2
+          text: Picks an inclusion mode (Always or fileMatch) with a brief justification.
+      referenceAnswer: |
+        Reference line: #[[file:.env.example]]. Pick Always (or fold into tech.md) if
+        env config is relevant project-wide, or fileMatch scoped to config/server
+        files if it only matters there. The live reference keeps the listed variables
+        in sync with the real file.
+      passThreshold: 0.6
+  - id: kis-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: |
+      A steering file's rule is correct but Kiro applies it inconsistently across a
+      monorepo. You confirm it is fileMatch with glob "src/**". What explains the
+      inconsistency in packages outside src/?
+    choices:
+      - id: a
+        text: fileMatch globs are ignored in monorepos
+      - id: b
+        text: The glob only matches paths under src/, so packages elsewhere never trigger the rule
+      - id: c
+        text: The rule is too long for Always mode
+      - id: d
+        text: Workspace steering does not work in monorepos
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Analyze glob scope vs monorepo layout.
+  - id: kis-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: |
+      A reviewer notices steering rules are duplicated verbatim in product.md and a
+      fileMatch file, and the two copies have already diverged. What is the core
+      maintainability defect?
+    choices:
+      - id: a
+        text: product.md cannot contain rules, only product descriptions
+      - id: b
+        text: fileMatch files override product.md automatically, so divergence is harmless
+      - id: c
+        text: >-
+          There is no single source of truth, so the copies drift and Kiro receives contradictory
+          guidance
+      - id: d
+        text: Duplication speeds Kiro up, so it is acceptable
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Analyze duplicated-source drift.
+  - id: kis-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: |
+      You suspect a Manual-mode steering file is the reason a rule "sometimes works."
+      What single observation would confirm Manual mode is the cause?
+    choices:
+      - id: a
+        text: A hook in .kiro/hooks/ references it
+      - id: b
+        text: The file lives in ~/.kiro/steering/
+      - id: c
+        text: The file contains a fileMatchPattern glob in its front matter
+      - id: d
+        text: >-
+          The rule applies only in conversations where the file was explicitly #-mentioned, and
+          never otherwise
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Analyze the Manual-mention correlation: a Manual file only takes effect when #-mentioned.
+  - id: kis-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: free_form
+    prompt: |
+      A team reports Kiro "forgot" a critical rule after they reorganized steering
+      into many fileMatch files. Break down the likely failure and how to detect it.
+    guidance: |
+      Looks for the rule moving out of always-on context into a glob that does not match the task.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that moving a once-Always rule into a fileMatch file made it conditional.
+        - id: c2
+          text: Explains the rule now loads only when the glob matches, so it is absent otherwise.
+        - id: c3
+          text: 'Suggests detection: check the file''s mode/glob against the failing task''s files.'
+      referenceAnswer: |
+        The rule was probably universal before (in a foundation/Always file) and got
+        moved into a fileMatch file, making it conditional. Now it only loads when the
+        task touches files matching that glob, so for other work it is simply absent.
+        Detect it by inspecting the new file's inclusion mode and glob and confirming
+        the failing task's files do not match; fix by restoring Always or broadening
+        the glob.
+      passThreshold: 0.6
+  - id: kis-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: free_form
+    prompt: |
+      Distinguish the symptoms a developer would see if a steering rule is (a) never
+      loaded due to a typo'd inclusion mode versus (b) loaded but contradicted by a
+      higher-precedence workspace file.
+    guidance: >
+      Looks for (a) total absence/ignored everywhere vs (b) consistently overridden by the other
+      rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: (a) Typo'd mode -> rule never appears to take effect anywhere (silently inert).
+        - id: c2
+          text: (b) Overridden -> rule loads but a competing rule consistently wins.
+        - id: c3
+          text: 'Notes the diagnosis differs: fix the mode vs resolve the conflict.'
+      referenceAnswer: |
+        With a typo'd inclusion mode the rule never loads, so it is ignored uniformly
+        regardless of context, no competing behavior appears. With a precedence
+        conflict the rule does load but a workspace file consistently wins, so you see
+        the other rule's behavior, not silence. The first is fixed by correcting the
+        mode; the second by removing the conflicting rule.
+      passThreshold: 0.6
+  - id: kis-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: multiple_choice
+    prompt: |
+      Evaluate: a team wants to guarantee that every commit is scanned for secrets.
+      Should this live in steering or an Agent Hook, and why?
+    choices:
+      - id: a
+        text: >-
+          An Agent Hook, because hooks deterministically run an action on an event while steering
+          only advises the model
+      - id: b
+        text: Steering, because advice is stronger than automation
+      - id: c
+        text: Steering, because hooks cannot run shell commands
+      - id: d
+        text: Neither; secret scanning is impossible in Kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Evaluate enforcement (hook) vs advisory (steering).
+  - id: kis-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: |
+      Two steering layouts are proposed for a large team. Which better supports
+      onboarding and consistency, and why?
+    choices:
+      - id: a
+        text: Each engineer keeps all rules in ~/.kiro/steering/, since personalization aids onboarding
+      - id: b
+        text: >-
+          Committed .kiro/steering/ foundation plus scoped files, since new clones inherit
+          consistent, reviewable guidance automatically
+      - id: c
+        text: A single AGENTS.md with every rule, since it cannot use modes
+      - id: d
+        text: No steering at all, relying on chat context each time
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Evaluate committed shared steering for onboarding.
+  - id: kis-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: |
+      A proposal sets inclusion: auto on dozens of niche steering files with vague
+      one-word descriptions. Judge the main risk of this design.
+    choices:
+      - id: a
+        text: Auto mode is faster than Always, so there is no risk
+      - id: b
+        text: Auto mode ignores descriptions entirely, so they are harmless
+      - id: c
+        text: >-
+          Vague descriptions make Auto-matching unreliable, so files load erratically or not when
+          needed
+      - id: d
+        text: Auto mode converts the files to hooks automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Evaluate weak Auto descriptions causing unreliable matching.
+  - id: kis-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: |
+      Critique: "Embedding our entire database schema with #[[file:schema.sql]] in an
+      Always-mode file guarantees query correctness." What is the most accurate
+      judgment?
+    choices:
+      - id: a
+        text: It is a hard guarantee that Kiro will never write a wrong query
+      - id: b
+        text: It disables Kiro's ability to write queries at all
+      - id: c
+        text: The reference will silently turn the file into Manual mode
+      - id: d
+        text: >-
+          It improves schema awareness but is not a guarantee, and always-loading a large schema can
+          be wasteful; scope it to data-access work
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Evaluate the overclaim plus the always-on cost.
+  - id: kis-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: |
+      A governance lead wants org-mandated rules that individuals cannot weaken via
+      their personal steering. Using Kiro's precedence model, which placement is
+      soundest?
+    choices:
+      - id: a
+        text: >-
+          Put mandated rules in committed workspace steering, which wins over personal
+          ~/.kiro/steering/ on conflict
+      - id: b
+        text: Put mandated rules in ~/.kiro/steering/ on each machine
+      - id: c
+        text: Put mandated rules in a Manual-mode file nobody is required to mention
+      - id: d
+        text: Rely on each developer to not override the rules
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Evaluate precedence-aware placement for mandatory rules.
+  - id: kis-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: multiple_choice
+    prompt: |
+      Judge this claim: "Because Kiro is built on Code OSS, our existing VS Code
+      coding-standards extension already does everything steering does, so steering
+      is redundant."
+    choices:
+      - id: a
+        text: Correct, because steering is just a linter
+      - id: b
+        text: >-
+          A linter extension enforces syntactic rules at edit time; steering shapes the agent's
+          reasoning and generation, so they are complementary, not redundant
+      - id: c
+        text: Correct, because Code OSS disables steering
+      - id: d
+        text: Incorrect only because VS Code extensions do not run in Kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Evaluate linter-vs-steering complementarity.
+  - id: kis-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: |
+      A team is deciding whether to consolidate all guidance into a single large
+      AGENTS.md at the repo root, or to use Kiro's mode-tagged steering files in
+      .kiro/steering/. Evaluate the trade-offs and recommend an approach.
+    guidance: >
+      Looks for judging AGENTS.md (auto-load, no modes, portable) vs steering (mode control,
+      scoping) and a justified recommendation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes AGENTS.md auto-loads and is portable across tools but supports no inclusion modes
+            (always full-weight).
+        - id: c2
+          text: Notes steering files support Always/Conditional/Manual/Auto scoping for context economy.
+        - id: c3
+          text: >-
+            Gives a justified recommendation (e.g. small portable baseline in AGENTS.md, scoped
+            detail in steering).
+      referenceAnswer: |
+        A single AGENTS.md is portable and auto-loaded, but it has no inclusion modes,
+        so everything in it always enters context at full weight, which bloats prompts
+        as it grows. Mode-tagged steering files let you scope guidance (Always for
+        universals, fileMatch for area rules, Manual for rare playbooks), giving far
+        better context economy at the cost of being Kiro-specific. Recommendation: keep
+        a small, portable baseline in AGENTS.md and push the bulk of detailed,
+        scope-specific guidance into mode-tagged steering files.
+      passThreshold: 0.6

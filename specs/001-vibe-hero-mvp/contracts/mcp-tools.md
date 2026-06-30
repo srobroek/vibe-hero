@@ -2,14 +2,26 @@
 
 The MCP server is the product's external interface and the **enforcement chokepoint** (gating, scoring, persistence). The host agent calls these tools; portable skills steer when/how. All inputs/outputs are Zod-validated. Tools are pure with respect to the model — **no MCP sampling is used** (unsupported in CC/Codex); free-form grading is a two-call host-agent handshake.
 
-Every tool may return the gate sentinel instead of its normal result:
+Every tool may return a gate sentinel instead of its normal result. Two sentinels exist; they are checked in this order for non-exempt tools:
 
 ```jsonc
-// SETUP_REQUIRED gate (FR-032) — returned by any tool when profile.config is absent
+// SETUP_REQUIRED gate (FR-032) — returned when profile.config is absent
 { "status": "SETUP_REQUIRED",
   "message": "Run vibe-hero setup first.",
   "setupSkill": "vibe-hero-setup" }
+
+// UNSUPPORTED_TOOL gate (FR-031) — returned when the MCP host is not one of the
+// four supported tools (claude-code, codex, kiro-cli, kiro-ide) AND no valid
+// toolsLearning is configured. vibe-hero fails loudly for unknown hosts rather
+// than silently defaulting. detectedName is the raw clientInfo.name from the
+// MCP handshake (empty string if absent).
+{ "status": "UNSUPPORTED_TOOL",
+  "detectedName": "<raw clientInfo.name or empty string>",
+  "message": "vibe-hero does not support \"<name>\" yet. Supported: Claude Code, Codex, Kiro CLI, Kiro IDE.",
+  "supported": ["claude-code", "codex", "kiro-cli", "kiro-ide"] }
 ```
+
+Gate precedence: SETUP_REQUIRED is checked first (config must exist before tool resolution makes sense), then UNSUPPORTED_TOOL. Exempt tools (`get_config`, `save_config`) bypass both gates.
 
 ## `get_status`
 Show the user's standing for a tool (or all). Read-only.
@@ -76,5 +88,5 @@ Record accept/decline so cadence + anti-nag are honored.
 ### Notes
 - All tool results are JSON-serializable and Zod-validated both directions.
 - `AbilityKey` is the serialized `(class, topicId)`; `ToolId`/`Tier` per `data-model.md`.
-- The gate (`SETUP_REQUIRED`) precedes every behavior except `get_config`/`save_config`.
+- Two gate sentinels (SETUP_REQUIRED, UNSUPPORTED_TOOL) precede every behavior except `get_config`/`save_config` (see gate block above). SETUP_REQUIRED is checked first.
 - Grading determinism: identical deterministic answer ⇒ identical grade (SC-004). Free-form verdicts are host-judged and recorded verbatim as a binary/continuous `score`.

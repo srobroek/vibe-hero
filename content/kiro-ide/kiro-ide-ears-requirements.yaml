@@ -1,0 +1,2498 @@
+# Topic: kiro-ide-ears-requirements (kiro-ide)
+# EARS notation for requirements in Kiro IDE's spec phase — acceptance criteria and the requirements→design→tasks flow.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-ears-requirements
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE EARS Requirements
+summary: >-
+  EARS notation for requirements in Kiro IDE's spec phase — acceptance criteria and the
+  requirements→design→tasks flow.
+triggerSignals: []
+items:
+  - id: ears-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: |
+      What does the acronym EARS stand for in the context of writing requirements?
+    choices:
+      - id: a
+        text: Easy Approach to Requirements Syntax
+      - id: b
+        text: Event-Action Response Specification
+      - id: c
+        text: Enterprise Agile Requirements Standard
+      - id: d
+        text: Estimated Acceptance Review Stage
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      EARS = Easy Approach to Requirements Syntax, a constrained-natural-language
+      notation Kiro uses for acceptance criteria in requirements.md.
+  - id: ears-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: |
+      In a Kiro feature spec, which file captures user stories and EARS-style
+      acceptance criteria?
+    choices:
+      - id: a
+        text: design.md
+      - id: b
+        text: requirements.md
+      - id: c
+        text: tasks.md
+      - id: d
+        text: steering.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      requirements.md captures user stories, acceptance criteria, or bug analysis
+      in structured notation. design.md holds architecture; tasks.md holds the plan.
+  - id: ears-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: |
+      Which three markdown files does a Kiro feature spec generate, in workflow order?
+    choices:
+      - id: a
+        text: product.md -> tech.md -> structure.md
+      - id: b
+        text: spec.md -> plan.md -> todo.md
+      - id: c
+        text: requirements.md -> design.md -> tasks.md
+      - id: d
+        text: tasks.md -> design.md -> requirements.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The spec flow proceeds requirements.md -> design.md -> tasks.md. The
+      product/tech/structure trio belongs to steering, not specs.
+  - id: ears-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      Which modal verb is the core obligation keyword in EARS acceptance criteria?
+    choices:
+      - id: a
+        text: WILL
+      - id: b
+        text: SHOULD
+      - id: c
+        text: MAY
+      - id: d
+        text: SHALL
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      EARS expresses a mandatory system response with SHALL. SHOULD/MAY denote
+      recommendations or options, not the binding requirement EARS encodes.
+  - id: ears-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: |
+      Which keyword introduces the triggering condition in an event-driven EARS
+      requirement?
+    choices:
+      - id: a
+        text: WHEN
+      - id: b
+        text: GIVEN
+      - id: c
+        text: BECAUSE
+      - id: d
+        text: AFTER
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Event-driven EARS uses "WHEN [trigger] THEN the system SHALL [response]".
+      GIVEN is from BDD/Gherkin, not EARS.
+  - id: ears-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: |
+      A user story in a Kiro requirement typically follows which template?
+    choices:
+      - id: a
+        text: Given [state], When [event], Then [outcome]
+      - id: b
+        text: As a [role], I want [capability], so that [benefit]
+      - id: c
+        text: The function [name] returns [value]
+      - id: d
+        text: Step 1, Step 2, Step 3
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Kiro pairs a "As a... I want... so that..." user story with EARS acceptance
+      criteria. The Given/When/Then form is Gherkin, used for test scenarios.
+  - id: ears-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      Kiro's documented bugfix template for preserving existing behavior reads:
+    choices:
+      - id: a
+        text: WHILE [condition] THE SYSTEM MAY [behavior]
+      - id: b
+        text: IF [bug] THEN the system SHALL DELETE [behavior]
+      - id: c
+        text: WHEN [condition] THEN the system SHALL CONTINUE TO [existing behavior]
+      - id: d
+        text: GIVEN [bug] THEN restart the system
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro documents "WHEN [condition] THEN the system SHALL CONTINUE TO [existing
+      behavior]" for bugfix specs to guard against regressions.
+  - id: ears-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: |
+      In EARS, which keyword introduces an unwanted-behavior (error-handling)
+      requirement?
+    choices:
+      - id: a
+        text: WHILE
+      - id: b
+        text: WHEN
+      - id: c
+        text: WHERE
+      - id: d
+        text: IF
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Unwanted-behavior EARS uses "IF [unwanted condition] THEN the system SHALL
+      [response]". WHEN is for normal events; WHILE for states; WHERE for features.
+  - id: ears-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: |
+      Which EARS keyword expresses a requirement active only during a continuous
+      state?
+    choices:
+      - id: a
+        text: WHILE
+      - id: b
+        text: WHEN
+      - id: c
+        text: IF
+      - id: d
+        text: SHALL
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      State-driven EARS uses "WHILE [state] the system SHALL [behavior]" for a
+      behavior that holds throughout an ongoing condition.
+  - id: ears-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Which EARS keyword scopes a requirement to an optional feature being present?
+    choices:
+      - id: a
+        text: WHEN
+      - id: b
+        text: WHERE
+      - id: c
+        text: UNLESS
+      - id: d
+        text: BECAUSE
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Optional-feature EARS uses "WHERE [feature is included] the system SHALL
+      [behavior]" to gate a requirement on a feature's presence.
+  - id: ears-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: |
+      A ubiquitous EARS requirement (always true, no trigger) reads roughly:
+    choices:
+      - id: a
+        text: IF idle THEN the system SHALL stop
+      - id: b
+        text: WHEN started THE SYSTEM MAY [behavior]
+      - id: c
+        text: THE SYSTEM SHALL [behavior]
+      - id: d
+        text: WHILE running the system SHOULD [behavior]
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Ubiquitous requirements have no precondition: "THE SYSTEM SHALL [behavior]".
+      They state a property that always holds.
+  - id: ears-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: |
+      In Kiro, where is a feature spec stored within the workspace?
+    choices:
+      - id: a
+        text: docs/requirements/
+      - id: b
+        text: .kiro/steering/
+      - id: c
+        text: .specify/specs/
+      - id: d
+        text: .kiro/specs/<feature-name>/
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Each spec is a folder under .kiro/specs/<feature-name>/ containing
+      requirements.md, design.md, and tasks.md.
+  - id: ears-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: |
+      Which artifact comes immediately after requirements.md in Kiro's spec flow?
+    choices:
+      - id: a
+        text: design.md
+      - id: b
+        text: tasks.md
+      - id: c
+        text: product.md
+      - id: d
+        text: README.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The order is requirements.md -> design.md -> tasks.md. Design translates the
+      approved requirements into architecture before tasks are generated.
+  - id: ears-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: free_form
+    prompt: |
+      State the basic event-driven EARS acceptance-criteria pattern used in a Kiro
+      requirements.md file.
+    guidance: |
+      Looking for the WHEN [condition] THEN the system SHALL [behavior] pattern.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes a WHEN [condition/trigger] clause.
+        - id: c2
+          text: Includes a THEN the system SHALL [behavior] clause.
+      referenceAnswer: |
+        Event-driven EARS follows "WHEN [condition/trigger] THEN the system SHALL
+        [behavior]", with a "SHALL CONTINUE TO" variant for unchanged behavior in
+        bugfix specs.
+      passThreshold: 0.6
+  - id: ears-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: free_form
+    prompt: |
+      Name the three markdown artifacts a Kiro feature spec produces and the order
+      in which they are generated.
+    guidance: |
+      Looking for requirements.md, design.md, tasks.md in that order.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names requirements.md, design.md, and tasks.md.
+        - id: c2
+          text: States the order requirements -> design -> tasks.
+      referenceAnswer: |
+        A spec generates requirements.md, then design.md, then tasks.md, reviewed
+        in that order before each next phase begins.
+      passThreshold: 0.6
+  - id: ears-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: |
+      List the five canonical EARS requirement patterns by name (the categories of
+      requirement EARS distinguishes).
+    guidance: |
+      Looking for ubiquitous, event-driven, state-driven, optional-feature, and
+      unwanted-behavior. This is durable EARS (Mavin et al.) knowledge.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names ubiquitous and event-driven patterns.
+        - id: c2
+          text: Names state-driven and optional-feature patterns.
+        - id: c3
+          text: Names the unwanted-behavior (error/IF-THEN) pattern.
+      referenceAnswer: |
+        The five EARS patterns are: ubiquitous (THE SYSTEM SHALL), event-driven
+        (WHEN), state-driven (WHILE), optional-feature (WHERE), and
+        unwanted-behavior (IF...THEN).
+      passThreshold: 0.6
+  - id: ears-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: |
+      Give the standard agile user-story template that Kiro pairs with EARS
+      acceptance criteria in requirements.md.
+    guidance: |
+      Looking for the "As a [role], I want [capability], so that [benefit]" form.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes role and desired capability clauses.
+        - id: c2
+          text: Includes the "so that [benefit/value]" clause.
+      referenceAnswer: |
+        "As a [role], I want [capability], so that [benefit]." Kiro attaches EARS
+        acceptance criteria beneath each such story.
+      passThreshold: 0.6
+  - id: ears-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: |
+      Name the obligation keyword EARS uses to express a mandatory system response,
+      and state why a recommendation keyword like SHOULD is not used in its place.
+    guidance: |
+      Looking for SHALL as the mandatory keyword; SHOULD/MAY are non-binding.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies SHALL as the mandatory keyword.
+        - id: c2
+          text: Explains SHOULD/MAY are non-binding (recommendation/option).
+      referenceAnswer: |
+        EARS uses SHALL for a binding, testable obligation. SHOULD signals a
+        recommendation and MAY an option, neither of which is enforceable as a
+        requirement, so EARS avoids them for the core response.
+      passThreshold: 0.6
+  - id: ears-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: free_form
+    prompt: |
+      In Kiro's spec workflow, what role does requirements.md play relative to
+      design.md and tasks.md?
+    guidance: |
+      Looking for: requirements is the first/source-of-truth artifact capturing
+      what to build; design and tasks derive from it.
+    rubric:
+      criteria:
+        - id: c1
+          text: States requirements.md is the first artifact and captures what/why.
+        - id: c2
+          text: States design.md and tasks.md derive from the approved requirements.
+      referenceAnswer: |
+        requirements.md is the first artifact and the source of truth for what the
+        feature must do (user stories + EARS criteria). design.md (architecture)
+        and tasks.md (implementation plan) are derived from the approved
+        requirements.
+      passThreshold: 0.6
+  - id: ears-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: |
+      Why does EARS constrain requirements to a small set of keyword templates
+      rather than allowing free prose?
+    choices:
+      - id: a
+        text: To make requirements shorter than one sentence
+      - id: b
+        text: To reduce ambiguity and make each requirement individually testable
+      - id: c
+        text: To force every requirement into a single global statement
+      - id: d
+        text: To eliminate the need for a design phase
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Constrained syntax removes ambiguity inherent in free prose and yields
+      atomic, verifiable requirements that map cleanly to acceptance tests.
+  - id: ears-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: |
+      How does an event-driven (WHEN) requirement differ from a state-driven
+      (WHILE) requirement?
+    choices:
+      - id: a
+        text: WHEN applies to errors; WHILE applies only to startup
+      - id: b
+        text: WHEN is mandatory; WHILE is optional
+      - id: c
+        text: WHEN fires on a discrete trigger; WHILE holds throughout a continuous state
+      - id: d
+        text: They are interchangeable synonyms
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      WHEN responds to a momentary trigger/event; WHILE describes behavior that
+      must hold for the entire duration of an ongoing state.
+  - id: ears-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: |
+      Why does Kiro put the requirements phase before the design phase rather than
+      sketching architecture first?
+    choices:
+      - id: a
+        text: To avoid ever writing acceptance criteria
+      - id: b
+        text: Because design.md cannot reference requirements.md
+      - id: c
+        text: Because requirements are auto-generated from finished code
+      - id: d
+        text: So design decisions are justified by agreed-upon, testable requirements
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Establishing what to build (requirements) before how (design) ensures
+      architecture serves agreed criteria. Kiro also offers a Design-First variant,
+      but the default reasoning is requirements-driven design.
+  - id: ears-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      What is the purpose of the "SHALL CONTINUE TO" phrasing in Kiro's bugfix
+      requirement template?
+    choices:
+      - id: a
+        text: To assert that existing correct behavior must be preserved (no regression)
+      - id: b
+        text: To request a new feature unrelated to the bug
+      - id: c
+        text: To mark a requirement as optional
+      - id: d
+        text: To delete the previous behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "WHEN [condition] THEN the system SHALL CONTINUE TO [existing behavior]"
+      encodes a regression guard: the fix must not break behavior that already works.
+  - id: ears-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: |
+      How does an EARS acceptance criterion relate to a later acceptance test?
+    choices:
+      - id: a
+        text: EARS criteria cannot be tested and are documentation only
+      - id: b
+        text: The WHEN/IF condition becomes the test setup and the SHALL clause the assertion
+      - id: c
+        text: Each test must cover all criteria in one assertion
+      - id: d
+        text: The SHALL clause becomes the test setup
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The trigger/condition (WHEN/IF/WHILE) maps to the arranged state and stimulus;
+      the SHALL response maps to the expected outcome being asserted.
+  - id: ears-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: |
+      Why is "The system should be fast and user-friendly" a poor EARS requirement?
+    choices:
+      - id: a
+        text: It is too long to fit in requirements.md
+      - id: b
+        text: It uses the WHEN keyword incorrectly
+      - id: c
+        text: It is unmeasurable, has no trigger, and combines two vague qualities
+      - id: d
+        text: It belongs in tasks.md instead
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      "Fast" and "user-friendly" are subjective and unverifiable, it bundles two
+      concerns, and it lacks the SHALL obligation and any condition. EARS demands
+      atomic, measurable, testable statements.
+  - id: ears-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: |
+      In Kiro, what is the practical effect of reviewing and approving
+      requirements.md before generating design.md?
+    choices:
+      - id: a
+        text: It automatically deploys the feature
+      - id: b
+        text: It locks the spec so no further edits are ever allowed
+      - id: c
+        text: It deletes the requirements file after approval
+      - id: d
+        text: It forms a checkpoint so design only proceeds from agreed scope
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Phase boundaries act as review checkpoints; approving requirements gives the
+      agent a stable, agreed scope from which to derive design. Specs remain
+      editable and can be synced iteratively.
+  - id: ears-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: |
+      Why does EARS favor one requirement per statement (atomicity)?
+    choices:
+      - id: a
+        text: So each can be independently verified, traced, and pass/fail-tested
+      - id: b
+        text: Because markdown cannot render compound sentences
+      - id: c
+        text: To keep requirements.md under a fixed byte limit
+      - id: d
+        text: Because Kiro rejects files with multiple requirements
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Atomic requirements can each map to a single test and be traced to design and
+      tasks; compound ("and") requirements blur which part failed.
+  - id: ears-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: |
+      What distinguishes an optional-feature (WHERE) requirement from an
+      event-driven (WHEN) one?
+    choices:
+      - id: a
+        text: WHERE is for errors only; WHEN is for normal flow only
+      - id: b
+        text: WHERE is conditioned on a feature being included; WHEN on a runtime event
+      - id: c
+        text: WHERE has no SHALL clause; WHEN always does
+      - id: d
+        text: They mean exactly the same thing
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      WHERE gates a requirement on a configuration/feature being present (a
+      build-time/feature-flag condition); WHEN gates on a runtime trigger occurring.
+  - id: ears-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: |
+      How does requirements traceability flow through Kiro's three artifacts?
+    choices:
+      - id: a
+        text: design.md replaces requirements.md once written
+      - id: b
+        text: Tasks are written first and requirements reverse-engineered later
+      - id: c
+        text: Each requirement should be traceable to design elements and to tasks
+      - id: d
+        text: There is no relationship between the three files
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      A requirement should map forward to the design that satisfies it and the
+      task(s) that implement it, enabling end-to-end traceability.
+  - id: ears-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: |
+      Why might a team choose Kiro's Design-First spec variant over Requirements-First?
+    choices:
+      - id: a
+        text: Because requirements.md is forbidden in Design-First
+      - id: b
+        text: Because Requirements-First skips acceptance criteria entirely
+      - id: c
+        text: Because Design-First never produces a tasks.md
+      - id: d
+        text: When the architecture is well-understood and shapes which requirements matter
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Design-First suits cases where a known architecture constrains and informs
+      requirements; both variants still produce all three artifacts.
+  - id: ears-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: |
+      What does Kiro's Quick Plan option do relative to the staged spec workflow?
+    choices:
+      - id: a
+        text: Auto-generates all three artifacts at once instead of staged review
+      - id: b
+        text: Skips requirements and writes only tasks
+      - id: c
+        text: Produces only a design diagram
+      - id: d
+        text: Disables EARS notation
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Quick Plan generates requirements.md, design.md, and tasks.md together for
+      speed, trading the per-phase review checkpoints of the staged flow.
+  - id: ears-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: free_form
+    prompt: |
+      Explain why EARS uses constrained keyword templates and how that improves a
+      requirements.md over free-form prose.
+    guidance: |
+      Looking for: removes ambiguity, atomic/testable, consistent structure,
+      maps to acceptance tests.
+    rubric:
+      criteria:
+        - id: c1
+          text: States constrained syntax reduces ambiguity vs prose.
+        - id: c2
+          text: States it yields atomic, testable/verifiable requirements.
+        - id: c3
+          text: Connects criteria to acceptance tests or traceability.
+      referenceAnswer: |
+        EARS limits requirements to a few keyword patterns so each statement has
+        one trigger and one SHALL response. That removes the ambiguity of prose,
+        keeps requirements atomic and individually testable, and lets the trigger
+        map to test setup and the SHALL clause to the assertion.
+      passThreshold: 0.6
+  - id: ears-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: |
+      Compare event-driven (WHEN), state-driven (WHILE), and unwanted-behavior
+      (IF...THEN) EARS patterns, giving the situation each is meant for.
+    guidance: |
+      Looking for: WHEN=discrete trigger, WHILE=continuous state, IF/THEN=error or
+      unwanted condition handling.
+    rubric:
+      criteria:
+        - id: c1
+          text: WHEN is for a discrete event/trigger producing a response.
+        - id: c2
+          text: WHILE is for behavior holding throughout a continuous state.
+        - id: c3
+          text: IF...THEN is for unwanted/error conditions and their handling.
+      referenceAnswer: |
+        WHEN describes the response to a discrete event/trigger. WHILE describes a
+        behavior that must hold continuously throughout a state. IF...THEN handles
+        an unwanted or error condition by specifying the system's mandated response.
+      passThreshold: 0.6
+  - id: ears-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: |
+      Explain the purpose of the "SHALL CONTINUE TO" variant in Kiro's bugfix
+      requirement template and what risk it mitigates.
+    guidance: |
+      Looking for: regression guard; preserves existing correct behavior while the
+      bug is fixed.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes it as preserving existing/correct behavior.
+        - id: c2
+          text: Identifies regression prevention as the risk mitigated.
+      referenceAnswer: |
+        "WHEN [condition] THEN the system SHALL CONTINUE TO [existing behavior]"
+        pins down behavior that already works so the bug fix does not silently
+        change or break it. It mitigates regressions by making the preserved
+        behavior an explicit, testable requirement.
+      passThreshold: 0.6
+  - id: ears-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: |
+      Describe how an EARS acceptance criterion maps onto an acceptance test's
+      arrange/act/assert structure.
+    guidance: |
+      Looking for: condition/trigger -> setup+stimulus (arrange/act); SHALL clause
+      -> expected outcome (assert).
+    rubric:
+      criteria:
+        - id: c1
+          text: Maps the WHEN/IF/WHILE condition to test setup and stimulus.
+        - id: c2
+          text: Maps the SHALL response clause to the asserted expected outcome.
+      referenceAnswer: |
+        The precondition/trigger (WHILE state, WHEN/IF event) becomes the test's
+        arranged state and the act that fires it. The "the system SHALL [behavior]"
+        clause becomes the assertion of the expected observable outcome.
+      passThreshold: 0.6
+  - id: ears-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: |
+      Explain why Kiro reviews and approves requirements.md before generating
+      design.md, and what this checkpoint accomplishes.
+    guidance: |
+      Looking for: stable agreed scope; design derived from approved requirements;
+      catches misunderstanding early; still iterative.
+    rubric:
+      criteria:
+        - id: c1
+          text: States approval establishes agreed scope before design.
+        - id: c2
+          text: States design is then derived from/traceable to that scope.
+        - id: c3
+          text: Notes catching misunderstandings early (or that it stays iterative).
+      referenceAnswer: |
+        Approving requirements first gives the agent a stable, agreed definition of
+        what to build, so design decisions are traceable to and justified by those
+        requirements. The checkpoint surfaces misunderstandings before effort is
+        spent on architecture, while specs remain editable and can be re-synced.
+      passThreshold: 0.6
+  - id: ears-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: |
+      Requirement: "When a user submits the form with an invalid email, show an
+      error." Which is the best EARS rewrite?
+    choices:
+      - id: a
+        text: The system should probably warn about bad emails
+      - id: b
+        text: >-
+          IF the submitted email is invalid, THEN the system SHALL display an inline validation
+          error
+      - id: c
+        text: WHILE the form is open the system MAY validate emails
+      - id: d
+        text: Users want good error messages
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      An invalid email is an unwanted condition, so the IF...THEN unwanted-behavior
+      pattern with a SHALL response fits and is testable.
+  - id: ears-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: |
+      You want to specify: "the dashboard auto-refreshes every 30 seconds the whole
+      time it is open." Which EARS pattern and keyword fits best?
+    choices:
+      - id: a
+        text: 'Ubiquitous: "THE SYSTEM SHALL refresh"'
+      - id: b
+        text: 'Unwanted-behavior: "IF the dashboard is open THEN the system SHALL crash"'
+      - id: c
+        text: >-
+          State-driven: "WHILE the dashboard is open, the system SHALL refresh data every 30
+          seconds"
+      - id: d
+        text: 'Optional-feature: "WHERE refresh exists the system MAY refresh"'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      "The whole time it is open" is a continuous state, so WHILE (state-driven)
+      with a concrete 30-second SHALL response is correct.
+  - id: ears-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: |
+      A requirement says "WHEN the user clicks Save THEN the system SHALL validate
+      input AND persist the record AND send a confirmation email." What is the best
+      fix?
+    choices:
+      - id: a
+        text: Delete it because Save events are implied
+      - id: b
+        text: Replace SHALL with SHOULD to soften it
+      - id: c
+        text: Move it verbatim into tasks.md
+      - id: d
+        text: Split it into three atomic EARS requirements, one per response
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The compound response bundles three testable behaviors. Split into atomic
+      requirements so each (validate, persist, email) can pass/fail independently.
+  - id: ears-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: |
+      You are fixing a bug where exporting a CSV drops the header row, but you must
+      keep the existing data rows correct. Which EARS criterion best captures the
+      preserve-behavior requirement?
+    choices:
+      - id: a
+        text: >-
+          WHEN a CSV is exported THEN the system SHALL CONTINUE TO include all data rows in original
+          order
+      - id: b
+        text: IF a CSV is exported THEN the system SHALL delete the data rows
+      - id: c
+        text: THE SYSTEM SHALL stop exporting CSVs
+      - id: d
+        text: WHERE CSV export exists the system MAY include rows
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Use SHALL CONTINUE TO for behavior that must survive the fix (the data rows),
+      alongside a separate requirement that the header is now included.
+  - id: ears-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: |
+      A stakeholder writes: "As a user I want to reset my password." In Kiro's
+      requirements.md, what should you add to make this complete?
+    choices:
+      - id: a
+        text: A code snippet implementing the reset endpoint
+      - id: b
+        text: A "so that" benefit clause plus EARS acceptance criteria for the reset flow
+      - id: c
+        text: The database migration for the users table
+      - id: d
+        text: Nothing; a one-line story is a complete requirement
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A complete requirement pairs the full user story (with the so-that benefit)
+      with EARS acceptance criteria. Implementation/migration belong to design/tasks.
+  - id: ears-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: |
+      You want a requirement that applies only when the "premium analytics" module
+      is enabled. Which EARS form is appropriate?
+    choices:
+      - id: a
+        text: WHILE the user pays the system MAY show charts
+      - id: b
+        text: WHEN premium analytics the system SHALL
+      - id: c
+        text: WHERE premium analytics is enabled, the system SHALL show the retention chart
+      - id: d
+        text: IF analytics THEN delete charts
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      A requirement gated on an optional/feature-flagged capability uses the
+      optional-feature WHERE pattern.
+  - id: ears-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: |
+      In a Kiro spec chat, you want the agent to implement aligned with all spec
+      files. How do you reference the spec?
+    choices:
+      - id: a
+        text: Move the spec into .kiro/steering/
+      - id: b
+        text: Paste the entire requirements.md into the prompt every time
+      - id: c
+        text: Rename the files to product.md/tech.md/structure.md
+      - id: d
+        text: 'Reference it with the #spec context provider, which pulls in all of the spec''s files'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The #spec context provider pulls in all associated spec files (requirements.md,
+      design.md, tasks.md) so the agent implements in alignment with the spec.
+  - id: ears-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      Requirement candidate: "The system shall be secure." How should you make it
+      EARS-compliant and testable?
+    choices:
+      - id: a
+        text: >-
+          Replace with concrete criteria, e.g. "IF a request lacks a valid token THEN the system
+          SHALL return 401"
+      - id: b
+        text: Add the word WHEN in front of it
+      - id: c
+        text: Change SHALL to MUST and keep it as-is
+      - id: d
+        text: Move it to design.md unchanged
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "Secure" is unmeasurable. Decompose it into specific, testable EARS criteria
+      (authentication, authorization, error responses) with concrete conditions.
+  - id: ears-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: |
+      A requirement must always hold with no precondition: "all timestamps are
+      stored in UTC." Which EARS pattern fits?
+    choices:
+      - id: a
+        text: 'Event-driven: "WHEN time passes the system SHALL convert"'
+      - id: b
+        text: 'Ubiquitous: "THE SYSTEM SHALL store all timestamps in UTC"'
+      - id: c
+        text: 'Unwanted-behavior: "IF a timestamp exists THEN delete it"'
+      - id: d
+        text: 'Optional-feature: "WHERE UTC exists the system MAY store it"'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      An invariant with no trigger is ubiquitous: "THE SYSTEM SHALL [behavior]".
+  - id: ears-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: |
+      You have requirements.md approved and now want Kiro to produce architecture
+      and a sequence diagram. What is the next step?
+    choices:
+      - id: a
+        text: Rewrite requirements.md as code
+      - id: b
+        text: Generate tasks.md and skip design
+      - id: c
+        text: Generate design.md, which derives architecture and flows from the requirements
+      - id: d
+        text: Delete requirements.md so design starts clean
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      After requirements approval, design.md captures architecture, sequence
+      diagrams, and error handling derived from those requirements, before tasks.
+  - id: ears-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: multiple_choice
+    prompt: |
+      Acceptance criterion: "WHEN the cart total exceeds $100 THEN the system SHALL
+      apply free shipping." Which test case directly verifies it?
+    choices:
+      - id: a
+        text: Verify the build compiles
+      - id: b
+        text: Open the cart page and assert the logo renders
+      - id: c
+        text: Assert the database has a shipping table
+      - id: d
+        text: Add items totaling $120 and assert shipping cost is $0
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The trigger (total > $100) is arranged and acted on; the SHALL response (free
+      shipping) is asserted. That is the direct verification.
+  - id: ears-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: free_form
+    prompt: |
+      Rewrite this vague requirement as a single, testable EARS criterion:
+      "Logins should fail gracefully when the password is wrong." Choose the
+      appropriate EARS pattern and justify it in one line.
+    guidance: |
+      Looking for an IF...THEN unwanted-behavior form with a concrete SHALL response
+      (e.g., error message, no session). Pattern justification: wrong password is an
+      unwanted condition.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses IF...THEN (unwanted-behavior) with a SHALL response.
+        - id: c2
+          text: Response is concrete/testable (e.g., specific error, no session granted).
+        - id: c3
+          text: Briefly justifies the unwanted-behavior pattern choice.
+      referenceAnswer: |
+        "IF the submitted password is incorrect, THEN the system SHALL reject the
+        login and display the message 'Invalid email or password' without creating
+        a session." A wrong password is an unwanted condition, so the IF...THEN
+        pattern applies.
+      passThreshold: 0.6
+  - id: ears-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: |
+      Given the user story "As an admin, I want to deactivate a user account, so
+      that former employees lose access," write two EARS acceptance criteria: one
+      normal-flow and one unwanted-behavior.
+    guidance: |
+      Looking for a WHEN criterion for the deactivate action and an IF criterion for
+      an error/edge case (e.g., already-deactivated or unauthorized), each with SHALL.
+    rubric:
+      criteria:
+        - id: c1
+          text: Provides a WHEN [admin deactivates] THEN the system SHALL [effect] criterion.
+        - id: c2
+          text: Provides an IF [error/edge] THEN the system SHALL [response] criterion.
+        - id: c3
+          text: Both are concrete and testable.
+      referenceAnswer: |
+        1) "WHEN an admin deactivates a user account, THEN the system SHALL revoke
+        the user's active sessions and block new logins." 2) "IF a non-admin
+        attempts to deactivate an account, THEN the system SHALL deny the action
+        and return a 403 error."
+      passThreshold: 0.6
+  - id: ears-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: |
+      You are filing a Kiro bugfix spec: search results currently lose their sort
+      order after pagination, but the result set itself is correct. Write one EARS
+      criterion that fixes the bug and one that preserves the correct behavior.
+    guidance: |
+      Looking for a WHEN/THEN SHALL fix for sort order across pages, plus a
+      SHALL CONTINUE TO criterion preserving the correct result set.
+    rubric:
+      criteria:
+        - id: c1
+          text: A criterion that mandates sort order is preserved across pagination.
+        - id: c2
+          text: A SHALL CONTINUE TO criterion preserving the correct result set.
+      referenceAnswer: |
+        Fix: "WHEN a user navigates to the next page of search results, THEN the
+        system SHALL preserve the active sort order." Preserve: "WHEN search results
+        are paginated, THEN the system SHALL CONTINUE TO return the same complete,
+        correct result set."
+      passThreshold: 0.6
+  - id: ears-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: |
+      Take the compound requirement "WHEN a file is uploaded THEN the system SHALL
+      scan it for viruses and generate a thumbnail and notify the owner" and
+      decompose it into atomic EARS criteria. Explain why decomposition helps.
+    guidance: |
+      Looking for three separate WHEN/THEN SHALL criteria plus a note that atomicity
+      enables independent testing/tracing.
+    rubric:
+      criteria:
+        - id: c1
+          text: Splits into three separate atomic EARS criteria.
+        - id: c2
+          text: Each retains a WHEN trigger and a single SHALL response.
+        - id: c3
+          text: Explains atomicity aids independent testing/traceability.
+      referenceAnswer: |
+        "WHEN a file is uploaded THEN the system SHALL scan it for viruses."
+        "WHEN a file is uploaded THEN the system SHALL generate a thumbnail."
+        "WHEN a file is uploaded THEN the system SHALL notify the file owner."
+        Splitting lets each behavior be tested and traced independently, so a
+        failure points to exactly one missing capability.
+      passThreshold: 0.6
+  - id: ears-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: |
+      In a Kiro spec chat you want the agent to implement only what the spec
+      defines. Describe how you would reference the spec and what you expect the
+      #spec context provider to do.
+    guidance: |
+      Looking for: use #spec to pull in requirements/design/tasks; agent implements
+      aligned with them; keeps work scoped to the spec.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'References the spec via the #spec context provider in chat.'
+        - id: c2
+          text: States it pulls in the associated spec files (requirements/design/tasks).
+        - id: c3
+          text: Expects implementation aligned/scoped to the spec.
+      referenceAnswer: |
+        Use the #spec context provider in the chat; it pulls in all of the spec's
+        associated files (requirements.md, design.md, tasks.md) so the agent has the
+        full requirement/design context and implements in alignment with them rather
+        than guessing scope.
+      passThreshold: 0.6
+  - id: ears-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: |
+      A reviewer flags: "WHEN the network is slow THEN the system SHALL feel
+      responsive." What is the core defect?
+    choices:
+      - id: a
+        text: Both the condition ("slow") and response ("feel responsive") are unmeasurable
+      - id: b
+        text: It uses WHEN instead of IF
+      - id: c
+        text: It is missing the word SHALL
+      - id: d
+        text: It belongs in design.md not requirements.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Neither clause is verifiable. A sound version quantifies both, e.g. "WHEN
+      latency exceeds 2s THEN the system SHALL display a loading indicator within
+      200ms."
+  - id: ears-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: |
+      Two criteria coexist: "WHILE in offline mode the system SHALL queue writes"
+      and "WHEN offline mode begins the system SHALL flush the queue." Why are these
+      in tension?
+    choices:
+      - id: a
+        text: They use different EARS keywords, which is forbidden
+      - id: b
+        text: >-
+          One queues writes during offline; the other empties the queue at offline onset,
+          contradicting each other
+      - id: c
+        text: WHILE cannot appear in the same file as WHEN
+      - id: d
+        text: There is no tension; both can always hold
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Flushing the queue at offline onset destroys what the WHILE rule accumulates.
+      The contradiction signals a missing distinction (likely flush on reconnect).
+  - id: ears-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: |
+      A requirement reads "The system SHALL validate input." A test author cannot
+      write a test. What is missing in EARS terms?
+    choices:
+      - id: a
+        text: A second SHALL clause
+      - id: b
+        text: The word "ubiquitous"
+      - id: c
+        text: >-
+          A concrete trigger/condition and a verifiable, specific response (which inputs, what
+          counts as valid, what happens on failure)
+      - id: d
+        text: Nothing; it is already testable
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      "Validate input" is underspecified: it lacks the conditions, the validation
+      rules, and the response on invalid input. EARS needs each made explicit.
+  - id: ears-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: |
+      A team's requirements.md contains implementation detail: "WHEN a user logs in
+      THEN the system SHALL store a JWT in a Redis cache with a 15-minute TTL." Why
+      is this problematic at the requirements layer?
+    choices:
+      - id: a
+        text: It should use MAY instead of SHALL
+      - id: b
+        text: JWTs cannot be expressed in EARS
+      - id: c
+        text: The TTL makes it ubiquitous instead of event-driven
+      - id: d
+        text: >-
+          It bakes a design/technology choice into a requirement, over-constraining design and
+          reducing it to a what-not-how statement
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Requirements state observable behavior (what), not mechanism (how). "Redis"
+      and "JWT" are design.md decisions; the requirement should state session
+      duration/behavior and let design choose the mechanism.
+  - id: ears-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: |
+      During design, the agent realizes a requirement is infeasible as written.
+      Within Kiro's flow, what is the most appropriate response?
+    choices:
+      - id: a
+        text: Loop back and update requirements.md, then re-derive design, keeping artifacts in sync
+      - id: b
+        text: Silently implement something different in tasks.md
+      - id: c
+        text: Delete the requirement from design.md only
+      - id: d
+        text: Ship the feature and document the gap later
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The flow is iterative: discoveries in design feed back to requirements so the
+      three artifacts stay consistent and traceable rather than silently diverging.
+  - id: ears-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: |
+      Consider: "IF the user is an admin THEN the system SHALL show the audit log."
+      A reviewer says this should be WHERE, not IF. Who is right and why?
+    choices:
+      - id: a
+        text: The reviewer is always right; IF is never valid for roles
+      - id: b
+        text: >-
+          It depends on intent: admin-ness as a persistent role/feature gate fits WHERE; treating
+          non-admin access as an unwanted condition fits IF
+      - id: c
+        text: The author is always right; WHERE is obsolete
+      - id: d
+        text: Neither; roles cannot be expressed in EARS
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      EARS pattern choice encodes intent. If admin is a feature/role precondition,
+      WHERE reads naturally; if the concern is guarding against unauthorized access,
+      an IF unwanted-behavior rule about non-admins is clearer. Both can be valid.
+  - id: ears-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: |
+      A requirements.md has 40 ubiquitous "THE SYSTEM SHALL..." statements and zero
+      WHEN/IF/WHILE criteria. What does this pattern most likely indicate?
+    choices:
+      - id: a
+        text: EARS forbids more than one pattern per file
+      - id: b
+        text: The spec is perfectly complete because ubiquitous is strongest
+      - id: c
+        text: >-
+          Conditions and triggers are being omitted, hiding the actual behavior under different
+          states
+      - id: d
+        text: The file should be renamed design.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Real systems behave differently under events, states, and error conditions.
+      An all-ubiquitous file usually means triggers/conditions were flattened away,
+      leaving untestable, context-free assertions.
+  - id: ears-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: |
+      A tasks.md item has no corresponding acceptance criterion in requirements.md.
+      What is the analytical concern?
+    choices:
+      - id: a
+        text: It proves the design phase was skipped
+      - id: b
+        text: tasks.md must always exceed requirements.md in size
+      - id: c
+        text: EARS criteria are optional once tasks exist
+      - id: d
+        text: >-
+          Untraceable scope: work is being done that no requirement justifies (scope creep or a
+          missing requirement)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Every task should trace back to a requirement. An orphan task means either
+      scope creep or a requirement that was never captured; reconcile before building.
+  - id: ears-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: |
+      Criterion: "WHEN the import finishes THEN the system SHALL eventually update
+      the dashboard." Why is "eventually" a defect?
+    choices:
+      - id: a
+        text: >-
+          It introduces an unbounded, untestable timing window; EARS responses should be observable
+          and bounded
+      - id: b
+        text: '"eventually" is a reserved EARS keyword used incorrectly'
+      - id: c
+        text: The trigger WHEN should be WHILE
+      - id: d
+        text: It is missing a SHALL clause
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "Eventually" cannot be verified by a test. Bound it: "...SHALL update the
+      dashboard within 5 seconds" makes the response observable and testable.
+  - id: ears-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: |
+      A reviewer notices the spec's design.md introduces a caching layer that no
+      requirement mentions, and no requirement constrains staleness. What is the
+      risk and the fix?
+    choices:
+      - id: a
+        text: 'Risk: caching is forbidden in design.md; fix: remove all caching'
+      - id: b
+        text: >-
+          Risk: unspecified cache behavior (staleness) is untested; fix: add an EARS requirement
+          bounding staleness so design and tests are anchored
+      - id: c
+        text: No risk; design may add any behavior without requirements
+      - id: d
+        text: 'Fix: move design.md content into requirements.md verbatim'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Behavior introduced only in design without a governing requirement (cache
+      staleness) won't be acceptance-tested. Capture an EARS requirement (e.g.,
+      "WHEN data changes THEN the system SHALL reflect it within N seconds").
+  - id: ears-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: |
+      Two EARS criteria: "WHILE the device is charging the system SHALL throttle
+      background sync" and "WHEN charging starts the system SHALL run a full sync."
+      A reviewer claims they conflict. What is the precise analysis?
+    choices:
+      - id: a
+        text: WHILE always overrides WHEN, so the second is dead
+      - id: b
+        text: They conflict because both mention charging
+      - id: c
+        text: >-
+          They target different scopes (onset event vs ongoing state) and can coexist if "full sync
+          at onset" then "throttle during the remaining charging state" is intended
+      - id: d
+        text: EARS forbids referencing the same condition twice
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The WHEN rule fires once at the transition; the WHILE rule governs the steady
+      state. They coexist only if the intended sequence (full sync at onset, then
+      throttle) is explicit; otherwise clarify ordering to remove ambiguity.
+  - id: ears-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: free_form
+    prompt: |
+      Critique this acceptance criterion and rewrite it: "WHEN errors happen THEN
+      the system SHALL handle them appropriately." Identify each weakness.
+    guidance: |
+      Looking for: vague trigger ("errors happen"), unmeasurable response ("handle
+      appropriately"), not atomic; rewrite into specific IF...THEN criteria.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the trigger as too vague (which errors, when).
+        - id: c2
+          text: Identifies "handle appropriately" as unmeasurable/untestable.
+        - id: c3
+          text: Provides a concrete rewrite (specific condition + specific SHALL response).
+      referenceAnswer: |
+        The trigger is vague (which errors?) and the response is unverifiable
+        ("appropriately"). It bundles all error handling into one statement. Rewrite
+        per error class, e.g.: "IF a database write fails, THEN the system SHALL
+        retry up to 3 times and, on final failure, return a 503 with a correlation
+        ID."
+      passThreshold: 0.6
+  - id: ears-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: free_form
+    prompt: |
+      A requirements.md criterion reads "WHEN a user signs up THEN the system SHALL
+      insert a row into the PostgreSQL users table." Explain why this leaks design
+      into requirements and rewrite it to state behavior without prescribing
+      mechanism.
+    guidance: |
+      Looking for: identifies PostgreSQL/table as design/how; rewrite to observable
+      behavior (account is created/persisted) leaving storage to design.md.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the storage mechanism (PostgreSQL/table) as a design choice.
+        - id: c2
+          text: Explains requirements should state observable what, not how.
+        - id: c3
+          text: Rewrites to mechanism-free behavior (account created/persisted/retrievable).
+      referenceAnswer: |
+        Naming PostgreSQL and a specific table fixes a design decision inside a
+        requirement, over-constraining design.md and conflating what with how.
+        Rewrite: "WHEN a user completes sign-up THEN the system SHALL create a
+        persistent account that can be retrieved on subsequent logins." The storage
+        technology belongs in design.md.
+      passThreshold: 0.6
+  - id: ears-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: free_form
+    prompt: |
+      Your spec's tasks.md contains a task "Add rate limiting to the API" but no
+      acceptance criterion in requirements.md mentions rate limiting. Analyze what
+      likely went wrong and how Kiro's iterative flow should resolve it.
+    guidance: |
+      Looking for: orphan task = scope creep or missing requirement; trace tasks to
+      requirements; loop back to add an EARS criterion and re-sync design/tasks.
+    rubric:
+      criteria:
+        - id: c1
+          text: Diagnoses an untraceable/orphan task (missing requirement or scope creep).
+        - id: c2
+          text: States tasks should trace to requirements.
+        - id: c3
+          text: Resolves by looping back to add/clarify a requirement and re-syncing artifacts.
+      referenceAnswer: |
+        A task with no governing requirement is either undocumented scope or a
+        requirement that was missed. Since tasks should trace to requirements, the
+        fix is to loop back: either add an EARS criterion (e.g., "IF a client
+        exceeds N requests per minute THEN the system SHALL return 429") and
+        re-derive design/tasks, or drop the task if it is out of scope.
+      passThreshold: 0.6
+  - id: ears-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: |
+      Given two criteria — "WHILE a payment is processing the system SHALL disable
+      the Pay button" and "WHEN a payment completes the system SHALL re-enable the
+      Pay button" — explain whether they conflict, and identify any unwanted-behavior
+      case they fail to cover.
+    guidance: |
+      Looking for: not conflicting (state vs transition); missing IF case for
+      payment failure/timeout leaving the button stuck disabled.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains the two do not conflict (continuous state vs completion event).
+        - id: c2
+          text: Identifies a missing unwanted-behavior case (failure/timeout/error).
+        - id: c3
+          text: Proposes an IF...THEN criterion to cover it.
+      referenceAnswer: |
+        They do not conflict: the WHILE rule governs the processing state, the WHEN
+        rule fires on successful completion. The gap is the unwanted path — if the
+        payment fails or times out, neither rule re-enables the button. Add: "IF a
+        payment fails or times out, THEN the system SHALL re-enable the Pay button
+        and display an error."
+      passThreshold: 0.6
+  - id: ears-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: |
+      A requirements.md is written almost entirely as ubiquitous "THE SYSTEM
+      SHALL..." statements with no WHEN/IF/WHILE conditions. Diagnose what this
+      smell usually hides and what it does to downstream testing and design.
+    guidance: |
+      Looking for: omitted triggers/states/error paths flattened into invariants;
+      untestable/context-free; design lacks branching guidance; misses error handling.
+    rubric:
+      criteria:
+        - id: c1
+          text: Diagnoses missing triggers/states/error conditions flattened into invariants.
+        - id: c2
+          text: Explains the harm to testability (no setup/condition to arrange).
+        - id: c3
+          text: Notes downstream design/error-handling gaps from missing conditions.
+      referenceAnswer: |
+        An all-ubiquitous file usually hides the system's real conditional behavior:
+        events, ongoing states, and error paths get flattened into context-free
+        invariants. Tests then have no condition to arrange, so coverage of state
+        transitions and failure modes is lost, and design.md gets no guidance on
+        branching or error handling. The fix is to restate behavior with the
+        appropriate WHEN/WHILE/IF/WHERE conditions.
+      passThreshold: 0.6
+  - id: ears-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: |
+      A team proposes skipping requirements.md entirely and writing only design.md
+      and tasks.md "to move faster." Evaluate this for a non-trivial feature.
+    choices:
+      - id: a
+        text: 'Neutral: the three artifacts are interchangeable'
+      - id: b
+        text: 'Strong: requirements are redundant once a design exists'
+      - id: c
+        text: 'Strong: tasks.md already contains all acceptance criteria'
+      - id: d
+        text: >-
+          Weak: without EARS acceptance criteria there is no testable definition of done or
+          traceable scope, so design/tasks rest on implicit assumptions
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Requirements anchor the testable definition of done and traceability.
+      Dropping them pushes implicit, untested assumptions into design and code.
+      Kiro's Quick Plan still generates a requirements.md.
+  - id: ears-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: |
+      Reviewers debate whether to write acceptance criteria in EARS or in Gherkin
+      (Given/When/Then). What is the soundest evaluation?
+    choices:
+      - id: a
+        text: >-
+          They serve different layers — EARS states the requirement obligation; Gherkin specifies
+          executable example scenarios — and can be complementary
+      - id: b
+        text: Gherkin is always superior and EARS should be abandoned
+      - id: c
+        text: They are identical, so the choice is arbitrary
+      - id: d
+        text: EARS replaces tests entirely so Gherkin is never needed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      EARS captures the normative requirement ("the system SHALL"); Gherkin captures
+      concrete, executable examples. Using EARS for requirements.md and Gherkin for
+      test scenarios is a defensible, complementary split.
+  - id: ears-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: |
+      A lead argues "every requirement should be ubiquitous (THE SYSTEM SHALL...)
+      because it is the simplest pattern." Critique this stance.
+    choices:
+      - id: a
+        text: It is best practice because fewer keywords are easier
+      - id: b
+        text: >-
+          It is an anti-pattern: collapsing event/state/error conditions into invariants loses the
+          conditional behavior and reduces testability
+      - id: c
+        text: It is fine because all patterns are semantically identical
+      - id: d
+        text: It is required by EARS
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Picking patterns by simplicity rather than intent erases triggers, states, and
+      error conditions, yielding context-free, hard-to-test assertions. Pattern
+      choice should reflect the actual behavior being specified.
+  - id: ears-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: |
+      Evaluate this practice: a team treats requirements.md as immutable once
+      approved and forbids edits even when design surfaces contradictions.
+    choices:
+      - id: a
+        text: 'Neutral: requirements never affect design anyway'
+      - id: b
+        text: 'Ideal: frozen requirements guarantee correctness'
+      - id: c
+        text: >-
+          Harmful: it breaks Kiro's iterative sync, forcing design/tasks to diverge from a
+          known-wrong spec
+      - id: d
+        text: 'Required: Kiro locks requirements.md after approval'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Approval is a checkpoint, not a freeze. Kiro's flow is iterative; when design
+      reveals a flaw, requirements should be updated and artifacts re-synced.
+      Forbidding edits guarantees drift between the spec and the build.
+  - id: ears-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: |
+      A spec author writes acceptance criteria that each reference a specific class
+      and method to call. Evaluate the long-term cost of this style.
+    choices:
+      - id: a
+        text: It makes the requirements ubiquitous
+      - id: b
+        text: It is best practice because it removes ambiguity about implementation
+      - id: c
+        text: It has no downside since code and requirements should match exactly
+      - id: d
+        text: >-
+          It couples requirements to implementation, so refactors invalidate requirements and
+          traceability degrades into churn
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Requirements should describe observable behavior, not internal structure.
+      Binding them to class/method names means every refactor breaks the spec,
+      destroying the stable what-layer that traceability depends on.
+  - id: ears-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: |
+      Compare two requirements.md styles for a payments feature: (A) many atomic
+      EARS criteria with explicit error/IF cases; (B) a few broad SHALL statements.
+      Which better supports safe AI-assisted implementation and why?
+    choices:
+      - id: a
+        text: >-
+          A — atomic criteria with error cases give the agent precise, testable targets and reduce
+          unspecified behavior the agent must guess
+      - id: b
+        text: B — broad statements give the agent freedom to choose behavior
+      - id: c
+        text: Both equal; the agent ignores requirements anyway
+      - id: d
+        text: B — fewer requirements mean fewer tests to write
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      An agent implements what is specified; gaps become guesses. Atomic criteria
+      with explicit error handling minimize ambiguity, give per-behavior tests, and
+      are especially valuable for high-risk domains like payments.
+  - id: ears-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: |
+      A team uses Kiro's Quick Plan for every feature, including large risky ones,
+      to skip per-phase reviews. Evaluate the tradeoff.
+    choices:
+      - id: a
+        text: Quick Plan is always the best choice because it is fastest
+      - id: b
+        text: >-
+          Quick Plan trades the requirements/design review checkpoints for speed; acceptable for
+          small low-risk work, risky for large features where early review prevents costly rework
+      - id: c
+        text: Quick Plan removes the requirements.md so there is nothing to review
+      - id: d
+        text: Quick Plan is identical to the staged flow in every way
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Quick Plan auto-generates all three artifacts at once, sacrificing the staged
+      review gates. That is reasonable for small, well-understood work but removes
+      the early correction points that protect large, ambiguous, or risky features.
+  - id: ears-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: |
+      Evaluate this acceptance criterion as a definition-of-done gate: "WHEN a user
+      searches THEN the system SHALL return relevant results."
+    choices:
+      - id: a
+        text: Adequate because it uses WHEN and SHALL correctly
+      - id: b
+        text: 'Adequate: relevance is self-evident and needs no metric'
+      - id: c
+        text: >-
+          Inadequate: "relevant" is subjective and untestable, so it cannot gate done; it needs
+          measurable criteria (e.g., expected results for fixture queries)
+      - id: d
+        text: Inadequate only because it should use WHILE
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Correct keyword usage does not make a criterion testable. "Relevant" has no
+      objective measure; a usable gate specifies expected results for known queries
+      or a measurable relevance threshold.
+  - id: ears-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: |
+      A reviewer proposes that every EARS requirement must list its corresponding
+      task IDs inline in requirements.md to "guarantee traceability." Evaluate.
+    choices:
+      - id: a
+        text: 'Irrelevant: Kiro forbids referencing tasks from requirements'
+      - id: b
+        text: 'Purely good: requirements should always embed task IDs'
+      - id: c
+        text: 'Purely bad: traceability between requirements and tasks is unnecessary'
+      - id: d
+        text: >-
+          Mixed: it improves explicit traceability but couples the stable requirements layer to
+          volatile task IDs, creating maintenance churn; a generated trace matrix is often better
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Traceability is valuable, but hard-coding volatile task IDs into the stable
+      requirements layer creates churn as tasks change. A derived/generated trace
+      matrix preserves traceability without coupling the artifacts.
+  - id: ears-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: |
+      Two teams disagree: Team 1 writes acceptance criteria before design; Team 2
+      writes them after design "so they match the chosen architecture." Judge the
+      requirements-integrity implications.
+    choices:
+      - id: a
+        text: >-
+          Team 2 risks rationalizing criteria to fit the design (confirmation bias), weakening
+          requirements as an independent check; criteria should capture intended behavior, ideally
+          before or independent of design
+      - id: b
+        text: Team 2 is correct because criteria must describe the implementation
+      - id: c
+        text: Both are identical in effect
+      - id: d
+        text: Team 1 is wrong because requirements cannot precede design in Kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Writing criteria after design tempts authors to describe what was built rather
+      than what was needed, collapsing requirements into a mirror of the design and
+      losing their value as an independent acceptance gate. Kiro's default
+      Requirements-First flow guards against this.
+  - id: ears-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: free_form
+    prompt: |
+      A team adopts the rule "every requirement must be ubiquitous (THE SYSTEM
+      SHALL...) for consistency." Evaluate this policy: when, if ever, is it
+      justified, and what does it cost in the general case?
+    guidance: |
+      Looking for: judges it as an anti-pattern in general (loses conditions/states/
+      errors, hurts testability); concedes narrow validity for genuine invariants.
+    rubric:
+      criteria:
+        - id: c1
+          text: Judges it as an anti-pattern for most behavior.
+        - id: c2
+          text: Explains the cost (lost triggers/states/error paths, weaker testability).
+        - id: c3
+          text: Concedes ubiquitous is correct only for genuine invariants.
+      referenceAnswer: |
+        Mandating ubiquitous form is an anti-pattern in general: most behavior is
+        conditional on events, states, or error conditions, and flattening those into
+        invariants loses the triggers tests must arrange and the error paths design
+        must handle. It is justified only for true always-on invariants (e.g.,
+        "timestamps stored in UTC"). Pattern choice should follow intent, not a
+        uniformity rule.
+      passThreshold: 0.6
+  - id: ears-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: |
+      Critique the practice of embedding implementation detail (specific
+      technologies, classes, schemas) inside EARS acceptance criteria. Judge its
+      impact on the requirements->design->tasks flow.
+    guidance: |
+      Looking for: requirements should be what-not-how; embedding how over-constrains
+      design, couples spec to code, breaks on refactor, erodes traceability.
+    rubric:
+      criteria:
+        - id: c1
+          text: States requirements should specify observable behavior (what) not mechanism (how).
+        - id: c2
+          text: Explains it over-constrains design and couples spec to implementation.
+        - id: c3
+          text: Judges the downstream cost (refactor breakage, eroded traceability/independence).
+      referenceAnswer: |
+        Acceptance criteria should specify observable behavior, leaving mechanism to
+        design.md. Embedding technologies or class/schema names over-constrains the
+        design phase, couples the stable requirements layer to volatile
+        implementation, and means routine refactors falsely invalidate requirements.
+        Over time this collapses the what/how separation the three-artifact flow
+        depends on and erodes traceability and the spec's value as an independent gate.
+      passThreshold: 0.6
+  - id: ears-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: |
+      Evaluate when Kiro's Quick Plan (auto-generating all three artifacts at once)
+      is an appropriate choice versus the staged Requirements-First flow with
+      per-phase review. Give the deciding factors.
+    guidance: |
+      Looking for: Quick Plan trades review checkpoints for speed; good for small/
+      low-risk/well-understood; staged better for large/ambiguous/high-risk where
+      early review prevents rework.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies Quick Plan as trading staged review for speed.
+        - id: c2
+          text: Says it suits small/low-risk/well-understood work.
+        - id: c3
+          text: Says staged flow is better for large/ambiguous/high-risk work and why.
+      referenceAnswer: |
+        Quick Plan generates requirements, design, and tasks together, sacrificing
+        the per-phase review checkpoints for speed. It is appropriate for small,
+        low-risk, well-understood changes where the cost of an early miss is small.
+        For large, ambiguous, or high-risk features the staged Requirements-First
+        flow is safer, because reviewing requirements (and then design) before tasks
+        catches scope and correctness errors when they are cheap to fix.
+      passThreshold: 0.6
+  - id: ears-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: |
+      An organization wants AI agents to implement features directly from
+      requirements.md. Argue what properties the EARS acceptance criteria must have
+      for this to be safe, and what failure modes weak criteria introduce.
+    guidance: |
+      Looking for: atomic, measurable, condition+SHALL, explicit error/IF cases,
+      mechanism-free, traceable; weak criteria -> agent guesses, unspecified behavior,
+      untested error paths, scope drift.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Lists required properties (atomic, measurable/testable, explicit conditions and error
+            cases).
+        - id: c2
+          text: Notes criteria should be mechanism-free yet traceable to tasks.
+        - id: c3
+          text: >-
+            Describes failure modes of weak criteria (agent guessing, untested error paths, scope
+            drift).
+      referenceAnswer: |
+        For safe agent-driven implementation, EARS criteria must be atomic, each with
+        an explicit condition (WHEN/WHILE/IF/WHERE) and a measurable SHALL response,
+        cover error/unwanted paths, stay mechanism-free, and be traceable to tasks.
+        Weak criteria — vague responses, missing error cases, bundled behaviors —
+        force the agent to guess, leave error paths unspecified and untested, and
+        invite scope drift, which is especially dangerous when the agent ships code
+        without a human writing each line.
+      passThreshold: 0.6
+  - id: ears-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: |
+      A senior reviewer claims "acceptance criteria written after the design will
+      naturally be more accurate because they reflect what was actually built."
+      Evaluate this claim with respect to requirements integrity and the purpose of
+      an acceptance gate.
+    guidance: |
+      Looking for: rejects/qualifies the claim; criteria-after-design risks
+      confirmation bias / describing the build not the need; requirements lose
+      independence as an acceptance gate; Requirements-First mitigates this.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the confirmation-bias risk of writing criteria after design.
+        - id: c2
+          text: Explains criteria should capture intended behavior/need, not mirror the build.
+        - id: c3
+          text: >-
+            Concludes it weakens requirements as an independent acceptance gate (favoring
+            requirements-first or independent authoring).
+      referenceAnswer: |
+        The claim conflates "matches the build" with "correct." Criteria written
+        after design tend to rationalize whatever was implemented, introducing
+        confirmation bias and turning the acceptance gate into a mirror of the code
+        rather than an independent check on intended behavior. That defeats the
+        purpose of requirements: catching when the build does the wrong thing. They
+        should capture the need before or independently of design — which is why
+        Kiro's default is Requirements-First — even if some refinement happens as
+        design clarifies feasibility.
+      passThreshold: 0.6
+  - id: ears-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: free_form
+    prompt: |
+      Name Kiro's two staged feature-spec variants (which artifact is authored
+      first) and the one-shot option that generates all three artifacts together.
+    guidance: |
+      Looking for Requirements-First and Design-First as the staged variants, and
+      Quick Plan as the all-at-once option.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Requirements-First and Design-First as staged variants.
+        - id: c2
+          text: Names Quick Plan as the option that auto-generates all three artifacts.
+      referenceAnswer: |
+        The staged variants are Requirements-First and Design-First. Quick Plan
+        generates requirements.md, design.md, and tasks.md all at once.
+      passThreshold: 0.6
+  - id: ears-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: |
+      Why is the user story ("As a... I want... so that...") kept alongside EARS
+      acceptance criteria rather than replaced by them?
+    choices:
+      - id: a
+        text: The EARS criteria alone are faster to write than a story
+      - id: b
+        text: The story preserves the who and the why (intent/value) that the criteria operationalize
+      - id: c
+        text: Kiro cannot parse a requirements file without a story header
+      - id: d
+        text: Stories are required to be longer than the criteria
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The user story captures the role and the benefit (the why); EARS criteria make
+      the behavior testable (the what). Keeping both ties verifiable behavior to its
+      purpose.
+  - id: ears-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: |
+      Explain the difference between an optional-feature (WHERE) requirement and a
+      ubiquitous (THE SYSTEM SHALL) requirement, and when each is appropriate.
+    guidance: |
+      Looking for: ubiquitous = always holds, no precondition; WHERE = holds only
+      when an optional feature/configuration is present.
+    rubric:
+      criteria:
+        - id: c1
+          text: States ubiquitous requirements hold unconditionally (no precondition).
+        - id: c2
+          text: States WHERE requirements apply only when an optional feature/config is included.
+      referenceAnswer: |
+        A ubiquitous requirement ("THE SYSTEM SHALL...") always holds with no
+        precondition. A WHERE (optional-feature) requirement applies only when a
+        given feature or configuration is present, so it is appropriate for
+        capabilities that may be enabled or disabled per build/deployment.
+      passThreshold: 0.6
+  - id: ears-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: |
+      Describe how Kiro's requirements -> design -> tasks flow supports traceability,
+      and why traceability matters when an AI agent implements the tasks.
+    guidance: |
+      Looking for: each requirement maps to design elements and to tasks; traceability
+      lets you verify coverage and detect orphan/unjustified work the agent might add.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes requirements mapping forward to design and tasks.
+        - id: c2
+          text: Explains traceability verifies coverage / no orphan work.
+        - id: c3
+          text: Connects this to safely guiding/auditing an AI agent's implementation.
+      referenceAnswer: |
+        Each EARS requirement should map to the design elements that satisfy it and
+        the tasks that implement it. That forward trace lets a reviewer confirm every
+        requirement is covered and catch tasks the agent adds that no requirement
+        justifies. With an AI agent doing the implementation, this traceability is the
+        main lever for auditing scope and verifying the build matches intent.
+      passThreshold: 0.6
+  - id: ears-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: |
+      Requirement: "the app must keep working offline by saving changes until the
+      connection returns." Which EARS criterion best captures the save-while-offline
+      behavior?
+    choices:
+      - id: a
+        text: THE SYSTEM SHALL be offline-capable
+      - id: b
+        text: WHEN the user opens the app THEN the system SHALL go offline
+      - id: c
+        text: >-
+          WHILE the device is offline, the system SHALL queue changes locally until connectivity is
+          restored
+      - id: d
+        text: WHERE offline exists the system MAY save changes
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Being offline is a continuous state, so the state-driven WHILE pattern with a
+      concrete SHALL response (queue locally) is the right fit.
+  - id: ears-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: |
+      After approving requirements.md and design.md, you ask Kiro to produce the
+      implementation plan. What should that step generate, and what property should
+      the tasks have?
+    choices:
+      - id: a
+        text: A README with prose instructions and no checkboxes
+      - id: b
+        text: A design diagram only
+      - id: c
+        text: A new requirements.md that supersedes the first
+      - id: d
+        text: tasks.md with discrete, trackable tasks each traceable to a requirement
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The final phase produces tasks.md: a detailed plan of discrete, trackable
+      tasks, each of which should trace back to the requirements that motivate it.
+  - id: ears-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: free_form
+    prompt: |
+      Write an EARS acceptance criterion for this requirement, choosing the correct
+      pattern: "While a file upload is in progress, the user must not be able to
+      submit a second upload." Name the pattern you used.
+    guidance: |
+      Looking for a WHILE (state-driven) criterion with a concrete SHALL response
+      that disables/blocks a second upload, and naming it state-driven.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the WHILE (state-driven) pattern.
+        - id: c2
+          text: Gives a concrete SHALL response disabling/blocking a second upload.
+        - id: c3
+          text: Names the pattern as state-driven.
+      referenceAnswer: |
+        "WHILE a file upload is in progress, the system SHALL disable the upload
+        control so a second upload cannot be started." This is the state-driven
+        (WHILE) EARS pattern because the constraint holds throughout the ongoing
+        upload state.
+      passThreshold: 0.6
+  - id: ears-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: free_form
+    prompt: |
+      You are starting a new Kiro spec for a "saved searches" feature. Outline the
+      minimum contents you would put in requirements.md before moving to the design
+      phase.
+    guidance: |
+      Looking for: one or more user stories (As a/I want/so that) plus EARS acceptance
+      criteria covering normal flow and at least one error/edge (IF) case.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes at least one user story in As-a/I-want/so-that form.
+        - id: c2
+          text: Includes EARS acceptance criteria for the normal flow (WHEN/THEN SHALL).
+        - id: c3
+          text: Includes at least one error/edge-case criterion (IF...THEN).
+      referenceAnswer: |
+        A user story such as "As a user, I want to save a search, so that I can rerun
+        it later," followed by EARS criteria: "WHEN a user saves a search THEN the
+        system SHALL persist it under the user's account," "WHEN a user opens saved
+        searches THEN the system SHALL list them," and an error case "IF a user tries
+        to save a duplicate-named search THEN the system SHALL prompt to rename or
+        overwrite."
+      passThreshold: 0.6
+  - id: ears-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: |
+      A criterion mixes trigger and state: "WHILE the user clicks Export the system
+      SHALL show a spinner." Why is this malformed, and what is the corrected intent?
+    choices:
+      - id: a
+        text: >-
+          A click is a discrete event, not a continuous state, so WHEN fits the trigger and WHILE
+          fits the in-progress state — likely two criteria
+      - id: b
+        text: It is fine as written; WHILE and clicks are equivalent
+      - id: c
+        text: The defect is only that it omits SHALL
+      - id: d
+        text: It should be ubiquitous because spinners are always shown
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "Clicks Export" is a momentary event (WHEN), while showing a spinner spans the
+      export's duration (WHILE). The criterion conflates an event with a state and
+      should be split: "WHEN the user clicks Export THEN the system SHALL begin the
+      export" and "WHILE the export is running THEN the system SHALL show a spinner."
+  - id: ears-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: multiple_choice
+    prompt: |
+      Two reviewers disagree on a criterion: "WHEN a payment is declined THEN the
+      system SHALL retry." One says it is event-driven, the other says it is
+      unwanted-behavior. What is the most precise analysis?
+    choices:
+      - id: a
+        text: It is purely ubiquitous and needs no condition
+      - id: b
+        text: >-
+          A decline is an unwanted/error condition, so IF...THEN is the more precise pattern; the
+          response should also be bounded (max retries)
+      - id: c
+        text: WHEN vs IF is irrelevant since both compile to the same test
+      - id: d
+        text: It must be WHILE because payments take time
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A declined payment is an unwanted condition, so the IF...THEN unwanted-behavior
+      pattern reads most precisely, and the open-ended "retry" should be bounded
+      (e.g., up to 3 attempts) to be testable.
+  - id: ears-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: free_form
+    prompt: |
+      A criterion reads "WHEN data is entered THEN the system SHALL validate it." A
+      test engineer cannot turn this into a test. Diagnose every piece of missing
+      information in EARS terms and show one concrete rewrite.
+    guidance: |
+      Looking for: unspecified which data/field, no validation rule, no response on
+      invalid, vague trigger; rewrite to a concrete IF/WHEN with measurable response.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the unspecified field/data and validation rule.
+        - id: c2
+          text: Identifies the missing response on invalid input.
+        - id: c3
+          text: Provides a concrete rewrite with a specific condition and SHALL response.
+      referenceAnswer: |
+        It does not say which field, what rule defines valid, or what happens when
+        validation fails, and the trigger is vague. A testable rewrite: "IF the email
+        field does not match a valid email format, THEN the system SHALL block
+        submission and display 'Enter a valid email address' beside the field."
+      passThreshold: 0.6
+  - id: ears-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: free_form
+    prompt: |
+      A spec author labels every error-handling criterion with WHEN (e.g., "WHEN the
+      server times out THEN..."). Analyze why reserving IF for unwanted/error
+      conditions improves the readability and completeness of a requirements.md.
+    guidance: |
+      Looking for: WHEN connotes expected events, IF connotes unwanted/error conditions;
+      consistent IF use signals error paths and helps reviewers spot missing ones.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains WHEN connotes normal/expected events vs IF for unwanted/error conditions.
+        - id: c2
+          text: Explains consistent IF usage makes error paths scannable.
+        - id: c3
+          text: Connects the convention to spotting missing error-handling coverage.
+      referenceAnswer: |
+        Using WHEN for both normal events and errors flattens an important
+        distinction. Reserving IF for unwanted/error conditions makes the error paths
+        visually scannable in requirements.md, so a reviewer can quickly audit whether
+        every failure mode (timeout, invalid input, unauthorized) has a corresponding
+        IF...THEN criterion, improving completeness as well as readability.
+      passThreshold: 0.6
+  - id: ears-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: multiple_choice
+    prompt: |
+      A team wants to delete the user-story headers from requirements.md and keep
+      only EARS criteria "since the criteria are what gets tested." Evaluate.
+    choices:
+      - id: a
+        text: 'Sound: stories add nothing once criteria exist'
+      - id: b
+        text: 'Required: Kiro forbids user stories in requirements.md'
+      - id: c
+        text: >-
+          Weak: dropping stories discards the role and the why, so reviewers lose the rationale that
+          justifies and prioritizes the criteria
+      - id: d
+        text: 'Neutral: stories and criteria are identical content'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      EARS criteria say what must happen; the user story says for whom and why.
+      Removing stories strips the intent and value that let reviewers judge whether
+      the criteria are the right ones and how to prioritize them.
+  - id: ears-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: |
+      Evaluate a policy that bans all error/IF criteria from requirements.md,
+      deferring error handling "to whatever the code does." What is the main hazard?
+    choices:
+      - id: a
+        text: It is efficient because error handling is an implementation concern
+      - id: b
+        text: It is required because EARS has no error pattern
+      - id: c
+        text: It has no downside since happy-path criteria imply error behavior
+      - id: d
+        text: >-
+          Error behavior becomes unspecified and untested, so the agent/devs invent it and failure
+          modes go unverified — the highest-risk paths get the least scrutiny
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Unwanted-behavior (IF...THEN) criteria are where failure modes are pinned down.
+      Banning them leaves the riskiest paths unspecified and unverified, forcing
+      implementers (human or agent) to guess error behavior.
+  - id: ears-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: |
+      Two requirements.md drafts for the same feature: Draft X has 8 atomic EARS
+      criteria with explicit triggers and error cases; Draft Y has 3 broad SHALL
+      statements. As a reviewer judging acceptance-readiness, which do you prefer
+      and on what principle?
+    choices:
+      - id: a
+        text: >-
+          Draft X, because atomic, conditioned, error-covering criteria each map to a pass/fail
+          test, giving an objective definition of done
+      - id: b
+        text: Either; the count is irrelevant to acceptance-readiness
+      - id: c
+        text: Draft Y, because fewer requirements are easier to sign off
+      - id: d
+        text: Draft Y, because broad statements are more flexible for the team
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Acceptance-readiness depends on each criterion being independently verifiable.
+      Atomic criteria with explicit conditions and error cases yield an objective,
+      testable definition of done; broad SHALL statements hide untested assumptions.
+  - id: ears-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: free_form
+    prompt: |
+      Evaluate the tradeoff of writing acceptance criteria in EARS notation versus
+      free-form prose for a team that ships features via an AI coding agent. When,
+      if ever, is prose acceptable?
+    guidance: |
+      Looking for: EARS reduces ambiguity and yields testable, atomic targets the
+      agent can implement and you can verify; prose acceptable only for trivial/
+      exploratory throwaway work; judge tradeoff, not a blanket rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: Argues EARS reduces ambiguity and gives the agent testable atomic targets.
+        - id: c2
+          text: Notes prose risks ambiguity the agent fills with guesses.
+        - id: c3
+          text: Concedes prose is acceptable only for trivial/throwaway/exploratory work.
+      referenceAnswer: |
+        For agent-shipped features EARS is strongly preferable: its constrained
+        patterns remove ambiguity and produce atomic, testable criteria the agent can
+        target and a reviewer can verify, limiting the unspecified behavior the agent
+        must guess. Free-form prose invites ambiguity and silent assumptions, so it is
+        acceptable only for throwaway prototypes or exploratory spikes where no
+        durable acceptance gate is needed.
+      passThreshold: 0.6
+  - id: ears-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: |
+      Critique the anti-pattern of treating tasks.md as the source of truth (writing
+      tasks first and back-filling requirements.md afterward). Judge its effect on
+      the requirements->design->tasks flow and on traceability.
+    guidance: |
+      Looking for: inverts the flow; requirements become a rationalization of chosen
+      tasks; loses requirements as an independent acceptance gate; traceability becomes
+      circular/meaningless; design skipped or rationalized.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that it inverts the requirements-first flow.
+        - id: c2
+          text: >-
+            Explains requirements become a post-hoc rationalization of the tasks (lost
+            independence).
+        - id: c3
+          text: Judges the harm to traceability and to requirements as an acceptance gate.
+      referenceAnswer: |
+        Writing tasks first inverts the flow: requirements.md becomes a post-hoc
+        description of whatever tasks were chosen rather than an independent statement
+        of need, so it can no longer act as an acceptance gate that catches wrong
+        work. Design is typically skipped or rationalized to fit the tasks, and
+        traceability becomes circular — every task "traces" to a requirement that was
+        written to match it — which provides no real verification that the build does
+        the right thing.
+      passThreshold: 0.6

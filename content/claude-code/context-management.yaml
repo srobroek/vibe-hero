@@ -1,8 +1,6 @@
 # Topic: context-management (claude-code)
-#
-# Covers Claude Code context window hygiene: reading strategically, avoiding
-# unnecessary re-reads, compaction, the TodoWrite/TodoRead pattern, and how
-# large context affects performance and cost. Tiers 100–500.
+# Strategic reads, avoiding re-reads, compaction, the Todo list as working memory, /clear vs /compact, and what happens when context fills up.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
 
 id: context-management
 class:
@@ -10,293 +8,2947 @@ class:
   tool: claude-code
 title: Context Window Management
 summary: >-
-  Keeping the context window lean and effective — strategic reads, avoiding
-  re-reads, compaction signals, the Todo list as working memory, and what
-  happens when context fills up.
-
-triggerSignals:
-  - tool: claude-code
-    match:
-      toolName: TodoWrite
-    weight: 1
-  - tool: claude-code
-    match:
-      toolName: TodoRead
-    weight: 0.8
-  - tool: claude-code
-    match:
-      toolNamePattern: "^Read$"
-    weight: 0.5
-  - tool: claude-code
-    match:
-      mcpToolPattern: ".*compact.*"
-    weight: 0.7
-
+  Strategic reads, avoiding re-reads, compaction, the Todo list as working memory, /clear vs
+  /compact, and what happens when context fills up.
+triggerSignals: []
 items:
-  # ── Tier 100 — Remember ──────────────────────────────────────────────────
-  - id: ctx-100-mc-a
+  - id: cm-100-mc-a
     tier: 100
     bloom: remember
-    difficulty: 150
+    difficulty: 122
     type: multiple_choice
-    prompt: >-
-      After successfully writing a file with the Edit or Write tool, should you
-      immediately re-read the file to verify the change?
+    prompt: In Claude Code, what does the "context window" hold?
     choices:
       - id: a
         text: >-
-          Yes — always re-read to confirm the file on disk matches what you
-          intended
+          The entire conversation, including every message, every file read, and every command
+          output, plus CLAUDE.md, auto memory, loaded skills, and system instructions
       - id: b
-        text: >-
-          No — Edit/Write would have errored if the change failed; re-reading
-          wastes context
+        text: Only the most recent user message and Claude's reply to it
       - id: c
-        text: >-
-          Only re-read files larger than 100 lines
+        text: A cache of files on disk that Claude has permission to edit
+      - id: d
+        text: The list of git commits in the current branch and nothing else
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The context window is the working memory for the whole session: all messages, file reads,
+      command outputs, plus system prompt, CLAUDE.md, auto memory, and loaded skills. The other
+      options each name only a small slice of what actually occupies the window.
+  - id: cm-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which statement about the size of a Claude model's context window in Claude Code is accurate?
+    choices:
+      - id: a
+        text: It is unlimited, so context never needs to be managed
+      - id: b
+        text: It is fixed at exactly the same size for every Claude model
+      - id: c
+        text: It grows automatically as the conversation gets longer
       - id: d
         text: >-
-          Re-read only when using Write, not Edit
+          It is finite and model-dependent; some model variants offer a much larger window than
+          others
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Every model has a finite context window, and the size depends on the model variant -- some
+      offer a substantially larger window (for example, 1M-token variants) than others. It is never
+      unlimited or self-expanding, which is why managing what fills it still matters.
+  - id: cm-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: >-
+      Which command starts a brand-new conversation with an empty context window while keeping the
+      previous conversation available in /resume?
+    choices:
+      - id: a
+        text: /compact
+      - id: b
+        text: /clear
+      - id: c
+        text: /rewind
+      - id: d
+        text: /context
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      The Edit and Write tools error on failure; if they return successfully the
-      change landed. Immediately re-reading the file after a successful edit
-      adds the full file content to context for no benefit — a costly habit at
-      scale.
-
-  - id: ctx-100-mc-b
+      /clear (aliases /reset, /new) resets context entirely by starting a new conversation; the old
+      one stays in /resume and project memory is kept. /compact summarizes and continues the same
+      conversation, which is the common point of confusion.
+  - id: cm-100-mc-d
     tier: 100
     bloom: remember
-    difficulty: 160
+    difficulty: 140
     type: multiple_choice
     prompt: >-
-      What is the TodoWrite tool used for in Claude Code?
+      Which two parameters does the Read tool accept to return only part of a file instead of the
+      whole thing?
     choices:
       - id: a
-        text: Writing TODO comments into source code files
+        text: start and end
       - id: b
-        text: >-
-          Maintaining an in-session task list that tracks planned, in-progress,
-          and completed work
+        text: offset and limit
       - id: c
-        text: Scheduling background tasks for later sessions
+        text: from and count
       - id: d
-        text: Sending task notifications to the user
+        text: page and size
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      TodoWrite (paired with TodoRead) is Claude Code's in-session task list.
-      It acts as working memory — externalizing what needs to be done so the
-      model doesn't have to hold the full plan in context. Mark tasks
-      in_progress when starting and completed when done.
-
-  # ── Tier 200 — Understand ───────────────────────────────────────────────
-  - id: ctx-200-mc-a
+      The Read tool uses offset (the line to start at) and limit (how many lines to read) for
+      partial reads. When a default whole-file read is too large, Read returns a PARTIAL view
+      explaining how to use offset and limit to read more.
+  - id: cm-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: When the Read tool opens a long PDF, how does it bring the content into context?
+    choices:
+      - id: a
+        text: >-
+          It reads the PDF in bounded page ranges via a "pages" parameter rather than ingesting the
+          whole document at once
+      - id: b
+        text: It always loads the entire PDF in a single call regardless of length
+      - id: c
+        text: It can only read PDFs after they are manually converted to plain text
+      - id: d
+        text: It ignores PDFs entirely; they must be opened in an external viewer
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Long PDFs are read in bounded page ranges through the pages parameter (e.g. "1-5") rather than
+      all at once, so a large document does not flood the context window. Read handles PDFs
+      natively, so no manual text conversion or external viewer is required.
+  - id: cm-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 151
+    type: multiple_choice
+    prompt: >-
+      When the context window fills up, what does Claude Code do FIRST before summarizing the
+      conversation?
+    choices:
+      - id: a
+        text: Clears older tool outputs
+      - id: b
+        text: Deletes the system prompt
+      - id: c
+        text: Discards the project CLAUDE.md
+      - id: d
+        text: Ends the session immediately
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Auto-compaction clears older tool outputs first, and only summarizes the conversation if that
+      is not enough. The system prompt and project CLAUDE.md are re-injected, not deleted, and a
+      full window triggers compaction rather than ending the session.
+  - id: cm-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: >-
+      What is the relationship between a subagent's context window and the main session's context
+      window?
+    choices:
+      - id: a
+        text: >-
+          The subagent shares the main session's context window, so its file reads count against the
+          main window
+      - id: b
+        text: The subagent has no context window and runs entirely from disk
+      - id: c
+        text: >-
+          The subagent runs in its own separate context window; only its final text result returns
+          to the main session
+      - id: d
+        text: The subagent copies the main session's full conversation history into the main window
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Subagents run in a fresh, isolated context window; their file reads do not touch the main
+      context, and only their final summary (plus a small metadata trailer) returns. That isolation
+      is exactly why delegating research saves main-context tokens.
+  - id: cm-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: >-
+      In Claude Code, which built-in tool maintains a structured to-do list that acts as the agent's
+      working memory for a multi-step task?
+    choices:
+      - id: a
+        text: TodoWrite
+      - id: b
+        text: The project CLAUDE.md, which Claude rewrites as it works
+      - id: c
+        text: A scratch file written to disk after every tool call
+      - id: d
+        text: The Read tool, by re-reading the plan each turn
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      TodoWrite maintains a structured to-do list that serves as working memory for multi-step work,
+      surfacing pending and completed steps. It is not the project CLAUDE.md (a static memory file),
+      not an on-disk scratch file, and not a side effect of re-reading with the Read tool.
+  - id: cm-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 167
+    type: multiple_choice
+    prompt: By default, what enters the context window for MCP tool definitions?
+    choices:
+      - id: a
+        text: The full schema for every MCP tool, loaded upfront
+      - id: b
+        text: Only the tool names; full schemas load on demand via tool search
+      - id: c
+        text: Nothing; MCP tools never appear in context
+      - id: d
+        text: Only the MCP server URLs, not the tool names
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      MCP tool definitions are deferred by default: only the names enter context, and full schemas
+      load on demand through tool search when a task needs a specific tool. This keeps the startup
+      footprint of MCP tools small.
+  - id: cm-100-ff-j
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: >-
+      Which Claude Code command visualizes current context usage as a colored grid with optimization
+      suggestions, and which command instead reports session token usage and cost?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names /context for the colored-grid context-usage visualization
+        - id: c2
+          text: Names /usage (or its aliases /cost or /stats) for session token usage and cost
+      referenceAnswer: >-
+        /context visualizes current context usage as a colored grid with optimization suggestions.
+        /usage (aliases /cost and /stats) reports the session's token usage and cost.
+      passThreshold: 0.6
+    guidance: >-
+      /context shows what is filling the window right now as a colored grid, while /usage (aliases
+      /cost, /stats) reports token spend and cost for the session. They answer different questions:
+      what is in context vs what it cost.
+  - id: cm-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 173
+    type: multiple_choice
+    prompt: Which model context capability is selected through a "[1m]" model variant in Claude Code?
+    choices:
+      - id: a
+        text: A 100,000-token context window
+      - id: b
+        text: A roughly 1,000,000-token context window
+      - id: c
+        text: A 1-megabyte file-read limit
+      - id: d
+        text: A one-minute response timeout
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The [1m] variant selects a roughly 1,000,000-token (1M) context window, available on certain
+      newer 1M-capable model variants. Compaction still works the same way at the larger limit.
+  - id: cm-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: What does the Edit tool require before it will modify a file?
+    choices:
+      - id: a
+        text: That Claude has read the file in the current conversation
+      - id: b
+        text: That the file is staged in git
+      - id: c
+        text: That the file is under 2,000 lines
+      - id: d
+        text: That the user grants edit permission for each call
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The read-before-edit rule means Edit requires that Claude has read the file in the current
+      conversation and that it has not changed on disk since. This is about correctness, not git
+      staging, file size, or per-call permissions.
+  - id: cm-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: multiple_choice
+    prompt: After compaction, which of the following is re-injected from disk rather than lost?
+    choices:
+      - id: a
+        text: 'Rules with paths: frontmatter (path-scoped rules)'
+      - id: b
+        text: Nested CLAUDE.md files in subdirectories
+      - id: c
+        text: The project-root CLAUDE.md
+      - id: d
+        text: The startup skill listing (one-line descriptions)
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The project-root CLAUDE.md, unscoped rules, and auto memory are re-injected after compaction.
+      Path-scoped (paths:) rules and nested CLAUDE.md are lost until a matching file is read again,
+      and the startup skill listing is the one startup item not re-injected.
+  - id: cm-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: free_form
+    prompt: State the key difference between /compact and /clear in Claude Code.
+    rubric:
+      criteria:
+        - id: c1
+          text: Says /compact summarizes/frees context while continuing the SAME conversation
+        - id: c2
+          text: Says /clear starts a NEW conversation with empty/reset context
+      referenceAnswer: >-
+        /compact frees context by summarizing the conversation but keeps you in the same
+        conversation. /clear resets context entirely by starting a brand new, empty conversation
+        (the previous one remains available via /resume).
+      passThreshold: 0.6
+    guidance: >-
+      The core distinction: /compact = same conversation, summarized; /clear = new empty
+      conversation. A frequent misconception is that they are equivalent, or that /clear wipes
+      project memory (it does not; CLAUDE.md is kept).
+  - id: cm-100-ff-o
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: free_form
+    prompt: >-
+      Name at least three things that are already loaded into the context window at startup, before
+      the first user prompt.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the system prompt
+        - id: c2
+          text: Names CLAUDE.md (project and/or global)
+        - id: c3
+          text: >-
+            Names at least one more startup item (auto memory, MCP tool names, skill descriptions,
+            environment info, or git status)
+      referenceAnswer: >-
+        At startup the context already contains the system prompt, auto memory (MEMORY.md),
+        environment info, MCP tool names, skill descriptions, the global ~/.claude/CLAUDE.md, and
+        the project CLAUDE.md, plus a git branch/status/commits block at the end of the system
+        prompt.
+      passThreshold: 0.6
+    guidance: >-
+      Even before the first prompt, context is partly full: system prompt, auto memory, environment
+      info, MCP tool names, skill descriptions, and CLAUDE.md files. Recognizing this explains why
+      the window is never truly empty when a session begins.
+  - id: cm-100-ff-p
+    tier: 100
+    bloom: remember
+    difficulty: 159
+    type: free_form
+    prompt: >-
+      When auto memory (MEMORY.md) loads at startup, why does Claude Code not load the entire file
+      no matter how large it is?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that auto memory is capped/bounded at startup (only a limited portion loads, not
+            the whole file)
+        - id: c2
+          text: 'Explains the purpose: so a large MEMORY.md cannot dominate / flood the startup context'
+      referenceAnswer: >-
+        Auto memory is loaded with a bounded cap at startup -- only a limited portion of MEMORY.md
+        is read rather than the whole file. The point of the cap is to keep a large memory file from
+        dominating the startup context and crowding out room for the actual work.
+      passThreshold: 0.6
+    guidance: >-
+      Auto memory loads only a bounded portion of MEMORY.md at startup. The exact cap is an
+      implementation detail, but the durable point is that it is bounded so a big memory file cannot
+      dominate the startup context.
+  - id: cm-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 169
+    type: free_form
+    prompt: >-
+      According to the docs, why are CLI tools (such as gh, aws, gcloud) more context-efficient than
+      MCP servers?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that CLI tools add no per-tool listing/schemas to the context
+        - id: c2
+          text: Contrasts with MCP, which consumes context for tool names (and schemas when loaded)
+      referenceAnswer: >-
+        CLI tools add no per-tool listing to the context, whereas MCP servers consume context for
+        tool names and, when loaded, their schemas. So the docs recommend preferring CLI tools.
+      passThreshold: 0.6
+    guidance: >-
+      The efficiency is about what lands in the context window: CLI tools add no per-tool listing,
+      while MCP adds tool names (and schemas when loaded). It is not about execution speed,
+      language, or where the tool runs.
+  - id: cm-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: free_form
+    prompt: What happens to LLM performance as the context window fills toward its limit?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that performance degrades / quality drops as the window fills
+        - id: c2
+          text: Gives a concrete symptom (forgetting earlier instructions or making more mistakes)
+      referenceAnswer: >-
+        Performance degrades as the context window fills: Claude may forget earlier instructions and
+        make more mistakes as it approaches the limit. The docs call the context window the most
+        important resource to manage.
+      passThreshold: 0.6
+    guidance: >-
+      A fuller window means worse performance: the model can forget earlier instructions and make
+      more errors near the limit. This is why managing context matters even when you have not hit
+      the hard token cap.
+  - id: cm-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: What is the difference between an @file reference and an @directory reference?
+    choices:
+      - id: a
+        text: '@file injects the full file content; @directory shows only a listing, not contents'
+      - id: b
+        text: '@file shows only a listing; @directory injects every file''s full content'
+      - id: c
+        text: Both inject full contents; the only difference is one targets a single file
+      - id: d
+        text: Neither adds anything to context; they are display-only shortcuts
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      @file immediately injects the full file content (and pulls in CLAUDE.md from that file's
+      directory and parents), while @directory shows only a listing. Confusing the two can lead to
+      unexpectedly large or unexpectedly empty context additions.
+  - id: cm-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: free_form
+    prompt: Name the two automatic mechanisms Claude Code uses to reduce token cost.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names prompt caching (for repeated content such as the system prompt)
+        - id: c2
+          text: Names auto-compaction
+      referenceAnswer: >-
+        Claude Code automatically reduces cost via prompt caching (reusing repeated content like the
+        system prompt) and auto-compaction (summarizing and clearing context as the window fills).
+      passThreshold: 0.6
+    guidance: >-
+      The two built-in cost-reduction mechanisms are prompt caching, which avoids re-paying for
+      repeated content like the system prompt, and auto-compaction, which trims and summarizes
+      context as the window fills.
+  - id: cm-200-mc-a
     tier: 200
     bloom: understand
-    difficulty: 250
+    difficulty: 222
     type: multiple_choice
-    prompt: >-
-      You need to understand a function defined in a 2000-line file. What is
-      the most context-efficient approach?
+    prompt: Why does the documentation call the context window "the most important resource to manage"?
     choices:
       - id: a
-        text: Read the entire file first, then locate the function
+        text: >-
+          Because model performance degrades as the window fills -- Claude may forget earlier
+          instructions and make more mistakes as it nears the limit.
+      - id: b
+        text: Because a full context window permanently deletes your project's CLAUDE.md from disk.
+      - id: c
+        text: Because the context window determines how many files exist in your repository.
+      - id: d
+        text: Because each token in the window must be re-typed by the user before the next turn.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The window holds the entire conversation, file reads, command outputs, and instructions; as it
+      fills, the model's reliability drops and it can "forget" earlier context. CLAUDE.md lives on
+      disk and is unaffected by a full window, and tokens are not re-typed by the user.
+  - id: cm-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: A teammate claims "/compact and /clear do the same thing." How should you correct this?
+    choices:
+      - id: a
+        text: /compact deletes the conversation permanently, while /clear only hides it.
+      - id: b
+        text: They are identical except /clear is faster.
+      - id: c
+        text: >-
+          /compact summarizes and continues the SAME conversation, while /clear starts a brand-new
+          empty conversation (the old one stays in /resume).
+      - id: d
+        text: >-
+          /clear summarizes the conversation, while /compact wipes your CLAUDE.md and project
+          memory.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      /compact frees context by summarizing while keeping the current conversation going; /clear
+      resets context entirely by starting a new conversation, leaving the previous one recoverable
+      via /resume. Neither deletes CLAUDE.md.
+  - id: cm-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: free_form
+    prompt: >-
+      Explain how being specific in a prompt (e.g. "fix the bug in auth.ts") reduces context window
+      growth compared to a vague prompt.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that file reads dominate context usage / are the main driver of context growth.
+        - id: c2
+          text: >-
+            Explains that a specific prompt narrows which files Claude reads, so it reads fewer
+            files.
+        - id: c3
+          text: Connects fewer reads to less context consumed (and lower cost).
+      referenceAnswer: >-
+        File reads are the dominant driver of context usage. A vague prompt forces Claude to explore
+        and read many files to find the relevant code, each read pouring tokens into the window. A
+        specific prompt like "fix the bug in auth.ts" points Claude directly at the right file, so
+        it reads far fewer files, consuming less context and lowering cost.
+      passThreshold: 0.6
+    guidance: >-
+      Specificity is leverage: it cuts the number of file reads, which are the largest contributor
+      to context growth. Less exploration means a smaller, cleaner window and lower token cost.
+  - id: cm-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: When the context window fills, in what order does Claude Code reduce it?
+    choices:
+      - id: a
+        text: It summarizes the entire conversation in one pass before touching any tool outputs.
       - id: b
         text: >-
-          Use Read with offset and limit parameters to read only the relevant
-          section, or use Grep/a symbolic tool to find the function first
+          It clears older tool outputs first, then summarizes the conversation only if that is still
+          not enough.
       - id: c
-        text: Ask the user to paste the function into the chat
+        text: It deletes the user's most recent messages first to protect old context.
       - id: d
-        text: Read the first 100 lines, then guess the rest
+        text: It immediately starts a new conversation and discards everything.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      Reading an entire large file when you only need a section is one of the
-      most common context-wasting patterns. Use Read with `offset`/`limit`, or
-      use Grep/symbolic tools to find the exact location first, then read only
-      that range. The instructions explicitly say to prefer dedicated tools over
-      cat/head/tail for this reason.
-
-  - id: ctx-200-sa-a
+      Auto-compaction is incremental: verbatim older tool outputs are the cheapest thing to drop, so
+      they go first; only if the window is still too full does Claude summarize the conversation. It
+      does not summarize everything at once or discard recent user messages.
+  - id: cm-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      Claude Code automatically uses prompt caching to reduce token cost. In terms of what fills the
+      context window, why does prompt caching help?
+    choices:
+      - id: a
+        text: It deletes older messages from the window, so each turn re-sends a smaller conversation.
+      - id: b
+        text: >-
+          It reuses large, repeated, stable content (such as the system prompt) across turns instead
+          of re-paying full price to re-process it each time.
+      - id: c
+        text: >-
+          It compresses every file Claude reads to half its token count before adding it to the
+          window.
+      - id: d
+        text: >-
+          It increases the context window size so more conversation fits before compaction is
+          needed.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Prompt caching reduces cost for repeated, stable content -- the system prompt and other
+      unchanging prefixes are reused across turns rather than re-processed at full price each time.
+      It does not delete messages, compress file reads, or change the window size; those are
+      different mechanisms (compaction, strategic reads, model variant).
+  - id: cm-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: free_form
+    prompt: >-
+      Auto-compaction normally keeps a session alive when the window fills. Explain what the
+      "thrashing" error is and why Claude Code shows it instead of continuing to auto-compact.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes a single file/output so large that the window refills immediately after each
+            summary.
+        - id: c2
+          text: States Claude Code stops auto-compacting after a few attempts rather than looping.
+        - id: c3
+          text: Explains the error prevents an unproductive infinite summarize loop.
+      referenceAnswer: >-
+        If one file or output is so large that summarizing frees room but the very next step refills
+        the window, each auto-compaction is immediately undone. To avoid an endless summarize-refill
+        loop, Claude Code stops after a few attempts and surfaces a thrashing error instead of
+        silently spinning. This signals the user must change approach (read less, /clear, scope
+        down).
+      passThreshold: 0.6
+    guidance: >-
+      Thrashing is the guardrail against an infinite compaction loop: when no amount of summarizing
+      keeps the window under the limit because one oversized item keeps refilling it, Claude Code
+      halts and reports it rather than looping.
+  - id: cm-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: After a compaction, which of these is re-injected from disk rather than lost?
+    choices:
+      - id: a
+        text: A rule with `paths:` frontmatter (path-scoped rule).
+      - id: b
+        text: A nested CLAUDE.md in a subdirectory.
+      - id: c
+        text: The startup skill listing of available skill descriptions.
+      - id: d
+        text: The project-root CLAUDE.md.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Project-root CLAUDE.md, unscoped rules, auto memory, and the system prompt are re-injected
+      after compaction. Path-scoped (`paths:`) rules and nested CLAUDE.md are lost until a matching
+      file is read again, and the startup skill listing is the one startup item that is NOT
+      re-injected.
+  - id: cm-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 263
+    type: multiple_choice
+    prompt: >-
+      Why are CLI tools like `gh` and `aws` described as more context-efficient than equivalent MCP
+      servers?
+    choices:
+      - id: a
+        text: CLI tools run on a remote server, so their output never enters your context.
+      - id: b
+        text: MCP servers cannot be cached, but CLI output always is.
+      - id: c
+        text: CLI tools compress their output to under 100 tokens automatically.
+      - id: d
+        text: >-
+          MCP adds per-tool listings (and schemas) into context, while CLI tools add no per-tool
+          listing at all.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Every MCP tool contributes to the listing/schema footprint in context -- even when schemas are
+      deferred, the names still consume some tokens. A CLI like `gh` is just a Bash command and adds
+      no per-tool listing, which is why the docs recommend preferring CLIs where they exist.
+  - id: cm-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      With MCP tool definitions deferred by default, what actually loads into context at startup,
+      and what happens when a task needs a specific tool?
+    choices:
+      - id: a
+        text: Nothing about MCP loads until you manually run a command; then everything loads at once.
+      - id: b
+        text: Full schemas always load up front; only the names are deferred.
+      - id: c
+        text: >-
+          Only the tool NAMES load up front; the full schema for a specific tool is loaded on demand
+          via tool search when the task needs it.
+      - id: d
+        text: Tool names AND schemas both load up front, which is why MCP is so expensive.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      "Deferred by default" means only names enter context initially; a tool's full schema is
+      fetched on demand through tool search. This keeps MCP's startup footprint to just the names
+      rather than every full schema.
+  - id: cm-200-ff-j
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      After a compaction, an invoked skill's body is re-injected but truncated, keeping the START of
+      the file. Explain how this should influence the way you structure a SKILL.md, and why.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that critical/most-important instructions should be placed near the top of
+            SKILL.md.
+        - id: c2
+          text: >-
+            Explains that because truncation keeps the file start, content past the cap (the tail)
+            can be dropped after compaction.
+        - id: c3
+          text: Connects this to the skill body surviving compaction in usable form.
+      referenceAnswer: >-
+        Because re-injection truncates the skill body and keeps the beginning of the file, anything
+        past the cap at the tail is silently dropped after a compaction. So a SKILL.md author should
+        front-load the essential, load-bearing instructions near the top and push optional or
+        reference detail lower. That way, even when the body is truncated post-compaction, the part
+        that survives is the part the agent most needs.
+      passThreshold: 0.6
+    guidance: >-
+      Truncation keeps the file start, so authoring order is a context-management decision: put
+      must-keep instructions first. Detail buried at the bottom may vanish after compaction even
+      though it was present when the skill was first invoked.
+  - id: cm-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: >-
+      A whole-file Read returns a "PARTIAL view" notice. What does this tell you, and how does it
+      differ from passing an explicit offset/limit that is still too big?
+    choices:
+      - id: a
+        text: >-
+          PARTIAL view means you got the first page and are told how to read more with offset/limit;
+          an explicit offset/limit that still exceeds the limit returns an ERROR instead.
+      - id: b
+        text: PARTIAL view means the file was corrupted; an explicit offset/limit always succeeds.
+      - id: c
+        text: Both cases silently truncate the content with no notice.
+      - id: d
+        text: PARTIAL view means the file was deleted mid-read; offset/limit re-creates it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A default whole-file read that exceeds the token limit returns the first page with a PARTIAL
+      view notice and instructions to continue via offset/limit. But if you explicitly pass an
+      offset/limit and the requested region still exceeds the limit, Read returns an error -- it
+      does not silently truncate.
+  - id: cm-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 231
+    type: multiple_choice
+    prompt: >-
+      By default a skill's one-line description is listed at startup so Claude can invoke it. Why
+      does setting `disable-model-invocation: true` on a skill reduce startup context cost?
+    choices:
+      - id: a
+        text: >-
+          It drops the skill's one-line description from the startup listing, so the skill costs
+          zero context until you invoke it manually with /name.
+      - id: b
+        text: >-
+          It makes the skill's full body load eagerly at startup so nothing has to be searched
+          later.
+      - id: c
+        text: It deletes the skill from disk after one use, so it can never reload.
+      - id: d
+        text: It moves the skill into CLAUDE.md, which is cheaper than the skill index.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Normally only a skill's short description sits in the startup listing and the body loads on
+      demand when invoked. Setting disable-model-invocation: true keeps even that description out of
+      the startup index, so the skill costs zero context until you explicitly call it with /name --
+      useful for side-effecting skills (commit, deploy) you do not want auto-invoked.
+  - id: cm-200-ff-m
+    tier: 200
+    bloom: understand
+    difficulty: 277
+    type: free_form
+    prompt: >-
+      The docs say you should sometimes LET context accumulate rather than manage it. Describe such
+      a situation and explain why aggressive clearing would be harmful there.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies a deep, single complex problem where the conversation history is genuinely
+            valuable.
+        - id: c2
+          text: >-
+            Explains that the accumulated history (prior reasoning, decisions, code context) is
+            useful state, not just cost.
+        - id: c3
+          text: Concludes that clearing/compacting would destroy useful state and hurt the work.
+      referenceAnswer: >-
+        When you are deep in one complex problem -- iterating on a tricky bug or a multi-step design
+        -- the conversation history carries valuable state: the approaches already tried, decisions
+        made, and code already examined. Here the growing context is an asset, not waste.
+        Aggressively /clearing or compacting would throw away that state, forcing rediscovery and
+        risking lost detail, so the right move is to let context accumulate.
+      passThreshold: 0.6
+    guidance: >-
+      Context management is a tradeoff, not always a win. For a single deep problem, the history is
+      the working state that makes progress possible; clearing it is pure loss. Manage context when
+      switching tasks, not when the history is actively load-bearing.
+  - id: cm-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 243
+    type: multiple_choice
+    prompt: >-
+      The Edit tool requires Claude to have read a file in the current conversation before editing
+      it. How does this requirement help avoid wasted re-reads and mistakes?
+    choices:
+      - id: a
+        text: It caches the file so future reads of it are free.
+      - id: b
+        text: >-
+          It guarantees Claude is editing against the actual current contents (and the file hasn't
+          changed on disk since the read), preventing blind edits.
+      - id: c
+        text: It compresses the file in context so the edit costs fewer tokens.
+      - id: d
+        text: It prevents the user from editing the file at the same time.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Read-before-edit ensures the edit targets the real, current file contents and fails if the
+      file changed on disk since the read, so Claude does not make blind or stale edits. It is a
+      correctness guarantee, not a caching or compression mechanism; Writing to a previously unread
+      existing file also fails.
+  - id: cm-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 249
+    type: multiple_choice
+    prompt: >-
+      A user believes "re-reading the same file is basically free because it's cached." Why is this
+      a misconception worth correcting?
+    choices:
+      - id: a
+        text: Re-reads are free, so the user is correct and nothing needs fixing.
+      - id: b
+        text: Re-reads are blocked entirely; you can only read a file once per session.
+      - id: c
+        text: Re-reads silently return an empty result the second time.
+      - id: d
+        text: >-
+          Re-reads cost full tokens again and bloat the window; fresh reads each call exist for
+          correctness, not as a free cache.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Claude reads files fresh on each tool call so it sees any external edits -- but that means
+      each re-read pays full token cost and inflates context. The "infinite exploration"
+      anti-pattern of reading hundreds of files (and re-reading them) fills the window; fresh reads
+      are for correctness, not a free cache.
+  - id: cm-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      The docs say that after about two failed correction attempts on the same problem, the right
+      move is /clear plus a better prompt rather than /compact. Explain the reasoning behind
+      preferring /clear over /compact in this case.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that compaction PRESERVES the failed/polluted approaches in its summary.
+        - id: c2
+          text: Explains /clear starts fresh, removing the polluted context entirely.
+        - id: c3
+          text: Connects a better/fresh prompt to escaping the failed line of reasoning.
+      referenceAnswer: >-
+        /compact only summarizes the existing conversation, so it carries the failed approaches
+        forward in compressed form -- the polluted reasoning that led nowhere stays in context and
+        keeps biasing the model. /clear starts a brand- new conversation with an empty window,
+        dropping that polluted state entirely. Pairing it with a better-framed prompt lets Claude
+        attack the problem fresh instead of re-treading the same dead ends.
+      passThreshold: 0.6
+    guidance: >-
+      Compaction is summarization, not cleansing: it keeps the gist of failed tries. When the
+      context itself is the problem, you want a clean slate (/clear) plus a sharper prompt, not a
+      smaller copy of the same poisoned history.
+  - id: cm-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: >-
+      How does an `@file` reference differ from an `@directory` reference in terms of what enters
+      context?
+    choices:
+      - id: a
+        text: Both inject full contents of every file involved.
+      - id: b
+        text: >-
+          @file injects the full file contents (plus CLAUDE.md from its directory and parents),
+          while @directory shows only a listing, not contents.
+      - id: c
+        text: '@file shows only a listing, while @directory injects every file''s contents.'
+      - id: d
+        text: Neither adds anything to context; they are just visual hints to the user.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      @file immediately injects the full file content and also pulls in CLAUDE.md from the file's
+      directory and its parents, so it can cost more than expected. @directory only injects a
+      listing of names, not the contents of the files inside.
+  - id: cm-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 237
+    type: multiple_choice
+    prompt: >-
+      Why does the documentation warn that an over-long CLAUDE.md is harmful beyond just costing
+      tokens?
+    choices:
+      - id: a
+        text: >-
+          When CLAUDE.md is too long, important rules get lost in the noise and Claude starts to
+          ignore them.
+      - id: b
+        text: A long CLAUDE.md prevents the project from building.
+      - id: c
+        text: A long CLAUDE.md is never loaded, so its rules silently do nothing.
+      - id: d
+        text: A long CLAUDE.md automatically triggers /clear on every turn.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      CLAUDE.md is loaded every session, so length is not just token cost: when it is bloated, the
+      docs warn that key rules get buried and Claude is more likely to ignore them. The guidance is
+      to keep it lean and move sometimes-relevant detail into on-demand skills.
+  - id: cm-200-ff-s
     tier: 200
     bloom: understand
     difficulty: 260
-    type: short_answer
+    type: free_form
     prompt: >-
-      What happens to a Claude Code session's context when it gets very full,
-      and what is the term for the automatic process that trims it?
-    answerKey:
-      kind: keyword
-      anyOf:
-        - compaction
-        - compact
-        - context compaction
-        - auto-compaction
-      normalize: lower
+      Compare CLAUDE.md, an on-demand skill, and a path-scoped (`paths:`) rule in terms of (a) when
+      each loads into context and (b) what happens to each after a compaction.
+    rubric:
+      criteria:
+        - id: c1
+          text: CLAUDE.md loads every session and is re-injected after compaction.
+        - id: c2
+          text: >-
+            A skill loads on demand (only its body, when invoked) and survives compaction only if it
+            was invoked, and then truncated.
+        - id: c3
+          text: >-
+            A path-scoped rule auto-loads when a matching file is read and is LOST after compaction
+            until a matching file is read again.
+      referenceAnswer: >-
+        CLAUDE.md is always loaded at session start and is re-injected from disk after a compaction,
+        so persistent broad rules belong there. A skill's full body loads only on demand when the
+        skill is invoked; after compaction it survives only if it was actually invoked, and then
+        only truncated to a capped portion. A path-scoped (`paths:`) rule auto-loads when a matching
+        file is read, but it is lost after compaction until a matching file is read again.
+        Mis-placing content either wastes tokens every session or silently drops it after
+        compaction.
+      passThreshold: 0.6
     guidance: >-
-      When the context window fills up, Claude Code performs *compaction* —
-      it summarizes the conversation history to free space. Compaction is
-      automatic but lossy: details from earlier in the session may be
-      summarized away. Keeping context lean from the start delays compaction
-      and reduces information loss.
-
-  # ── Tier 300 — Apply ────────────────────────────────────────────────────
-  - id: ctx-300-mc-a
+      Placement is a context-lifecycle decision: persistent-and-broad -> CLAUDE.md (always loaded,
+      survives compaction); sometimes-relevant -> skill (on-demand, truncated, survives only if
+      invoked); file-specific -> paths rule (auto-loads with matching files but dropped on
+      compaction).
+  - id: cm-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
+    prompt: >-
+      Why do pending items in a TodoWrite to-do list survive summarization better than the same
+      information left only in raw conversation?
+    choices:
+      - id: a
+        text: To-do lists are stored outside the context window entirely and never compacted.
+      - id: b
+        text: Raw conversation is always preserved verbatim, so a to-do list adds nothing.
+      - id: c
+        text: >-
+          Pending tasks are among the items compaction explicitly preserves, whereas verbatim
+          conversation and tool output are condensed or dropped.
+      - id: d
+        text: To-do items are exempt because they are re-injected as skill bodies.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Compaction explicitly preserves pending tasks (along with user intent, key concepts, modified
+      files, and fixed errors), while it discards verbatim tool output and condenses conversation.
+      So intent captured in a TodoWrite to-do list outlives the same notes buried in chat.
+  - id: cm-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You have been deep in a single debugging session on one auth module for an hour. The
+      conversation history holds the exact error traces and the code snippets you have been
+      iterating on, and you still need them. The context window is filling but not yet near the
+      limit. What is the best action right now?
+    choices:
+      - id: a
+        text: Run /clear so you get a clean window and reload only what you need.
+      - id: b
+        text: >-
+          Do nothing yet and let context accumulate, because the history is genuinely valuable to
+          the work in progress.
+      - id: c
+        text: Run /compact immediately to free space and keep going.
+      - id: d
+        text: Spawn a subagent to hold the error traces so they leave the main window.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The docs explicitly say sometimes you should let context accumulate -- when deep in one
+      complex problem where the history is genuinely valuable. Both /clear and /compact would
+      destroy or summarize away the verbatim traces and snippets you still depend on, and a subagent
+      cannot hold your live working state for you.
+  - id: cm-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You finished a feature and now want to start an unrelated task: writing release notes. The
+      current window is full of code from the old task that has nothing to do with release notes.
+      Which command fits the situation?
+    choices:
+      - id: a
+        text: /compact Focus on release notes
+      - id: b
+        text: /rewind to a checkpoint
+      - id: c
+        text: /clear
+      - id: d
+        text: /usage
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      /clear starts a brand-new empty conversation while keeping project memory (CLAUDE.md), which
+      is exactly right when switching to unrelated work -- stale context is pure cost and
+      distraction. /compact would carry forward a summary of irrelevant code, /rewind rolls back a
+      checkpoint, and /usage only reports cost.
+  - id: cm-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You need to know whether the string "ERROR" appears anywhere across roughly 300 source files,
+      and if so where. Which approach keeps main context smallest while answering the question?
+    choices:
+      - id: a
+        text: Read each file in turn with the Read tool until you find matches.
+      - id: b
+        text: Use Grep, which returns matching file paths by default instead of full file bodies.
+      - id: c
+        text: Use @directory to inject the folder so you can scan it.
+      - id: d
+        text: Read the largest files first with offset/limit to sample them.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For locating a needle, Grep (files_with_matches by default, ripgrep regex, respects
+      .gitignore) is far cheaper than reading whole files. Reading 300 files is the "infinite
+      exploration" anti-pattern that fills context; @directory only lists, it would not find the
+      string for you.
+  - id: cm-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      A teammate keeps re-running Read on the same 1,200-line config file several times in one
+      session "to refresh it," believing re-reads are cached and therefore free. Explain what
+      actually happens to context, and give the cheaper action they should take when they only need
+      lines 400-450.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that re-reads cost full tokens again and bloat context (reads are not a free
+            cache).
+        - id: c2
+          text: >-
+            Recommends a targeted Read using offset and limit (or grep/specific lines) to fetch only
+            the needed region instead of the whole file.
+      referenceAnswer: >-
+        Each Read pays full tokens again and adds the content to the window; reading fresh every
+        call is for correctness, not a free cache, so repeated whole-file reads just bloat context.
+        When they only need lines 400-450 they should pass offset and limit to Read (or grep for the
+        relevant lines) so only that slice enters context.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that reading the same file twice is cached and free. It is not -- every
+      read costs full tokens and grows the window. The fix is targeted reads (offset/limit) or grep
+      rather than repeatedly pulling the entire file.
+  - id: cm-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      You ask Claude to open a long, multi-hundred-page PDF specification and a single
+      whole-document Read is rejected. What is the correct strategy to get through the document
+      while protecting context?
+    choices:
+      - id: a
+        text: >-
+          Read it in bounded page ranges via the pages parameter, pulling in only the sections you
+          need.
+      - id: b
+        text: Convert it to text first because Read cannot open PDFs at all.
+      - id: c
+        text: Pass offset and limit to read the whole PDF in one call.
+      - id: d
+        text: Give up on the PDF; Read can only handle plain-text source files.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Long PDFs are read in bounded page ranges via the pages parameter, so you pull in only the
+      sections you actually need rather than the whole document at once. offset/limit are for text
+      files, and Read does handle PDFs natively, so neither (b), (c), nor (d) applies.
+  - id: cm-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 342
+    type: multiple_choice
+    prompt: >-
+      You want to investigate a 10,000-line application log for lines containing "ERROR" without
+      flooding the window with the whole file every time Claude looks. Which mechanism is designed
+      to feed Claude only the relevant slice automatically?
+    choices:
+      - id: a
+        text: Adding the log path to CLAUDE.md so it loads pre-filtered every session.
+      - id: b
+        text: Increasing the model to a larger 1M-token variant so the log fits.
+      - id: c
+        text: Running /compact after each time the log is read.
+      - id: d
+        text: A hook that pre-processes the log (e.g. greps for ERROR) so Claude sees only the matches.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Hooks can preprocess data so Claude sees only the relevant slice -- grepping a 10,000-line log
+      for ERROR returns hundreds of tokens instead of tens of thousands. A larger window still
+      ingests the whole file, /compact only runs after the bloat, and CLAUDE.md does not filter file
+      contents.
+  - id: cm-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: free_form
+    prompt: >-
+      A project relies on a path-scoped rule (a rule file with paths: frontmatter) that injects
+      coding standards whenever a file under src/payments/ is read. Midway through a long session an
+      auto-compaction fires. Describe what happens to that rule afterward and what action
+      re-activates it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that path-scoped (paths: frontmatter) rules are lost / not re-injected after
+            compaction.
+        - id: c2
+          text: >-
+            States the rule comes back when a matching file is read again (reading a file under the
+            scoped path re-triggers it).
+      referenceAnswer: >-
+        After compaction the path-scoped rule is dropped from context -- only project-root
+        CLAUDE.md, unscoped rules, and auto memory are re-injected. The payments standards rule does
+        not return on its own; it re-activates the next time a file matching its paths: glob
+        (something under src/payments/) is read.
+      passThreshold: 0.6
+    guidance: >-
+      A common misconception is that path-scoped rules and nested CLAUDE.md survive compaction. They
+      do not -- they are lost until a matching file is read again. Knowing this prevents assuming
+      the standards are still steering Claude after a summarize.
+  - id: cm-300-mc-f
     tier: 300
     bloom: apply
     difficulty: 350
     type: multiple_choice
     prompt: >-
-      You are starting a multi-file refactor that will span many steps. Before
-      writing a single line of code, which TodoWrite action is most valuable?
+      You need a large research task: read about a dozen files across the repo and report a short
+      list of which ones touch the billing schema. You want to protect your main window. What is the
+      best move?
     choices:
       - id: a
-        text: >-
-          Write a single "refactor everything" task and mark it in_progress
+        text: Read all dozen files inline so the findings stay in your main history.
       - id: b
-        text: >-
-          Break the work into discrete tasks (each file or logical unit), write
-          them all to the Todo list, then start the first one
-      - id: c
-        text: Skip TodoWrite — it adds tool calls that cost context
-      - id: d
-        text: >-
-          Write all tasks as completed so the user sees the plan immediately
-    answerKey:
-      kind: choice
-      correctChoiceId: b
-    guidance: >-
-      Using TodoWrite to lay out discrete, ordered tasks before starting serves
-      as a lightweight project plan external to context. It lets you mark tasks
-      in_progress and completed as you go, which both keeps you on track and
-      signals to the user that progress is being made. One coarse task gives no
-      recovery point if context is compacted mid-session.
-
-  - id: ctx-300-mc-b
-    tier: 300
-    bloom: apply
-    difficulty: 360
-    type: multiple_choice
-    prompt: >-
-      Your session's context contains the full text of five large files you
-      read earlier but no longer need. You are about to start a complex new
-      subtask. What is the best strategy?
-    choices:
-      - id: a
-        text: >-
-          Continue normally — the model handles large context automatically
-      - id: b
-        text: >-
-          Ask the user to run /compact or /clear before proceeding so stale
-          large-file content is removed from context
+        text: Read them inline but run /compact after each file.
       - id: c
         text: >-
-          Re-read the files you still need, which signals to the model what is
-          important
+          Delegate to a subagent; it reads the files in its own isolated window and only its short
+          summary returns to you.
       - id: d
-        text: >-
-          Open a new terminal session and start over
-    answerKey:
-      kind: choice
-      correctChoiceId: b
-    guidance: >-
-      Stale large-file content sitting in context is pure waste — it uses
-      tokens, may mislead later reasoning, and accelerates compaction. For a
-      fresh subtask, prompting the user to run /compact (summarize history) or
-      /clear (reset) is the correct hygiene move. The model does not
-      automatically prune irrelevant earlier reads.
-
-  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
-  - id: ctx-400-mc-a
-    tier: 400
-    bloom: analyze
-    difficulty: 430
-    type: multiple_choice
-    prompt: >-
-      In a long session you notice the model is forgetting instructions given
-      at the start of the conversation. What is the most likely cause?
-    choices:
-      - id: a
-        text: A bug in Claude Code
-      - id: b
-        text: >-
-          Compaction has summarized away the early instructions to free context
-          space
-      - id: c
-        text: The CLAUDE.md file was not loaded
-      - id: d
-        text: The model intentionally ignores earlier turns in long sessions
-    answerKey:
-      kind: choice
-      correctChoiceId: b
-    guidance: >-
-      When context fills and compaction runs, the summary may lose or dilute
-      instructions given early in the session. Key persistent instructions
-      belong in CLAUDE.md (loaded fresh each session) or in the system prompt,
-      not only in early conversation turns. Compaction is expected behavior, not
-      a bug.
-
-  - id: ctx-400-sa-a
-    tier: 400
-    bloom: analyze
-    difficulty: 440
-    type: short_answer
-    prompt: >-
-      You must read a PDF file that is 25 pages long. Which Read tool parameter
-      must you provide (besides file_path) to avoid a failure, and what is the
-      maximum number of pages per request?
-    answerKey:
-      kind: keyword
-      anyOf:
-        - pages
-        - "pages parameter"
-        - "20"
-        - "20 pages"
-      normalize: lower
-    guidance: >-
-      The Read tool requires the `pages` parameter for large PDFs (more than 10
-      pages) and allows a maximum of 20 pages per request. Attempting to read a
-      large PDF without `pages` will fail. For a 25-page document you would need
-      two reads: e.g., pages "1-20" then pages "21-25".
-
-  # ── Tier 500 — Evaluate ─────────────────────────────────────────────────
-  - id: ctx-500-mc-a
-    tier: 500
-    bloom: evaluate
-    difficulty: 480
-    type: multiple_choice
-    prompt: >-
-      You are designing a workflow where Claude Code repeatedly re-reads the
-      same configuration file at the start of each subtask "to make sure it has
-      the latest content." Evaluate this pattern.
-    choices:
-      - id: a
-        text: >-
-          Good practice — always read fresh to avoid acting on stale data
-      - id: b
-        text: >-
-          Acceptable for small files; wasteful for large ones
-      - id: c
-        text: >-
-          Anti-pattern: the file was already read and unchanged reads just
-          inflate context with duplicate content; only re-read when the file
-          might have changed
-      - id: d
-        text: >-
-          Required — the Read tool does not cache content between tool calls
+        text: Use @directory on the repo root to pull everything in at once.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      Re-reading a file that has not changed since the last read is pure context
-      inflation. Each re-read copies the full file text into context again,
-      accelerating compaction and increasing cost. The correct pattern is to
-      read once, act on the result, and only re-read if an intervening action
-      (Edit/Write/Bash) has modified the file — or if the file is produced
-      externally and genuinely may have changed.
+      Subagents run in a fresh, separate context window; their file reads never touch the main
+      context and only the final summary returns. A subagent may read many thousands of tokens of
+      files but return only a short summary -- that gap is the savings. Inline reading or @directory
+      dumps all of it into your window.
+  - id: cm-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: free_form
+    prompt: >-
+      You are writing a SKILL.md for a skill that will be invoked during long sessions that often
+      hit compaction. Given how invoked skill bodies are handled across compaction, what concrete
+      authoring decision should you make about where to place the skill's critical instructions, and
+      why?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that re-injected skill bodies are truncated/capped after compaction, keeping the
+            start of the file (the tail can be dropped).
+        - id: c2
+          text: >-
+            Concludes you should front-load / put the critical instructions near the top of
+            SKILL.md.
+      referenceAnswer: >-
+        After compaction, invoked skill bodies are re-injected but truncated/capped, and truncation
+        keeps the start of the file -- so anything past the cap at the end gets cut. That means
+        critical instructions must be front-loaded near the top of SKILL.md; if the load-bearing
+        guidance sits at the tail, the skill can lose its most important instructions after a
+        compaction.
+      passThreshold: 0.6
+    guidance: >-
+      Because re-injected skills are truncated/capped and truncation keeps the file start, the
+      design-time fix is to put the load-bearing instructions first. This only matters across
+      compaction, which is why it is a deliberate authoring choice.
+  - id: cm-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You are about to do a long migration and want to persistently steer what compaction preserves
+      -- specifically the API endpoint changes -- every time it runs, without re-typing it each
+      time. Which mechanism is designed to persistently steer compaction?
+    choices:
+      - id: a
+        text: Persistent compaction-steering guidance stored in CLAUDE.md.
+      - id: b
+        text: 'A path-scoped rule with paths: frontmatter pointing at the API files.'
+      - id: c
+        text: Run /clear before the migration so nothing is lost.
+      - id: d
+        text: Pass /usage so token cost stays visible during the work.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      You can persistently steer what every compaction preserves by recording that guidance in
+      CLAUDE.md, which is re-applied automatically. A path-scoped rule does not control
+      summarization, /clear discards everything, and /usage only reports cost.
+  - id: cm-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      Claude has tried the same fix and failed your correction twice; the conversation now carries
+      two polluted dead-end approaches. You want a clean shot at the problem. What do the docs
+      recommend?
+    choices:
+      - id: a
+        text: Run /compact so the failed approaches are summarized and you keep going.
+      - id: b
+        text: Switch to a larger 1M-token model so the failures fit and stop confusing Claude.
+      - id: c
+        text: Spawn a subagent to retry the same fix.
+      - id: d
+        text: Run /clear and re-prompt with a better, more specific description of the task.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      After about two failed corrections the right move is /clear plus a better prompt. /compact
+      would preserve a summary of the polluted failed approaches, so it does not give a clean slate;
+      a bigger window or a subagent retry does not remove the dead-end context steering Claude.
+  - id: cm-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >-
+      Midway through a long session your /context grid shows the window is heavily occupied. You
+      want to decide WHICH concrete action will free the most room without losing work you still
+      need. Walk through how you would read the /context output to choose between (a) clearing stale
+      tool outputs, (b) delegating a big upcoming read to a subagent, and (c) leaving things alone.
+      What signal in the /context view drives each choice?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Uses /context as a diagnostic: identifies which category (e.g. large tool outputs / file
+            reads vs. genuinely useful conversation) is dominating the window.
+        - id: c2
+          text: >-
+            Ties the dominant category to an action: large stale tool outputs/file reads -> compact
+            or avoid re-reading; a big upcoming read -> delegate to a subagent; mostly load-bearing
+            history -> leave it.
+        - id: c3
+          text: >-
+            Notes that the decision is data-driven (what the grid shows is filling context), not a
+            reflex to always clear/compact.
+      referenceAnswer: >-
+        I would read the /context grid to see what is actually filling the window. If large, stale
+        tool outputs or old file reads dominate, that is low-value bulk -- a /compact (which drops
+        verbatim tool output first) or simply not re-reading those files frees the most room
+        cheaply. If the pressure is coming from a big read I am ABOUT to do, I delegate that read to
+        a subagent so its tokens land in the subagent's window, not mine, and only a summary
+        returns. If the grid shows the space is mostly genuinely useful conversation (active
+        reasoning, decisions, code I still need), I leave it -- clearing would destroy load-bearing
+        state. The point is the choice is driven by what the grid shows is filling context, not a
+        reflexive clear/compact.
+      passThreshold: 0.6
+    guidance: >-
+      /context is a decision tool, not just a gauge: the category dominating the grid tells you
+      which lever to pull. Bulky stale outputs favor compaction; a big upcoming read favors subagent
+      delegation; a window full of load-bearing reasoning favors leaving it alone.
+  - id: cm-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      Your CLAUDE.md has grown long and you have noticed Claude increasingly ignoring rules in it.
+      Some of that content is detail that only matters for a specific subsystem. What is the
+      recommended fix?
+    choices:
+      - id: a
+        text: Move the whole CLAUDE.md into auto memory (MEMORY.md) instead.
+      - id: b
+        text: Leave it -- a long CLAUDE.md only costs a few extra tokens with no other downside.
+      - id: c
+        text: >-
+          Trim CLAUDE.md back to lean, broad rules and move sometimes-relevant detail into a skill
+          that loads on demand.
+      - id: d
+        text: Duplicate the rules into a path-scoped rule so they load twice for emphasis.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Docs recommend keeping CLAUDE.md lean and moving sometimes-relevant detail into skills that
+      load on demand. An over-long CLAUDE.md causes important rules to get lost in the noise and be
+      ignored -- it is not harmless, and duplicating rules makes it worse.
+  - id: cm-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: multiple_choice
+    prompt: >-
+      A teammate accidentally runs /clear in the middle of a session and panics that they lost the
+      project's CLAUDE.md rules and the prior conversation forever. What is actually true?
+    choices:
+      - id: a
+        text: >-
+          Project memory (CLAUDE.md) is kept, and the previous conversation is still available via
+          /resume.
+      - id: b
+        text: Both the CLAUDE.md rules and the prior conversation are permanently gone.
+      - id: c
+        text: The CLAUDE.md is wiped but the prior conversation is preserved in the same window.
+      - id: d
+        text: The conversation is gone but they must manually re-add CLAUDE.md.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /clear starts a new empty conversation while keeping project memory (CLAUDE.md); the old
+      conversation stays available in /resume. The misconception that /clear wipes project memory or
+      permanently deletes history is wrong.
+  - id: cm-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: free_form
+    prompt: >-
+      Your project currently talks to GitHub through an MCP server that registers dozens of tools,
+      and the team complains startup context is heavy. They only ever use a handful of GitHub
+      operations, mostly scriptable. What change reduces per-session context cost, and why is it
+      cheaper?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends preferring a CLI tool (e.g. the gh CLI) over the MCP server for those
+            operations.
+        - id: c2
+          text: >-
+            Explains CLI tools add no per-tool listing/schemas to context, whereas MCP servers add
+            per-tool listings (so MCP is not as cheap as a CLI tool).
+      referenceAnswer: >-
+        Switch those operations to the gh CLI invoked via Bash instead of the GitHub MCP server. CLI
+        tools are more context-efficient because they add no per-tool listing -- the model just
+        calls a command -- whereas an MCP server contributes per-tool names (and schemas on demand)
+        to context every session. Even deferred, MCP names consume some context, so a CLI is
+        cheaper.
+      passThreshold: 0.6
+    guidance: >-
+      Docs recommend preferring CLI tools (gh, aws, gcloud, sentry-cli) over MCP servers because
+      CLIs add no per-tool listing. The misconception that "MCP is as cheap as a CLI" ignores the
+      per-tool context cost MCP carries.
+  - id: cm-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      Your MCP-heavy setup makes startup context heavy because tool schemas are large. You want the
+      schemas loaded on demand (only when a task actually needs a specific tool) instead of all
+      upfront. Which loading approach matches that intent?
+    choices:
+      - id: a
+        text: Switching to a 1M-token model variant so all schemas always fit.
+      - id: b
+        text: >-
+          Deferred tool definitions, where only tool NAMES load upfront and a tool's full schema is
+          fetched on demand via tool search.
+      - id: c
+        text: Disabling the task list so working memory does not compete with schemas.
+      - id: d
+        text: Loading every schema eagerly at startup so nothing has to be searched later.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The durable behavior is load-on-demand: with deferred tool definitions only the tool names
+      enter context upfront, and a tool's full schema is fetched on demand through tool search when
+      needed. A bigger window does not change loading policy, the task list is unrelated, and eager
+      loading is the opposite of what is wanted.
+  - id: cm-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      You are pair-working with Claude and you keep a structured to-do list as working memory across
+      a long, compaction-heavy session. A colleague insists you should rely on raw chat messages
+      instead. Which built-in tool maintains that to-do list, and why is a structured to-do list a
+      good fit for a session that will be summarized?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names TodoWrite as the built-in tool that maintains a structured to-do list as working
+            memory.
+        - id: c2
+          text: >-
+            Explains that pending tasks are among the items compaction explicitly preserves, so a
+            to-do list survives summarization better than raw conversation.
+      referenceAnswer: >-
+        TodoWrite is the built-in tool that maintains a structured to-do list as working memory. A
+        to-do list is a good fit for a compaction-heavy session because pending tasks are among the
+        items compaction explicitly preserves, so the list survives summarization far better than
+        raw conversational notes, which get condensed or dropped.
+      passThreshold: 0.6
+    guidance: >-
+      Two durable points: TodoWrite maintains a structured to-do list as working memory, and
+      compaction explicitly preserves pending tasks, so a structured to-do list is the resilient
+      place to keep working memory across summarization.
+  - id: cm-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: multiple_choice
+    prompt: >-
+      You are continuing the SAME long feature and the window is filling, but a compaction risks
+      dropping the API endpoint changes and key code samples you still need. You want to summarize
+      now yet steer what the summary keeps. What is the right action?
+    choices:
+      - id: a
+        text: >-
+          Run /compact with focus instructions, e.g. /compact Focus on the API endpoint changes and
+          code samples.
+      - id: b
+        text: Run /clear so the window is emptied before you lose anything.
+      - id: c
+        text: Run a plain /compact and hope the summarizer keeps the endpoints on its own.
+      - id: d
+        text: Run /rewind to a checkpoint to recover the endpoints later.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /compact accepts focus instructions (e.g. "/compact Focus on the API endpoint changes and code
+      samples") that tell Claude what to preserve during summarization, so you keep continuing the
+      same task while protecting the content you still need. /clear discards everything, a plain
+      /compact leaves preservation to the default heuristics, and /rewind rolls back rather than
+      summarizing.
+  - id: cm-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      During a marathon session a single 80,000-token generated file keeps getting read back in, so
+      every time Claude auto-compacts the window refills almost immediately. After a few attempts
+      Claude stops looping and shows a thrashing error. What is the appropriate response?
+    choices:
+      - id: a
+        text: Keep running /compact repeatedly until it eventually frees enough room.
+      - id: b
+        text: >-
+          Stop re-reading the whole file -- e.g. read only the needed region with offset/limit, grep
+          it, or hand it to a subagent -- so context stops refilling.
+      - id: c
+        text: Raise the auto-compaction trigger percentage so it fires earlier.
+      - id: d
+        text: Ignore the error; auto-compaction will resume on its own once the window grows.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Thrashing means one file/output is so large it refills context after each summary, so the fix
+      is to stop pulling the whole thing in -- read a targeted region (offset/limit), grep, or
+      delegate to a subagent. Repeated /compact cannot win against a file that immediately refills,
+      and the docs do not expose a trigger-percentage knob.
+  - id: cm-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: free_form
+    prompt: >-
+      Your team upgraded to a larger 1M-token context variant and a lead now says "we never need to
+      clear or compact again." For a concrete long-running session, give two reasons that conclusion
+      is wrong and name one situation where the larger window genuinely helps.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes performance still degrades as the window fills (Claude can forget/err near the
+            limit) -- a bigger window does not remove degradation-with-fullness.
+        - id: c2
+          text: Notes the larger window does not remove token cost (cost scales with context size).
+        - id: c3
+          text: >-
+            States compaction still applies at 1M, and/or names that the larger window helps by
+            reducing forced compaction (fitting more before summarization).
+      referenceAnswer: >-
+        A 1M window does not fix degradation-with-fullness: performance still degrades as context
+        fills and Claude can forget earlier instructions near the limit, so you may still want to
+        clear or compact. It also does not remove cost -- token cost scales with context size, so a
+        huge window is more expensive to keep full. Compaction still applies at 1M as well. Where it
+        genuinely helps is reducing forced compaction: you can fit more of a large, genuinely useful
+        conversation before summarization is needed.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that an extended window removes the need for context discipline. It only
+      reduces forced compaction; it does not fix degradation as the window fills or the cost that
+      scales with size, and compaction still applies at 1M.
+  - id: cm-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A developer finishes a long refactor of the auth module and wants to start an UNRELATED task:
+      writing a new GitHub Actions workflow. The current conversation is large and full of stale
+      auth code. They worry that switching tasks will lose their project conventions. Which action
+      best fits the situation, and why?
+    choices:
+      - id: a
+        text: >-
+          Use /compact — it frees context while continuing, and it summarizes the auth work so
+          nothing is lost.
+      - id: b
+        text: >-
+          Stay in the same conversation; switching context tools risks deleting the project's
+          CLAUDE.md conventions.
+      - id: c
+        text: >-
+          Use /clear — it starts a fresh empty conversation for the unrelated task while keeping
+          project memory (CLAUDE.md), and the old conversation stays in /resume.
+      - id: d
+        text: Use /rewind to roll the code back to before the refactor, then begin the new task.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Switching to unrelated work is the textbook /clear case: stale auth context is pure cost and
+      distraction for a CI task. /clear starts a NEW empty conversation but keeps project memory
+      (CLAUDE.md) and leaves the old conversation in /resume — the developer's fear is unfounded.
+      /compact would carry the irrelevant auth summary forward.
+  - id: cm-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      After auto-compaction, Claude suddenly stops honoring a lint rule that only applies to files
+      under src/api/. The rule lived in a rules file with `paths:` frontmatter and had been
+      respected all session. What is the most likely cause?
+    choices:
+      - id: a
+        text: Compaction deleted the rules file from disk, so it can never be reloaded.
+      - id: b
+        text: >-
+          Path-scoped (`paths:`) rules are lost on compaction and only re-inject when a matching
+          file is read again; no src/api/ file has been read since.
+      - id: c
+        text: The project-root CLAUDE.md was dropped during compaction, taking the rule with it.
+      - id: d
+        text: Auto memory was cleared, and the rule was stored there.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Compaction re-injects project-root CLAUDE.md, unscoped rules, and auto memory from disk, but
+      path-scoped (`paths:` frontmatter) rules and nested CLAUDE.md are NOT re-injected until a
+      matching file is read again. Reading any src/api/ file re-triggers the rule. The file is never
+      deleted from disk — it is just out of context until a trigger reloads it.
+  - id: cm-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      You must find which of ~400 files in a large repo define a function named `parseToken`.
+      Compare four approaches purely on MAIN-context cost. Which is the most context-efficient way
+      to locate it, and why?
+    choices:
+      - id: a
+        text: >-
+          Use Grep (ripgrep-backed, files_with_matches default, respects .gitignore) to get matching
+          paths, then Read only the matching file(s) with offset/limit.
+      - id: b
+        text: >-
+          Read every file with the Read tool and scan for the definition — guarantees you see the
+          real code.
+      - id: c
+        text: >-
+          Read each file with offset/limit set to the first 50 lines, since definitions are usually
+          near the top.
+      - id: d
+        text: Use @directory to inject the whole repo so Claude can search it in one shot.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      For locating a needle, Grep is far cheaper than reading files because it returns only matching
+      paths (files_with_matches default), respects .gitignore, and uses ripgrep regex. You then read
+      just the hit with offset/limit. Reading 400 files (or 400 partial reads) floods context;
+      @directory only injects a listing, not contents, and wouldn't search code.
+  - id: cm-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A teammate claims: "Delegating a code-search task to a subagent never saves tokens, because
+      the subagent loads its own CLAUDE.md, MCP servers, and skills, which all cost money." For a
+      task that scans 60 files and needs a one-paragraph answer, what is the correct analysis of
+      their claim?
+    choices:
+      - id: a
+        text: They are right — the subagent's startup re-pay always exceeds any savings.
+      - id: b
+        text: They are wrong because subagents share the main context window, so nothing is re-paid.
+      - id: c
+        text: >-
+          They are right because the subagent inherits the full conversation history and auto
+          memory, doubling cost.
+      - id: d
+        text: >-
+          They are partly right about startup re-pay, but wrong overall here: the 60 file reads stay
+          in the subagent's isolated window and only its short summary returns to the main context,
+          so the main window is largely protected.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Subagents run in a fresh, ISOLATED window; their file reads never touch the main context, and
+      only the final text result (plus a small trailer) returns. They do re-pay startup (own
+      CLAUDE.md, MCP, skills) and you lose intermediate reasoning — so for tiny scoped reads inline
+      may be cheaper. But for 60 files returning one paragraph, isolation is a big main-context win.
+  - id: cm-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      Claude has tried to fix the same failing test twice, each time building on the prior wrong
+      approach, and is now looping. A developer is about to run `/compact Focus on the test failure`
+      to clean up and try again. Why is this the wrong move, and what is better?
+    choices:
+      - id: a
+        text: It's correct — compaction removes the failed attempts so Claude can start clean.
+      - id: b
+        text: >-
+          Wrong — compaction PRESERVES the failed approaches (intent, errors, current work), so the
+          polluted reasoning carries forward. After ~2 failed corrections the better move is /clear
+          plus a sharper prompt.
+      - id: c
+        text: Wrong — /compact deletes the test file, so the build will break.
+      - id: d
+        text: It's correct, but /rewind would be slightly cheaper.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Compaction explicitly preserves user intent, errors and how they were fixed, files modified,
+      and current work — so the failed approaches survive and keep biasing Claude. Docs say after
+      about two failed corrections, the right move is /clear and a better-framed prompt, which
+      discards the polluted path entirely rather than summarizing it.
+  - id: cm-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >-
+      A team's CLAUDE.md has grown long and packed with rules. They notice Claude increasingly
+      ignores specific rules even though "they're right there in the file." Diagnose the likely
+      cause and recommend how to redistribute the content across CLAUDE.md, skills, and path-scoped
+      rules.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that an over-long CLAUDE.md causes rules to get lost in the noise (Claude
+            ignores them), and that CLAUDE.md loads every session (docs recommend keeping it lean).
+        - id: c2
+          text: >-
+            Recommends moving sometimes-relevant detail into skills, which load on demand rather
+            than every session.
+        - id: c3
+          text: >-
+            Recommends file-path-specific guidance go into `paths:`-scoped rules that auto-load with
+            matching files, keeping persistent-but-broad rules in CLAUDE.md.
+      referenceAnswer: >-
+        The cause is bloat: CLAUDE.md is injected every session, and docs warn that an over-long
+        file makes important rules "get lost in the noise," so Claude ignores them. Keep CLAUDE.md
+        to broad, always-true rules and lean. Move sometimes-relevant detail into skills, which load
+        on demand only when invoked. Put file-path-specific guidance into rules with `paths:`
+        frontmatter, which auto-load when a matching file is read. This trims the always-loaded
+        surface while keeping each rule reachable when it actually matters.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that more rules in CLAUDE.md is harmless ("just a few tokens"). In fact
+      docs warn over-long CLAUDE.md causes Claude to ignore rules. The fix is altitude-based
+      routing: broad+persistent in CLAUDE.md, sometimes-relevant in skills (on demand),
+      path-specific in `paths:` rules. Mis-placing content either wastes tokens every session or
+      silently drops it.
+  - id: cm-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A single 40,000-token build log keeps getting read into context. Each time Claude
+      auto-compacts, the window refills almost immediately and after a few attempts Claude shows a
+      thrashing error instead of looping. What does this behavior tell you about the root cause, and
+      the right fix?
+    choices:
+      - id: a
+        text: Auto-compaction is broken; restart the session to reset the summarizer.
+      - id: b
+        text: The context window is too small; only a larger 1M-token model can ever read this log.
+      - id: c
+        text: >-
+          A single input is too large to fit even after summarizing, so compaction can't make
+          headroom; pre-filter the log (e.g., grep for ERROR via a hook or Bash) so only the
+          relevant slice enters context.
+      - id: d
+        text: The log must be read with the `pages` parameter like a PDF.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The thrashing error is the symptom; the cause is that one oversized input refills the window
+      right after each summary, so compaction can't gain ground — Claude stops after a few tries
+      rather than looping forever. The fix is to never load the whole log: a hook or Bash grep for
+      ERROR returns hundreds of tokens instead of tens of thousands. `pages` is PDF-only; a bigger
+      window only delays the same problem.
+  - id: cm-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      During a long session, an external process (not Claude) rewrites config.ts on disk. Claude had
+      read config.ts an hour ago and now tries to Edit it, but the Edit fails. What is the correct
+      diagnosis?
+    choices:
+      - id: a
+        text: Edit failed because read-before-edit was never satisfied for this file.
+      - id: b
+        text: Edit failed because external edits are permanently blocked once detected.
+      - id: c
+        text: >-
+          Edit failed because the prior read was evicted by compaction, which can never be
+          recovered.
+      - id: d
+        text: >-
+          Edit failed because the file changed on disk since Claude last read it; read-before-edit
+          requires the in-context read to still match disk. A fresh Read fixes it.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The Edit tool requires that Claude has read the file in the current conversation AND that the
+      file has not changed on disk since that read. An external process invalidated the stale read.
+      Claude reads files fresh on each tool call, so a new Read picks up the external edit and
+      re-satisfies the requirement — the block is not permanent.
+  - id: cm-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      An author writes a skill whose SKILL.md is long, with the most important operating
+      instructions placed in the last third of the file. They observe the skill works fine right
+      after invocation, but behaves worse after the conversation compacts. Explain the mechanism
+      causing this and how to fix the skill's structure.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that invoked skill bodies are re-injected after compaction but capped/truncated,
+            keeping the START of the file (the tail can be dropped).
+        - id: c2
+          text: >-
+            Concludes the critical instructions in the last third get truncated away after
+            compaction, explaining the degraded behavior.
+        - id: c3
+          text: >-
+            Recommends front-loading the key instructions near the top of SKILL.md so they survive
+            truncation.
+      referenceAnswer: >-
+        After compaction, invoked skill bodies are re-injected from disk but capped/truncated, and
+        truncation keeps the file's START. A long SKILL.md gets cut, and because the key
+        instructions sit in the last third, they are exactly what gets dropped — so the skill
+        degrades only after a compaction event. The fix is a design-time one: front-load the
+        critical instructions near the top of SKILL.md so they fall within the preserved prefix.
+      passThreshold: 0.6
+    guidance: >-
+      This is a subtle cross-compaction trap. Right after invocation the full body is present, so
+      the skill works; only after compaction does the truncation (keeping the start) bite. Putting
+      load-bearing instructions early is the only robust fix — it's why authors front-load SKILL.md.
+  - id: cm-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      A developer is deep in one genuinely hard debugging problem where the long conversation
+      history (every prior hypothesis and dead end) is actively useful. They have a habit of running
+      /clear "to keep things tidy" whenever the context bar looks full. Why is that habit
+      counterproductive here?
+    choices:
+      - id: a
+        text: /clear would summarize the dead ends, which is fine for debugging.
+      - id: b
+        text: >-
+          Docs say sometimes you SHOULD let context accumulate — when deep in one complex problem
+          whose history is valuable; aggressive /clear destroys that useful state and forces
+          re-discovery.
+      - id: c
+        text: /clear is fine because it keeps the full conversation available in the same session.
+      - id: d
+        text: >-
+          The habit is good; a full context window always degrades quality, so clearing is always
+          right.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Context management is not always the goal. Docs explicitly say to let context accumulate when
+      deep in one complex problem where the conversation history is genuinely valuable. /clear
+      starts a NEW empty conversation (it does not summarize, and the old chat is only in /resume),
+      so reflexive clearing here throws away the very dead-ends that prevent repeating them.
+  - id: cm-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      Two engineers debate how to preserve exact earlier code across a filling context window.
+      Engineer A wants /compact; Engineer B argues that for code they will need verbatim later,
+      re-reading or /clear-and-reload is safer. Whose reasoning is sound, and why?
+    choices:
+      - id: a
+        text: >-
+          A — compaction stores files examined/modified with their full verbatim contents, so exact
+          code is always preserved.
+      - id: b
+        text: A — /compact and /clear preserve identical information, so it doesn't matter.
+      - id: c
+        text: >-
+          B — compaction keeps important snippets and intent but discards verbatim full tool outputs
+          and intermediate reasoning, so exact earlier code is at risk; re-reading from disk or a
+          clean reload is safer when you need it precise.
+      - id: d
+        text: B — but only because /compact deletes the files from disk.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Compaction preserves intent, key concepts, errors/fixes, pending tasks, and IMPORTANT snippets
+      — but it discards verbatim full tool outputs and intermediate reasoning. So if you'll need
+      exact earlier code, compaction is risky; the disk is the source of truth, so re-reading (or a
+      fresh /clear + reload) recovers precise content. Files are never deleted from disk.
+  - id: cm-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: free_form
+    prompt: >-
+      A user is surprised that immediately after starting Claude Code — before typing anything — the
+      /context view already shows meaningful usage. Break down at least four distinct things that
+      occupy context at startup, and identify which one of them is the single item that is NOT
+      re-injected after a later compaction.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Lists at least four startup occupants from: system prompt, project/global CLAUDE.md,
+            auto memory (MEMORY.md), environment/git info, MCP tool names, skill descriptions.
+        - id: c2
+          text: >-
+            Correctly identifies that the startup SKILL LISTING (skill descriptions) is the item NOT
+            re-injected after compaction.
+        - id: c3
+          text: >-
+            Notes that only INVOKED skill bodies (not the listing) are preserved/re-injected after
+            compaction.
+      referenceAnswer: >-
+        At startup, context already holds the system prompt, the global ~/.claude/CLAUDE.md and
+        project CLAUDE.md, auto memory (a bounded portion of MEMORY.md), environment and git info
+        (branch, status, recent commits), MCP tool names, and skill descriptions. Of these, the
+        startup skill listing (skill descriptions) is the one item NOT re-injected after a
+        compaction — only skills actually invoked have their bodies re-injected (truncated, keeping
+        the start of the file).
+      passThreshold: 0.6
+    guidance: >-
+      The common misconception is that skill descriptions reload like CLAUDE.md after compaction.
+      They don't — the startup skill listing is the single startup item that is NOT re-injected;
+      only invoked skill bodies survive. Recognizing what's already loaded explains why /context
+      isn't empty on launch.
+  - id: cm-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      A user passes an explicit line range to `Read` (offset/limit) on a huge file and the requested
+      region is still too dense to fit, and they get an error. Separately, a plain `Read` of a huge
+      file (no offset/limit) returns content with a "PARTIAL view" notice instead of an error. What
+      single principle explains BOTH outcomes?
+    choices:
+      - id: a
+        text: >-
+          Both cases silently truncate when too large; the error and PARTIAL view are the same
+          mechanism.
+      - id: b
+        text: >-
+          When a read carries an explicit range and still exceeds the token limit it ERRORS (it does
+          not silently truncate); only a default whole-file read returns a PARTIAL view telling
+          Claude how to page further.
+      - id: c
+        text: Explicit-range reads always succeed; the PARTIAL view only appears for binary files.
+      - id: d
+        text: Both behaviors mean the file is corrupt and cannot be read.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The unifying rule: an explicit-range read that still overflows the token limit returns an
+      error (it does not silently truncate), forcing you to choose a smaller window, whereas a
+      default whole-file read returns the first page with a PARTIAL view notice explaining how to
+      continue via offset/limit. The durable point is fail-loud on explicit ranges vs.
+      guided-partial on whole-file reads.
+  - id: cm-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: free_form
+    prompt: >-
+      A developer reports: "I keep a long checklist of subtasks. When the conversation gets
+      summarized, raw chat messages get fuzzy but my to-do list survives almost intact. Why?"
+      Explain the mechanism, and name the built-in tool they should be using to maintain that list.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that compaction EXPLICITLY preserves pending tasks (along with intent,
+            errors/fixes, files modified, current work) while discarding verbatim outputs and
+            intermediate reasoning.
+        - id: c2
+          text: >-
+            Concludes a structured to-do list survives summarization better than raw conversation
+            because it is in the preserved category.
+        - id: c3
+          text: Names TodoWrite as the built-in tool for maintaining the structured to-do list.
+      referenceAnswer: >-
+        Compaction is selective: it explicitly preserves user intent, key concepts, files
+        examined/modified with important snippets, errors and their fixes, PENDING TASKS, and
+        current work — while discarding verbatim full tool outputs and intermediate reasoning. A
+        pending to-do list falls in the preserved category, so it survives summarization far better
+        than raw chat, which is exactly what the developer observes. They should maintain that list
+        with the built-in TodoWrite tool, which keeps a structured to-do list as working memory.
+      passThreshold: 0.6
+    guidance: >-
+      The "why" is that pending tasks are one of compaction's explicitly preserved items, unlike
+      verbatim chat. The "what to use" is TodoWrite, the built-in tool that maintains a structured
+      to-do list as working memory.
+  - id: cm-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: >-
+      A team upgrades to an Opus `[1m]` model variant (roughly 1,000,000-token context) specifically
+      to "stop worrying about context management." After a week, sessions still slow down and costs
+      rise sharply on big tasks. What is the most accurate analysis of why the upgrade did not solve
+      their problem?
+    choices:
+      - id: a
+        text: The 1M window disables compaction, so context now grows unbounded and crashes performance.
+      - id: b
+        text: >-
+          A bigger window reduces FORCED compaction but does not fix degradation-as-the-window-fills
+          or the cost that scales with context size; compaction still applies at 1M. Discipline
+          (specific prompts, fewer reads) is still required.
+      - id: c
+        text: The `[1m]` variant only raises the limit for output tokens, not input, so nothing changed.
+      - id: d
+        text: >-
+          1M context is unavailable on the model they are using, so they're not actually on the
+          larger window.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A 1M window (available on certain newer 1M-capable variants via `[1m]`) gives more room before
+      forced compaction, but token cost still scales with context size and Claude still degrades as
+      the window fills. Compaction works the same way at the larger limit. The judgment call is
+      paying for a bigger window versus keeping the conversation small — the upgrade is not a
+      substitute for discipline.
+  - id: cm-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: >-
+      A developer wants to AVOID being surprised by auto-compaction mid-task. They ask whether to
+      rely on running /context now and then, or to set up the status line to show context-window
+      usage. Analyze the difference between a continuous status-line indicator and the point-in-time
+      /context and /usage commands, and recommend how to combine them to manage context proactively.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the status line as a CONTINUOUS, always-visible indicator of context-window
+            usage, versus /context and /usage as point-in-time checks the user must run.
+        - id: c2
+          text: >-
+            Distinguishes /context (what is currently filling the window) from /usage (token usage
+            and cost), i.e. they answer different questions.
+        - id: c3
+          text: >-
+            Recommends combining them: watch the status line continuously to know WHEN to act, then
+            run /context to diagnose WHAT is filling the window and decide the action (clear,
+            compact, delegate).
+      referenceAnswer: >-
+        A status-line context indicator is continuous: once configured it always displays how full
+        the window is, so the developer notices pressure building without running anything. /context
+        and /usage are point-in-time commands they must invoke on demand, and they answer different
+        questions -- /context shows what is currently filling the window (so you can decide what to
+        trim), while /usage reports the session's token usage and cost. The proactive combination is
+        to keep the status line visible to know WHEN context is getting tight, then run /context to
+        diagnose WHAT is filling it and choose the right action (e.g. /clear for unrelated work,
+        /compact to keep going, or delegate a big read to a subagent), using /usage when the
+        question is cost rather than composition.
+      passThreshold: 0.6
+    guidance: >-
+      Proactive context management pairs a continuous signal with on-demand diagnostics: the status
+      line surfaces usage continuously (when to act), /context shows what is filling the window
+      (what to trim), and /usage reports token spend/cost. They are complementary, not
+      interchangeable.
+  - id: cm-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      A developer reasons: "Reading the same file twice is fine — Claude reads files fresh each call
+      so the second read is just cached and basically free, and besides, prompt caching covers it."
+      Pick the statement that correctly untangles what is true from what is a misconception.
+    choices:
+      - id: a
+        text: Fully correct — fresh reads are a free cache, so re-reading costs nothing.
+      - id: b
+        text: Both claims are false because Claude never re-reads files within a session.
+      - id: c
+        text: >-
+          "Fresh each call" is about CORRECTNESS (seeing external edits), not a free cache; a
+          re-read costs full tokens again and bloats context. Prompt caching targets stable repeated
+          content like the system prompt, not arbitrary re-reads of changing files.
+      - id: d
+        text: >-
+          Correct about caching, wrong about freshness — prompt caching makes any repeated read
+          free.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Two ideas are conflated. "Claude reads files fresh on each call" exists so it sees external
+      edits — a correctness guarantee, not a cost optimization; the re-read costs full tokens and
+      bloats context. Prompt caching reduces cost for repeated STABLE content (like the system
+      prompt), not ad-hoc re-reads of files. The "infinite exploration" anti-pattern (re-reading
+      hundreds of files) is what fills context.
+  - id: cm-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: free_form
+    prompt: >-
+      A developer says: "I never need to use the Read tool — I just look at files however I like and
+      then edit them." They then hit an Edit failure on a file they had only glanced at indirectly.
+      Explain the durable principle behind read-before-edit and what concretely satisfies it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the durable principle: Edit requires that the SPECIFIC file has been read in the
+            current conversation (and still matches disk).
+        - id: c2
+          text: >-
+            Explains that having seen other files, partial glances, or stale/changed reads do not
+            satisfy read-before-edit for the target file.
+        - id: c3
+          text: >-
+            Concludes the fix is to read the specific target file (e.g. with the Read tool)
+            immediately before editing it.
+      referenceAnswer: >-
+        Read-before-edit is a correctness guarantee: the Edit tool requires that the specific file
+        being edited has been read in the current conversation and that it still matches what is on
+        disk. Having looked at other files, or only glanced at part of this one, or relying on a
+        read that is now stale because the file changed, does not satisfy the requirement for the
+        target file. The fix is simply to read that specific file (e.g. with the Read tool) right
+        before editing it, so Claude is editing against its true current contents.
+      passThreshold: 0.6
+    guidance: >-
+      The durable point is just that Edit needs the specific target file read in-context and
+      matching disk; it is a correctness guarantee against blind/stale edits. The fix is always to
+      do a fresh read of the exact file before editing.
+  - id: cm-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: free_form
+    prompt: >-
+      A developer has an MCP-heavy setup and is deciding between loading all tool schemas upfront
+      versus deferring them. Explain the tradeoff: what the default deferred behavior loads, why it
+      is cheaper, and the cost of loading everything upfront. Frame your answer around the durable
+      load-on-demand principle rather than any specific flag value.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the default deferred behavior: only tool NAMES load upfront, and full schemas
+            load on demand via tool search when a task needs a specific tool.
+        - id: c2
+          text: >-
+            Explains why deferred is cheaper: it keeps the startup footprint to names, not every
+            full schema.
+        - id: c3
+          text: >-
+            Notes the alternative (loading all schemas upfront) trades a larger guaranteed startup
+            cost for not having to search later, which is wasteful when most tools go unused.
+      referenceAnswer: >-
+        By default MCP tool definitions are deferred: only the tool NAMES load into context upfront,
+        and a tool's full schema is fetched on demand via tool search when a task actually needs it.
+        That is cheaper because the startup footprint is just the names rather than every full
+        schema, which matters a lot for a server registering dozens of tools. Loading everything
+        upfront instead pays the full schema cost for all tools at session start whether or not they
+        are used — a larger guaranteed cost that is wasteful when most tools go untouched. The
+        durable principle is load-on-demand: pay for a schema when you need it, not before.
+      passThreshold: 0.6
+    guidance: >-
+      The durable concept is deferred/load-on-demand: names upfront, schemas fetched when needed.
+      That keeps the startup footprint small. Eagerly loading all schemas trades guaranteed upfront
+      cost for avoiding a search, which is a poor trade when most tools are never used.
+  - id: cm-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      A team must decide where to store three kinds of guidance: (1) "Always use 2-space indent"
+      (broad, always true); (2) "Our payment-flow gotchas" (detailed, only sometimes relevant); (3)
+      "Files under migrations/ must never be edited by hand" (file-path specific). They want each
+      reachable when needed without bloating every session OR being silently dropped after
+      compaction. What is the correct mapping?
+    choices:
+      - id: a
+        text: (1) CLAUDE.md; (2) a skill (loads on demand); (3) a `paths:` rule scoped to migrations/.
+      - id: b
+        text: (1) a skill; (2) CLAUDE.md; (3) auto memory.
+      - id: c
+        text: All three in CLAUDE.md, since only CLAUDE.md survives compaction reliably.
+      - id: d
+        text: (1) a `paths:` rule; (2) CLAUDE.md; (3) a skill.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Match altitude to mechanism: broad+persistent → CLAUDE.md (always loaded, survives
+      compaction); sometimes-relevant detail → skill (on demand, survives only if invoked,
+      truncated); file-path-specific → `paths:` rule (auto-loads with matching files, but lost on
+      compaction until re-triggered). Putting the payment gotchas in CLAUDE.md would bloat every
+      session; putting the indent rule in a `paths:` rule would drop it after compaction.
+  - id: cm-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A developer has been correcting Claude through three failed attempts at the same refactor; the
+      conversation is now full of the wrong approaches. They run /compact "Focus on what we've tried
+      so we don't repeat mistakes" and continue. Critique this move.
+    choices:
+      - id: a
+        text: >-
+          It is the wrong move: compaction keeps the polluted failed approaches in the summary;
+          after repeated failed corrections the better move is /clear plus a sharper prompt that
+          re-states the goal cleanly.
+      - id: b
+        text: >-
+          It is the correct move: /compact preserves the failed attempts so Claude learns from them
+          while freeing room to continue.
+      - id: c
+        text: >-
+          It is correct only if they also raise the context window to a larger 1M-token variant
+          first so nothing is lost.
+      - id: d
+        text: >-
+          It is wrong only because they should have used /rewind to undo the code changes; the
+          compaction itself is fine.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Compaction summarizes and carries forward the existing (polluted) trajectory, so it preserves
+      the very dead-ends that are confusing Claude. The docs advise that after about two failed
+      corrections you should /clear and re-prompt with a better framing, starting from clean context
+      rather than dragging the failed approaches into a summary.
+  - id: cm-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      A team must locate which of ~400 files defines a particular error string and then read that
+      one function. An engineer proposes reading every candidate file in the main session "to be
+      thorough." Evaluate this against the better-calibrated approach.
+    choices:
+      - id: a
+        text: Reading all files inline is best because Claude needs full context to be accurate.
+      - id: b
+        text: >-
+          Use Grep to find the matching file(s) cheaply, then a targeted Read with offset/limit on
+          the one function; reading all 400 files inline is the "infinite exploration" anti-pattern
+          that floods the main context.
+      - id: c
+        text: >-
+          Always spawn a subagent regardless of scope, since subagents are unconditionally cheaper
+          than any inline read.
+      - id: d
+        text: >-
+          Reading all files is fine because re-reads are cached, so the token cost is paid only
+          once.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The strategic-reads tradeoff: Grep (ripgrep, returns matching paths cheaply) narrows the
+      search, then a scoped Read fetches only what is needed. Reading hundreds of files inline is
+      the infinite-exploration anti-pattern that fills the window. Subagents help when MANY files
+      must be scanned, but they re-pay startup costs, so they are not unconditionally cheapest; and
+      re-reads are not free.
+  - id: cm-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: >-
+      An author writes a project rule that must survive compaction so Claude always honors a coding
+      convention. They are deciding between (1) an unscoped rule / project-root CLAUDE.md entry and
+      (2) a rule with `paths:` frontmatter matching the relevant source files. Which placement is
+      sound and why?
+    choices:
+      - id: a
+        text: >-
+          Use the `paths:` rule; path-scoped rules are re-injected after every compaction, so it is
+          the most durable choice.
+      - id: b
+        text: Either is equally durable; compaction re-injects all rules from disk regardless of scope.
+      - id: c
+        text: >-
+          Use the unscoped rule / project-root CLAUDE.md; those are re-injected from disk after
+          compaction, whereas a `paths:` rule is lost until a matching file is read again.
+      - id: d
+        text: >-
+          Neither survives compaction; only auto memory persists, so the convention belongs in
+          MEMORY.md.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      After compaction, project-root CLAUDE.md and unscoped rules are re-injected from disk, but
+      rules carrying `paths:` frontmatter are dropped until a matching file is read again. For an
+      always-on convention that must outlive compaction, the unscoped/project-root placement is
+      correct; a path-scoped rule would silently vanish mid-session.
+  - id: cm-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 501
+    type: multiple_choice
+    prompt: >-
+      A skill author front-loads the SKILL.md with a long anecdote and puts the critical
+      step-by-step instructions at the very bottom. A reviewer flags this as risky specifically for
+      behavior across compaction. Why is the reviewer right?
+    choices:
+      - id: a
+        text: >-
+          Because skills are never re-injected after compaction, so the order is irrelevant and the
+          file should be deleted.
+      - id: b
+        text: >-
+          Because invoked skill bodies are re-injected after compaction but truncated, keeping the
+          START of the file; instructions buried at the bottom can be cut, so critical steps should
+          be front-loaded.
+      - id: c
+        text: >-
+          Because compaction keeps the END of the file, so the anecdote at the top is what gets
+          dropped and the steps are safe.
+      - id: d
+        text: >-
+          Because skill descriptions are re-injected verbatim and would conflict with the body
+          order.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Invoked skills are re-injected after compaction but truncated, and truncation keeps the start
+      of the file. Burying the actionable steps at the bottom means they can be truncated away after
+      a compaction. Front-loading the key instructions in SKILL.md is the design-time mitigation.
+  - id: cm-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: >-
+      A long, productive debugging session is deep into one intricate problem; the conversation
+      history (errors seen, fixes tried, code examined) is genuinely valuable, and the window is
+      moderately full but not near the limit. A teammate insists on running /clear "to keep context
+      lean." Evaluate.
+    choices:
+      - id: a
+        text: /clear is always good hygiene; lean context never hurts, so the teammate is right.
+      - id: b
+        text: >-
+          The teammate is wrong here: when deep in one complex problem whose history is valuable,
+          aggressively clearing destroys useful state; sometimes letting context accumulate is the
+          correct call.
+      - id: c
+        text: /clear is fine because it keeps the same conversation and only trims tool outputs.
+      - id: d
+        text: They should /compact instead, which is identical to /clear but cheaper.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Context management is not "always minimize." The docs note that when you are deep in a single
+      complex problem where the conversation history is genuinely valuable, you should sometimes let
+      context accumulate; clearing then throws away hard-won state. /clear starts a brand-new
+      conversation (it does not merely trim outputs), and it is not interchangeable with /compact.
+  - id: cm-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: free_form
+    prompt: >-
+      A developer claims: "Switching from an MCP server to the equivalent CLI tool (e.g., the `gh`
+      CLI instead of a GitHub MCP server) saves no context because both expose the same operations."
+      Evaluate this claim and explain the context-cost reasoning, including how MCP's
+      deferred/load-on-demand tool loading changes (but does not eliminate) the comparison.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the claim is wrong: CLI tools add no per-tool listing/schema to context, whereas
+            MCP servers add per-tool definitions, so CLI tools are more context-efficient.
+        - id: c2
+          text: >-
+            Explains that even with deferred tool definitions (names only by default, schemas loaded
+            on demand via tool search), MCP still consumes some context for the tool names.
+        - id: c3
+          text: >-
+            Concludes the net judgment: even at best MCP pays for the names while a CLI pays nothing
+            per tool, so the docs recommend preferring CLI tools.
+      referenceAnswer: >-
+        The claim is wrong. CLI tools like `gh`, `aws`, or `gcloud` are invoked through Bash and add
+        no per-tool listing or schema to the context, so they cost essentially nothing until used.
+        MCP servers register tools that consume context: by default tool definitions are deferred so
+        only the tool NAMES load and full schemas load on demand via tool search, which greatly
+        reduces the footprint but does not make it zero. So even at best MCP pays for the names,
+        while the CLI pays nothing per tool, which is why the docs recommend preferring CLI tools
+        for context efficiency.
+      passThreshold: 0.6
+    guidance: >-
+      MCP servers always add at least per-tool listing to context; CLI tools add none because they
+      run via Bash. Deferred definitions and tool search shrink MCP's footprint to names-only by
+      default, but names still cost tokens. The net judgment: prefer CLI tools when an equivalent
+      exists.
+  - id: cm-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
+    type: multiple_choice
+    prompt: >-
+      A planner wants to read one targeted slice of a 50,000-line file. They write a Read call with
+      `offset: 10000, limit: 8000` and assume that if the slice is still too big, Read will just
+      return the first chunk like a normal large read. Critique the assumption.
+    choices:
+      - id: a
+        text: >-
+          Correct assumption: any oversized Read returns a PARTIAL view with instructions to page
+          further.
+      - id: b
+        text: >-
+          Flawed: a Read that passes an explicit offset or limit and still exceeds the token limit
+          returns an ERROR, not a PARTIAL view; only a default whole-file read returns the PARTIAL
+          view. The slice must be sized smaller.
+      - id: c
+        text: Flawed only because offset must be a multiple of limit; otherwise it truncates silently.
+      - id: d
+        text: Correct, because limit caps the output to exactly 8000 lines regardless of token size.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The PARTIAL-view behavior is reserved for a default whole-file read that overflows. When you
+      pass an explicit offset/limit and the requested region still exceeds the token limit, Read
+      errors out rather than silently truncating, forcing you to choose a smaller window. Assuming
+      graceful truncation here would break the plan.
+  - id: cm-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      An engineer needs Claude to extract one error pattern from a very long deployment PDF. Their
+      plan is to read the entire document in one shot "to get it all and avoid re-reads," then scan
+      it. Evaluate this design against a sounder, strategic-reading approach.
+    choices:
+      - id: a
+        text: 'Sound: one big read minimizes round-trips and is the most context-efficient option.'
+      - id: b
+        text: Sound only if the PDF is small, in which case strategic reading never matters.
+      - id: c
+        text: >-
+          Unsound only because images in the PDF are downscaled; pulling the whole document is
+          otherwise fine.
+      - id: d
+        text: >-
+          Unsound: dumping a long PDF wholesale floods context to find one pattern; the strategic
+          approach is to preprocess/narrow first (e.g. grep or target the likely page ranges) so
+          only the relevant slice enters context, reading in bounded ranges rather than all at once.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Dumping a long PDF wholesale into context to find one pattern is the opposite of strategic
+      reading. Long PDFs are read in bounded page ranges anyway, but the deeper point is to narrow
+      first — preprocess or target the likely ranges — so only the relevant slice enters context,
+      instead of pulling hundreds of pages to extract one pattern.
+  - id: cm-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      Two engineers debate delegating a code-exploration task to a subagent. One argues "delegating
+      always saves context, so delegate everything." The other says "for a tiny two-file read,
+      inline is better." Weigh both positions and state when each is right, citing the context
+      mechanics of subagents.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains subagents run in a separate/fresh context window and only their final summary
+            returns to the parent, so they isolate large reads from the main context.
+        - id: c2
+          text: >-
+            Explains the offsetting cost: a subagent re-pays startup (its own CLAUDE.md, MCP,
+            skills) and you lose its intermediate reasoning, so it is not free.
+        - id: c3
+          text: >-
+            Concludes delegation wins when many files must be scanned (large savings), while inline
+            can be cheaper for a small, tightly-scoped read where the startup overhead dominates.
+      referenceAnswer: >-
+        Neither absolute is right. Subagents run in their own fresh context window; their file reads
+        never touch the main context and only a small final summary (plus metadata) returns, so for
+        scanning many files the savings are large -- e.g., reading thousands of tokens but returning
+        a few hundred. But a subagent re-pays startup cost: it loads its own copy of CLAUDE.md, MCP
+        servers, and skills against its own budget, and you lose the intermediate reasoning it
+        discarded. So "delegate everything" is wrong for a tiny two-file read, where the startup
+        overhead can exceed the inline read it replaces. The judgment: delegate when many files must
+        be scanned or the reads are large and disposable; inline when the read is small and tightly
+        scoped.
+      passThreshold: 0.6
+    guidance: >-
+      The whole point of subagents is context isolation -- big reads stay out of the main window and
+      only a summary returns. But that isolation costs a fresh startup load (CLAUDE.md, MCP, skills)
+      and the loss of intermediate reasoning. So the right call depends on scope: many/large reads
+      favor delegation, tiny scoped reads favor inline.
+  - id: cm-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on the larger 1M-token (`[1m]`) context variant and declares "context
+      management is now solved; we never need to /compact or /clear again." Evaluate this
+      conclusion.
+    choices:
+      - id: a
+        text: 'Correct: a 1M window removes degradation and the per-token cost concern entirely.'
+      - id: b
+        text: >-
+          Overstated: the larger window reduces forced compaction but does not eliminate
+          degradation-as-it-fills or token cost, and compaction still applies at 1M; discipline
+          still matters.
+      - id: c
+        text: Correct, because compaction is disabled on `[1m]` variants by design.
+      - id: d
+        text: >-
+          Overstated only because 1M context is unavailable on every current model, so the variant
+          cannot be used.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A 1M-token window (available on certain newer 1M-capable `[1m]` variants) buys headroom
+      against forced compaction, but performance still degrades as the window fills, the per-token
+      cost still scales, and compaction works the same way at 1M. The bigger window is a buffer, not
+      a substitute for keeping the conversation focused.
+  - id: cm-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      Critique this content-placement design: a team puts a file-path-specific lint convention (only
+      relevant to files under `src/payments/`) into the always-loaded project-root CLAUDE.md, and
+      puts a universal, always-applicable security rule into a skill that loads only on demand.
+      Explain what goes wrong with EACH placement and give the correct placement for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that putting the narrow path-specific convention in always-loaded CLAUDE.md
+            wastes tokens every session (and bloats CLAUDE.md), and that it belongs in a
+            `paths:`-scoped rule that auto-loads with matching files.
+        - id: c2
+          text: >-
+            Identifies that putting an always-applicable security rule in an on-demand skill risks
+            it not being loaded (and being truncated/lost across compaction unless invoked), so it
+            belongs in CLAUDE.md / an unscoped rule that is always present and survives compaction.
+        - id: c3
+          text: >-
+            Frames the general principle: persistent-but-broad to CLAUDE.md/unscoped rules;
+            sometimes-relevant to skills; file-path-specific to `paths:` rules.
+      referenceAnswer: >-
+        Both placements are backwards. The payments-only lint convention lives in always-loaded
+        CLAUDE.md, so it burns tokens every single session even when no payments file is touched,
+        and it bloats CLAUDE.md (risking other rules getting lost in the noise); it should instead
+        be a `paths:`-scoped rule that auto-loads only alongside matching files. The universal
+        security rule is hidden in an on-demand skill, so it may never load for a given task, and
+        even if invoked it is subject to skill truncation and is not re-injected unless invoked
+        again after compaction; an always-applicable rule belongs in CLAUDE.md or an unscoped rule,
+        which is always present and re-injected after compaction. The principle:
+        broad-and-persistent to CLAUDE.md/unscoped rules, sometimes-relevant to skills,
+        file-path-specific to `paths:` rules.
+      passThreshold: 0.6
+    guidance: >-
+      Mis-placing content either wastes tokens every session (narrow content in always-loaded
+      CLAUDE.md) or silently fails to apply (always-on content in an on-demand, truncatable skill).
+      Match the content's scope to the mechanism: persistent-broad to CLAUDE.md/unscoped rules,
+      sometimes-relevant to skills, path-specific to `paths:` rules.
+  - id: cm-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A developer is about to switch from a finished auth task to an unrelated, large refactor in a
+      different module. They reason: "I'll /compact so I keep a summary of the auth work just in
+      case." Critique the reasoning relative to the better choice.
+    choices:
+      - id: a
+        text: >-
+          Weak: for an UNRELATED next task the auth context is pure cost and distraction; /clear
+          (which starts a fresh conversation while keeping CLAUDE.md, and leaves the old chat in
+          /resume) is the better choice. /compact is for staying on the SAME task while the window
+          fills.
+      - id: b
+        text: 'Sound: compacting always beats clearing because you never fully lose prior context.'
+      - id: c
+        text: Weak only because /compact deletes CLAUDE.md, so they would lose project memory.
+      - id: d
+        text: >-
+          Sound, because /clear would permanently delete the auth conversation with no way to
+          recover it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The /clear-vs-/compact decision turns on relatedness. For unrelated new work, carrying an auth
+      summary forward is dead weight that distracts; /clear starts a clean conversation (keeping
+      CLAUDE.md, and the old conversation remains retrievable via /resume). /compact is the right
+      tool when you are continuing the SAME task and the window is filling.
+  - id: cm-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      A reviewer reads a long project CLAUDE.md packed with rarely-relevant build trivia and argues
+      "it is fine -- it is only a few thousand tokens, and tokens are cheap." Evaluate the strongest
+      counter-argument.
+    choices:
+      - id: a
+        text: There is no counter-argument; CLAUDE.md size is irrelevant since it is cached.
+      - id: b
+        text: >-
+          The cost is not just tokens: an over-long CLAUDE.md causes important rules to get lost in
+          the noise so Claude IGNORES them, and it loads every session; rarely-relevant detail
+          belongs in on-demand skills, keeping CLAUDE.md focused and lean.
+      - id: c
+        text: >-
+          The only problem is that CLAUDE.md is not re-injected after compaction, so the rules
+          vanish.
+      - id: d
+        text: >-
+          The reviewer is right because CLAUDE.md content does not count against the context window
+          at all.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The docs warn that a bloated CLAUDE.md does active harm beyond token cost: important rules get
+      lost in the noise and Claude ignores them. It also loads every session. The fix is to keep
+      CLAUDE.md focused and lean and move sometimes-relevant detail into skills that load on demand.
+      (CLAUDE.md does count toward context and IS re-injected after compaction.)
+  - id: cm-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 491
+    type: multiple_choice
+    prompt: >-
+      To find one function quickly in a large repo, three approaches are on the table: (A) Read
+      whole files one by one until found, (B) Grep for the symbol then Read with offset/limit at the
+      hit, (C) spawn a subagent to scan and report. For a NEEDLE-in-one-or-two-files lookup, which
+      judgment is best?
+    choices:
+      - id: a
+        text: A, because whole-file reads guarantee Claude sees surrounding code.
+      - id: b
+        text: C, because subagents are always cheapest regardless of how many files are involved.
+      - id: c
+        text: >-
+          B is best for a tight needle lookup: Grep cheaply returns the matching path, then a
+          targeted Read fetches only the function; a subagent is overkill here and re-pays startup,
+          and whole-file reads waste context.
+      - id: d
+        text: Any of the three is equivalent in cost because reads are cached after the first.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Choosing among Grep, targeted Read, and subagent is the core strategic-reads tradeoff. For a
+      needle in one or two files, Grep-then-scoped-Read is cheapest. Subagents shine when MANY files
+      must be scanned (they isolate the bulk reads) but re-pay startup, so they are overkill for a
+      tiny lookup; and whole-file reads are the most wasteful.
+  - id: cm-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: >-
+      A developer says "I rely on a raw chat scratchpad as Claude's working memory, and I trust it
+      survives summarization." Critique both halves of this statement: which built-in tool is
+      designed to hold that working memory instead, and why is a structured to-do list more
+      resilient than a raw chat scratchpad across compaction?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes that a built-in structured to-do list (maintained via TodoWrite) is the intended
+            working-memory mechanism, not a raw chat scratchpad.
+        - id: c2
+          text: >-
+            Affirms that pending tasks are among the items compaction explicitly preserves, so a
+            structured to-do list survives summarization.
+        - id: c3
+          text: >-
+            Explains why a to-do list outlasts raw conversation: compaction discards verbatim tool
+            outputs and intermediate reasoning but preserves pending tasks/intent, so a structured
+            list survives better.
+      referenceAnswer: >-
+        The first half is off: a raw chat scratchpad is the wrong place for working memory -- the
+        intended mechanism is a structured to-do list maintained through the built-in TodoWrite
+        tool. The trust in survival is well-placed only if the plan is encoded as structured tasks:
+        pending tasks are among the items compaction explicitly preserves, alongside user intent,
+        key concepts, and how errors were fixed. That is exactly why a structured to-do list is more
+        resilient than a raw chat scratchpad -- compaction throws away verbatim tool outputs and
+        intermediate reasoning, so a loose chat scratchpad gets condensed or dropped while the
+        structured to-do list survives summarization.
+      passThreshold: 0.6
+    guidance: >-
+      Two things: working memory belongs in a structured to-do list (via TodoWrite), not a raw chat
+      scratchpad, and the resilience intuition is right only for structured tasks. Compaction
+      preserves pending tasks while discarding verbatim outputs and intermediate reasoning, so
+      encoding the plan as structured tasks is the durable working-memory pattern.
+  - id: cm-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: >-
+      During a session Claude runs a Bash command producing a 40,000-line log, then summarizes it;
+      the log instantly refills context, so it summarizes again, and again. A developer expects
+      Claude to keep auto-compacting until it fits. Evaluate that expectation against actual
+      behavior.
+    choices:
+      - id: a
+        text: 'Correct: Claude loops compaction indefinitely until the content finally fits.'
+      - id: b
+        text: >-
+          Wrong: when a single output is so large that context refills immediately after each
+          summary, Claude stops auto-compacting after a few attempts and surfaces a thrashing error
+          rather than looping; the real fix is to avoid pulling the whole log in (e.g., grep it).
+      - id: c
+        text: >-
+          Correct, because auto-compaction clears the conversation entirely each pass, so it always
+          eventually fits.
+      - id: d
+        text: Wrong, because auto-compaction is disabled whenever Bash output exceeds 30,000 characters.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Auto-compaction is not an infinite loop. If one file or output is large enough that context
+      refills right after each summary, Claude Code stops after a few attempts and shows a thrashing
+      error instead of spinning. The correct remedy is upstream: preprocess or grep the log so only
+      the relevant slice enters context.
+  - id: cm-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      A team is designing persistent compaction-steering guidance in their CLAUDE.md so that every
+      compaction preserves the right things. Critique the tradeoff in how much they specify to keep,
+      and explain why an overly aggressive "keep everything important" instruction can partially
+      defeat the purpose of compaction.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the upside: focused persistent compaction-steering guidance (or /compact focus
+            text) preserves what the team chooses, versus what the automatic pass guesses.
+        - id: c2
+          text: >-
+            Explains the downside: over-specifying what to keep leaves little room actually freed,
+            so compaction frees less context and partially defeats its own purpose.
+        - id: c3
+          text: >-
+            Recommends a balanced design: name the few highest-value items to preserve, and let the
+            rest (verbatim outputs, intermediate reasoning) be summarized away.
+      referenceAnswer: >-
+        Persistent compaction-steering guidance in CLAUDE.md (or focus text on /compact) is valuable
+        because it preserves what the TEAM decides matters instead of leaving it to the automatic
+        pass's guess. But there is a tension: the more you instruct it to keep, the less context
+        compaction can actually free, so an aggressive "keep everything important" instruction can
+        leave the window nearly as full as before -- partially defeating the point of compacting.
+        The balanced design is to name only the few highest-value items (e.g., the current task
+        contract, key decisions, unresolved errors) and deliberately let the bulky, low-value
+        material -- verbatim tool outputs and intermediate reasoning -- be summarized away.
+      passThreshold: 0.6
+    guidance: >-
+      Compaction steering trades control for headroom. Specifying what to keep beats letting the
+      auto pass guess, but keep too much and you free too little, so compaction barely helps. Name
+      only the highest-value items and let verbatim outputs and intermediate reasoning go.
+  - id: cm-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: >-
+      After a /compact, a developer notices Claude no longer honors a convention that lives in a
+      subdirectory's nested CLAUDE.md and stops respecting a `paths:`-scoped rule. They file a bug
+      claiming compaction is broken. Evaluate this claim.
+    choices:
+      - id: a
+        text: 'Valid bug: all CLAUDE.md files and all rules must be re-injected after compaction.'
+      - id: b
+        text: >-
+          Not a bug, because compaction never affects rules at all -- the developer must have edited
+          the files.
+      - id: c
+        text: Valid bug, but only for the nested CLAUDE.md; path-scoped rules are always re-injected.
+      - id: d
+        text: >-
+          Not a bug: nested (subdirectory) CLAUDE.md and `paths:`-scoped rules are intentionally
+          LOST after compaction until a matching file in that location is read again; re-reading
+          such a file restores them.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      This is expected behavior, not a defect. Only project-root CLAUDE.md, unscoped rules, and auto
+      memory are re-injected after compaction. Nested CLAUDE.md and rules with `paths:` frontmatter
+      are dropped until a file matching them is read again, which re-triggers their injection.
+      Reading a file in that subdirectory restores the convention.
+  - id: cm-500-ff-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      A developer plans to /compact a session because they will "definitely need the exact earlier
+      code Claude wrote in step 3 later." Evaluate the risk in this plan given what compaction does
+      and does not preserve verbatim, and recommend a safer approach if exact recall matters.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that compaction discards verbatim full tool outputs and intermediate detail,
+            preserving only a summary (intent, key concepts, important snippets, errors/fixes,
+            pending work), so exact earlier code is at risk of being lost or paraphrased.
+        - id: c2
+          text: Concludes compaction is risky when exact earlier code/output is needed.
+        - id: c3
+          text: >-
+            Recommends a safer alternative such as re-reading the code from disk when needed,
+            capturing it to a file/checkpoint before compacting, or using /rewind to a checkpoint
+            rather than relying on the summary.
+      referenceAnswer: >-
+        The plan is risky. Compaction keeps a SUMMARY -- user intent, key technical concepts,
+        important code snippets, errors and their fixes, and pending tasks -- but it discards
+        verbatim full tool outputs and intermediate reasoning. So "the exact code from step 3" may
+        be summarized or dropped rather than kept character-for-character. If exact recall matters,
+        do not depend on the summary: re-read the code from disk when you need it (it is the source
+        of truth), save it to a file or capture a checkpoint before compacting, or use /rewind to a
+        checkpoint instead of trusting that compaction preserved the literal text.
+      passThreshold: 0.6
+    guidance: >-
+      Compaction preserves meaning, not bytes: verbatim tool outputs and intermediate detail are
+      discarded while a summary (intent, key snippets, errors/fixes, pending work) is kept. When you
+      will need exact earlier code, lean on durable sources -- re-read from disk, capture to a file,
+      or checkpoint via /rewind -- rather than the lossy summary.
+  - id: cm-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: >-
+      A team wants every new session to know the project's coding standards without paying to
+      re-read docs, and assumes "skill descriptions load at startup and are re-injected after
+      compaction, so putting the standards as a skill description guarantees they are always
+      present." Evaluate this assumption.
+    choices:
+      - id: a
+        text: >-
+          Flawed: skill descriptions (the startup listing) DO load at startup but are the one
+          startup item NOT re-injected after compaction -- only INVOKED skill bodies are preserved
+          (and truncated). For always-present standards, use CLAUDE.md/unscoped rules, which are
+          re-injected.
+      - id: b
+        text: >-
+          Sound: skill descriptions are re-injected after compaction, so the standards are always
+          present.
+      - id: c
+        text: >-
+          Sound, but only because skill descriptions count as auto memory after the first
+          compaction.
+      - id: d
+        text: >-
+          Flawed only because skill descriptions never load until a skill is invoked, even at
+          startup.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Skill descriptions load at startup, but the startup skill LISTING is precisely the one startup
+      item that is NOT re-injected after compaction; only the bodies of skills that were actually
+      invoked are re-injected (and truncated). So a skill description cannot guarantee
+      always-present standards; CLAUDE.md or an unscoped rule, which is re-injected from disk after
+      compaction, is the right home.

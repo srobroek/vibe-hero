@@ -1,0 +1,2997 @@
+# Topic: hooks (claude-code)
+# Claude Code lifecycle hooks (PreToolUse, PostToolUse, Stop, SessionStart) — JSON I/O over stdin/stdout, additionalContext, exit codes, blocking vs advisory, loop guards.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: hooks
+class:
+  kind: tool
+  tool: claude-code
+title: Hooks
+summary: >-
+  Claude Code lifecycle hooks (PreToolUse, PostToolUse, Stop, SessionStart) — JSON I/O over
+  stdin/stdout, additionalContext, exit codes, blocking vs advisory, loop guards.
+triggerSignals: []
+items:
+  - id: h-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: What is a Claude Code hook?
+    choices:
+      - id: a
+        text: >-
+          A user-defined command that runs automatically at a fixed point in Claude Code's
+          lifecycle, giving deterministic control instead of relying on the model to choose to act
+      - id: b
+        text: A natural-language instruction in CLAUDE.md that Claude is asked to follow
+      - id: c
+        text: A plugin that adds new slash commands to the conversation
+      - id: d
+        text: A keyboard shortcut that interrupts Claude mid-response
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hooks are user-defined commands that fire at fixed lifecycle points (such as before or after a
+      tool call), so the behavior is deterministic rather than dependent on the model deciding to
+      act. CLAUDE.md instructions are advisory and model-interpreted; slash commands and shortcuts
+      are unrelated features.
+  - id: h-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: When does the PreToolUse hook event fire?
+    choices:
+      - id: a
+        text: After a tool call completes successfully
+      - id: b
+        text: Before a tool call executes, and it can block that call
+      - id: c
+        text: Only once, when the session first starts
+      - id: d
+        text: When the user submits a prompt, before Claude reads it
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      PreToolUse fires before a tool call executes and is one of the events that can block the call.
+      PostToolUse runs after a tool succeeds, SessionStart fires at session begin/resume, and
+      UserPromptSubmit fires on prompt submission.
+  - id: h-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: What exit code must a hook return to block the action it is gating?
+    choices:
+      - id: a
+        text: Exit code 2
+      - id: b
+        text: Exit code 1
+      - id: c
+        text: Exit code 0
+      - id: d
+        text: Any non-zero exit code
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Exit code 2 is the blocking signal, and its stderr is fed back to Claude as feedback. This
+      deliberately breaks Unix convention: exit 1 is treated as a non-blocking error, and any other
+      non-zero code is a non-blocking error too. Only 2 blocks.
+  - id: h-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: How does a hook receive its event data when it runs?
+    choices:
+      - id: a
+        text: As command-line arguments passed positionally
+      - id: b
+        text: As environment variables named after each field
+      - id: c
+        text: As a JSON object on standard input (stdin)
+      - id: d
+        text: By reading a file whose path is hardcoded in settings.json
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Hooks receive event data as a JSON object on stdin and communicate back via stdout, stderr,
+      and the exit code. Some environment variables exist (like CLAUDE_PROJECT_DIR), but the event
+      payload itself arrives on stdin, not as arguments or env vars.
+  - id: h-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: free_form
+    prompt: >-
+      Name the three output channels a command hook uses to communicate back to Claude Code after it
+      receives its JSON input.
+    rubric:
+      criteria:
+        - id: c1
+          text: States standard output (stdout)
+        - id: c2
+          text: States standard error (stderr)
+        - id: c3
+          text: States the exit code
+      referenceAnswer: >-
+        A command hook communicates back through stdout, stderr, and its exit code. It has no other
+        channel; it cannot trigger slash commands or tool calls.
+      passThreshold: 0.6
+    guidance: >-
+      Command hooks are limited to stdout, stderr, and the exit code. There is no side channel: a
+      hook cannot invoke a slash command or a tool. Structured control comes from printing JSON to
+      stdout with exit 0, and feedback on a block comes from stderr with exit 2.
+  - id: h-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: When does the Stop hook event fire?
+    choices:
+      - id: a
+        text: Only when the entire task is fully complete
+      - id: b
+        text: When the user presses the interrupt key
+      - id: c
+        text: When the session is closed or ended
+      - id: d
+        text: Every time Claude finishes responding (each turn end), not only at final task completion
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Stop fires whenever Claude finishes responding, which is every turn end, not just at final
+      completion. It does not fire on user interrupts. The common misconception is that Stop means
+      "task done"; it actually means "this response is done."
+  - id: h-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: >-
+      In a PreToolUse or PostToolUse hook's JSON input, which field carries the name of the tool
+      being called?
+    choices:
+      - id: a
+        text: hook_event_name
+      - id: b
+        text: tool_name
+      - id: c
+        text: command
+      - id: d
+        text: session_id
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Tool events add tool_name (and tool_input) to the common input fields. hook_event_name
+      identifies the event itself, session_id identifies the session, and the command string lives
+      under tool_input.command for Bash calls.
+  - id: h-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: >-
+      Under which top-level key in settings.json are hooks configured, and what is the order of
+      nesting inside it (from that key down to an individual hook)?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the top-level "hooks" key
+        - id: c2
+          text: States it nests by event name (a value that is an array of matcher groups)
+        - id: c3
+          text: States each group has a matcher plus a hooks array of individual hook objects
+      referenceAnswer: >-
+        Hooks live under the top-level "hooks" key. Inside it you nest by event name (e.g.
+        PreToolUse), whose value is an array of group objects. Each group object has a matcher and a
+        hooks array, and each entry in that array is an individual hook object with a type.
+      passThreshold: 0.6
+    guidance: >-
+      The nesting is hooks -> EventName (array) -> group object with matcher + hooks array ->
+      individual hook objects, each with a type. Getting the levels right matters because a
+      misplaced matcher or array silently stops the hook from firing. There is no "events",
+      "triggers", or "lifecycle" key.
+  - id: h-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: >-
+      A Stop hook that always blocks (exit 2) every time Claude finishes responding causes a
+      problem. Name the problem, and state what the hook should do instead so Claude can eventually
+      stop.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a Stop hook which always blocks creates a continue loop (Claude is forced to
+            keep going and never stops)
+        - id: c2
+          text: >-
+            States the hook should stop blocking once no further progress is possible, e.g. return
+            additionalContext feedback or exit 0 to let Claude stop
+      referenceAnswer: >-
+        A Stop hook that blocks on every turn creates a continue loop: each block forces Claude to
+        keep working, which finishes another turn, which the hook blocks again, indefinitely. To
+        avoid this, the hook must stop blocking once it has nothing actionable left, for example by
+        returning its message as additionalContext feedback (rather than a block) or simply exiting
+        0 so Claude is allowed to stop.
+      passThreshold: 0.6
+    guidance: >-
+      The durable principle: a Stop hook is the one place an unconditional block is dangerous,
+      because blocking the stop forces another turn, which triggers the hook again. A well-behaved
+      Stop hook blocks only while real progress is still possible and otherwise exits 0 (or surfaces
+      advice via additionalContext) so the turn can end.
+  - id: h-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: What does the matcher value of "*" (or an empty/omitted matcher) mean for a hook event?
+    choices:
+      - id: a
+        text: Match nothing, effectively disabling the hook
+      - id: b
+        text: Match only tool calls whose name literally contains an asterisk
+      - id: c
+        text: Match all occurrences of the event
+      - id: d
+        text: Match only the Bash tool
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A matcher of "*", an empty string, or an omitted matcher all mean "match every occurrence."
+      Plain alphanumeric strings (and lists like Edit|Write) are exact matches, and only other
+      characters trigger regex evaluation.
+  - id: h-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: What can a SessionEnd hook do when it fires as a Claude Code session terminates?
+    choices:
+      - id: a
+        text: It can block the session from ending until the user confirms
+      - id: b
+        text: It can run cleanup or logging, but it cannot block the session from ending
+      - id: c
+        text: It can roll back every file change made during the session
+      - id: d
+        text: It can inject additionalContext that the next session automatically reads
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      SessionEnd fires when a session terminates and is meant for cleanup or logging (for example,
+      flushing a log or saving state); it cannot block the shutdown. Blocking belongs to events that
+      fire before an action (PreToolUse, PreCompact). It does not undo file changes, and there is no
+      cross-session additionalContext channel.
+  - id: h-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: Which environment variable points a hook at the directory where a plugin is installed?
+    choices:
+      - id: a
+        text: CLAUDE_PROJECT_DIR
+      - id: b
+        text: CLAUDE_PLUGIN_ROOT
+      - id: c
+        text: PLUGIN_HOME
+      - id: d
+        text: CLAUDE_ENV_FILE
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      CLAUDE_PLUGIN_ROOT (referenced as ${CLAUDE_PLUGIN_ROOT}) locates a plugin's install directory
+      so bundled scripts work regardless of where the plugin lives. CLAUDE_PROJECT_DIR is the
+      project root, and CLAUDE_ENV_FILE is a preamble env file path; PLUGIN_HOME is not a real
+      variable.
+  - id: h-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: multiple_choice
+    prompt: >-
+      For SessionStart and UserPromptSubmit hooks that exit 0, what happens to text printed on
+      stdout?
+    choices:
+      - id: a
+        text: It is shown only to the user and never seen by Claude
+      - id: b
+        text: It is discarded entirely
+      - id: c
+        text: It is injected into Claude's context
+      - id: d
+        text: It is written to the debug log only
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For SessionStart and UserPromptSubmit (and UserPromptExpansion), stdout on exit 0 is injected
+      into Claude's context, which is how these hooks add information. For most other events, plain
+      stdout on exit 0 is not surfaced to Claude as context.
+  - id: h-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: free_form
+    prompt: >-
+      What is the difference between the PostToolUse and PreToolUse events with respect to when they
+      fire relative to a tool call?
+    rubric:
+      criteria:
+        - id: c1
+          text: States PreToolUse fires before the tool call executes
+        - id: c2
+          text: States PostToolUse fires after the tool call succeeds (runs)
+      referenceAnswer: >-
+        PreToolUse fires before the tool call executes and can block it. PostToolUse fires after the
+        tool call has succeeded; because the action has already happened, it cannot undo it.
+      passThreshold: 0.6
+    guidance: >-
+      The names map directly to timing: Pre fires before execution (and can block), Post fires after
+      a successful run. PostToolUse cannot prevent or undo the action; its block decision only feeds
+      the model feedback for the next step.
+  - id: h-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: >-
+      A PreToolUse hook can set hookSpecificOutput.permissionDecision. Name the value that blocks
+      the tool call and the value that skips the interactive permission prompt, and state in one
+      phrase what each one does.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies "deny" as the value that blocks the tool call
+        - id: c2
+          text: Identifies "allow" as the value that skips the interactive permission prompt
+      referenceAnswer: >-
+        "deny" blocks the tool call (paired with a permissionDecisionReason explaining why), and
+        "allow" skips the interactive permission prompt so the call proceeds without asking the
+        user. The full set of values also includes "ask" (escalate to the human) and "defer" (let
+        the normal permission flow decide), but deny and allow are the two that directly change the
+        outcome.
+      passThreshold: 0.6
+    guidance: >-
+      PreToolUse permissionDecision drives the tool-call decision: deny blocks the call, allow skips
+      the prompt (but cannot override a deny rule), ask escalates to the human, and defer hands back
+      to the normal permission flow. These are distinct from the top-level decision:"block" used by
+      PostToolUse and Stop.
+  - id: h-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: Which JSON field do PostToolUse and Stop hooks use to block, and what is its value?
+    choices:
+      - id: a
+        text: hookSpecificOutput.permissionDecision set to "deny"
+      - id: b
+        text: A top-level "continue" field set to true
+      - id: c
+        text: A top-level "decision" field set to "block"
+      - id: d
+        text: A top-level "blocked" field set to true
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      PostToolUse and Stop use a top-level "decision": "block" (with a "reason"). That is a
+      different mechanism from PreToolUse, which uses hookSpecificOutput.permissionDecision. Mixing
+      the two up is a common error.
+  - id: h-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: >-
+      Name two distinct configuration files where Claude Code hooks can be defined, and say which
+      one is typically committed to the repository versus kept local/gitignored.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names .claude/settings.json as the project file that is committed/shared
+        - id: c2
+          text: >-
+            Names .claude/settings.local.json (or ~/.claude/settings.json) as a local/personal
+            location
+      referenceAnswer: >-
+        Hooks can be defined in .claude/settings.json (project scope, committed and shared with the
+        team) and .claude/settings.local.json (project scope, gitignored and personal). Other
+        locations include ~/.claude/settings.json for all your projects and a plugin's
+        hooks/hooks.json.
+      passThreshold: 0.6
+    guidance: >-
+      The committed project file is .claude/settings.json; the gitignored personal override is
+      .claude/settings.local.json. ~/.claude/settings.json applies across all your projects, and
+      managed/policy settings apply org-wide. Knowing which file is shared matters for team
+      behavior.
+  - id: h-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: free_form
+    prompt: >-
+      Which field on an individual hook object selects how the hook runs, and what is its default
+      and most common value?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the "type" field
+        - id: c2
+          text: States its default and most common value is "command"
+      referenceAnswer: >-
+        The "type" field selects how a hook runs, and its default and most common value is
+        "command". A command hook also supplies a "command" string and may add an optional
+        "timeout".
+      passThreshold: 0.6
+    guidance: >-
+      Every hook object has a "type"; command is the default and most common, with http, mcp_tool,
+      prompt, and agent as other types. For a command hook you pair "type": "command" with a
+      "command" string and an optional "timeout". There is no "kind", "mode", or "runner" field.
+  - id: h-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: multiple_choice
+    prompt: What does the additionalContext field (returned via hookSpecificOutput.additionalContext) do?
+    choices:
+      - id: a
+        text: Runs a slash command on Claude's behalf
+      - id: b
+        text: Injects text that Claude reads as a system reminder (plain text)
+      - id: c
+        text: Adds a new tool to Claude's available tool list
+      - id: d
+        text: Opens a file in the editor for the user to review
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      additionalContext injects plain text that Claude reads as a system reminder, used by events
+      like UserPromptSubmit and SessionStart to add context. It is plain text only: it cannot invoke
+      a slash command, register a tool, or open an editor.
+  - id: h-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: multiple_choice
+    prompt: From a security standpoint, what is the fundamental risk of configuring a hook?
+    choices:
+      - id: a
+        text: Hooks can only read files, so the worst outcome is a leaked file path
+      - id: b
+        text: Hooks run in a network sandbox and cannot touch the local filesystem
+      - id: c
+        text: >-
+          Hooks execute arbitrary shell commands automatically with the user's full privileges, so a
+          malicious or buggy hook can damage the system
+      - id: d
+        text: Hooks require admin approval before each run, so there is effectively no risk
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Hooks run arbitrary shell commands automatically with the user's full privileges, so a
+      malicious or buggy hook can damage the system; users are responsible for what they configure.
+      They are not sandboxed, read-only, or gated behind per-run admin approval.
+  - id: h-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      A hook returns JSON with a top-level "continue": false and a "stopReason". How does this
+      differ from a per-event block such as PreToolUse permissionDecision "deny"?
+    choices:
+      - id: a
+        text: '"continue": false only blocks the single tool call, exactly like a PreToolUse deny.'
+      - id: b
+        text: '"continue": false forces Claude to keep going, the opposite of a deny.'
+      - id: c
+        text: '"continue": false is ignored unless the hook also exits 2.'
+      - id: d
+        text: >-
+          "continue": false halts Claude's processing entirely (stopReason is shown), which is
+          broader than a per-event deny that only affects that one action.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The universal "continue": false field stops Claude from continuing at all (with "stopReason"
+      surfaced to the user), and it takes precedence over event-specific decisions. That is broader
+      than a PreToolUse "deny", which only blocks the one tool call and lets the agent try something
+      else. Confusing the global stop with a per-action block is a common error.
+  - id: h-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse hook exits 0 with no output before a Bash tool call. How does Claude Code
+      interpret this?
+    choices:
+      - id: a
+        text: The hook approves the call and the interactive permission prompt is skipped.
+      - id: b
+        text: >-
+          The hook raises no objection, so the normal permission flow still runs as if no hook
+          existed.
+      - id: c
+        text: The tool call is silently blocked because exit 0 means "do nothing."
+      - id: d
+        text: The tool input is cleared and Claude must regenerate the call.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For PreToolUse, exit 0 signals "no objection," not approval. The normal permission flow still
+      applies. To actually skip the prompt you must emit JSON with permissionDecision "allow"; a
+      bare exit 0 leaves permissions untouched.
+  - id: h-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      A hook configured with "type": "command" supplies a command string, but a team wants a hook
+      whose behavior is an LLM evaluation rather than a shell process. Which hook type fits, and
+      what is the key cost compared with a command hook?
+    choices:
+      - id: a
+        text: >-
+          There is no such type; every hook must shell out, so the LLM evaluation has to be wrapped
+          in a command hook calling an API.
+      - id: b
+        text: >-
+          A "prompt" (LLM-judge) hook runs an LLM evaluation, but it is non-deterministic and spends
+          an extra model turn, so it costs more than a deterministic command hook.
+      - id: c
+        text: An "http" hook, which is the only non-command type and is fully deterministic and free.
+      - id: d
+        text: >-
+          A "command" hook with "type": "llm", which behaves identically to a shell command at no
+          extra cost.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Besides command, hook types include http, mcp_tool, prompt, and agent. A prompt/agent
+      (LLM-judge) hook evaluates with a model instead of a shell, which buys flexibility but is
+      non-deterministic and spends a model turn (cost/latency). Command hooks are cheap and
+      deterministic but more brittle.
+  - id: h-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: >-
+      Why can a PreToolUse hook returning permissionDecision "deny" stop a tool even when Claude
+      Code is running with --dangerously-skip-permissions (bypassPermissions mode)?
+    choices:
+      - id: a
+        text: >-
+          Because PreToolUse hooks fire before the permission-mode check, so a deny holds regardless
+          of the mode in effect.
+      - id: b
+        text: Because bypassPermissions mode only disables PostToolUse hooks, not PreToolUse hooks.
+      - id: c
+        text: Because deny temporarily re-enables the permission system for that one call.
+      - id: d
+        text: Because the hook rewrites the permission mode back to "default" before the tool runs.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      PreToolUse runs before any permission-mode check, so a deny is enforced even under
+      bypassPermissions. This is the recommended way to build guardrails a careless user cannot
+      skip. The reverse is not symmetric: an "allow" still cannot override a deny rule.
+  - id: h-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      A team wants a hook that lets the agent run any tool a deny rule in settings.json would
+      otherwise block. They write a PreToolUse hook returning permissionDecision "allow." Why does
+      this fail to achieve their goal?
+    choices:
+      - id: a
+        text: Because "allow" is only valid for PostToolUse, not PreToolUse.
+      - id: b
+        text: >-
+          Because hooks can tighten but never loosen permissions: a matching deny rule still blocks
+          the call even when the hook says allow.
+      - id: c
+        text: Because "allow" requires exit code 2 to take effect, which itself blocks.
+      - id: d
+        text: Because settings.json deny rules are advisory and ignored once any hook is configured.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Hooks can only tighten policy, never loosen it past the permission rules. An "allow" merely
+      skips the interactive prompt; deny rules (including enterprise managed deny lists) always win.
+      To grant new power you must change the permission rules, not add a hook.
+  - id: h-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: >-
+      When does the PreCompact event fire, and what is one thing a PreCompact hook can do that a
+      SessionEnd hook cannot?
+    choices:
+      - id: a
+        text: It fires after compaction finishes; like SessionEnd it can only log, never block.
+      - id: b
+        text: It fires whenever Claude finishes a turn, and it can rename the session.
+      - id: c
+        text: It fires before every tool call, and it can rewrite the tool input.
+      - id: d
+        text: >-
+          It fires before context compaction runs, and unlike SessionEnd it can block (prevent) the
+          compaction.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      PreCompact fires before context compaction (its matcher distinguishes manual vs auto
+      triggers). Because it precedes the action, it can block the compaction, whereas SessionEnd
+      fires as the session is already terminating and can only run cleanup/logging. PostCompact, by
+      contrast, fires after compaction and cannot block.
+  - id: h-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: >-
+      A Stop hook is written to block (exit 2) whenever the linter has not yet passed, with no other
+      condition. On a project the linter can never satisfy, what is the durable risk, and what
+      should the hook do instead?
+    choices:
+      - id: a
+        text: >-
+          It risks an infinite continue loop, because each block forces another turn that the hook
+          blocks again; the hook should stop blocking once progress is impossible and let Claude
+          stop.
+      - id: b
+        text: 'Nothing can go wrong: a Stop hook can only ever block one time per session.'
+      - id: c
+        text: It risks corrupting the transcript, because Stop hooks may not write to stderr.
+      - id: d
+        text: It risks being ignored, because exit 2 is non-blocking for Stop hooks.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A Stop hook that always blocks creates a continue loop: blocking the stop forces another turn,
+      which finishes and triggers the hook again. The durable fix is to make the block conditional
+      on real progress still being possible, and otherwise exit 0 (or surface advice via
+      additionalContext) so Claude is allowed to stop.
+  - id: h-200-ff-h
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: >-
+      Explain why a SessionStart hook's stdout behaves differently from a PreToolUse hook's stdout
+      on exit 0, and what that difference is used for.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that for SessionStart (like UserPromptSubmit), stdout on exit 0 is injected into
+            Claude's context.
+        - id: c2
+          text: >-
+            States that for PreToolUse, exit-0 stdout is not injected as context (exit 0 just means
+            no objection / permission flow continues).
+        - id: c3
+          text: >-
+            Gives a use case for the SessionStart behavior, e.g. seeding the session with project
+            state, recent issues, or environment info.
+      referenceAnswer: >-
+        For SessionStart and UserPromptSubmit, stdout printed on exit 0 is added to Claude's
+        context, so a SessionStart hook is a way to inject context such as current git status, open
+        issues, or project conventions at the start of a session. For PreToolUse, exit-0 stdout is
+        not used as context injection; exit 0 only means the hook has no objection and the normal
+        permission flow continues. The events differ because only context-injecting events
+        (SessionStart, UserPromptSubmit, UserPromptExpansion) route stdout into the model's context.
+      passThreshold: 0.6
+    guidance: >-
+      The distinction matters: SessionStart and UserPromptSubmit route exit-0 stdout into Claude's
+      context, which is how hooks seed the model with extra information. PreToolUse exit-0 stdout
+      has no such effect. Confusing the two leads to hooks that print context expecting it to be
+      read but never is.
+  - id: h-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      In settings.json, a matcher is written as Edit|Write. How will Claude Code interpret this
+      string?
+    choices:
+      - id: a
+        text: As a regular expression that happens to match the literal text "Edit|Write".
+      - id: b
+        text: 'As an exact/list match: it matches the Edit tool or the Write tool.'
+      - id: c
+        text: As a wildcard matching every tool, because the pipe is a special character.
+      - id: d
+        text: As invalid syntax that disables the hook group.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A matcher containing only letters, digits, underscores, spaces, commas, or pipes is treated as
+      an exact string or list match, so Edit|Write matches the Edit or Write tool. Regex behavior
+      only kicks in when other characters appear (e.g. mcp__github__.*).
+  - id: h-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: How does a hook receive event data, and how does it communicate results back to Claude Code?
+    choices:
+      - id: a
+        text: It reads JSON on stdin and replies via stdout, stderr, and its exit code.
+      - id: b
+        text: It reads environment variables only and replies by writing a results file.
+      - id: c
+        text: It receives data as command-line arguments and replies by calling a slash command.
+      - id: d
+        text: It polls an HTTP endpoint and replies by invoking another tool.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Command hooks get event data as JSON on stdin and communicate back only through stdout,
+      stderr, and the exit code. They have no other channel and cannot, for example, trigger a slash
+      command or a tool call. Understanding this I/O contract is foundational to writing any hook.
+  - id: h-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      A developer adds additionalContext to a UserPromptSubmit hook's JSON output hoping the hook
+      can trigger a /compact slash command. Why does this not work?
+    choices:
+      - id: a
+        text: additionalContext only works for SessionStart, not UserPromptSubmit.
+      - id: b
+        text: Slash commands require exit code 2, which would discard the JSON.
+      - id: c
+        text: >-
+          additionalContext injects plain text Claude reads as a system reminder; it cannot invoke
+          slash commands or tools.
+      - id: d
+        text: additionalContext must be base64-encoded before a slash command will run.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      additionalContext injects plain text that Claude reads as a system reminder. It is not a
+      control channel: command hooks cannot run slash commands or tools. To affect behavior you
+      inject text the model can act on, not a command for the harness to execute.
+  - id: h-200-ff-l
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      Explain why printing a JSON object to stdout while also exiting with code 2 is contradictory,
+      and what each channel does on its own.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that on exit 2 the stdout/JSON is ignored.
+        - id: c2
+          text: >-
+            States that on exit 2 stderr is fed to Claude as feedback, while structured JSON
+            requires exit 0.
+        - id: c3
+          text: 'Concludes you should pick one channel: either exit 2 with stderr, or exit 0 with JSON.'
+      referenceAnswer: >-
+        Exit 2 and JSON output are two different control channels and they do not combine. When a
+        hook exits 2, Claude Code ignores stdout (and therefore any JSON) and instead feeds stderr
+        to Claude as blocking feedback. Structured JSON control (permissionDecision, decision,
+        continue, additionalContext) is only read when the hook exits 0. So mixing them means the
+        JSON you printed is silently discarded. The correct pattern is to choose one channel: exit 2
+        with a stderr message for a simple block, or exit 0 with a JSON object for richer,
+        structured control.
+      passThreshold: 0.6
+    guidance: >-
+      Exit 2 means "block, read stderr, ignore stdout"; JSON control requires exit 0. They are
+      mutually exclusive channels. The anti-pattern of doing both leaves your carefully built JSON
+      ignored.
+  - id: h-200-ff-m
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Explain why a security-conscious team should enforce a hard "this command is forbidden"
+      guarantee with the permission system rather than with a hook, referencing the fail-open
+      behavior of hooks.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that hooks (and the if filter) are best-effort and fail open, e.g. an unparseable
+            Bash command still lets the action through.
+        - id: c2
+          text: >-
+            States that the permission system is the real enforcement layer for hard allow/deny
+            guarantees.
+        - id: c3
+          text: >-
+            Frames hooks as suited to deterministic but advisory behavior (nudges, formatting,
+            logging) rather than unbreakable bans.
+      referenceAnswer: >-
+        Hooks, including the if filter, are best-effort and fail open: if Claude Code cannot parse
+        the Bash command (or the hook errors), the action proceeds rather than being blocked. That
+        makes a hook an unreliable boundary for a hard ban, because the failure mode is "allow." The
+        permission system is the actual enforcement layer; its deny rules block reliably and cannot
+        be loosened by a hook. So a hard "never run this" guarantee belongs in permission rules,
+        while hooks are the right tool for deterministic but advisory behavior such as formatting,
+        logging, or nudges.
+      passThreshold: 0.6
+    guidance: >-
+      Hooks and the if filter fail open: when parsing fails, the action runs. That is the wrong
+      failure mode for a hard ban. Reliable allow/deny enforcement lives in the permission system;
+      reserve hooks for deterministic nudges, not unbreakable security boundaries.
+  - id: h-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse hook matches only Edit|Write to prevent the agent from modifying protected files.
+      Why is this an incomplete safeguard?
+    choices:
+      - id: a
+        text: Because Edit and Write tools never actually touch the filesystem.
+      - id: b
+        text: >-
+          Because the agent can also change files via the Bash tool, which an Edit|Write matcher
+          does not cover.
+      - id: c
+        text: Because PreToolUse hooks cannot inspect tool_input.file_path.
+      - id: d
+        text: Because matchers ignore the pipe character, so the hook never fires at all.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      File edits can happen through Bash (e.g. redirecting output, sed, mv), which an Edit|Write
+      matcher never sees. For full coverage you also match Bash, or use a Stop hook scanning git
+      status --porcelain. Assuming the edit tools are the only path to file changes is a common gap.
+  - id: h-200-ff-o
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: >-
+      Describe what happens when a hook exits with a non-zero code other than 2 (for example exit
+      3), and contrast it with exit 2.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'States that a non-zero, non-2 exit is a non-blocking error: the action proceeds.'
+        - id: c2
+          text: >-
+            Notes the user-visible effect (a hook-error notice, the first line of stderr shown, full
+            stderr to debug log).
+        - id: c3
+          text: Contrasts with exit 2, which blocks the action and feeds stderr to Claude as feedback.
+      referenceAnswer: >-
+        An exit code that is non-zero but not 2 (e.g. 3) is treated as a non-blocking error. The
+        action still proceeds; the transcript shows a hook-error notice plus the first line of
+        stderr, and the full stderr goes to the debug log. This is different from exit 2, which
+        blocks the action entirely and feeds stderr back to Claude as actionable feedback so it can
+        adjust. So only exit 2 blocks; every other non-zero code is just a logged error that does
+        not stop anything.
+      passThreshold: 0.6
+    guidance: >-
+      Only exit 2 blocks. Any other non-zero code is a non-blocking error: the action goes through,
+      a hook-error notice and the first stderr line surface, and full stderr lands in the debug log.
+      Understanding this prevents the assumption that "any failure" stops the agent.
+  - id: h-200-mc-p
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      Beyond allowing or denying a tool call, a PreToolUse hook can return updatedInput in its
+      hookSpecificOutput. What does that field do?
+    choices:
+      - id: a
+        text: >-
+          It replaces the tool's input with the hook's version before the tool runs (e.g. to
+          normalize or redact arguments).
+      - id: b
+        text: It changes which tool is invoked, swapping Edit for Write.
+      - id: c
+        text: It appends text to Claude's context, identical to additionalContext.
+      - id: d
+        text: It stores the original input in a log file and has no effect on execution.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A PreToolUse hook can rewrite the tool input via hookSpecificOutput.updatedInput, so the tool
+      runs with the modified arguments (handy for normalizing paths or redacting secrets). It does
+      not change which tool runs, and it is distinct from additionalContext, which only injects
+      text. Note that two hooks both rewriting the same input is a race, so consolidate that logic
+      into one hook.
+  - id: h-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      SessionStart supports a matcher while UserPromptSubmit and Stop do not. What does the
+      SessionStart matcher filter on?
+    choices:
+      - id: a
+        text: The user's operating system.
+      - id: b
+        text: The name of the tool that triggered the session.
+      - id: c
+        text: The start reason, such as startup, resume, clear, or compact.
+      - id: d
+        text: The model name in use for the session.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      SessionStart's matcher filters on why the session started: startup, resume, clear, or compact.
+      Events like UserPromptSubmit and Stop have no matcher and always fire. Matching the source
+      lets a hook inject different context on a fresh start versus a resume or post-compaction.
+  - id: h-200-ff-r
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      An MCP server named "github" exposes a tool "search_repositories." Explain how that tool is
+      named for hook matching, and how you would write a matcher that targets every tool from that
+      server.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the tool name follows the mcp__<server>__<tool> scheme, i.e.
+            mcp__github__search_repositories.
+        - id: c2
+          text: >-
+            Gives a server-wide matcher such as mcp__github__.* and notes it is interpreted as a
+            regex.
+      referenceAnswer: >-
+        MCP tools are named with the pattern mcp__<server>__<tool>, so this one is
+        mcp__github__search_repositories. To match every tool exposed by the github server you use a
+        matcher like mcp__github__.* . Because that string contains characters beyond plain
+        letters/digits/underscores/pipes (the dot and star), Claude Code treats it as a JavaScript
+        regex, so .* matches any tool suffix from that server.
+      passThreshold: 0.6
+    guidance: >-
+      MCP tools use the mcp__<server>__<tool> naming scheme, so the tool is
+      mcp__github__search_repositories. A matcher of mcp__github__.* targets the whole server; the
+      dot and star force regex interpretation, unlike a plain alphanumeric/pipe matcher which is
+      exact/list.
+  - id: h-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      Explain why a PostToolUse hook cannot prevent or undo the side effects of the tool it reacts
+      to, and what its decision "block" output is actually good for.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States PostToolUse fires after the tool has already succeeded/executed, so there is
+            nothing to prevent or roll back.
+        - id: c2
+          text: States that only PreToolUse can block a tool before it runs.
+        - id: c3
+          text: >-
+            Explains that PostToolUse decision "block" feeds corrective feedback to the model for
+            its next step rather than undoing the action.
+      referenceAnswer: >-
+        PostToolUse runs after the tool call has already executed successfully, so the side effects
+        (files written, commands run) have already happened and the hook has no way to roll them
+        back. Blocking a tool before it acts is the job of PreToolUse, which fires beforehand.
+        PostToolUse's decision "block" therefore does not undo anything; it feeds feedback to Claude
+        so the model can take a corrective action on its next step, for example by reverting a
+        change or fixing formatting. Treating PostToolUse as a rollback or veto mechanism is a
+        misconception.
+      passThreshold: 0.6
+    guidance: >-
+      PostToolUse is strictly after-the-fact: the action already happened, so nothing can be
+      prevented or undone. Its decision "block" is feedback for the model's next move, not a
+      rollback. Real prevention has to live in PreToolUse, which fires before execution.
+  - id: h-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      When multiple PreToolUse hooks match the same tool call and run in parallel, how does Claude
+      Code combine their decisions, and why is it a mistake to rely on one hook's deny to suppress a
+      sibling hook's side effect (such as a logging write)?
+    rubric:
+      criteria:
+        - id: c1
+          text: States all matching hooks run in parallel for the event.
+        - id: c2
+          text: >-
+            States the most restrictive decision wins when combining PreToolUse outcomes (a deny is
+            not overridden by an allow).
+        - id: c3
+          text: >-
+            Explains that a deny only affects the tool-call decision; it does not stop sibling hooks
+            from running, so the logging hook's write still happens.
+      referenceAnswer: >-
+        For a single event all matching hooks fire in parallel. When combining their PreToolUse
+        decisions, the most restrictive outcome wins, so a deny from any hook blocks the call and an
+        allow cannot override it; any additionalContext strings are concatenated. Crucially, the
+        merge only decides whether the tool call proceeds; it does not coordinate or cancel the
+        hooks' own side effects. So if one hook denies the call while a sibling logging hook writes
+        to a file, both still ran: the deny stops the tool, but the logging hook already executed
+        its write. Relying on a guard hook's deny to suppress another hook's side effect is
+        therefore a mistake because the hooks are independent parallel processes.
+      passThreshold: 0.6
+    guidance: >-
+      Matching hooks run in parallel; their decisions merge with the most restrictive winning (a
+      deny is never overridden by an allow), and additionalContext concatenates. But the merge only
+      governs the tool decision, not each hook's side effects. A deny will not un-run a sibling
+      logging hook, so do not architect one hook to "cancel" another's actions.
+  - id: h-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You want a hook that runs a linter every time Claude edits a file, but only edits — not reads
+      or bash commands. Where in settings.json does the value "Edit|Write" belong?
+    choices:
+      - id: a
+        text: As the "command" string of the hook object.
+      - id: b
+        text: As the "matcher" of a group object under the PostToolUse event array.
+      - id: c
+        text: As a top-level key alongside "hooks".
+      - id: d
+        text: As the "type" field of the hook object.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Hook config nests hooks -> EventName array -> group object with a "matcher" + "hooks" array.
+      The matcher "Edit|Write" filters by tool_name. "command" holds the shell command, and "type"
+      holds the hook kind (usually "command") — neither carries the matcher.
+  - id: h-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      Your PreToolUse hook detects a forbidden command and you want to stop the tool call AND give
+      Claude a reason it can read so it adjusts. Using only an exit code (no JSON), what do you do?
+    choices:
+      - id: a
+        text: Write the reason to stdout and exit 1.
+      - id: b
+        text: Write the reason to stdout and exit 0.
+      - id: c
+        text: Write the reason to stderr and exit 2.
+      - id: d
+        text: Write the reason to stderr and exit 1.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Exit 2 blocks the action, and on exit 2 stderr is fed back to Claude as feedback. Exit 1 is a
+      non-blocking error (the tool proceeds), and exit 0 means no objection — the call would run.
+  - id: h-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: >-
+      You want a hook that pushes a desktop alert to your phone whenever Claude Code is waiting on a
+      permission prompt (so you can step away during long runs). Which event do you wire it to, and
+      what must your hook NOT try to do?
+    choices:
+      - id: a
+        text: A PreToolUse hook; it must not return permissionDecision, only log.
+      - id: b
+        text: >-
+          A Notification hook (matching the permission-prompt notification type); it must not try to
+          block, since Notification hooks are for reacting/logging and cannot block.
+      - id: c
+        text: A Stop hook; it must not exit 0, or the alert is suppressed.
+      - id: d
+        text: A SessionStart hook; it must not print to stdout, or the alert becomes context.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Notification event fires when Claude Code emits a notification (its matcher selects types
+      such as the permission prompt or idle prompt), which is exactly the trigger for an external
+      alert. Like SessionEnd, a Notification hook can only react/log; it cannot block or change the
+      flow. PreToolUse or Stop would fire at the wrong moment for this purpose.
+  - id: h-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 341
+    type: multiple_choice
+    prompt: >-
+      You want a PostToolUse hook on Bash to redact an API key out of the command's output before
+      that output is shown to Claude, without blocking the call. Which mechanism do you use?
+    choices:
+      - id: a
+        text: >-
+          Return hookSpecificOutput.updatedToolOutput with the redacted text; PostToolUse can
+          replace the tool output the model sees.
+      - id: b
+        text: Return permissionDecision "deny" so the unredacted output never reaches Claude.
+      - id: c
+        text: Exit 2 with the redacted text on stderr, which overwrites the tool output.
+      - id: d
+        text: Set hookSpecificOutput.updatedInput to the redacted output.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      PostToolUse can replace what the model sees by returning hookSpecificOutput.updatedToolOutput
+      (exit 0 with JSON), which is the right tool for redacting output after the command ran.
+      permissionDecision is a PreToolUse concept, exit 2 on PostToolUse only adds stderr feedback
+      (the tool already ran), and updatedInput rewrites a tool's input, not its output.
+  - id: h-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 347
+    type: multiple_choice
+    prompt: >-
+      A SessionStart hook prints the current sprint's open tickets to stdout and exits 0. What
+      happens to that text?
+    choices:
+      - id: a
+        text: It is shown only to the user in the terminal, not to Claude.
+      - id: b
+        text: It is discarded because only exit 2 output is used.
+      - id: c
+        text: It is injected into Claude's context so the model can use it.
+      - id: d
+        text: It is written to the transcript as a tool result Claude must approve.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For SessionStart (and UserPromptSubmit), stdout on exit 0 is injected into Claude's context —
+      that is the canonical way these hooks add information. On exit 2 stdout is ignored, so the
+      "only exit 2" claim is exactly backwards.
+  - id: h-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      Your PreToolUse hook on Bash only needs to run when the command is a `git push`, but right now
+      it spawns its script on every Bash call. You want Claude Code itself to filter on the
+      command's arguments so the script is only launched for matching calls. What do you add to the
+      hook object?
+    choices:
+      - id: a
+        text: >-
+          An "if" field set to "Bash(git push:*)" (permission-rule syntax over the tool and its
+          arguments).
+      - id: b
+        text: A "matcher" of "git push", since the matcher filters on command arguments.
+      - id: c
+        text: A "command" prefix of "[git push]" that Claude Code parses as a guard.
+      - id: d
+        text: A top-level "filter" key listing the allowed subcommands.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The matcher only sees the tool name (Bash), so it cannot filter on arguments. The "if" field
+      uses permission-rule syntax over the tool and its arguments (e.g. "Bash(git push:*)"), so
+      Claude Code only spawns the hook on matching calls — a performance win. Note the "if" filter
+      is best-effort and fails open on unparseable Bash, so it is not a security boundary. There is
+      no "filter" key, and "command" holds the shell command.
+  - id: h-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      You want one PreToolUse hook to fire for every tool exposed by an MCP server named "github" —
+      and no other tools. What matcher value do you put in settings.json, and why does that string
+      behave as a regex rather than an exact match?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Gives a matcher like mcp__github__.* (uses the mcp__<server>__<tool> naming and a regex
+            wildcard).
+        - id: c2
+          text: >-
+            Explains the "." and/or "*" are special characters, which switches matcher evaluation
+            into regex mode.
+        - id: c3
+          text: >-
+            (optional) Notes a plain string like "github" would be an exact/list match and would
+            match no real tool name.
+      referenceAnswer: >-
+        Use the matcher mcp__github__.* . MCP tools are named mcp__<server>__<tool>, so this pattern
+        targets every tool from the github server. Because the matcher contains characters beyond
+        letters/digits/_/spaces/,/| (the "." and "*"), Claude Code treats it as a JavaScript regex
+        instead of an exact string. A bare "github" would be an exact/list match and would match no
+        real tool name (which all start with mcp__github__).
+      passThreshold: 0.6
+    guidance: >-
+      Matcher mode depends on the characters used: alphanumerics plus | and , are exact/list
+      matches; any other character triggers regex. MCP tool names are mcp__server__tool, so
+      mcp__github__.* scopes a hook to one server.
+  - id: h-300-ff-h
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >-
+      A teammate's PostToolUse hook is supposed to "undo" any write to a protected config file by
+      rolling it back. It never works — the file stays changed. Explain why a PostToolUse hook
+      cannot do this, and what hook/event they should use instead to actually prevent the write.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States PostToolUse runs after the tool has already executed (succeeded), so it cannot
+            undo or roll back the action.
+        - id: c2
+          text: >-
+            States they should use a PreToolUse hook, which fires before the tool runs and can block
+            it.
+        - id: c3
+          text: >-
+            Notes the PreToolUse block uses permissionDecision "deny" (or exit 2) to stop the write
+            before it happens.
+      referenceAnswer: >-
+        PostToolUse fires only after the tool call has already succeeded, so the write to the config
+        file has already happened — the hook cannot undo or roll it back; its decision: "block"
+        merely feeds the model feedback for the next step. To actually prevent the write they must
+        move the check to a PreToolUse hook matching Edit|Write (and the file path), which fires
+        before the tool runs and can block it by returning hookSpecificOutput.permissionDecision =
+        "deny" (or by exiting 2).
+      passThreshold: 0.6
+    guidance: >-
+      The lifecycle ordering is the key: PreToolUse is the only event that can stop a tool, because
+      it runs before execution. PostToolUse is for reacting to a completed action (feedback,
+      logging), never for rollback.
+  - id: h-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 363
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse command hook runs a slow integration check that sometimes needs about 90 seconds,
+      but it keeps getting killed early. Where do you change how long Claude Code waits before
+      terminating it?
+    choices:
+      - id: a
+        text: >-
+          Add a "timeout" field (in seconds, e.g. 120) to the individual hook object in
+          settings.json.
+      - id: b
+        text: Set a top-level "maxDuration" key alongside "hooks".
+      - id: c
+        text: 'Return {"timeout": 120} in the hook''s JSON output on stdout.'
+      - id: d
+        text: There is no way to extend it; the per-hook limit is fixed.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Each hook object takes an optional "timeout" in seconds that overrides the default. Command
+      hooks have a generous default, but some events (for example UserPromptSubmit) shorten it,
+      which is why a long check can be cut off; raising the per-hook "timeout" fixes it. The limit
+      is configurable, not a top-level key and not something the hook sets from its own stdout.
+  - id: h-300-ff-j
+    tier: 300
+    bloom: apply
+    difficulty: 367
+    type: free_form
+    prompt: >-
+      A PreToolUse hook for Bash needs to read the actual command Claude is about to run so it can
+      scan for "rm -rf". The hook receives JSON on stdin. Which field holds the command string, and
+      through what channel does the hook receive that JSON?
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies tool_input.command as the field holding the Bash command string.
+        - id: c2
+          text: States the JSON arrives on the hook's standard input (stdin).
+        - id: c3
+          text: >-
+            (bonus) Notes hook_event_name / tool_name are also present to confirm it is a PreToolUse
+            Bash event.
+      referenceAnswer: >-
+        The hook reads the event JSON from standard input (stdin). For a Bash tool call the command
+        string is at tool_input.command, so the hook parses stdin (e.g. with jq -r
+        '.tool_input.command') and scans that value for "rm -rf". Fields like hook_event_name and
+        tool_name are also present to confirm this is a PreToolUse Bash event before acting.
+      passThreshold: 0.6
+    guidance: >-
+      Hooks get event data as JSON on stdin and reply via stdout/stderr/exit code. For Bash the
+      payload nests the command under tool_input.command (for Edit/Write the path is at
+      tool_input.file_path).
+  - id: h-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      Your PreToolUse hook wants richer control than an exit code: it should deny a tool call AND
+      attach a structured reason. Which approach is correct?
+    choices:
+      - id: a
+        text: 'Exit 2 and print {"hookSpecificOutput": {"permissionDecision": "deny"}} to stdout.'
+      - id: b
+        text: 'Exit 0 and print {"decision": "block", "reason": "..."} to stdout.'
+      - id: c
+        text: 'Exit 2 and print {"decision": "deny", "reason": "..."} to stderr.'
+      - id: d
+        text: >-
+          Exit 0 and print {"hookSpecificOutput": {"hookEventName": "PreToolUse",
+          "permissionDecision": "deny", "permissionDecisionReason": "..."}} to stdout.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      For structured control you exit 0 and print JSON; mixing exit 2 with JSON is wrong because
+      JSON is ignored on exit 2. PreToolUse uses hookSpecificOutput.permissionDecision
+      (allow/deny/ask), not the top-level decision: "block" field — that one belongs to PostToolUse
+      and Stop.
+  - id: h-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      Your project ships a hook script at .claude/hooks/guard.sh, and the project's
+      .claude/settings.json is shared with the whole team via git. You want the command string to
+      find the script no matter which absolute path each teammate cloned the repo into. What do you
+      write?
+    choices:
+      - id: a
+        text: bash "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/guard.sh"
+      - id: b
+        text: bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.sh"
+      - id: c
+        text: bash /Users/you/work/myrepo/.claude/hooks/guard.sh
+      - id: d
+        text: bash "$HOME/.claude/hooks/guard.sh"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      CLAUDE_PROJECT_DIR expands to the project root, so a project-scoped hook should reference its
+      script as "${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.sh" to stay correct across each
+      teammate's clone path. CLAUDE_PLUGIN_ROOT is for plugin-bundled scripts (not project ones),
+      and the hardcoded absolute and $HOME paths break on other machines.
+  - id: h-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 377
+    type: multiple_choice
+    prompt: >-
+      You open the /hooks menu intending to change a hook's command string, but the menu gives you
+      no way to edit it. Why, and what should you do?
+    choices:
+      - id: a
+        text: The menu only edits user-scope hooks; move the hook to ~/.claude/settings.json first.
+      - id: b
+        text: >-
+          The /hooks menu is read-only; edit the hook directly in the settings.json file (or ask
+          Claude to).
+      - id: c
+        text: The menu is editable only after running /hooks reload.
+      - id: d
+        text: Hook command strings are immutable once registered and must be recreated.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The /hooks menu only browses configured hooks by event; it is read-only and cannot add,
+      modify, or remove them. To change a hook you edit the settings JSON directly (or ask Claude
+      to). The menu does not gate editing behind a scope move or a reload command, and hook
+      definitions are freely editable.
+  - id: h-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 333
+    type: free_form
+    prompt: >-
+      You need a deterministic, non-bypassable rule that blocks any "git push" to the main branch —
+      it must hold even if a user runs Claude with --dangerously-skip-permissions. Which hook event
+      and decision do you use, and why does this survive bypassPermissions mode?
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses a PreToolUse hook (matching Bash) that returns permissionDecision "deny".
+        - id: c2
+          text: >-
+            Explains PreToolUse fires before the permission-mode check, so a deny holds even under
+            bypassPermissions / --dangerously-skip-permissions.
+        - id: c3
+          text: >-
+            (optional) Notes that an "allow" decision would NOT have the reverse power to loosen
+            rules.
+      referenceAnswer: >-
+        Use a PreToolUse hook matching the Bash tool that inspects tool_input.command and returns
+        hookSpecificOutput.permissionDecision = "deny" when the command pushes to main. PreToolUse
+        hooks fire before any permission-mode check, so a deny blocks the tool even when the user
+        passed --dangerously-skip-permissions (bypassPermissions) — hooks can enforce policy users
+        can't bypass. Note the reverse isn't symmetric: an "allow" cannot loosen a deny rule.
+      passThreshold: 0.6
+    guidance: >-
+      The non-bypassable property comes from ordering: PreToolUse runs before the permission mode is
+      consulted, so a deny survives bypass mode. This is the recommended pattern for org guardrails
+      that must hold against a careless user.
+  - id: h-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 343
+    type: multiple_choice
+    prompt: >-
+      You only want a SessionStart hook to inject project context when a session is freshly started
+      or resumed — not when it is created by /clear. Where do you express that filtering?
+    choices:
+      - id: a
+        text: In the hook script by parsing tool_name from stdin.
+      - id: b
+        text: With a separate "if" expression matching the Bash command.
+      - id: c
+        text: In the matcher of the SessionStart group, using values like "startup" and "resume".
+      - id: d
+        text: SessionStart can't be filtered; it always fires for every source.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      SessionStart's matcher filters on the start reason — startup, resume, clear, or compact — so a
+      matcher of "startup|resume" excludes clear. SessionStart isn't a tool event, so there is no
+      tool_name; and it does support a matcher, unlike events such as UserPromptSubmit.
+  - id: h-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      A SessionStart hook should add a note that Claude reads as context, and you want to use
+      structured JSON output to do it cleanly. Which field carries that text?
+    choices:
+      - id: a
+        text: hookSpecificOutput.additionalContext
+      - id: b
+        text: hookSpecificOutput.permissionDecisionReason
+      - id: c
+        text: The top-level "stopReason" field
+      - id: d
+        text: The top-level "reason" field paired with decision "block"
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      additionalContext is returned via hookSpecificOutput.additionalContext and injects text Claude
+      reads as a system reminder — exactly what SessionStart/UserPromptSubmit use to add context.
+      permissionDecisionReason explains a PreToolUse decision, and stopReason/decision:"block" are
+      for stopping or blocking, not context.
+  - id: h-300-ff-q
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: free_form
+    prompt: >-
+      Two PreToolUse hooks match the same Bash call: a "logger" hook that always writes an audit
+      line, and a "guard" hook that returns permissionDecision "deny". A colleague assumes the
+      guard's deny will stop the logger from writing. Will the audit line still be written? Explain
+      the parallel-hook semantics.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States all matching hooks run in parallel, so the logger still executes and writes its
+            audit line.
+        - id: c2
+          text: Explains a deny from one hook does NOT suppress sibling hooks' side effects.
+        - id: c3
+          text: >-
+            (optional) Notes the tool call itself is still blocked because the most restrictive
+            decision (deny) wins.
+      referenceAnswer: >-
+        Yes, the audit line is still written. When an event fires, all matching hooks run in
+        parallel, so the logger executes independently of the guard. One hook's deny does not stop
+        sibling hooks' side effects — they have already run. The tool call itself is blocked
+        because, across PreToolUse hooks, the most restrictive decision wins (a deny is not
+        overridden by an allow), but that only governs the tool, not the other hooks' writes.
+      passThreshold: 0.6
+    guidance: >-
+      A common pitfall is treating a guard's deny as a way to suppress another hook. Parallel
+      execution means side effects from every matching hook still happen; deny only controls whether
+      the tool proceeds.
+  - id: h-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      You want a hook to validate every user prompt before Claude sees it and block (erase) the
+      prompt if it contains a banned phrase. Which event do you configure, and what does an exit
+      code of 2 do for that event?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names the UserPromptSubmit event (fires when the user submits a prompt, before Claude
+            processes it).
+        - id: c2
+          text: States that exit 2 on UserPromptSubmit blocks and erases the prompt.
+        - id: c3
+          text: >-
+            (optional) Distinguishes this from PreToolUse (tool calls) or Stop (turn end), which are
+            the wrong events here.
+      referenceAnswer: >-
+        Configure a UserPromptSubmit hook, which fires when the user submits a prompt and before
+        Claude processes it. If the hook exits 2, it blocks and erases the prompt so Claude never
+        sees it (and stderr is shown to the user). PreToolUse governs tool calls and Stop fires
+        after Claude finishes responding, so neither is the right event for vetting an incoming
+        prompt.
+      passThreshold: 0.6
+    guidance: >-
+      UserPromptSubmit is the pre-processing gate for user input; exit 2 there erases the prompt.
+      Its stdout on exit 0 is also injected as context, unlike most other events.
+  - id: h-300-mc-s
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      A formatter hook should run after Claude edits TypeScript files as a gentle nudge: it may
+      complain but must never stop or undo the edit. You configure it on PostToolUse. If that hook
+      exits with code 2, what happens?
+    choices:
+      - id: a
+        text: >-
+          The edit proceeds (it already happened); exit 2 does not block on PostToolUse, and stderr
+          is surfaced as feedback.
+      - id: b
+        text: The edit is rolled back because exit 2 always blocks.
+      - id: c
+        text: Claude prompts the user to approve the edit retroactively.
+      - id: d
+        text: The whole session ends with an error.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      PostToolUse fires after a successful tool call and cannot block or undo it, so exit 2 there is
+      non-blocking — execution continues and the edit stands; only the stderr is surfaced as
+      feedback. That makes PostToolUse the right place for an advisory formatter nudge.
+  - id: h-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: multiple_choice
+    prompt: >-
+      A hook must set an environment variable (e.g. NODE_OPTIONS) so that it persists into every
+      later Bash command Claude runs in the session. Simply running `export NODE_OPTIONS=...` inside
+      the hook doesn't stick. What is the canonical mechanism?
+    choices:
+      - id: a
+        text: 'Print {"continue": false, "env": {"NODE_OPTIONS": "..."}} to stdout.'
+      - id: b
+        text: >-
+          Append the export line to the file at $CLAUDE_ENV_FILE, which Claude Code runs as a
+          preamble before each Bash command.
+      - id: c
+        text: Write the variable into $CLAUDE_PROJECT_DIR/.env and exit 2.
+      - id: d
+        text: Set it via additionalContext so Claude exports it itself.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A hook's own `export` dies with its subprocess. CLAUDE_ENV_FILE is a path (available to
+      SessionStart, Setup, CwdChanged, FileChanged) that Claude Code sources as a preamble before
+      each Bash command — the canonical way to persist env vars to the agent's shell. The other
+      options don't affect the agent's shell environment.
+  - id: h-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A teammate writes a PreToolUse hook that runs a linter and uses `exit 1` whenever the linter
+      finds a problem, expecting the tool call to be blocked. In testing, the tool runs anyway and
+      Claude proceeds. What is the cause?
+    choices:
+      - id: a
+        text: >-
+          Exit code 1 is non-blocking in Claude Code; only exit code 2 blocks the action, so the
+          hook must exit 2 to stop the tool.
+      - id: b
+        text: PreToolUse hooks can never block a tool; only PostToolUse can use exit codes to stop work.
+      - id: c
+        text: >-
+          The hook needs to print "BLOCK" to stdout in addition to exiting 1 for the block to
+          register.
+      - id: d
+        text: Exit 1 only blocks if a matcher is configured; without a matcher exit 1 is ignored.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Claude Code deliberately breaks the Unix convention where exit 1 signals failure: exit 1 (and
+      any non-zero code other than 2) is a non-blocking error, while only exit 2 blocks and feeds
+      stderr back to Claude. PreToolUse absolutely can block, so the mechanism is right but the exit
+      code is wrong.
+  - id: h-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse hook prints a JSON object with `permissionDecision: "allow"` and a reason, then
+      calls `exit 2` to "be extra sure" the decision sticks. The tool ends up blocked, not allowed.
+      What went wrong?
+    choices:
+      - id: a
+        text: '`permissionDecision: "allow"` is not a valid value, so Claude Code fell back to denying.'
+      - id: b
+        text: The reason string conflicted with the exit code and Claude Code defaulted to ask mode.
+      - id: c
+        text: >-
+          On exit 2 the JSON output is ignored entirely and stderr is fed back as a block; the allow
+          decision never takes effect because JSON and exit 2 are mutually exclusive channels.
+      - id: d
+        text: >-
+          Exit 2 with allow JSON tells Claude Code to allow once then block on the next identical
+          call.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Structured JSON control requires exit 0. When a hook exits 2 the JSON on stdout is discarded
+      and only stderr matters, which Claude Code treats as a block. You pick one channel: either
+      exit 0 with JSON for fine-grained control, or exit 2 for a coarse block. Mixing them silently
+      drops the JSON.
+  - id: h-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      An org sets a managed deny rule blocking `Bash(rm -rf /*)`. A developer adds a personal
+      PreToolUse hook returning `permissionDecision: "allow"` for all Bash commands, hoping to skip
+      prompts. They run a destructive command and it is still blocked. Why?
+    choices:
+      - id: a
+        text: Managed settings disable all user hooks automatically, so the allow hook never ran.
+      - id: b
+        text: The allow hook only works in bypassPermissions mode, which the developer had not enabled.
+      - id: c
+        text: The hook matcher was treated as a regex and failed to match the Bash command.
+      - id: d
+        text: >-
+          Hooks can tighten but never loosen past permission rules; an allow decision skips prompts
+          but a matching deny rule still wins.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The relationship is asymmetric. A PreToolUse deny can block even under bypassPermissions, but
+      an allow only skips the interactive prompt; it cannot override a deny rule (especially an
+      enterprise managed one). Hooks are a tightening layer, never a way to grant power the
+      permission system forbids.
+  - id: h-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: free_form
+    prompt: >-
+      A developer wants a hard, unbypassable guarantee that the agent never pushes to the main
+      branch. They are deciding between (1) a PreToolUse hook with a Bash matcher that exits 2 on
+      `git push`, and (2) a permission deny rule. Explain which gives the stronger guarantee and
+      why, referencing how the hook `if`/matcher filtering behaves on edge cases.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the permission deny rule is the stronger enforcement layer for hard guarantees,
+            not the hook.
+        - id: c2
+          text: >-
+            Explains that hooks (and the `if` filter) are best-effort and fail open, e.g. running
+            anyway when a Bash command cannot be parsed, so a determined or obfuscated command can
+            slip past.
+        - id: c3
+          text: >-
+            Notes hooks are appropriate for advisory/deterministic nudges while the permission
+            system is the actual enforcement boundary.
+      referenceAnswer: >-
+        The permission deny rule gives the stronger guarantee. Hooks (and the `if` filter that
+        scopes them) are best-effort and fail open: if Claude Code cannot parse the Bash command
+        string the hook runs anyway and the matcher may not reliably catch every variant (aliases,
+        env-var indirection, `git -C`, piping). A deny rule is the dedicated enforcement layer and
+        is not subject to fail-open parsing. Use the hook for advisory or logging behavior; use the
+        permission deny rule for a hard ban.
+      passThreshold: 0.6
+    guidance: >-
+      The classic mistake is reaching for a hook to enforce a hard security boundary. Because the
+      `if` filter and command-parsing fail open (run the hook rather than block when parsing fails),
+      a hook is fundamentally advisory. Hard allow/deny enforcement belongs to the permission
+      system, which does not have this fail-open weakness.
+  - id: h-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >-
+      A PostToolUse hook on the Write tool detects that the agent wrote a secret to a file and exits
+      2, expecting the write to be undone. The file still contains the secret afterward. What is the
+      correct diagnosis?
+    choices:
+      - id: a
+        text: >-
+          PostToolUse exit 2 does undo writes, but only if `decision: "rollback"` is also present in
+          JSON.
+      - id: b
+        text: >-
+          PostToolUse runs after the tool already succeeded and cannot undo it; exit 2 only feeds
+          the model feedback for its next step. To prevent the write you need a PreToolUse hook.
+      - id: c
+        text: >-
+          The hook should have used `permissionDecision: "deny"`, which works on PostToolUse to
+          revert.
+      - id: d
+        text: PostToolUse never sees file writes; it only fires on Bash, so the hook never ran.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      PostToolUse fires after the tool has already executed successfully, so it is physically too
+      late to prevent or undo the action. Its `decision: "block"`/exit-2 feedback only informs the
+      model's next move. Prevention must happen in PreToolUse, which fires before execution and can
+      actually block.
+  - id: h-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: >-
+      A team wants each spawned subagent to receive a short briefing (coding standards, current
+      branch) as context, and also wants to veto spawning certain agent types entirely. They write a
+      single SubagentStart hook that both injects additionalContext and tries to deny disallowed
+      agent types. Why does half of this design fail, and where should the veto actually live?
+    choices:
+      - id: a
+        text: >-
+          SubagentStart cannot inject context; only SessionStart can, so the briefing half fails and
+          the veto half works.
+      - id: b
+        text: Both halves work — SubagentStart can block — so nothing fails.
+      - id: c
+        text: >-
+          The briefing works (SubagentStart can add additionalContext), but the veto fails because
+          SubagentStart fires as the subagent is already starting and cannot block; gating which
+          agents may run belongs in permissions/configuration, not this hook.
+      - id: d
+        text: Both halves fail because SubagentStart only runs for the general-purpose agent type.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      SubagentStart fires when a subagent is spawned and can add additionalContext to brief it, but
+      like other "start/end" lifecycle events it cannot block — so it cannot veto an agent type.
+      Preventing certain agents from running is a configuration/permission concern, not something a
+      non-blocking start hook can enforce. The briefing half is valid; the veto half is the design
+      flaw.
+  - id: h-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      A team relies on a PreToolUse hook matching `Edit|Write` to scan every file modification for
+      forbidden content. In review they find the agent created a forbidden file and the hook never
+      fired. What is the most likely gap?
+    choices:
+      - id: a
+        text: '`Edit|Write` is invalid matcher syntax, so the hook never registered at all.'
+      - id: b
+        text: >-
+          The hook fired but exit 0 silently approved the file because PreToolUse exit 0 grants
+          writes.
+      - id: c
+        text: >-
+          The agent wrote the file via a Bash command (e.g. a heredoc or redirect), which the
+          `Edit|Write` matcher does not cover; full coverage needs to also match Bash or use a Stop
+          hook scanning git status.
+      - id: d
+        text: >-
+          Matchers are case-insensitive, so `Edit|Write` matched something else and skipped the real
+          edits.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A matcher on file-editing tools misses file changes performed through Bash (redirects,
+      heredocs, sed, tee). For complete file-change coverage you must also match Bash, or use a Stop
+      hook that scans `git status --porcelain`. Narrow tool matchers create blind spots that look
+      like a working guard.
+  - id: h-400-ff-h
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: free_form
+    prompt: >-
+      Two PreToolUse hooks both match the Bash tool and run in parallel. Hook A returns
+      `permissionDecision: "allow"`; Hook B returns `permissionDecision: "deny"`. A separate logging
+      hook also matches and writes an audit line. Predict the outcome for the tool call and for the
+      audit write, and explain the merge semantics.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the tool call is denied because the most restrictive decision wins (a deny is not
+            overridden by an allow).
+        - id: c2
+          text: >-
+            States the logging/audit hook still runs and writes its line; one hook's deny does not
+            stop sibling hooks' side effects because all matching hooks run in parallel.
+        - id: c3
+          text: >-
+            Identifies the anti-pattern of relying on a guard hook's deny to suppress another hook's
+            side effects.
+      referenceAnswer: >-
+        The tool call is denied: when matching PreToolUse hooks disagree, the most restrictive
+        decision wins, so Hook B's deny overrides Hook A's allow. However, all matching hooks run in
+        parallel and independently, so the logging hook still executes and writes its audit line; a
+        deny from one hook does not cancel another hook's side effects. Relying on a deny to
+        suppress a sibling hook's write is an anti-pattern.
+      passThreshold: 0.6
+    guidance: >-
+      Parallel hook execution means decisions are merged (most restrictive wins) but side effects
+      are not coordinated. Every matching hook runs to completion, so a logging hook still writes
+      even when a guard hook denies the call. Never assume a deny suppresses another hook's work.
+  - id: h-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      A SessionStart hook echoes recent ticket context to stdout and exits 0, but the developer also
+      has a line in their shell profile that prints "Welcome!" on every shell startup. Claude's
+      behavior becomes erratic, sometimes ignoring the injected context. What is the most likely
+      root cause?
+    choices:
+      - id: a
+        text: >-
+          SessionStart stdout is shown to the user only, so it never reaches Claude regardless of
+          the profile.
+      - id: b
+        text: >-
+          SessionStart cannot inject context; only UserPromptSubmit can, so the design is
+          fundamentally wrong.
+      - id: c
+        text: 'The hook needs `decision: "block"` for SessionStart context to be injected into Claude.'
+      - id: d
+        text: >-
+          The profile's "Welcome!" output is prepended to the hook's stdout, corrupting the context
+          payload injected into Claude; an exec-form command (no shell) or suppressing profile
+          output avoids this.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      For SessionStart (and UserPromptSubmit) exit-0 stdout is injected into Claude's context, so
+      any extra stdout from a sourced shell profile contaminates the payload. Shell-form hooks are
+      vulnerable to this; exec-form commands skip the shell, and you can otherwise silence profile
+      chatter. The injection target is Claude's context, not just the user.
+  - id: h-400-ff-j
+    tier: 400
+    bloom: analyze
+    difficulty: 463
+    type: free_form
+    prompt: >-
+      You must auto-block the agent from editing files under `infra/` while keeping it autonomous on
+      the rest of the repo, and the block must survive a user running with
+      `--dangerously-skip-permissions`. Explain why a PreToolUse `deny` hook achieves this where a
+      permission deny rule combined with normal mode would not be enough, and note the one thing a
+      hook still cannot do.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains PreToolUse hooks fire before the permission-mode check, so a deny holds even
+            under bypassPermissions / --dangerously-skip-permissions.
+        - id: c2
+          text: >-
+            Notes a deny decision feeds a reason back to Claude so it can adapt and continue
+            autonomously (vs an interrupting ask).
+        - id: c3
+          text: >-
+            States the limit: a hook cannot loosen/grant power past permission rules; an allow
+            cannot override a deny rule.
+      referenceAnswer: >-
+        PreToolUse hooks run before any permission-mode check, so a `permissionDecision: "deny"`
+        blocks the edit even when the user launched with --dangerously-skip-permissions /
+        bypassPermissions. This makes a deny hook the recommended pattern for org guardrails that
+        must survive a careless user. The deny also returns a reason that Claude reads and adapts
+        to, keeping the agent autonomous rather than interrupting a human. The thing a hook still
+        cannot do is loosen permissions: an allow decision cannot override an existing deny rule, so
+        hooks only ever tighten.
+      passThreshold: 0.6
+    guidance: >-
+      The firing order (PreToolUse before permission-mode check) is what makes a deny hook the only
+      true override that survives bypass mode. The symmetry-breaker to remember: deny can tighten
+      past bypass, but allow can never loosen past a deny rule.
+  - id: h-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 467
+    type: multiple_choice
+    prompt: >-
+      A developer wants a PreToolUse hook that fires only for MCP tools from the GitHub server. They
+      set `matcher: "mcp__github"` and it never fires for `mcp__github__search_repositories`. What
+      is the cause and the fix?
+    choices:
+      - id: a
+        text: >-
+          MCP tools cannot be matched by PreToolUse hooks at all; only built-in tools support
+          matchers.
+      - id: b
+        text: >-
+          `mcp__github` is treated as an exact string match against the full tool name and does not
+          equal `mcp__github__search_repositories`; use a regex like `mcp__github__.*` to match all
+          of that server's tools.
+      - id: c
+        text: >-
+          The double underscores must be escaped as `mcp\\_\\_github`, otherwise the matcher is
+          invalid.
+      - id: d
+        text: >-
+          The matcher must be the server name only (`github`), since the `mcp__` prefix is stripped
+          before matching.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A matcher made only of letters, digits and underscores is an exact/list match, so
+      `mcp__github` only matches a tool literally named that. MCP tools are named
+      `mcp__<server>__<tool>`, so to catch all GitHub tools you add a regex metacharacter, e.g.
+      `mcp__github__.*`, which switches the matcher into regex mode.
+  - id: h-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A Stop hook intended to force test completeness is implemented as a `prompt`-type (LLM-judge)
+      hook that blocks until it judges the work "done." Compared with a deterministic command hook
+      that runs the test suite and blocks on failure, which tradeoff analysis is most accurate?
+    choices:
+      - id: a
+        text: >-
+          The LLM-judge hook is strictly better because it cannot create infinite loops, unlike
+          command hooks.
+      - id: b
+        text: >-
+          The command hook is non-deterministic while the prompt hook is deterministic, so the
+          prompt hook should always be preferred for gating.
+      - id: c
+        text: >-
+          The LLM-judge hook is more flexible but non-deterministic and adds cost/latency per extra
+          turn, and like any blocking Stop hook can keep forcing continuations; the command hook is
+          cheap and deterministic but more brittle to situations it was not coded for.
+      - id: d
+        text: Neither can block stopping, so the choice between them is purely cosmetic.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      LLM-judge (prompt/agent) Stop hooks are flexible but introduce non-determinism and extra model
+      turns (cost/latency), and like any blocking Stop hook they can keep forcing continuations if
+      they never release. Deterministic command hooks are cheap and predictable but brittle outside
+      the cases they encode. Both genuinely block stopping; the real tradeoff is flexibility vs
+      cost/determinism.
+  - id: h-400-ff-m
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: free_form
+    prompt: >-
+      A plugin ships a PreToolUse hook whose `hooks.json` references its validator as
+      `/Users/dev/plugins/myplugin/scripts/validate.sh`. After other users install the plugin, the
+      hook errors with "command not found." Diagnose the root cause and give the portable fix,
+      naming the correct mechanism.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the hardcoded absolute path as the cause; it only exists on the author's
+            machine and breaks after relocation/install elsewhere.
+        - id: c2
+          text: >-
+            Gives the fix: reference the script via ${CLAUDE_PLUGIN_ROOT} so the path resolves to
+            the actual install directory on each machine.
+        - id: c3
+          text: >-
+            Notes CLAUDE_PLUGIN_ROOT is provided to the hook process by Claude Code for exactly this
+            portability reason.
+      referenceAnswer: >-
+        The root cause is the hardcoded absolute path: it only exists on the author's machine, so
+        once the plugin is installed elsewhere the script is not at that path and the command fails.
+        The portable fix is to reference the script relative to the plugin install location using
+        the CLAUDE_PLUGIN_ROOT environment variable, e.g.
+        "${CLAUDE_PLUGIN_ROOT}/scripts/validate.sh". Claude Code injects CLAUDE_PLUGIN_ROOT into the
+        hook process precisely so bundled script paths survive relocation.
+      passThreshold: 0.6
+    guidance: >-
+      Plugin hooks must never hardcode absolute paths. ${CLAUDE_PLUGIN_ROOT} resolves to wherever
+      the plugin was installed on each user's machine, so bundled scripts are found regardless of
+      install location. Hardcoding the author's path is a portability anti-pattern that breaks on
+      every other machine.
+  - id: h-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      Two PreToolUse hooks both match the Edit tool and both rewrite `tool_input` (e.g. one
+      normalizes line endings, another injects a license header). Intermittently the final input
+      only reflects one hook's change. What is the correct explanation?
+    choices:
+      - id: a
+        text: >-
+          Claude Code merges `updatedInput` field-by-field, so the failure means one hook produced
+          invalid JSON.
+      - id: b
+        text: >-
+          Only the hook listed first in settings.json is allowed to mutate input; the second is
+          always ignored.
+      - id: c
+        text: >-
+          Hooks run in parallel and the last one to finish wins when both mutate the same input; the
+          order is non-deterministic, so two hooks must not mutate the same tool_input.
+      - id: d
+        text: PreToolUse hooks cannot mutate tool_input at all, so any observed change is a coincidence.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Multiple PreToolUse hooks rewriting the same tool's input is a race: hooks run in parallel,
+      the last to finish wins, and ordering is non-deterministic, so you get one change or the other
+      unpredictably. The rule is to never have two hooks mutate the same tool_input; consolidate the
+      logic into one hook.
+  - id: h-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      A hook command works when run by hand in the terminal but misbehaves as a Claude Code hook: a
+      glob and a pipe that worked manually now break, and special characters in arguments are
+      mangled. The author had switched the hook to exec form (`"args": [...]`, no shell). What is
+      the tradeoff they ran into?
+    choices:
+      - id: a
+        text: >-
+          Exec form runs the command twice, so the pipe output is consumed before the script sees
+          it.
+      - id: b
+        text: >-
+          Exec form spawns the script directly with no shell, so pipes and globs are not expanded
+          and special chars pass verbatim; shell form supports pipes/globs but is vulnerable to
+          quoting bugs and profile output.
+      - id: c
+        text: Exec form forces a 30-second timeout that kills the pipe mid-stream.
+      - id: d
+        text: >-
+          Exec form converts stdin from JSON to plain text, which breaks any command expecting JSON
+          input.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Shell form (no args) goes through a shell, so it supports pipes and globs but is exposed to
+      quoting bugs and stray profile stdout corrupting JSON. Exec form spawns the script directly
+      with no shell, so special chars pass through verbatim and there is no quoting/profile risk,
+      but you lose shell features like pipes and glob expansion. The author traded robustness for
+      losing pipes.
+  - id: h-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A team is deciding where to put three rules: (1) "never force-push to main" (must be
+      unbypassable), (2) "run prettier after every edit" (deterministic, but only a nudge — fine if
+      occasionally skipped), and (3) "prefer composition over inheritance" (a soft style
+      preference). Map each rule to the right mechanism among permission rules, hooks, and
+      CLAUDE.md, and justify each placement.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Maps the unbypassable force-push ban to the permission system, because hooks fail open
+            and CLAUDE.md is advisory.
+        - id: c2
+          text: >-
+            Maps the deterministic prettier nudge to a hook (e.g. PostToolUse), because it is a
+            deterministic side effect that is acceptable as advisory.
+        - id: c3
+          text: >-
+            Maps the soft style preference to CLAUDE.md, because it is a non-deterministic
+            convention the model should weigh, not a mechanical gate.
+      referenceAnswer: >-
+        The force-push ban goes in the permission system: it must be unbypassable, and hooks fail
+        open while CLAUDE.md is purely advisory, so only the permission system gives a hard
+        guarantee. The prettier-after-edit rule goes in a hook (a PostToolUse formatting hook): it
+        is a deterministic mechanical action and it is acceptable for it to be advisory rather than
+        a hard gate. The composition-over-inheritance preference goes in CLAUDE.md: it is a soft,
+        judgment-based convention the model should weigh case by case, not a deterministic check, so
+        a hook or permission rule would be the wrong tool.
+      passThreshold: 0.6
+    guidance: >-
+      The decision rule: hard unbypassable bans -> permission system (doesn't fail open);
+      deterministic but advisory actions -> hooks; soft conventions requiring judgment -> CLAUDE.md.
+      The common mistake is using a hook for a hard guarantee, but hooks and the `if` filter fail
+      open and are advisory by nature.
+  - id: h-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 433
+    type: multiple_choice
+    prompt: >-
+      A developer's PreToolUse hook is meant to run only when the Bash command actually contains
+      `git push`, but it spawns its script on every single Bash call (wasting time parsing harmless
+      commands). They want Claude Code to filter on the command arguments before launching the hook.
+      Which mechanism does this, and what is the key caveat?
+    choices:
+      - id: a
+        text: >-
+          Tighten the `matcher` to `Bash(git push:*)`, since matchers can filter on command
+          arguments.
+      - id: b
+        text: >-
+          Add an `if` condition (permission-rule syntax over tool name and arguments) so the hook
+          spawns only on matching calls; but it is best-effort and fails open on unparseable Bash,
+          so it is not a security boundary.
+      - id: c
+        text: >-
+          Set `runOnlyWhen: "git push"` on the hook object, which Claude Code evaluates
+          deterministically as a hard gate.
+      - id: d
+        text: >-
+          Nothing can pre-filter on arguments; the hook script itself must always run and inspect
+          tool_input.command.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The matcher only sees the tool name (Bash), so it cannot filter on arguments. The `if` field
+      uses permission-rule syntax over the tool name and its arguments, so the hook process spawns
+      only on real matches — a performance win. But it is best-effort and fails open when the Bash
+      command cannot be parsed, so it must not be treated as a security boundary; hard enforcement
+      still belongs in the permission system.
+  - id: h-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 443
+    type: multiple_choice
+    prompt: >-
+      A UserPromptSubmit hook that injects repo context occasionally seems to truncate, and the
+      developer notices a separate file appearing with the overflow. Separately, their SessionStart
+      hook's giant context dump never fully reaches Claude. What single fact explains both
+      observations?
+    choices:
+      - id: a
+        text: >-
+          UserPromptSubmit and SessionStart share a thirty-character context budget enforced per
+          session.
+      - id: b
+        text: >-
+          Context injection only works for the first prompt of a session; later injections silently
+          drop.
+      - id: c
+        text: 'Both hooks must set `suppressOutput: false` or their stdout is discarded entirely.'
+      - id: d
+        text: >-
+          Hook JSON output and additionalContext have a maximum size; content beyond the cap is
+          redirected to a file rather than injected, so oversized context payloads are truncated.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      There is a size cap on hook JSON output and on additionalContext; anything over the cap is
+      redirected to a file instead of being injected. A hook that tries to dump a huge context
+      payload is therefore truncated, which explains both the overflow file and the incomplete
+      SessionStart context. The fix is to inject a compact summary or pointer rather than a giant
+      payload.
+  - id: h-400-ff-s
+    tier: 400
+    bloom: analyze
+    difficulty: 447
+    type: free_form
+    prompt: >-
+      A developer reports their Stop hook "won't stop running" — Claude keeps working in an apparent
+      loop after the hook blocks. Diagnose why an unconditional blocking Stop hook loops, give the
+      durable fix, and explain what would let Claude eventually stop even if the hook keeps
+      blocking.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a Stop hook which blocks (exit 2) on every stop creates a continue loop,
+            because each block forces another turn that the hook then blocks again.
+        - id: c2
+          text: >-
+            Gives the durable fix: make the block conditional so the hook stops blocking and exits 0
+            once progress is impossible, letting Claude stop (optionally surfacing the issue via
+            additionalContext).
+        - id: c3
+          text: >-
+            Notes Claude Code is the party that decides whether a Stop block keeps Claude going, so
+            the hook should not rely on the harness to break a loop the hook itself creates.
+      referenceAnswer: >-
+        The loop happens because the Stop hook blocks (exit 2) unconditionally: each block is what
+        forces Claude to continue, which finishes another turn, which the hook blocks again,
+        indefinitely. The durable fix is to make the block conditional on real progress still being
+        possible — once it is not, the hook should exit 0 (and may surface its message as
+        additionalContext feedback) so Claude is allowed to stop. The harness is what acts on a Stop
+        block to keep Claude going, so a well-behaved hook must release the block itself rather than
+        depend on Claude Code to rescue it from a loop the hook created.
+      passThreshold: 0.6
+    guidance: >-
+      A Stop hook that always blocks re-triggers itself every turn, which is the loop. The correct
+      pattern is to block only while genuine progress is possible and exit 0 otherwise. Designing a
+      hook to keep blocking and counting on the harness to bail it out wastes turns and ends with
+      the goal unmet.
+  - id: h-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 457
+    type: free_form
+    prompt: >-
+      A developer auto-approves prompts with a PermissionRequest hook using a `.*` (match-all)
+      matcher to "stop the constant prompts." A reviewer flags this as dangerous. Explain the
+      specific risk introduced and contrast it with the safer alternative of a narrow matcher plus
+      the permission system.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that a match-all auto-approve approves every prompt, including arbitrary
+            shell commands and file writes, removing the human-in-the-loop for destructive actions.
+        - id: c2
+          text: >-
+            Recommends keeping matchers narrow so only specific, known-safe operations are
+            auto-approved.
+        - id: c3
+          text: >-
+            Notes the permission system (allow/deny rules) is the proper place for hard enforcement,
+            rather than a blanket auto-approve hook.
+      referenceAnswer: >-
+        A `.*` match-all auto-approve approves every permission prompt indiscriminately — including
+        arbitrary Bash commands and file writes — which removes the human-in-the-loop safeguard for
+        exactly the destructive actions that prompting exists to catch. The safer approach is a
+        narrow matcher that auto-approves only specific, known-safe operations, leaving everything
+        else to prompt. Hard allow/deny enforcement belongs in the permission system's rules, not in
+        a blanket auto-approve hook, because the permission system does not fail open the way hooks
+        do.
+      passThreshold: 0.6
+    guidance: >-
+      Convenience auto-approvals with wide matchers are a dangerous anti-pattern: they silently
+      grant arbitrary shell and file-write power. Keep matchers narrow and push hard enforcement
+      into the permission system, which is the actual safety boundary.
+  - id: h-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team wants to guarantee that nobody, including a careless user running with
+      --dangerously-skip-permissions, can ever push to the main branch. An engineer proposes a
+      PreToolUse hook on Bash that scans the command and returns permissionDecision "deny" for any
+      git push to main. Another proposes a settings.json deny permission rule. Which critique is the
+      most defensible?
+    choices:
+      - id: a
+        text: >-
+          The hook is a sound choice here: because PreToolUse fires before the permission-mode
+          check, a deny holds even under bypassPermissions, so it is a legitimate guardrail that
+          survives a careless user
+      - id: b
+        text: >-
+          The hook is useless because allow/deny in a hook is purely advisory and the model can
+          ignore it
+      - id: c
+        text: >-
+          Only the deny permission rule can block anything; PreToolUse hooks cannot influence
+          whether a tool call runs
+      - id: d
+        text: >-
+          The hook is wrong because in bypassPermissions mode all PreToolUse hooks are skipped
+          entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      PreToolUse hooks fire before the permission-mode check, so a deny holds even under
+      --dangerously-skip-permissions; that is exactly why deny is the recommended pattern for org
+      guardrails that must survive a careless user. A deny permission rule is also valid, but the
+      claim that the hook is advisory or skipped under bypassPermissions is false.
+  - id: h-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      To loosen friction, a developer adds a PreToolUse hook that returns permissionDecision "allow"
+      with a ".*" matcher so that every tool call is auto-approved, expecting it to also override
+      the enterprise managed deny list that blocks rm -rf on certain paths. Evaluate this plan.
+    choices:
+      - id: a
+        text: It silently does nothing because allow is only valid for the Bash tool, not other tools
+      - id: b
+        text: >-
+          It works perfectly: an allow decision overrides all permission rules, including enterprise
+          managed deny lists
+      - id: c
+        text: >-
+          It will not work as intended: allow skips the interactive prompt but never overrides a
+          deny rule, so the managed deny list still blocks those calls, while the blanket allow
+          dangerously auto-approves everything else
+      - id: d
+        text: It will block every tool call because a ".*" matcher is interpreted as deny-all
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Hooks can tighten but never loosen past permission rules: a matching deny rule (including
+      enterprise managed deny lists) wins even when the hook says allow. So the override goal fails,
+      and the blanket allow is a dangerous anti-pattern that auto-approves arbitrary shell and file
+      writes everywhere it does not hit a deny rule.
+  - id: h-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A reviewer sees a hook script that ends with: print the JSON object, then `exit 2`. The intent
+      was to richly deny a tool call with a structured permissionDecisionReason while also
+      signalling a block via the exit code. What is the strongest objection?
+    choices:
+      - id: a
+        text: >-
+          Nothing is wrong; combining exit 2 with JSON is the documented way to get both a block and
+          a structured reason
+      - id: b
+        text: >-
+          On exit 2 the JSON on stdout is ignored entirely; only stderr is fed back, so the
+          structured reason is lost. You must pick one channel: exit 0 with JSON, or exit 2 with a
+          stderr message
+      - id: c
+        text: The only issue is that exit 2 should be exit 1 to block, so the JSON would then be read
+      - id: d
+        text: The JSON must be printed to stderr rather than stdout, after which exit 2 will parse it
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      JSON output is read only on exit 0; on exit 2 it is ignored and only stderr is forwarded to
+      Claude. Mixing the two channels means the structured reason silently disappears. For a
+      structured deny, return exit 0 with permissionDecision "deny" and a permissionDecisionReason;
+      exit 2 is the coarse stderr-only alternative.
+  - id: h-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A team enforces "no secrets ever written to disk" by adding a PreToolUse hook with matcher
+      Edit|Write that scans file contents and denies on a secret pattern. A security reviewer calls
+      this insufficient. What is the best reason?
+    choices:
+      - id: a
+        text: Edit and Write tools cannot create new files, so scanning them is pointless
+      - id: b
+        text: The matcher Edit|Write is invalid syntax and silently matches nothing
+      - id: c
+        text: >-
+          PreToolUse cannot read tool_input, so the hook can never see the file contents it needs to
+          scan
+      - id: d
+        text: >-
+          The Edit|Write matcher misses files written via the Bash tool (e.g. echo ... > file), so
+          the policy has a gap; you must also match Bash or add a Stop hook that scans the worktree
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A file-edit matcher only covers the Edit and Write tools; the Bash tool can also write files
+      (redirects, tee, here-docs), so a Edit|Write-only policy has a hole. Robust coverage adds a
+      Bash matcher or a Stop hook that scans git status --porcelain before letting the turn end.
+      Edit|Write is valid list-matcher syntax.
+  - id: h-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      You must enforce a deterministic, non-bypassable ban on a dangerous command, add an advisory
+      auto-format step after edits, and encode a soft naming convention. For each of the three,
+      judge whether it belongs in the permission system, a hook, or CLAUDE.md, and justify the
+      hard-ban choice in terms of failure modes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Puts the deterministic non-bypassable hard ban in the permission system (not a hook),
+            because hooks and the if filter fail open
+        - id: c2
+          text: Puts the advisory auto-format step in a hook (deterministic but advisory side effect)
+        - id: c3
+          text: Puts the soft naming convention in CLAUDE.md (model-interpreted guidance)
+      referenceAnswer: >-
+        The hard, non-bypassable ban belongs in the permission system: it cannot be bypassed and
+        does not fail open, whereas hooks (and the if filter) are best-effort and fail open on
+        unparseable input, so a hook is the wrong layer for a hard security guarantee. The advisory
+        auto-format belongs in a hook: it is deterministic but does not need to hard-block, so a
+        PostToolUse or Stop hook formatting the file is appropriate. The soft naming convention
+        belongs in CLAUDE.md, since it is model-interpreted guidance rather than a deterministic
+        gate.
+      passThreshold: 0.6
+    guidance: >-
+      The layering rule: permission system for hard non-bypassable bans (cannot be bypassed, does
+      not fail open), hooks for deterministic-but-advisory nudges, CLAUDE.md for soft conventions.
+      The classic mistake is reaching for a hook to enforce hard security; the if filter and hooks
+      fail open, so the permission system is the real enforcement layer.
+  - id: h-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      Two PreToolUse hooks match the same Bash call: a security guard hook that returns deny, and an
+      audit hook that returns allow and also writes a log line to disk as a side effect. The author
+      assumes the guard's deny will prevent the audit hook from logging. Critique this assumption.
+    choices:
+      - id: a
+        text: >-
+          It is wrong: all matching hooks run in parallel, so the audit hook's log write still
+          happens; the deny only governs the tool call (most restrictive wins, so a deny is not
+          overridden by an allow), not sibling hooks' side effects
+      - id: b
+        text: >-
+          It is correct: the first hook to return deny short-circuits and cancels all other matching
+          hooks before they run
+      - id: c
+        text: >-
+          It is wrong, but for the opposite reason: allow always beats deny, so the tool call
+          proceeds and the guard is ignored
+      - id: d
+        text: >-
+          It is correct because hooks run sequentially in settings.json order and deny aborts the
+          chain
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      All matching hooks run in parallel and one hook's decision does not suppress another hook's
+      side effects, so the audit log write still happens. For the tool-call decision the most
+      restrictive wins (a deny is not overridden by an allow), so the call is denied, but you cannot
+      rely on a deny to cancel a sibling's logging.
+  - id: h-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: multiple_choice
+    prompt: >-
+      To prevent half-finished work, a team adds a Stop hook of type "prompt" that asks an LLM "is
+      the task actually complete? If not, block." It works but they later see runaway cost and
+      occasional sessions that end with work still incomplete. Which assessment best weighs the
+      tradeoff?
+    choices:
+      - id: a
+        text: >-
+          The cost is a bug; once the hook is written correctly, a prompt-type Stop hook is
+          effectively free
+      - id: b
+        text: >-
+          The behavior is a bug; a correctly written Stop hook can block forever until the task is
+          truly complete, and any session ending early is a defect
+      - id: c
+        text: >-
+          An LLM-judge Stop hook is flexible but non-deterministic and adds a model turn per block,
+          so it is costly; and no Stop hook can guarantee completion (Claude may still end up
+          stopping), so you cannot rely on it as a hard completion gate. A deterministic
+          command-based check is cheaper but more brittle
+      - id: d
+        text: >-
+          Prompt-type Stop hooks cannot block at all, so the incompleteness is expected and the cost
+          is unrelated
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      LLM-judge Stop hooks trade determinism and cost for flexibility: each block spends an extra
+      model turn, and no Stop hook can guarantee completion — the session can still end with work
+      unfinished, so it is not a hard gate. Cheaper command-based checks are more brittle. The
+      durable point is that a Stop hook is an advisory nudge toward completion, not a contract that
+      work will finish.
+  - id: h-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: free_form
+    prompt: >-
+      A reviewer must choose between PreToolUse permissionDecision "deny" and "ask" for a hook that
+      fires when Claude tries to edit a protected config file in an otherwise-autonomous agent run.
+      Evaluate the tradeoff between the two, and name a concrete failure mode of choosing deny.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States deny cancels the call and feeds the reason back to Claude so the agent adapts and
+            keeps running autonomously
+        - id: c2
+          text: States ask defers to / interrupts the human, trading autonomy for a human checkpoint
+        - id: c3
+          text: >-
+            Names a concrete deny failure mode such as the model looping or repeatedly retrying the
+            forbidden path
+      referenceAnswer: >-
+        deny cancels the tool call and feeds the permissionDecisionReason back to Claude, which
+        keeps the run autonomous: the agent reads the reason and tries another approach without a
+        human in the loop. ask instead defers to the human, which is safer for genuinely sensitive
+        edits but breaks autonomy by requiring a person to respond. The concrete failure mode of
+        deny is that the model can loop, repeatedly attempting the forbidden edit because nothing
+        stops it from trying again, whereas ask forces a decisive human checkpoint.
+      passThreshold: 0.6
+    guidance: >-
+      deny keeps the agent autonomous and gives it feedback to adapt, but risks the model looping on
+      a forbidden path; ask hands control to a human, which is safer for sensitive actions but
+      interrupts autonomy. The right choice depends on how sensitive the action is and whether
+      unattended operation is required.
+  - id: h-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: >-
+      A hook script reads JSON from stdin and emits its own JSON decision to stdout in shell form
+      (no args array). Intermittently, Claude reports the hook output is malformed. The most likely
+      root-cause critique, and the recommended fix, is:
+    choices:
+      - id: a
+        text: JSON on stdout is never reliable; the script should write its decision to stderr instead
+      - id: b
+        text: >-
+          The user's shell profile prints an echo/banner that contaminates stdout and corrupts the
+          JSON; prefer exec form (an args array) so the script runs without a shell, avoiding
+          profile output and quoting bugs
+      - id: c
+        text: >-
+          The fix is to raise the hook timeout, since malformed output is always a truncation caused
+          by the default being too short
+      - id: d
+        text: Shell form is required for JSON; switching to exec form would make the problem worse
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A classic shell-form pitfall is a profile echo or banner leaking onto stdout and corrupting
+      the JSON the parser expects. Exec form (an args array) spawns the script directly without a
+      shell, avoiding profile contamination and quoting bugs, at the cost of losing pipes and globs.
+      The decision must stay on stdout, not stderr.
+  - id: h-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      Two PreToolUse hooks both match the same Bash tool call and both rewrite tool_input.command
+      (one redacts a token, one adds a flag). Critique this design and state what guarantee, if any,
+      you can make about the final command the tool runs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the hooks run in parallel and the order is non-deterministic, so this is a race
+            on the shared tool_input
+        - id: c2
+          text: States the last hook to finish wins, so you cannot guarantee both rewrites survive
+        - id: c3
+          text: >-
+            Recommends not having two hooks mutate the same input (consolidate into one hook or one
+            deterministic transformer)
+      referenceAnswer: >-
+        This is a race: matching hooks run in parallel and their completion order is
+        non-deterministic, so two hooks mutating the same tool_input cannot both be guaranteed to
+        take effect. The last hook to finish wins and may overwrite the other's rewrite, so neither
+        the redaction nor the flag is guaranteed in the final command. The fix is to never have two
+        hooks mutate the same input: consolidate the logic into a single hook that performs both
+        transformations deterministically.
+      passThreshold: 0.6
+    guidance: >-
+      Multiple PreToolUse hooks rewriting the same tool's input is a non-deterministic race because
+      all matching hooks run in parallel and the last to finish wins. You can make no guarantee that
+      both edits survive. The expert pattern is to consolidate input mutation into a single hook.
+  - id: h-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A reviewer wants a hook to hard-enforce "Claude may only run git commands" and proposes
+      relying on the if field (permission-rule syntax over tool name and arguments) on a Bash
+      PreToolUse hook as the enforcement boundary. What is the most accurate critique?
+    choices:
+      - id: a
+        text: if and matcher are identical; choosing if over matcher has no behavioral consequence
+      - id: b
+        text: >-
+          The if field is the strongest enforcement available because, unlike the permission system,
+          it inspects arguments and cannot be bypassed
+      - id: c
+        text: >-
+          The if field replaces matcher entirely and blocks any call it cannot parse, so it fails
+          closed and is safe for enforcement
+      - id: d
+        text: >-
+          The if field is a performance optimization (avoids spawning the hook on non-matches) but
+          is best-effort and fails open on unparseable Bash, so it must not be treated as a security
+          boundary; hard enforcement belongs in the permission system
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      if filters by tool name and arguments (more precise than matcher, which only sees tool name)
+      so the hook process spawns only on real matches, a performance win. But it is best-effort and
+      fails open on unparseable Bash, so it is not a security boundary; hard guarantees belong to
+      the permission system. It does not fail closed and does not replace matcher's role.
+  - id: h-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >-
+      A team has an "ask" permission rule on Bash(git push *) so a human always confirms pushes. To
+      smooth an autonomous run, a developer adds a PreToolUse hook that returns permissionDecision
+      "allow" for git push, expecting it to suppress the confirmation prompt. They find the prompt
+      still appears. Which assessment is most accurate?
+    choices:
+      - id: a
+        text: >-
+          Correct outcome: a matching "ask" rule still prompts even when a hook returns "allow",
+          because ask and deny rules are evaluated regardless of the hook's decision; a hook's allow
+          only skips a prompt that would otherwise come from the default flow, not one forced by an
+          explicit ask rule
+      - id: b
+        text: >-
+          The hook is broken: an "allow" decision always overrides an "ask" rule, so the persisting
+          prompt indicates a malformed JSON payload
+      - id: c
+        text: >-
+          The "ask" rule is irrelevant once any PreToolUse hook is configured; the prompt must be
+          coming from a separate Notification hook
+      - id: d
+        text: Hooks cannot return "allow" at all, so Claude Code fell back to prompting
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hook decisions do not bypass permission rules: matching deny and ask rules are evaluated
+      regardless of what a PreToolUse hook returns, so an explicit ask rule still forces the prompt
+      even when the hook says allow. A hook's allow only skips a prompt that the default flow would
+      have raised; it cannot silence an explicit ask (or override a deny). To stop the prompt you
+      must change the permission rule, not add an allow hook.
+  - id: h-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: free_form
+    prompt: >-
+      A SessionStart hook injects roughly 40,000 characters of project context via
+      hookSpecificOutput.additionalContext on every startup, resume, and compaction. Critique this
+      design, addressing both a size limit it hits and the recurring cost across the session
+      lifecycle.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States additionalContext (and JSON output) has a maximum size, so most of the oversized
+            payload is truncated/redirected to a file rather than injected
+        - id: c2
+          text: >-
+            Notes SessionStart re-fires on resume and after compaction, so the large context is
+            re-injected repeatedly, consuming context budget each time
+        - id: c3
+          text: >-
+            Recommends injecting a small pointer/summary (or fetching on demand) instead of dumping
+            the full context every time
+      referenceAnswer: >-
+        The design hits a size limit: additionalContext and JSON output are capped, so a payload
+        that large is far over budget and the excess is truncated or redirected to a file rather
+        than injected, meaning most of the intended context never reaches the model. It is also
+        wasteful across the lifecycle: SessionStart fires on startup, resume, and after compaction,
+        so this large payload is re-injected repeatedly, burning context window each time. A better
+        design injects a compact summary or a pointer to a file the agent can read on demand, rather
+        than dumping the full context on every session event.
+      passThreshold: 0.6
+    guidance: >-
+      Two problems compound: additionalContext/JSON output has a maximum size (excess goes to a
+      file), and SessionStart re-injects on resume and after compaction, so a big payload is paid
+      for repeatedly. The expert fix is a small pointer or summary that the agent expands on demand.
+  - id: h-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A team uses a PostToolUse hook with decision "block" on the Edit tool, believing it will undo
+      a bad edit and prevent the file change from taking effect. Evaluate this belief.
+    choices:
+      - id: a
+        text: It is correct only for the Write tool; for Edit, block does roll back the change
+      - id: b
+        text: >-
+          It is correct: PostToolUse with decision block rolls back the file to its prior contents
+          automatically
+      - id: c
+        text: >-
+          It is mistaken: PostToolUse fires after the edit has already succeeded and cannot undo it;
+          the block decision only feeds the model feedback for the next step. To actually prevent
+          the change you need a PreToolUse hook
+      - id: d
+        text: PostToolUse cannot use decision block at all, so the hook is silently ignored
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      PostToolUse runs after the tool has already succeeded, so it cannot undo the action. Its
+      decision "block" only provides feedback that steers the model's next step, not a rollback. To
+      actually prevent or alter a change, you must gate it in PreToolUse, which fires before
+      execution.
+  - id: h-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      For convenience, an engineer adds a PermissionRequest-style auto-approve hook with an empty
+      matcher so every permission prompt is approved without interaction during long autonomous
+      runs. What is the soundest evaluation of this choice?
+    choices:
+      - id: a
+        text: >-
+          It is a best practice for autonomous runs, since auto-approving everything is what
+          bypassPermissions already does anyway
+      - id: b
+        text: >-
+          It is a dangerous anti-pattern: an empty/.* matcher auto-approves every prompt, including
+          arbitrary shell and file writes; matchers should stay narrow so only specific, vetted
+          actions are auto-approved
+      - id: c
+        text: It is safe because auto-approval hooks only apply to read-only tools regardless of matcher
+      - id: d
+        text: It is harmless because deny rules are ignored once an auto-approve hook is present
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A blanket auto-approve with an empty or .* matcher approves every prompt, including arbitrary
+      shell execution and file writes, which is exactly the surface you want to keep gated. The
+      discipline is narrow matchers that auto-approve only specific vetted actions. Auto-approval
+      does not magically restrict itself to read-only tools.
+  - id: h-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: free_form
+    prompt: >-
+      A team wants a critical "do not lose this" note (a coding standard the agent keeps forgetting)
+      re-injected into context after the conversation is compacted. A developer proposes wiring this
+      to a PostCompact hook; a colleague insists it must be a PreCompact hook "so it can block
+      compaction if the note is missing." Evaluate which event fits the goal of re-seeding context
+      after compaction, and judge the colleague's blocking claim.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States PostCompact is the right fit for re-injecting context, because it fires after
+            compaction completes (so the note survives into the freshly compacted context)
+        - id: c2
+          text: >-
+            States PreCompact fires before compaction runs and (unlike PostCompact) can block
+            compaction, but blocking is the wrong tool for merely re-seeding a note
+        - id: c3
+          text: >-
+            Concludes the colleague's reasoning is off-target: the goal is re-injection, not
+            prevention, so a non-blocking PostCompact (adding additionalContext) is correct and
+            PostCompact cannot block anyway
+      referenceAnswer: >-
+        PostCompact is the right event. It fires after context compaction completes, so a
+        PostCompact hook can add the note via additionalContext and have it land in the freshly
+        compacted context where the agent will see it again. PreCompact fires before compaction and
+        is distinctive in that it can block the compaction (exit 2 prevents it), but blocking is not
+        what re-seeding a note requires. The colleague's claim is off-target: the goal is
+        re-injection, not prevention, so reaching for PreCompact's blocking power solves a problem
+        the team does not have. (PostCompact also cannot block — it can only react and add context —
+        which is exactly what is wanted here.)
+      passThreshold: 0.6
+    guidance: >-
+      PreCompact (before) can block compaction; PostCompact (after) cannot block and is for reacting
+      once compaction has happened. Re-seeding a note that must survive compaction is a PostCompact
+      job via additionalContext. The evaluate-tier trap is conflating "fires around compaction" with
+      "needs to block": matching the event to the actual goal (re-injection vs prevention) is the
+      point.
+  - id: h-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A developer writes the matcher "Edit" intending to match only the Edit tool. A colleague
+      worries it will also fire on MultiEdit and NotebookEdit. Per documented matcher semantics, who
+      is right, and how do you guarantee it matches only Edit?
+    choices:
+      - id: a
+        text: >-
+          The colleague is right and there is no remedy: tool_name matchers are non-functional, so
+          switch to matching on tool_input instead
+      - id: b
+        text: >-
+          The colleague is right because matchers are always unanchored regex, so "Edit" can never
+          match only Edit
+      - id: c
+        text: >-
+          The developer is right: a plain alphanumeric matcher like "Edit" is an exact match, so it
+          fires only on the Edit tool, not MultiEdit or NotebookEdit
+      - id: d
+        text: >-
+          Neither: matchers are always exact, so any extra matches would be a bug in Claude Code to
+          report
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A bare alphanumeric string like "Edit" is treated as an exact match, so it matches only the
+      Edit tool and will NOT fire on MultiEdit or NotebookEdit — the developer is right.
+      Substring/regex behavior only kicks in when the matcher contains a regex metacharacter; in
+      that mode an unanchored "Edit" would match MultiEdit, so you would anchor it as ^Edit$. With
+      the plain exact form, no anchoring is needed.
+  - id: h-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      An enterprise admin wants hooks that individual developers cannot disable, while developers
+      want to add their own local convenience hooks. A developer claims "I can just set
+      disableAllHooks:true in my local settings to turn off the admin's hooks if they annoy me."
+      Evaluate this claim.
+    choices:
+      - id: a
+        text: >-
+          The claim is false for managed hooks: hooks defined in managed/policy settings take
+          precedence and still run; admins can also restrict hooks (e.g. allowManagedHooksOnly), so
+          a developer's local disableAllHooks cannot turn off the admin's enforced hooks
+      - id: b
+        text: >-
+          The claim is true: disableAllHooks in any settings file disables every hook including
+          managed ones
+      - id: c
+        text: The claim is true because local settings always override managed settings in Claude Code
+      - id: d
+        text: Managed hooks do not exist; all hooks live only in user and project settings
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Managed/policy settings take precedence and their hooks run even when a user sets
+      disableAllHooks locally; admins can further restrict hooks with controls like
+      allowManagedHooksOnly. Local settings do not override managed settings, which is precisely how
+      org-wide enforcement is maintained.
+  - id: h-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      Compare using a PreToolUse hook on Bash versus a Stop hook scanning git status --porcelain as
+      the mechanism to enforce "no changes to files under /protected". Weigh coverage versus timing,
+      and state when each is the better choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the PreToolUse approach blocks before the change but must correctly catch every
+            write path (Bash redirects, Edit/Write), which is error-prone for Bash
+        - id: c2
+          text: >-
+            States the Stop hook scans the actual worktree state so it catches changes regardless of
+            how they were made, but only after they have already happened (post-hoc)
+        - id: c3
+          text: >-
+            Concludes PreToolUse is better for prevention/hard-block while Stop-scan is better as a
+            catch-all safety net, and that combining them is strongest
+      referenceAnswer: >-
+        A PreToolUse hook blocks the change before it happens, which is what you want for true
+        prevention, but it must anticipate every way a file can be written: Edit and Write tools
+        plus arbitrary Bash redirects, so for Bash it is brittle and easy to under-match. A Stop
+        hook that runs git status --porcelain inspects the real worktree, so it catches a
+        protected-path change no matter how it was produced, but only after the fact, since the edit
+        has already landed by the time the turn ends. PreToolUse is the better choice when you must
+        prevent the action outright; the Stop-scan is the better catch-all safety net for detection;
+        combining both gives prevention with a backstop.
+      passThreshold: 0.6
+    guidance: >-
+      PreToolUse blocks before execution but only covers the write paths its matchers anticipate,
+      which is fragile for Bash. A Stop hook scanning git status --porcelain covers every change
+      path because it reads the actual worktree, but only post-hoc. Prevention wants PreToolUse;
+      detection/backstop wants the Stop scan; the robust pattern uses both.
+  - id: h-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 496
+    type: multiple_choice
+    prompt: >-
+      A hook author wants an action to be hard-denied with no chance of the model proceeding, and
+      writes a command hook that prints additionalContext like "do not run this command" and exits
+      0, assuming Claude will obey. Critique this enforcement strategy.
+    choices:
+      - id: a
+        text: 'It is sound: additionalContext is a binding instruction the model is guaranteed to follow'
+      - id: b
+        text: >-
+          It is unreliable: additionalContext is plain advisory text the model may or may not heed,
+          and exit 0 does not block; for a hard deny use permissionDecision "deny" (exit 0 JSON) or
+          exit 2, and for an unbypassable guarantee the permission system
+      - id: c
+        text: It is sound because any additionalContext automatically denies the matching tool call
+      - id: d
+        text: It fails only because additionalContext must be paired with exit 2 to take effect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      additionalContext injects plain advisory text the model reads as a reminder; it does not block
+      and the model is not guaranteed to comply. A real deny uses permissionDecision "deny" (exit 0
+      with JSON) or exit 2; an unbypassable guarantee belongs in the permission system. Treating
+      advisory text as enforcement is the core mistake.

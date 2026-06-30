@@ -52,7 +52,9 @@ const normalizeConfig = (
   now: string,
 ): Config =>
   ConfigSchema.parse({
-    toolsLearning: input.toolsLearning,
+    // toolsLearning is optional; omit when absent so ConfigSchema applies its
+    // default ([]) rather than passing undefined through the array validator.
+    ...(input.toolsLearning !== undefined ? { toolsLearning: input.toolsLearning } : {}),
     offerCadence: input.offerCadence,
     proactiveOffers: input.proactiveOffers,
     // Omit when absent so ConfigSchema applies its default (4); otherwise honor it.

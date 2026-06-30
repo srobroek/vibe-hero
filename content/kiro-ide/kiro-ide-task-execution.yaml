@@ -1,0 +1,2551 @@
+# Topic: kiro-ide-task-execution (kiro-ide)
+# Executing tasks.md in the Kiro IDE — task tracking, autopilot vs supervised runs, reviewing agent changes.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-task-execution
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE Task Execution
+summary: >-
+  Executing tasks.md in the Kiro IDE — task tracking, autopilot vs supervised runs, reviewing agent
+  changes.
+triggerSignals: []
+items:
+  - id: ktx-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: |
+      Which Kiro spec artifact contains the trackable implementation plan that you
+      execute?
+    choices:
+      - id: a
+        text: tasks.md
+      - id: b
+        text: design.md
+      - id: c
+        text: requirements.md
+      - id: d
+        text: structure.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      tasks.md "provides a detailed implementation plan with discrete, trackable
+      tasks." requirements.md and design.md precede it; structure.md is a steering file.
+  - id: ktx-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: |
+      According to Kiro's docs, what does tasks.md provide?
+    choices:
+      - id: a
+        text: A free-form prose summary of the feature with no status tracking
+      - id: b
+        text: A detailed implementation plan with discrete, trackable tasks
+      - id: c
+        text: The EARS acceptance criteria for the feature
+      - id: d
+        text: The architecture diagrams and error-handling design
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Kiro describes tasks.md as a detailed implementation plan of discrete,
+      trackable tasks with real-time status updates. Acceptance criteria live in
+      requirements.md; architecture lives in design.md.
+  - id: ktx-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: |
+      In the Kiro IDE, which chat mode is the DEFAULT for executing work?
+    choices:
+      - id: a
+        text: Supervised mode
+      - id: b
+        text: Read-only mode
+      - id: c
+        text: Autopilot mode
+      - id: d
+        text: Review mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Autopilot is the default: Kiro works autonomously to complete tasks
+      end-to-end. Supervised mode is the opt-in, approval-gated alternative.
+  - id: ktx-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      What are the two documented ways to run tasks from a Kiro tasks.md file?
+    choices:
+      - id: a
+        text: Run by feature branch, or by pull request
+      - id: b
+        text: Only run all tasks at once; individual runs are not supported
+      - id: c
+        text: Run via CLI only; the IDE cannot execute tasks
+      - id: d
+        text: Run a single task individually, or use "Run all Tasks"
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Tasks can run individually or via "Run all Tasks." Both surface inside the
+      tasks.md view in the IDE.
+  - id: ktx-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      When you click "Run all Tasks," which tasks does Kiro actually run?
+    choices:
+      - id: a
+        text: Only incomplete tasks that are marked as required
+      - id: b
+        text: Every task in the file, including already-completed ones
+      - id: c
+        text: Only the first task in the list
+      - id: d
+        text: Only tasks that have no dependencies
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "Run all Tasks" runs only incomplete tasks marked as required, skipping
+      completed and optional tasks.
+  - id: ktx-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      "Run all Tasks" groups independent tasks that can run concurrently into what?
+    choices:
+      - id: a
+        text: Sprints
+      - id: b
+        text: Waves
+      - id: c
+        text: Batches called "lanes"
+      - id: d
+        text: Epics
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Kiro builds a dependency graph and groups independent tasks into "waves"
+      that execute concurrently.
+  - id: ktx-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      Which structure does Kiro build to schedule "Run all Tasks" execution?
+    choices:
+      - id: a
+        text: A random shuffle
+      - id: b
+        text: A flat first-in-first-out queue
+      - id: c
+        text: A dependency graph
+      - id: d
+        text: An alphabetical ordering by task title
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro builds a dependency graph from the tasks, then groups independent tasks
+      into concurrent waves.
+  - id: ktx-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Which tasks.md control auto-detects implemented functionality and marks
+      tasks complete?
+    choices:
+      - id: a
+        text: Trust all
+      - id: b
+        text: Run all Tasks
+      - id: c
+        text: Generate Steering Docs
+      - id: d
+        text: Sync Files
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Clicking "Sync Files" in tasks.md auto-detects implemented functionality and
+      updates task completion status.
+  - id: ktx-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which context provider pulls a spec's files into a Kiro chat so work stays
+      aligned with the spec?
+    choices:
+      - id: a
+        text: '#spec'
+      - id: b
+        text: '#codebase'
+      - id: c
+        text: '#git'
+      - id: d
+        text: '#terminal'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The "#spec" context provider pulls in all associated spec files
+      (requirements.md, design.md, tasks.md) for requirement-aligned implementation.
+  - id: ktx-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: |
+      In Kiro's hook trigger set, which trigger fires immediately BEFORE a spec
+      task is executed?
+    choices:
+      - id: a
+        text: PostTaskExec
+      - id: b
+        text: PreTaskExec
+      - id: c
+        text: PreToolUse
+      - id: d
+        text: SessionStart
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      PreTaskExec fires before a task runs and is blockable (exit code 2 blocks it).
+      PostTaskExec fires after.
+  - id: ktx-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: |
+      Which Kiro hook trigger fires immediately AFTER a spec task completes?
+    choices:
+      - id: a
+        text: Stop
+      - id: b
+        text: PreTaskExec
+      - id: c
+        text: PostTaskExec
+      - id: d
+        text: PostFileSave
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      PostTaskExec fires after a task finishes; it is not blockable. PreTaskExec is
+      the blockable pre-task trigger.
+  - id: ktx-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: |
+      Besides clicking "Sync Files," what is the other documented way to mark
+      Kiro spec tasks complete?
+    choices:
+      - id: a
+        text: Re-run the requirements phase
+      - id: b
+        text: Delete the task line from tasks.md
+      - id: c
+        text: Restart the IDE
+      - id: d
+        text: Ask Kiro in a spec chat to scan the codebase for what is implemented
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The two ways are clicking "Sync Files" or asking Kiro in a spec chat to scan
+      the codebase and detect completed functionality.
+  - id: ktx-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: |
+      In Supervised mode, when does Kiro pause and yield for your approval?
+    choices:
+      - id: a
+        text: After each turn that contains file edits
+      - id: b
+        text: Only when the entire run finishes
+      - id: c
+        text: Never; supervised mode is fully autonomous
+      - id: d
+        text: Only when an MCP server is invoked
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Supervised mode yields for your approval after each turn that contains file
+      edits, surfacing changes as accept/reject hunks.
+  - id: ktx-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: free_form
+    prompt: |
+      Name the three spec files Kiro's spec workflow produces, in the order they
+      are created, and say which one you execute.
+    guidance: |
+      Looking for requirements.md -> design.md -> tasks.md, with tasks.md being the
+      one you execute.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names requirements.md, design.md, and tasks.md.
+        - id: c2
+          text: >-
+            Gives the order requirements -> design -> tasks and identifies tasks.md as the
+            executed/implementation file.
+      referenceAnswer: |
+        The spec workflow produces requirements.md, then design.md, then tasks.md.
+        tasks.md is the executable, trackable implementation plan you run.
+      passThreshold: 0.6
+  - id: ktx-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: free_form
+    prompt: |
+      What does the "Sync Files" control in tasks.md do?
+    guidance: |
+      Looking for: auto-detects implemented functionality and updates task
+      completion status.
+    rubric:
+      criteria:
+        - id: c1
+          text: States it detects/auto-detects implemented functionality in the codebase.
+        - id: c2
+          text: States it updates task completion status (marks tasks done).
+      referenceAnswer: |
+        "Sync Files" scans the codebase, auto-detects which task functionality is
+        already implemented, and updates the completion status of tasks in tasks.md.
+      passThreshold: 0.6
+  - id: ktx-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: free_form
+    prompt: |
+      What is the term Kiro uses for the groups of independent tasks that "Run all
+      Tasks" executes concurrently, and what does it build to form them?
+    guidance: |
+      Looking for "waves" and "dependency graph."
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the groups "waves."
+        - id: c2
+          text: States they come from a dependency graph of the tasks.
+      referenceAnswer: |
+        Kiro builds a dependency graph and groups independent tasks into "waves"
+        that run concurrently.
+      passThreshold: 0.6
+  - id: ktx-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: |
+      Which two Kiro hook triggers bracket the execution of a spec task, and which
+      one can block the task from running?
+    guidance: |
+      Looking for PreTaskExec and PostTaskExec, with PreTaskExec being the
+      blockable one.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names PreTaskExec and PostTaskExec.
+        - id: c2
+          text: Identifies PreTaskExec as the blockable trigger.
+      referenceAnswer: |
+        PreTaskExec fires before a task and PostTaskExec fires after. PreTaskExec
+        is blockable (a non-zero/2 exit code can prevent the task from running);
+        PostTaskExec is not blockable.
+      passThreshold: 0.6
+  - id: ktx-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: free_form
+    prompt: |
+      Name the IDE chat mode that runs tasks end-to-end without per-step approval,
+      and the mode that pauses for approval after edits.
+    guidance: |
+      Looking for Autopilot (autonomous, default) and Supervised (approval-gated).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Autopilot as the autonomous/end-to-end mode.
+        - id: c2
+          text: Names Supervised as the approval-after-edits mode.
+      referenceAnswer: |
+        Autopilot runs tasks autonomously end-to-end (the default). Supervised mode
+        yields for approval after each turn that contains file edits.
+      passThreshold: 0.6
+  - id: ktx-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: |
+      Which two task attributes determine whether "Run all Tasks" will execute a
+      given task?
+    guidance: |
+      Looking for completion status (incomplete) and required-vs-optional (required).
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions the task must be incomplete (not already done).
+        - id: c2
+          text: Mentions the task must be marked required (not optional).
+      referenceAnswer: |
+        "Run all Tasks" runs a task only if it is both incomplete and marked as
+        required; completed tasks and optional tasks are skipped.
+      passThreshold: 0.6
+  - id: ktx-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: |
+      What does the "#spec" context provider do when referenced in a Kiro chat?
+    guidance: |
+      Looking for: pulls in all associated spec files so work stays
+      requirement-aligned.
+    rubric:
+      criteria:
+        - id: c1
+          text: States it references/pulls in the spec's files.
+        - id: c2
+          text: States the purpose is requirement-aligned implementation (keeps work tied to the spec).
+      referenceAnswer: |
+        Referencing "#spec" pulls all of a spec's associated files
+        (requirements.md, design.md, tasks.md) into the chat context so Kiro
+        implements in alignment with the spec.
+      passThreshold: 0.6
+  - id: ktx-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: |
+      Why does "Run all Tasks" build a dependency graph instead of running tasks
+      strictly top-to-bottom?
+    choices:
+      - id: a
+        text: So independent tasks can run concurrently in waves, finishing faster
+      - id: b
+        text: To guarantee tasks always run in reverse order
+      - id: c
+        text: To avoid ever running more than one task at a time
+      - id: d
+        text: Because tasks.md is unordered and has no sequence
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The dependency graph lets Kiro identify which tasks are independent and run
+      those concurrently in waves, rather than serializing everything.
+  - id: ktx-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: |
+      How does Supervised mode differ from Autopilot in how changes reach your
+      working tree?
+    choices:
+      - id: a
+        text: Supervised never writes files; Autopilot writes only to a sandbox
+      - id: b
+        text: >-
+          Supervised surfaces changes as accept/reject hunks before they stick; Autopilot applies
+          them and lets you review/revert after
+      - id: c
+        text: They are identical except for a label
+      - id: d
+        text: Autopilot requires per-hunk approval; Supervised does not
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Supervised pauses after edit-containing turns and presents per-hunk
+      accept/reject. Autopilot proceeds autonomously but still lets you view all
+      changes and revert.
+  - id: ktx-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      Why is "Sync Files" useful even when you executed tasks outside the spec
+      runner (e.g., by hand-editing code)?
+    choices:
+      - id: a
+        text: It only works on tasks Kiro itself executed
+      - id: b
+        text: It deletes any code that does not match a task
+      - id: c
+        text: >-
+          It scans the codebase and marks tasks complete based on what is actually implemented,
+          regardless of who wrote the code
+      - id: d
+        text: It regenerates requirements.md from the code
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Sync Files reconciles tasks.md against the actual codebase, so manually
+      implemented functionality still gets detected and the checklist stays accurate.
+  - id: ktx-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      Why might you reference "#spec" in a chat before asking Kiro to implement a
+      single task?
+    choices:
+      - id: a
+        text: It deletes the other spec files to save tokens
+      - id: b
+        text: It is the only way to open a terminal
+      - id: c
+        text: It disables Autopilot for that turn
+      - id: d
+        text: >-
+          So the model has the requirements and design context, keeping the implementation aligned
+          with the agreed spec
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Pulling the spec into context grounds the implementation in the
+      requirements and design, reducing drift from the agreed plan.
+  - id: ktx-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      A PreTaskExec hook exits with code 2 and writes to STDERR. What happens?
+    choices:
+      - id: a
+        text: The task is blocked and the STDERR text is returned to the agent
+      - id: b
+        text: The task runs anyway and STDERR is ignored
+      - id: c
+        text: The whole IDE crashes
+      - id: d
+        text: The task is marked complete automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      For blockable triggers (PreTaskExec, PreToolUse, UserPromptSubmit), exit code
+      2 blocks execution and STDERR is fed back to the agent as feedback.
+  - id: ktx-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: |
+      Why is "tasks run one-at-a-time, strictly top to bottom" a misconception
+      about Kiro's "Run all Tasks"?
+    choices:
+      - id: a
+        text: Because tasks always run bottom to top instead
+      - id: b
+        text: Because independent tasks are grouped into waves and run concurrently
+      - id: c
+        text: Because tasks never have any ordering at all
+      - id: d
+        text: Because only one task in the entire file is ever runnable
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The dependency graph yields waves of independent tasks that execute
+      concurrently, so execution is not a strict serial top-to-bottom pass.
+  - id: ktx-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      How do task dependencies constrain wave scheduling in "Run all Tasks"?
+    choices:
+      - id: a
+        text: Dependencies force every task into its own separate wave
+      - id: b
+        text: Dependencies are ignored; every task runs in wave one
+      - id: c
+        text: A task only enters a wave once all tasks it depends on have completed
+      - id: d
+        text: Dependencies only affect optional tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      A dependent task cannot run until its prerequisites finish, so it is
+      scheduled into a later wave; only tasks with satisfied dependencies join the
+      current wave.
+  - id: ktx-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: |
+      What is the practical reason to keep some tasks marked "optional" rather than
+      "required" in tasks.md?
+    choices:
+      - id: a
+        text: Optional tasks cannot have dependencies
+      - id: b
+        text: Optional tasks run first and required tasks never run
+      - id: c
+        text: Optional tasks are deleted on save
+      - id: d
+        text: So "Run all Tasks" skips them, letting you reserve them for manual or later execution
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      "Run all Tasks" runs only required incomplete tasks, so marking work optional
+      keeps it out of the automated sweep until you choose to run it.
+  - id: ktx-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: |
+      In Autopilot, you can still "View all changes" and "Revert." Why does that
+      matter for task execution?
+    choices:
+      - id: a
+        text: It gives an after-the-fact review/undo path even though Autopilot did not pause per edit
+      - id: b
+        text: It converts Autopilot into Supervised permanently
+      - id: c
+        text: It prevents Kiro from ever writing files
+      - id: d
+        text: It is only available when no tasks were run
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Autopilot trades per-step approval for speed but preserves a review surface:
+      you can inspect the aggregate diff and revert if the task output is wrong.
+  - id: ktx-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: |
+      Why does asking Kiro to "scan the codebase" complement clicking "Sync Files"
+      for marking completion?
+    choices:
+      - id: a
+        text: The chat scan ignores the codebase entirely
+      - id: b
+        text: >-
+          Both reconcile tasks against real implementation; the chat scan can also reason about
+          partial/ambiguous cases conversationally
+      - id: c
+        text: They contradict each other and must never both be used
+      - id: d
+        text: The chat scan only renames tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Both approaches detect what is implemented; the chat-driven scan adds a
+      conversational layer for nuanced or partially-done tasks.
+  - id: ktx-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: |
+      A PostTaskExec hook with an agent action has timeout set to 5 seconds. Why
+      will the timeout have no effect?
+    choices:
+      - id: a
+        text: Agent actions cannot be attached to PostTaskExec
+      - id: b
+        text: PostTaskExec hooks always run for exactly 5 seconds
+      - id: c
+        text: The timeout field is ignored for agent actions
+      - id: d
+        text: Timeout only applies to PreTaskExec
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro's hook docs state the timeout field applies to command actions; it is
+      ignored for agent actions.
+  - id: ktx-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: |
+      Conceptually, how does tasks.md relate to requirements.md and design.md in
+      the spec workflow?
+    choices:
+      - id: a
+        text: tasks.md and design.md are the same document
+      - id: b
+        text: tasks.md replaces requirements.md once approved
+      - id: c
+        text: tasks.md is generated before requirements and design exist
+      - id: d
+        text: >-
+          tasks.md decomposes the agreed requirements and design into executable, trackable units of
+          work
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Requirements -> Design -> Tasks: tasks.md turns the prior artifacts into a
+      concrete, trackable implementation plan.
+  - id: ktx-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: |
+      Why might you run a single task individually rather than using "Run all Tasks"?
+    choices:
+      - id: a
+        text: To get tighter, step-by-step control and review of one unit of work at a time
+      - id: b
+        text: Because individual runs ignore the task dependency graph entirely
+      - id: c
+        text: Because "Run all Tasks" cannot run required tasks
+      - id: d
+        text: Because individual runs are the only way to mark a task complete
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Running one task gives focused control and a smaller diff to review, useful for risky or
+      ambiguous work; "Run all Tasks" trades that for concurrent throughput.
+  - id: ktx-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: free_form
+    prompt: |
+      Explain how Kiro decides which tasks to run in the first "wave" of a
+      "Run all Tasks" execution.
+    guidance: |
+      Looking for: builds a dependency graph; tasks with no unmet dependencies (and
+      that are incomplete + required) form the first wave and run concurrently.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions building a dependency graph.
+        - id: c2
+          text: >-
+            States the first wave is the independent tasks (no unmet dependencies) that are required
+            and incomplete.
+        - id: c3
+          text: States those run concurrently.
+      referenceAnswer: |
+        Kiro builds a dependency graph of the tasks. The tasks that have no
+        unsatisfied dependencies, are incomplete, and are marked required form the
+        first wave, and Kiro runs them concurrently. Dependent tasks wait for later
+        waves once their prerequisites finish.
+      passThreshold: 0.6
+  - id: ktx-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: free_form
+    prompt: |
+      Contrast how you review agent changes in Autopilot vs Supervised mode.
+    guidance: |
+      Looking for: Supervised = per-hunk accept/reject after each edit turn before
+      changes are accepted; Autopilot = runs autonomously, review the aggregate diff
+      and revert afterward.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes Supervised as pausing after edit turns with per-hunk (accept/reject) review.
+        - id: c2
+          text: >-
+            Describes Autopilot as autonomous with after-the-fact review (view all changes /
+            revert).
+      referenceAnswer: |
+        In Supervised mode Kiro pauses after each turn that contains file edits and
+        presents the changes as hunks you accept or reject (per-hunk, per-file, or
+        all). In Autopilot it proceeds without per-step approval, but you can still
+        view all changes and revert after the fact.
+      passThreshold: 0.6
+  - id: ktx-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: free_form
+    prompt: |
+      An agentic IDE like Kiro can run shell commands as part of executing a spec
+      task. Explain why granting that command-execution trust should be an explicit,
+      user-controlled decision rather than something a cloned repository can turn on
+      for itself.
+    guidance: |
+      Looking for: command execution is powerful/dangerous, so trust must be granted
+      by the user (a prompt/approval), and that grant must not be inheritable from
+      fetched code, or a malicious repo could auto-run commands on clone.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that autonomous command execution is high-risk, so trust must be an explicit user
+            grant (approval/prompt).
+        - id: c2
+          text: >-
+            Explains that if a repo could carry/inject its own trust, cloning untrusted code would
+            auto-grant the agent dangerous permissions (a supply-chain risk).
+      referenceAnswer: |
+        Executing arbitrary shell commands is one of the most dangerous things an
+        agent can do, so the safe design is that the user must explicitly grant that
+        trust (typically by approving a prompt). If trust could instead be inherited
+        from the code you fetched, cloning an untrusted or malicious repository would
+        silently auto-grant the agent permission to run commands on your machine - a
+        supply-chain escalation. Keeping the grant an explicit, user-controlled
+        decision means a clone starts untrusted and cannot approve itself.
+      passThreshold: 0.6
+  - id: ktx-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: |
+      Why does Kiro mark tasks.md with "real-time status updates," and how does
+      that help during a long "Run all Tasks" run?
+    guidance: |
+      Looking for: status updates live as tasks start/finish so you can watch
+      progress, see which wave/task is running, and catch failures without waiting
+      for the whole run.
+    rubric:
+      criteria:
+        - id: c1
+          text: States status updates reflect progress live (as tasks run/complete).
+        - id: c2
+          text: 'Explains the benefit: observe progress / spot a stuck or failed task during the run.'
+      referenceAnswer: |
+        tasks.md updates status in real time, so during a long run you can see which
+        tasks have started, completed, or are in progress, track wave progress, and
+        notice a stalled or failed task without waiting for the entire run to end.
+      passThreshold: 0.6
+  - id: ktx-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: |
+      Explain the role a PreTaskExec hook can play in gating spec task execution,
+      using exit codes.
+    guidance: |
+      Looking for: PreTaskExec runs before a task; exit 0 lets it proceed, exit 2
+      blocks it (with STDERR returned to the agent), other codes warn but proceed.
+    rubric:
+      criteria:
+        - id: c1
+          text: States PreTaskExec runs before the task and is blockable.
+        - id: c2
+          text: Maps exit 0 = proceed and exit 2 = block (with STDERR returned to the agent).
+      referenceAnswer: |
+        A PreTaskExec hook runs before the task and is blockable. Exit code 0 lets
+        the task proceed; exit code 2 blocks it and the STDERR text is returned to
+        the agent; any other non-zero code emits a warning but lets execution
+        continue. This lets a hook enforce a gate (e.g., refuse a task if a
+        precondition fails).
+      passThreshold: 0.6
+  - id: ktx-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: free_form
+    prompt: |
+      Why is "you must manually check off every task" a misconception in Kiro?
+    guidance: |
+      Looking for: Sync Files / codebase scan can auto-detect implemented work and
+      update completion status, so manual checking is not required.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Kiro can auto-detect completion (Sync Files or codebase scan).
+        - id: c2
+          text: Concludes manual per-task checking is therefore not required.
+      referenceAnswer: |
+        It is a misconception because Kiro can auto-detect completion: clicking
+        "Sync Files" or asking Kiro to scan the codebase reconciles tasks.md against
+        what is actually implemented, so you need not manually check off each task.
+      passThreshold: 0.6
+  - id: ktx-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: |
+      Explain how marking tasks "required" vs "optional" interacts with
+      "Run all Tasks."
+    guidance: |
+      Looking for: Run all Tasks executes only incomplete + required tasks; optional
+      tasks are skipped and must be run individually.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Run all Tasks runs only incomplete required tasks.
+        - id: c2
+          text: States optional tasks are skipped by the sweep (run them individually instead).
+      referenceAnswer: |
+        "Run all Tasks" only runs tasks that are incomplete and marked required, so
+        optional tasks are skipped by the automated sweep; you run those
+        individually when you want them.
+      passThreshold: 0.6
+  - id: ktx-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: |
+      Your tasks.md has tasks 1-6. Tasks 3 and 5 are marked optional; task 4
+      depends on task 2; everything else is required and incomplete. You click
+      "Run all Tasks." Which tasks run in wave one?
+    choices:
+      - id: a
+        text: Tasks 1, 2, and 6
+      - id: b
+        text: Tasks 1 through 6
+      - id: c
+        text: Tasks 3 and 5
+      - id: d
+        text: Only task 1
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Optional 3 and 5 are skipped. Task 4 waits for task 2. Required, incomplete,
+      dependency-free tasks 1, 2, and 6 form wave one; task 4 runs in a later wave.
+  - id: ktx-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: |
+      A teammate hand-coded the feature for tasks 1-3 last night. You open the spec
+      today and tasks.md still shows them unchecked. What is the fastest documented
+      way to reflect reality?
+    choices:
+      - id: a
+        text: Delete and recreate the spec
+      - id: b
+        text: Click "Sync Files" so Kiro detects the implemented functionality and updates status
+      - id: c
+        text: Re-run all tasks so Kiro re-implements them
+      - id: d
+        text: Edit requirements.md to remove those tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Sync Files reconciles tasks against the actual codebase, marking the already-
+      implemented tasks complete without re-running them.
+  - id: ktx-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      You want Kiro to implement exactly one task and you want it grounded in the
+      spec's requirements and design. What do you do?
+    choices:
+      - id: a
+        text: Delete the other tasks from tasks.md first
+      - id: b
+        text: Click "Run all Tasks" and cancel after the first wave
+      - id: c
+        text: In a spec chat, reference "#spec" and ask Kiro to implement that single task
+      - id: d
+        text: Switch the IDE to read-only mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Referencing "#spec" loads the requirements/design/tasks context; you then ask
+      Kiro to run just that one task, keeping it aligned with the spec.
+  - id: ktx-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: |
+      You are doing a high-stakes change and want to inspect every edit hunk before
+      it sticks while tasks run. Which setup fits?
+    choices:
+      - id: a
+        text: Set all tasks to optional
+      - id: b
+        text: Stay in Autopilot and hope to revert later
+      - id: c
+        text: Disable the spec entirely
+      - id: d
+        text: Switch to Supervised mode so Kiro yields after each edit turn for per-hunk accept/reject
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Supervised mode is exactly this: it pauses after edit-containing turns and
+      lets you accept/reject each hunk before changes are applied.
+  - id: ktx-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      You want to forbid any spec task from running until a "scripts/preflight.sh"
+      check passes. Which hook configuration fits best?
+    choices:
+      - id: a
+        text: >-
+          A PreTaskExec hook with a command action that runs preflight.sh and exits 2 to block on
+          failure
+      - id: b
+        text: A PostTaskExec hook that runs preflight.sh after the task
+      - id: c
+        text: A SessionStart hook that exits 2
+      - id: d
+        text: A PostFileSave hook on tasks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      PreTaskExec runs before each task and is blockable; exiting 2 on a failed
+      preflight prevents the task from executing.
+  - id: ktx-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: |
+      During a "Run all Tasks" run, wave two never starts even though wave one
+      finished. Most of wave-two's tasks depend on a single wave-one task that
+      failed. What is the likely cause?
+    choices:
+      - id: a
+        text: Kiro only ever runs a single wave
+      - id: b
+        text: Dependent tasks are waiting on the failed prerequisite, so their wave cannot proceed
+      - id: c
+        text: Optional tasks block required ones
+      - id: d
+        text: tasks.md must be re-sorted alphabetically
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A task only enters its wave once its prerequisites complete successfully; a
+      failed upstream task stalls everything that depends on it.
+  - id: ktx-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      You finished implementing a feature by mixing manual edits and a couple of
+      Kiro task runs. You want tasks.md to truthfully reflect what is done without
+      re-running anything. Best move?
+    choices:
+      - id: a
+        text: Manually rewrite design.md
+      - id: b
+        text: Click "Run all Tasks" to re-do everything
+      - id: c
+        text: >-
+          Ask Kiro in the spec chat to scan the codebase (or click Sync Files) to detect and mark
+          completed tasks
+      - id: d
+        text: Delete tasks.md and let Kiro regenerate it from scratch
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Both Sync Files and a chat-driven codebase scan reconcile completion status
+      against the actual code, no re-execution needed.
+  - id: ktx-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      You want to log a record after every spec task completes, but the logger is
+      an AI summarization step (an agent prompt). You set timeout: 30. What should
+      you expect?
+    choices:
+      - id: a
+        text: The hook blocks the next task until the summary returns
+      - id: b
+        text: The hook is rejected because PostTaskExec cannot have agent actions
+      - id: c
+        text: The summarization is force-killed at 30 seconds
+      - id: d
+        text: >-
+          A PostTaskExec hook with an agent action works, but the timeout is ignored for agent
+          actions
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      PostTaskExec supports agent actions, but timeout applies only to command
+      actions; for agent actions it is ignored. PostTaskExec is also not blockable.
+  - id: ktx-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: |
+      Your team wants Autopilot speed but a single point to audit what changed
+      after each spec task. Which built-in capability do you rely on?
+    choices:
+      - id: a
+        text: Autopilot's "View all changes" diff plus Revert
+      - id: b
+        text: A mandatory per-hunk prompt
+      - id: c
+        text: Deleting the spec after each task
+      - id: d
+        text: Disabling MCP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Autopilot does not prompt per step but exposes an aggregate "View all
+      changes" diff and a Revert action for after-the-fact auditing.
+  - id: ktx-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      You want certain tasks excluded from the automated sweep but still listed in
+      the plan for later manual execution. What do you do in tasks.md?
+    choices:
+      - id: a
+        text: Delete them from tasks.md
+      - id: b
+        text: Mark those tasks optional so "Run all Tasks" skips them
+      - id: c
+        text: Add them to design.md instead
+      - id: d
+        text: Mark them required so they always run last
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      "Run all Tasks" runs only required incomplete tasks; marking them optional
+      keeps them in the plan but out of the sweep until you run them individually.
+  - id: ktx-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: |
+      A reviewer rejected three hunks in a Supervised run and accepted the rest.
+      What is the state of your working tree?
+    choices:
+      - id: a
+        text: The entire task was rolled back
+      - id: b
+        text: All hunks were applied; rejection only logs a note
+      - id: c
+        text: Only the accepted hunks were applied; the rejected hunks were not written
+      - id: d
+        text: Nothing was applied until the run fully ends
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Supervised mode applies the hunks you accept and discards the ones you reject,
+      at hunk granularity.
+  - id: ktx-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: |
+      You are about to kick off "Run all Tasks" on a 40-task spec but two tasks are
+      still drafts you do not want touched yet. The cleanest way to protect them?
+    choices:
+      - id: a
+        text: Move them into requirements.md
+      - id: b
+        text: Rename tasks.md so Kiro cannot find it
+      - id: c
+        text: Trust-all so they run faster
+      - id: d
+        text: >-
+          Mark the two draft tasks optional (or complete them out of scope) so the required-only
+          sweep skips them
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Because "Run all Tasks" only runs required incomplete tasks, marking the
+      drafts optional keeps them out of the automated run.
+  - id: ktx-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >
+      You must implement one sensitive task strictly per the spec, reviewing each edit. Which
+      combination fits best?
+    choices:
+      - id: a
+        text: >-
+          Switch to Supervised mode, reference "#spec", and run just that task, accepting/rejecting
+          hunks
+      - id: b
+        text: Stay in Autopilot, run all tasks, and skip review
+      - id: c
+        text: Delete the spec files so the agent improvises
+      - id: d
+        text: Mark every task optional and paste code by hand
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Supervised gives per-hunk review, "#spec" keeps the work aligned to requirements/design, and
+      running the single task limits blast radius.
+  - id: ktx-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: free_form
+    prompt: |
+      A spec has tasks A, B, C, D. B and C both depend on A; D depends on B. None
+      are optional and all are incomplete. Describe the wave schedule Kiro would
+      use for "Run all Tasks."
+    guidance: |
+      Looking for: wave 1 = A; wave 2 = B and C (concurrently); wave 3 = D.
+    rubric:
+      criteria:
+        - id: c1
+          text: Wave 1 is A alone (only dependency-free task).
+        - id: c2
+          text: Wave 2 runs B and C concurrently after A completes.
+        - id: c3
+          text: Wave 3 runs D after B completes.
+      referenceAnswer: |
+        Wave 1 runs A (the only task with no dependencies). After A completes, wave
+        2 runs B and C concurrently since both depend only on A. After B completes,
+        wave 3 runs D, which depends on B.
+      passThreshold: 0.6
+  - id: ktx-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: |
+      You inherited a half-implemented feature with a Kiro spec. Outline the steps
+      to bring tasks.md in sync with the code and then finish the remaining work.
+    guidance: |
+      Looking for: open the spec, Sync Files (or ask Kiro to scan the codebase) to
+      mark done tasks, then run the remaining required incomplete tasks (Run all
+      Tasks or individually), reviewing changes.
+    rubric:
+      criteria:
+        - id: c1
+          text: Reconcile completion first via Sync Files or a codebase scan.
+        - id: c2
+          text: Then execute the remaining required incomplete tasks (Run all Tasks or individually).
+        - id: c3
+          text: Mentions reviewing the agent's changes (Supervised hunks or Autopilot diff).
+      referenceAnswer: |
+        Open the spec and click "Sync Files" (or ask Kiro in the spec chat to scan
+        the codebase) so already-implemented tasks are marked complete. Then run the
+        remaining required incomplete tasks with "Run all Tasks" or individually,
+        reviewing the agent's changes via Supervised hunks or Autopilot's view-all-
+        changes diff before keeping them.
+      passThreshold: 0.6
+  - id: ktx-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: |
+      Write the concept of a Kiro hook that blocks any spec task from running while
+      the working tree has uncommitted changes. Name the trigger, the action type,
+      and the exit-code behavior.
+    guidance: |
+      Looking for: PreTaskExec trigger, command action that checks git status, exit
+      2 to block (STDERR explains why), exit 0 to allow.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the PreTaskExec trigger (blockable, before task).
+        - id: c2
+          text: Uses a command action that checks git working-tree state.
+        - id: c3
+          text: Exits 2 to block on dirty tree (else 0 to allow).
+      referenceAnswer: |
+        Use a PreTaskExec hook with a command action that runs a git status check.
+        If the working tree is dirty, the script writes an explanation to STDERR and
+        exits 2, which blocks the task and returns the message to the agent; if
+        clean it exits 0 and the task proceeds.
+      passThreshold: 0.6
+  - id: ktx-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: free_form
+    prompt: |
+      You are reviewing a Kiro agent's task output in Supervised mode and disagree
+      with one file's changes entirely but like the rest. Describe how you act on
+      each, and what ends up in your working tree.
+    guidance: |
+      Looking for: reject the whole disliked file (reject its hunks), accept the
+      other files'/hunks' changes; only accepted hunks are written.
+    rubric:
+      criteria:
+        - id: c1
+          text: Rejects the disliked file's hunks (per-file/per-hunk rejection).
+        - id: c2
+          text: Accepts the remaining hunks/files.
+        - id: c3
+          text: States only accepted changes are applied to the working tree.
+      referenceAnswer: |
+        In Supervised mode you reject the hunks for the file you disagree with (you
+        can reject per hunk or for the whole file) and accept the others. Only the
+        accepted hunks are written to the working tree; the rejected file is left
+        unchanged.
+      passThreshold: 0.6
+  - id: ktx-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: free_form
+    prompt: |
+      Given a 25-task spec where roughly half the tasks are independent, explain
+      how to use "Run all Tasks" effectively and what you should watch for during
+      the run.
+    guidance: |
+      Looking for: Run all Tasks builds waves so independents run concurrently;
+      watch tasks.md real-time status, watch for a failed prerequisite stalling a
+      wave, review the resulting changes.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains independents run concurrently in waves (faster than serial).
+        - id: c2
+          text: Says to monitor real-time task status during the run.
+        - id: c3
+          text: Notes a failed prerequisite can stall dependent waves, and you should review changes.
+      referenceAnswer: |
+        Use "Run all Tasks": Kiro builds a dependency graph and runs the independent
+        tasks concurrently in waves, so the run is faster than serial execution.
+        Watch the real-time status in tasks.md to track wave progress, and watch for
+        a failed prerequisite task that would stall the dependent tasks in later
+        waves. Review the agent's aggregate changes afterward before keeping them.
+      passThreshold: 0.6
+  - id: ktx-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: |
+      You want a safe first run of a brand-new spec where you trust nothing yet.
+      Describe how to configure execution and review so no edit is applied without
+      your sign-off.
+    guidance: |
+      Looking for: switch to Supervised mode (approval after each edit turn),
+      accept/reject hunks, optionally run tasks individually, use the diff to vet
+      each change.
+    rubric:
+      criteria:
+        - id: c1
+          text: Switch to Supervised mode so edits require approval.
+        - id: c2
+          text: Review and accept/reject per-hunk before changes apply.
+        - id: c3
+          text: Optionally run tasks individually for tighter control.
+      referenceAnswer: |
+        Switch to Supervised mode so Kiro yields after each edit-containing turn and
+        surfaces changes as hunks; accept or reject each one so nothing is applied
+        without sign-off. For tightest control, run tasks individually rather than
+        "Run all Tasks," reviewing the diff for each task.
+      passThreshold: 0.6
+  - id: ktx-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: |
+      A task in tasks.md keeps getting skipped by "Run all Tasks" even though it is
+      not done. Walk through the two attributes you would check and how to fix it.
+    guidance: |
+      Looking for: check whether it is marked optional (mark required) and whether
+      it is incorrectly marked complete (un-complete / Sync Files mis-detection);
+      also check dependencies on an unfinished prerequisite.
+    rubric:
+      criteria:
+        - id: c1
+          text: Checks whether the task is marked optional (and makes it required).
+        - id: c2
+          text: Checks whether it is wrongly marked complete (or stuck behind an unmet dependency).
+      referenceAnswer: |
+        "Run all Tasks" runs only required incomplete tasks, so first check whether
+        the task is marked optional and mark it required. Next check whether it was
+        wrongly marked complete (e.g., a Sync Files false positive) and reset its
+        status. Finally, confirm it is not waiting on an unfinished prerequisite,
+        which would defer it to a later wave rather than skip it.
+      passThreshold: 0.6
+  - id: ktx-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: |
+      A "Run all Tasks" run completes "successfully" but several features described
+      in requirements.md are missing. tasks.md shows all required tasks complete.
+      What is the most likely root cause to investigate first?
+    choices:
+      - id: a
+        text: >-
+          The missing work was captured as optional tasks (skipped by the required-only sweep) or
+          never decomposed into tasks at all
+      - id: b
+        text: Autopilot silently deleted requirements.md
+      - id: c
+        text: Waves always drop the last task
+      - id: d
+        text: Sync Files unchecked the completed tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      "Run all Tasks" only runs required incomplete tasks; gaps usually trace to
+      work left optional or to requirements that were never turned into tasks. The
+      completion marks reflect the tasks that ran, not unwritten work.
+  - id: ktx-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: |
+      After clicking "Sync Files," a task you have NOT implemented is marked
+      complete. What is the most plausible explanation?
+    choices:
+      - id: a
+        text: Sync Files always marks the first task complete
+      - id: b
+        text: >-
+          Existing code coincidentally matches the task's detectable signature, so the
+          auto-detection produced a false positive
+      - id: c
+        text: Sync Files runs the task and then marks it
+      - id: d
+        text: Sync Files reads only optional tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Auto-detection infers completion from the codebase; pre-existing or similar
+      code can trigger a false positive. Always verify Sync Files results against
+      the requirement.
+  - id: ktx-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: |
+      In Autopilot, a long task run produced a large, partly-wrong diff. You want
+      to keep the good parts but the only built-in undo you used was "Revert."
+      Why is Supervised mode a better fit for this workflow going forward?
+    choices:
+      - id: a
+        text: Autopilot cannot produce diffs at all
+      - id: b
+        text: Supervised runs faster than Autopilot
+      - id: c
+        text: >-
+          Supervised lets you accept/reject at hunk granularity as edits happen, instead of an
+          all-or-nothing after-the-fact revert
+      - id: d
+        text: Revert is unavailable in Supervised mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Autopilot's review is after the fact and Revert is coarse. Supervised's
+      per-hunk accept/reject gives fine-grained control while the agent works.
+  - id: ktx-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: multiple_choice
+    prompt: |
+      A PreTaskExec hook is meant to block tasks when lint fails, but tasks keep
+      running anyway. The script returns exit code 1 on lint failure. What is the bug?
+    choices:
+      - id: a
+        text: Hooks ignore exit codes entirely
+      - id: b
+        text: PreTaskExec cannot block tasks at all
+      - id: c
+        text: The hook should use PostTaskExec
+      - id: d
+        text: Only exit code 2 blocks; exit code 1 is treated as a warning that proceeds
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      For blockable triggers, exit code 2 blocks; any other non-zero code is a
+      warning and execution proceeds. The script must exit 2 to block.
+  - id: ktx-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: |
+      "Run all Tasks" on a 12-task spec runs everything in a single wave even
+      though tasks 2-12 logically depend on task 1. Which root cause best explains it?
+    choices:
+      - id: a
+        text: The dependencies were not expressed in tasks.md, so the graph saw all tasks as independent
+      - id: b
+        text: Kiro ignores dependencies during "Run all Tasks"
+      - id: c
+        text: Optional tasks force single-wave execution
+      - id: d
+        text: The spec has too many tasks for waves
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Wave scheduling is only as good as the declared dependencies; if they are
+      missing from tasks.md, the graph treats the tasks as independent and runs them
+      together, risking ordering bugs.
+  - id: ktx-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      A single task that Kiro implemented compiles and is marked done, but it
+      contradicts a constraint written in requirements.md. The developer ran the
+      task from a plain chat without referencing the spec. What most likely caused
+      the drift?
+    choices:
+      - id: a
+        text: tasks.md silently overrides requirements.md, so the constraint was discarded
+      - id: b
+        text: >-
+          The agent lacked the spec's requirements/design in context (no "#spec" reference), so it
+          implemented without that grounding and drifted from the agreed constraint
+      - id: c
+        text: Marking a task complete deletes the related requirement
+      - id: d
+        text: Requirements are only advisory and never affect implementation
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Without the spec in context (e.g., via the "#spec" provider), the model
+      implements from the task text alone and can violate constraints captured in
+      requirements.md. Grounding the chat in the spec keeps the work aligned.
+  - id: ktx-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: |
+      A teammate insists that cloning your repo will let Kiro auto-run shell
+      commands because the repo "has trust configured." Why is this reasoning
+      flawed for an agentic IDE designed with safe-by-default command execution?
+    choices:
+      - id: a
+        text: Cloning always grants full trust
+      - id: b
+        text: Trust rules live in tasks.md and apply to everyone
+      - id: c
+        text: >-
+          Command-execution trust is an explicit, user-controlled grant that cloned code cannot turn
+          on for itself, so a clone starts untrusted by design
+      - id: d
+        text: Trust is determined by the file count in the repo
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      A safe agentic IDE makes command-execution trust an explicit user decision; a
+      repository cannot inject permission to auto-run commands, so a clone runs with
+      the cloner's own (default, untrusted) state, not the author's.
+  - id: ktx-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: |
+      A PostTaskExec command-action hook with timeout 60 sometimes "hangs the run"
+      for exactly a minute on long tasks. The team blames task execution. Where is
+      the actual delay?
+    choices:
+      - id: a
+        text: The timeout applies to the agent reasoning step
+      - id: b
+        text: PostTaskExec blocks the next task for 60s by design
+      - id: c
+        text: Task execution always pads 60s
+      - id: d
+        text: >-
+          The hook's command is itself taking up to its 60s timeout after each task; the timeout
+          governs the command action, not the task
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      timeout (default 60s) bounds the hook's command action. A slow PostTaskExec
+      command can add up to that time after each task; it is not task-execution
+      latency.
+  - id: ktx-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: |
+      A reviewer wants to know "what the agent actually changed" after an Autopilot
+      task run, but keeps reading the chat transcript and missing edits. What is the
+      correct review surface, and why is the transcript insufficient?
+    choices:
+      - id: a
+        text: >-
+          Use "View all changes" (the aggregate diff); the transcript narrates intent but the diff
+          is the ground truth of edits
+      - id: b
+        text: The transcript is the only source of truth for edits
+      - id: c
+        text: Re-run the task to see changes
+      - id: d
+        text: Edits cannot be reviewed in Autopilot
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Chat narration can omit or misstate edits; the aggregate "View all changes"
+      diff is the authoritative record of what was written to disk.
+  - id: ktx-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: |
+      A hook author wants to stop a spec task from running when a precondition
+      fails, so they attach a blocking check to PostTaskExec and have it exit 2. The
+      task still runs every time. What is the root cause?
+    choices:
+      - id: a
+        text: Exit code 2 is the wrong code; they should exit 1
+      - id: b
+        text: >-
+          PostTaskExec fires after the task and is not a blockable trigger, so it cannot prevent the
+          task from running; the gate belongs on PreTaskExec
+      - id: c
+        text: Hooks cannot run command actions at all
+      - id: d
+        text: The task must be marked optional for the hook to take effect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      PostTaskExec runs after the task completes and is non-blockable, so exit 2
+      there has no gating effect. Only the pre-execution blockable trigger
+      (PreTaskExec) can stop a task with exit code 2.
+  - id: ktx-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: |
+      You want a hook that adds context to the agent before each task by printing to
+      STDOUT. You attach it to PreTaskExec and see the STDOUT does not appear in the
+      agent context. What is the likely reason?
+    choices:
+      - id: a
+        text: PreTaskExec cannot run command actions
+      - id: b
+        text: Hooks cannot print to STDOUT
+      - id: c
+        text: >-
+          STDOUT is added to context for SessionStart/UserPromptSubmit success; PreTaskExec uses
+          exit codes (block via 2 with STDERR), not STDOUT-to-context
+      - id: d
+        text: The agent never reads any hook output
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Per Kiro's hook docs, successful STDOUT is folded into context for
+      SessionStart and UserPromptSubmit. PreTaskExec's lever is blocking (exit 2,
+      STDERR returned), so relying on STDOUT-to-context there is the wrong mechanism.
+  - id: ktx-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: |
+      Supervised mode "feels broken": Kiro completes a whole multi-step task with
+      several file edits and only then asks for approval once. Is this a bug?
+    choices:
+      - id: a
+        text: No - because Supervised never prompts at all
+      - id: b
+        text: Yes - Supervised must prompt before every individual character
+      - id: c
+        text: Yes - Supervised should never apply more than one edit per approval
+      - id: d
+        text: >-
+          No - Supervised yields after each turn that contains edits; a turn can include several
+          edits, so one approval can cover multiple file changes
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Supervised gates per edit-containing TURN, not per individual edit. One turn
+      may bundle multiple edits, surfaced together as hunks to accept or reject.
+  - id: ktx-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >
+      In a "Run all Tasks" run, the real-time status shows a task that never changed from its
+      initial state while others completed. What distinguishes "skipped" from "failed" here?
+    choices:
+      - id: a
+        text: >-
+          A skipped task was excluded (optional/already complete) and never started; a failed task
+          started and errored, leaving partial changes to review
+      - id: b
+        text: They are identical states with different labels
+      - id: c
+        text: A skipped task always leaves a partial diff; a failed one never does
+      - id: d
+        text: Failed tasks are removed from tasks.md automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Skipped means it was never eligible to run (optional or already complete); failed means it ran
+      and errored. Only the failed case typically leaves partial edits to inspect and possibly
+      revert.
+  - id: ktx-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: free_form
+    prompt: |
+      A "Run all Tasks" run finished with all required tasks green, yet QA reports
+      missing behavior. Walk through the diagnostic steps to find why, distinguishing
+      a tasks-coverage gap from an execution failure.
+    guidance: |
+      Looking for: check whether the behavior was ever a (required) task or left
+      optional/undecomposed; verify completion marks (Sync Files false positive vs
+      real code) by reading the diff; distinguish "task never existed" from "task
+      ran but did the wrong thing."
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Checks whether the behavior maps to a required task, or was optional/never decomposed
+            (coverage gap).
+        - id: c2
+          text: Verifies completion against actual code/diff (guards against false-positive completion).
+        - id: c3
+          text: Distinguishes a missing/optional task from a task that ran but produced wrong output.
+      referenceAnswer: |
+        First map the missing behavior to tasks.md: if no required task covers it,
+        the gap is in task coverage (left optional or never decomposed from
+        requirements). If a task exists and is marked complete, verify it against the
+        actual code/diff to rule out a Sync Files false positive. Finally distinguish
+        a task that never ran (coverage/skip) from one that ran but produced wrong
+        output (an execution/quality issue), and review the agent's changes to
+        confirm which.
+      passThreshold: 0.6
+  - id: ktx-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: |
+      Two tasks that touch the same file ran in the same concurrent wave and
+      clobbered each other. Explain the root cause and how to restructure tasks.md
+      so it does not recur.
+    guidance: |
+      Looking for: they were treated as independent (no declared dependency) but
+      share state; declare a dependency / sequence them so they land in different
+      waves; or merge into one task.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the cause as missing/undeclared dependency between tasks sharing the same
+            file/state.
+        - id: c2
+          text: 'Explains the fix: declare the dependency (sequence into different waves) or merge them.'
+      referenceAnswer: |
+        The wave scheduler ran them concurrently because tasks.md declared no
+        dependency between them, but they actually share state (the same file). Fix
+        it by declaring a dependency so one runs after the other (placing them in
+        separate waves), or by merging them into a single task that edits the file
+        coherently.
+      passThreshold: 0.6
+  - id: ktx-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: |
+      A PreTaskExec hook is supposed to block tasks on a failing precondition but
+      never blocks. Enumerate the configuration mistakes that would cause this and
+      how to confirm each.
+    guidance: |
+      Looking for: wrong exit code (used 1 not 2); hook disabled (enabled:false);
+      matcher not matching; attached to a non-blockable trigger; action type wrong.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes the exit code must be 2 to block (1/other = warning + proceed).
+        - id: c2
+          text: Notes the hook could be disabled or its matcher not matching, so it never fires.
+        - id: c3
+          text: Notes it must be on a blockable trigger (PreTaskExec) with a command action.
+      referenceAnswer: |
+        Check the exit code first: only exit 2 blocks; exit 1 or other non-zero
+        codes are warnings that proceed. Check that the hook is enabled and that any
+        matcher actually matches the task so the hook fires at all. Confirm it is
+        attached to a blockable trigger (PreTaskExec) with a command action, since
+        agent actions and non-blockable triggers cannot block. Verify by forcing the
+        precondition to fail and observing the block plus the STDERR message returned
+        to the agent.
+      passThreshold: 0.6
+  - id: ktx-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: |
+      "Run all Tasks" re-executes already-done work on every run. Diagnose why and
+      give the corrective workflow, including how to prevent it next time.
+    guidance: |
+      Looking for: tasks still marked incomplete (completion never reconciled); fix
+      by Sync Files / codebase scan to mark them done; going forward, sync after
+      manual/external work before re-running.
+    rubric:
+      criteria:
+        - id: c1
+          text: Roots the cause in tasks being marked incomplete (completion not reconciled).
+        - id: c2
+          text: 'Fix: run Sync Files or a chat codebase scan to mark them complete.'
+        - id: c3
+          text: >-
+            Prevention: reconcile completion before re-running, especially after manual/external
+            work.
+      referenceAnswer: |
+        "Run all Tasks" runs incomplete required tasks, so if completion was never
+        reconciled the done work still reads incomplete and re-runs. Fix it by
+        clicking Sync Files or asking Kiro to scan the codebase so the implemented
+        tasks are marked complete. To prevent recurrence, reconcile completion
+        (Sync Files / scan) after any manual or external implementation before
+        invoking "Run all Tasks" again.
+      passThreshold: 0.6
+  - id: ktx-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: |
+      Compare the failure modes of reviewing agent task output via the chat
+      transcript versus the diff surface, and explain which you should trust for an
+      audit and why.
+    guidance: |
+      Looking for: transcript narrates intent and can omit/misstate edits; the diff
+      (View all changes / Supervised hunks) is ground truth of what was written;
+      trust the diff for audit.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the transcript narrates intent and may omit or misrepresent actual edits.
+        - id: c2
+          text: States the diff (View all changes / hunks) is the authoritative record of edits.
+        - id: c3
+          text: Concludes the diff is what to trust for an audit.
+      referenceAnswer: |
+        The chat transcript describes what the agent intended and can omit edits,
+        summarize loosely, or describe a change it did not actually make. The diff
+        surface - Autopilot's "View all changes" or Supervised hunks - is the ground
+        truth of what was written to disk. For an audit you should trust the diff,
+        using the transcript only to understand intent.
+      passThreshold: 0.6
+  - id: ktx-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: free_form
+    prompt: |
+      A team reports that "Run all Tasks" runs everything at once and produces
+      ordering bugs. Diagnose the most likely cause in their tasks.md and explain
+      how the dependency graph would change once fixed.
+    guidance: |
+      Looking for: dependencies not declared in tasks.md, so the graph sees all
+      tasks as independent and puts them in one wave; declaring dependencies splits
+      them into ordered waves.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies missing/undeclared task dependencies as the cause.
+        - id: c2
+          text: Explains the graph treated tasks as independent (single wave) without them.
+        - id: c3
+          text: States declaring dependencies splits tasks into ordered, sequenced waves.
+      referenceAnswer: |
+        The tasks.md most likely fails to declare dependencies, so the dependency
+        graph treats every task as independent and schedules them all into one
+        concurrent wave, causing ordering bugs. Once the real dependencies are
+        declared, the graph sequences dependent tasks into later waves so
+        prerequisites finish first, eliminating the ordering problem.
+      passThreshold: 0.6
+  - id: ktx-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: free_form
+    prompt: >
+      During "Run all Tasks," no tasks ever start and the agent reports a refusal message before
+      each. A PreTaskExec hook was recently added. Diagnose the most likely cause and how to confirm
+      it.
+    guidance: >
+      Looking for: the PreTaskExec hook is exiting 2 and blocking every task; its STDERR refusal is
+      surfaced to the agent; confirm by checking the hook condition/exit code and disabling or
+      fixing it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Attributes the block to the PreTaskExec hook exiting 2 (blocking each task).
+        - id: c2
+          text: Notes the refusal text is the hook STDERR returned to the agent.
+        - id: c3
+          text: >-
+            Gives a confirmation/fix: inspect the hook condition/exit code, then disable or correct
+            it.
+      referenceAnswer: >
+        The newly added PreTaskExec hook is almost certainly evaluating its precondition as failed
+        and exiting 2, which blocks every task; the refusal message is the hook STDERR returned to
+        the agent. Confirm by inspecting the hook command and its exit logic, then either fix the
+        precondition or set enabled:false to unblock the run.
+      passThreshold: 0.6
+  - id: ktx-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: |
+      A team runs every spec with Autopilot + "Run all Tasks" and never reviews
+      diffs, relying only on green completion marks. Which critique is most sound?
+    choices:
+      - id: a
+        text: >-
+          Completion marks reflect that tasks ran, not that they are correct; without diff review or
+          tests, defects ship undetected
+      - id: b
+        text: This is ideal because Autopilot guarantees correctness
+      - id: c
+        text: Green marks are a formal proof of correctness
+      - id: d
+        text: The only risk is slower runs
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      A completed task means it executed (or was auto-detected), not that the output
+      is right. Skipping diff review and verification removes the only checks against
+      incorrect or hallucinated changes.
+  - id: ktx-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: |
+      A proposal mandates Supervised mode with per-hunk approval for every task on
+      every spec, including trivial generated boilerplate. Best evaluation?
+    choices:
+      - id: a
+        text: Always correct - Supervised should be mandatory everywhere
+      - id: b
+        text: >-
+          Reasonable for risky changes but wasteful as a blanket rule; match the mode to change
+          risk, reserving Autopilot for low-risk bulk work
+      - id: c
+        text: Useless - Supervised provides no value over Autopilot
+      - id: d
+        text: Supervised cannot review boilerplate
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Per-hunk approval is valuable for high-stakes edits but a productivity tax on
+      bulk, low-risk work. A risk-tiered policy (Supervised for sensitive changes,
+      Autopilot with diff review for the rest) is the balanced design.
+  - id: ktx-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: |
+      To "save time," a team marks all tasks optional so "Run all Tasks" does
+      nothing and they paste tasks into chat manually. Evaluate this workflow.
+    choices:
+      - id: a
+        text: It improves dependency ordering
+      - id: b
+        text: It is the recommended way to use specs
+      - id: c
+        text: >-
+          It defeats the purpose of the task runner - losing wave concurrency, dependency ordering,
+          and tracked completion - and is an anti-pattern
+      - id: d
+        text: It has no downsides
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Marking everything optional disables automated execution, wave concurrency,
+      dependency-aware scheduling, and the trackable plan - the core value of
+      tasks.md. It is an anti-pattern, not a time-saver.
+  - id: ktx-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: |
+      A team wants reproducible CI runs of spec tasks and proposes a PreTaskExec
+      hook that always exits 0 plus disabling all review. Which critique is best?
+    choices:
+      - id: a
+        text: Review can never be automated, so this cannot work
+      - id: b
+        text: This is safe regardless of test coverage
+      - id: c
+        text: PreTaskExec hooks must never exit 0
+      - id: d
+        text: >-
+          An always-pass PreTaskExec removes the gate's value, and disabling review in CI shifts all
+          verification onto tests - acceptable only if test coverage is strong and changes are
+          isolated/revertible
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      A hook that always exits 0 is a no-op gate. Removing human review in CI is
+      defensible only when automated tests cover the behavior and the pipeline can
+      isolate and revert bad changes; otherwise it removes the last safety net.
+  - id: ktx-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: |
+      Two designs for marking completion: (X) trust "Sync Files" auto-detection
+      blindly; (Y) Sync Files then spot-check the diff against requirements. Which
+      judgment is most defensible?
+    choices:
+      - id: a
+        text: >-
+          Y is safer because auto-detection can produce false positives; a lightweight
+          diff/requirement check catches them at low cost
+      - id: b
+        text: X is safer because auto-detection is infallible
+      - id: c
+        text: They are equivalent in risk
+      - id: d
+        text: Y is unsafe because it ignores Sync Files
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Auto-detection infers completion from code and can false-positive on
+      coincidental matches. Pairing it with a quick verification against the
+      requirement is the more reliable design.
+  - id: ktx-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: |
+      A reviewer argues "if the agent says it finished the task in chat, that is
+      enough sign-off." Evaluate this stance for high-stakes task execution.
+    choices:
+      - id: a
+        text: Strong - the transcript is the authoritative record of edits
+      - id: b
+        text: >-
+          Weak - the transcript states intent, not the actual diff; sign-off should be based on
+          reviewing the changes (and ideally tests), not the agent's self-report
+      - id: c
+        text: Strong - agents never misreport their edits
+      - id: d
+        text: Irrelevant - changes cannot be reviewed anyway
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Self-reported completion can diverge from the actual diff. For high-stakes
+      work, sign-off must rest on the diff and verification, not the agent's claim.
+  - id: ktx-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: |
+      Design review: a team relies on concurrent wave execution but writes tasks
+      with many hidden shared-file dependencies they never declare, "because it
+      usually works." Best assessment?
+    choices:
+      - id: a
+        text: Sound - concurrency cannot cause conflicts
+      - id: b
+        text: Sound - the scheduler infers all hidden dependencies automatically
+      - id: c
+        text: >-
+          Fragile by design - undeclared dependencies make concurrency nondeterministic; correctness
+          should be encoded in declared dependencies, not luck
+      - id: d
+        text: Fragile only because runs are slow
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The wave scheduler parallelizes tasks it believes are independent. Hidden,
+      undeclared dependencies make outcomes nondeterministic; correctness must be
+      expressed as explicit dependencies so the graph sequences them.
+  - id: ktx-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: |
+      A policy says: "Always use Autopilot and Revert if anything looks wrong,
+      never Supervised." Evaluate for a codebase with sensitive, hard-to-revert
+      migrations.
+    choices:
+      - id: a
+        text: Supervised offers no advantage for migrations
+      - id: b
+        text: Ideal - Revert always restores any prior state perfectly
+      - id: c
+        text: Fine - migrations are always reversible
+      - id: d
+        text: >-
+          Poor fit - blanket Revert is coarse and some changes (e.g., applied migrations) are not
+          cleanly reversible; Supervised's per-hunk gating is the safer control there
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Revert is all-or-nothing and assumes clean reversibility; applied migrations
+      or side effects may not undo cleanly. For sensitive changes, Supervised's
+      pre-application per-hunk approval is the stronger control.
+  - id: ktx-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: |
+      Team A reviews each task's diff before accepting; Team B only checks that the
+      app still builds after "Run all Tasks." Which is the more robust acceptance
+      gate, and why?
+    choices:
+      - id: a
+        text: >-
+          Diff review plus a build/test check is most robust; a build passing alone can hide silent
+          behavioral regressions the diff would reveal
+      - id: b
+        text: Build-only is sufficient because a passing build implies correctness
+      - id: c
+        text: Diff review alone with no build check is strictly best
+      - id: d
+        text: Both gates are equally weak
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      A green build proves it compiles, not that behavior is correct. Combining diff
+      review with build/test gives both structural and behavioral assurance; build-
+      only misses logic regressions.
+  - id: ktx-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: |
+      Critique this completion-tracking policy: "We never run Sync Files; we just
+      delete tasks from tasks.md once we think they are done."
+    choices:
+      - id: a
+        text: Best practice - a shorter tasks.md is always better
+      - id: b
+        text: >-
+          Anti-pattern - deleting tasks destroys the audit trail and dependency graph and relies on
+          memory; marking complete via Sync Files/scan preserves traceability
+      - id: c
+        text: Safe because deleted tasks cannot be re-run by mistake
+      - id: d
+        text: Equivalent to marking complete in every respect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Deleting tasks loses the record of what was planned and its dependencies, and
+      hinges on human memory of "done." Marking complete (Sync Files or scan) keeps
+      the trackable plan and its lineage intact.
+  - id: ktx-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >
+      A team proposes that PostTaskExec always auto-commit after each task so "nothing is lost."
+      Evaluate this for task-execution hygiene.
+    choices:
+      - id: a
+        text: PostTaskExec cannot run commands, so the idea is impossible
+      - id: b
+        text: It is strictly best because more commits always mean more safety
+      - id: c
+        text: >-
+          Auto-commit per task can pollute history with broken intermediate states and bypass
+          review; commit at reviewed, coherent checkpoints instead
+      - id: d
+        text: It guarantees each task is correct before committing
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Blind per-task commits record unreviewed, possibly broken states and skip the diff-review
+      gate. Committing at reviewed checkpoints keeps history meaningful and changes verified.
+  - id: ktx-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: |
+      Evaluate: "Because Autopilot can revert, we never need Supervised mode at all."
+    choices:
+      - id: a
+        text: Flawed - because Autopilot cannot revert at all
+      - id: b
+        text: Correct - Revert and Supervised are functionally identical
+      - id: c
+        text: Correct - Supervised offers no control Autopilot lacks
+      - id: d
+        text: >-
+          Flawed - Revert is coarse and after-the-fact; Supervised prevents bad edits from applying
+          and gives per-hunk control that Revert cannot
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Revert undoes after the fact and is all-or-nothing; Supervised gates edits before they apply
+      at hunk granularity. They serve different risk profiles, so Supervised is not redundant.
+  - id: ktx-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >
+      A reviewer judges a spec "done" when "Run all Tasks" turns every required task green, with no
+      test run. Which is the strongest counter-argument?
+    choices:
+      - id: a
+        text: >-
+          Green required tasks attest execution, not behavioral correctness; without tests or diff
+          review, regressions can pass undetected
+      - id: b
+        text: Green tasks are a mathematical proof of correctness
+      - id: c
+        text: Tests are irrelevant once tasks are green
+      - id: d
+        text: The build cannot compile if any task is wrong
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Task completion records that work ran, not that behavior is right. Tests and diff review
+      supply the behavioral assurance that green checkmarks do not.
+  - id: ktx-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: free_form
+    prompt: |
+      Critique the practice of treating "all required tasks marked complete" as
+      proof a feature is correctly delivered. What stronger acceptance criteria
+      would you recommend?
+    guidance: |
+      Looking for: completion means tasks ran/were detected, not that output is
+      correct (false positives, wrong implementations, coverage gaps); recommend diff
+      review + tests + requirement traceability.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Argues completion marks reflect execution/detection, not correctness (and can be false
+            positives or cover the wrong work).
+        - id: c2
+          text: >-
+            Notes coverage gaps (optional/undecomposed work) are not reflected by green required
+            tasks.
+        - id: c3
+          text: >-
+            Recommends stronger gates: diff review, tests/verification, and traceability back to
+            requirements.
+      referenceAnswer: |
+        "All required tasks complete" only means those tasks ran or were auto-
+        detected as done - not that the implementation is correct, and Sync Files can
+        produce false positives. It also says nothing about work left optional or
+        never decomposed into tasks. Stronger acceptance criteria: review the actual
+        diff, run tests/verification, and trace each requirement to working code, so
+        delivery rests on evidence rather than on the checklist alone.
+      passThreshold: 0.6
+  - id: ktx-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: |
+      Recommend a policy for when a team should use Autopilot versus Supervised
+      mode for task execution, and justify it in terms of risk and review cost.
+    guidance: |
+      Looking for: risk-tiered policy - Supervised for sensitive/hard-to-revert/
+      low-trust changes (per-hunk control), Autopilot + diff review for low-risk bulk
+      work; balances control vs throughput.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends Supervised for high-risk / sensitive / hard-to-revert / low-trust changes.
+        - id: c2
+          text: >-
+            Recommends Autopilot (with after-the-fact diff review) for low-risk, bulk, or
+            well-tested work.
+        - id: c3
+          text: Justifies the split as balancing fine-grained control against review cost/throughput.
+      referenceAnswer: |
+        Use a risk-tiered policy. For sensitive, hard-to-revert, or low-trust changes
+        (migrations, security code, unfamiliar areas), use Supervised mode so each
+        hunk is approved before it applies. For low-risk, bulk, or well-tested work,
+        use Autopilot for speed and review the aggregate diff afterward, reverting if
+        needed. This matches the cost of per-hunk review to the actual risk rather
+        than paying it uniformly or skipping it entirely.
+      passThreshold: 0.6
+  - id: ktx-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: |
+      A team disables PreTaskExec gates and all diff review in CI to maximize
+      throughput, arguing "tests will catch everything." Evaluate the conditions
+      under which this is defensible versus reckless.
+    guidance: |
+      Looking for: defensible only with strong/automated test coverage, isolation
+      (sandbox/branch), and easy revert; reckless without those, since it removes the
+      last safety net for unverified agent changes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the prerequisites that make it defensible: strong automated test coverage,
+            isolation/branching, easy revert.
+        - id: c2
+          text: >-
+            Explains why it is reckless without those: removes human gate and relies on incomplete
+            tests for unverified agent edits.
+        - id: c3
+          text: Gives a balanced conclusion (acceptable under conditions, not as a blanket rule).
+      referenceAnswer: |
+        Removing the PreTaskExec gate and review is defensible only when automated
+        tests genuinely cover the changed behavior, the run is isolated (e.g., a
+        branch/sandbox that cannot affect production), and bad changes are cheap to
+        revert. Under those conditions tests are a reasonable backstop. Without strong
+        coverage and isolation it is reckless: it deletes the last human and gate-
+        level safety nets and trusts unverified agent edits to a test suite that may
+        not exercise the new behavior. So it is conditionally acceptable, not a
+        blanket policy.
+      passThreshold: 0.6
+  - id: ktx-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: free_form
+    prompt: |
+      Evaluate the design tradeoff of concurrent "wave" execution for spec tasks:
+      what does it optimize, what risks does it introduce, and what discipline keeps
+      it safe?
+    guidance: |
+      Looking for: optimizes throughput/latency via parallel independent tasks; risks
+      nondeterminism/conflicts when dependencies are undeclared or tasks share state;
+      discipline = declare dependencies accurately, keep tasks independent/isolated,
+      review results.
+    rubric:
+      criteria:
+        - id: c1
+          text: States waves optimize throughput by running independent tasks in parallel.
+        - id: c2
+          text: >-
+            States the risk: undeclared dependencies / shared state cause nondeterministic
+            conflicts.
+        - id: c3
+          text: >-
+            Names the discipline: accurately declare dependencies, keep tasks isolated, and review
+            results.
+      referenceAnswer: |
+        Wave execution optimizes throughput and latency by running independent tasks
+        concurrently instead of serially. The risk is correctness: if dependencies
+        are undeclared or tasks secretly share state (e.g., the same file), parallel
+        runs become nondeterministic and can clobber each other. It stays safe only
+        with discipline - accurately declaring task dependencies so the graph
+        sequences them, designing tasks to be genuinely independent/isolated, and
+        reviewing the combined results rather than trusting that concurrency was safe.
+      passThreshold: 0.6
+  - id: ktx-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: free_form
+    prompt: |
+      Assess the security design choice of making task-execution command trust an
+      explicit, user-granted decision that cloned code cannot turn on for itself,
+      rather than a setting a repository can ship in committed config. Argue why
+      this is a sound default for autonomous agent task execution.
+    guidance: |
+      Looking for: prevents a cloned/malicious repo from auto-granting the agent
+      command-execution trust (no repo-injected escalation); each user grants their
+      own trust explicitly; cost is the grant is not shared/portable, but that is the
+      safer default for autonomous execution.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the threat it defends against: a repo injecting trust to auto-approve the agent
+            (supply-chain/escalation).
+        - id: c2
+          text: >-
+            States the benefit: trust is an explicit, user-controlled grant, not inherited from
+            cloned code.
+        - id: c3
+          text: >-
+            Acknowledges the tradeoff (the grant is not portable/shareable via the repo) but argues
+            it is the safer default for autonomous execution.
+      referenceAnswer: |
+        Making command-execution trust an explicit user grant means a cloned or
+        malicious repository cannot ship config that auto-approves shell/file actions,
+        closing a supply-chain escalation path that would be dangerous for an agent
+        that can execute tasks autonomously. Trust becomes explicit and user-controlled
+        rather than inherited from code you fetched. The tradeoff is that the grant is
+        not portable across machines or shareable via the repo, but for autonomous task
+        execution that friction is the correct default: it forces a deliberate, local
+        grant of trust instead of an implicit one.
+      passThreshold: 0.6
+  - id: ktx-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: free_form
+    prompt: |
+      A team's only completion-tracking step is clicking "Sync Files" and trusting
+      its result. Critique this as a quality gate and propose a more reliable
+      completion-verification process.
+    guidance: |
+      Looking for: Sync Files auto-detection can false-positive/false-negative;
+      blindly trusting it risks marking unimplemented work done; propose verifying
+      against requirements + diff/tests, and reconciling after manual work.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that Sync Files auto-detection can be wrong (false positives/negatives).
+        - id: c2
+          text: Critiques blind trust as risking inaccurate completion status.
+        - id: c3
+          text: >-
+            Proposes verification: cross-check against requirements and the diff/tests, reconcile
+            after manual changes.
+      referenceAnswer: |
+        Sync Files infers completion from the codebase, so it can both false-positive
+        (coincidental code marks a task done) and false-negative (real work it cannot
+        detect). Trusting it blindly can leave the plan inaccurate and ship gaps. A
+        more reliable process: run Sync Files (or a chat codebase scan) to get a first
+        pass, then spot-check the flagged-complete tasks against their requirement and
+        the actual diff/tests before accepting the status, and re-reconcile after any
+        manual or external changes so the plan stays trustworthy.
+      passThreshold: 0.6
+  - id: ktx-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >
+      Critique relying solely on Autopilot "View all changes" diff review (no tests) as the
+      acceptance gate for autonomously executed spec tasks. When is it sufficient and when not?
+    guidance: >
+      Looking for: diff review catches structural/obvious issues and is necessary, but humans miss
+      subtle behavioral/regression bugs; sufficient for low-risk/small/well-understood changes,
+      insufficient for complex logic where tests are needed.
+    rubric:
+      criteria:
+        - id: c1
+          text: Acknowledges diff review is valuable/necessary for catching visible problems.
+        - id: c2
+          text: >-
+            Notes its limitation: humans miss subtle behavioral/regression bugs a diff does not
+            reveal.
+        - id: c3
+          text: >-
+            Gives a conditional judgment: adequate for small/low-risk changes, inadequate for
+            complex logic without tests.
+      referenceAnswer: >
+        Diff review of "View all changes" is a necessary gate that catches obvious structural
+        problems, unintended edits, and scope creep. But a human reading a diff cannot reliably
+        catch subtle behavioral regressions, edge-case bugs, or interactions across files. It is
+        sufficient for small, low-risk, well-understood changes, but for complex logic it must be
+        paired with automated tests; otherwise the gate gives false confidence.
+      passThreshold: 0.6

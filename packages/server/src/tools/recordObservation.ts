@@ -35,10 +35,11 @@
  * data-model.md (§ OfferLedger).
  */
 
-import { loadBundledCatalog } from "../catalog/bundled/index.js";
+import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import type { Profile } from "../schemas/profile.js";
+import { getDetectedTool } from "../detection.js";
 import {
   RecordObservationInputSchema,
   type OfferCandidate,
@@ -53,20 +54,34 @@ import {
 } from "../observation/offers.js";
 import { defineTool, type AnyToolModule } from "./types.js";
 
-/** Catalog source override (test seam); defaults to the bundled snapshot. */
-export type CatalogLoader = () => CatalogLoadResult;
+/**
+ * Sync catalog loader (test seam): returns topics synchronously from a fixture
+ * dir. Tests inject this form; production uses {@link CatalogResolver}.
+ * The optional arg is unused by sync loaders but makes the type compatible with
+ * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
+ */
+export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
+
+/**
+ * Async catalog resolver (production path): resolves via fresh-fetch → cache →
+ * bundled. Mirrors {@link resolveCatalog}'s signature.
+ */
+export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /**
  * Build the `record_observation` tool module (US-1).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
- * @param catalogLoader - Catalog source override (test seam); defaults to the
- *   bundled snapshot {@link loadBundledCatalog}.
+ * @param loaderOrResolver - Catalog source seam (test seam); accepts a sync
+ *   {@link CatalogLoader} (test fixtures) or an async {@link CatalogResolver}
+ *   (production). Defaults to {@link resolveCatalog} (fresh-fetch → cache →
+ *   bundled). With no `VIBE_HERO_CONTENT_URL` set, resolver falls back to
+ *   bundled — identical to the prior behavior offline.
  * @returns The erased registry entry for `record_observation`.
  */
 export const makeRecordObservationTool = (
   dirOverride?: string,
-  catalogLoader: CatalogLoader = loadBundledCatalog,
+  loaderOrResolver: CatalogLoader | CatalogResolver = resolveCatalog,
 ): AnyToolModule =>
   defineTool({
     name: "record_observation",
@@ -90,7 +105,9 @@ export const makeRecordObservationTool = (
         return { offerCandidates: [] };
       }
 
-      const { topics } = catalogLoader();
+      // Normalize: sync loader (tests) vs async resolver (production).
+      const rawResult = loaderOrResolver(dirOverride);
+      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
       const signals: ObservedSignal[] = input.signals.map((s) => ({
         ...(s.toolName !== undefined ? { toolName: s.toolName } : {}),
         ...(s.mcpTool !== undefined ? { mcpTool: s.mcpTool } : {}),
@@ -98,9 +115,14 @@ export const makeRecordObservationTool = (
         ...(s.toolUseId !== undefined ? { toolUseId: s.toolUseId } : {}),
       }));
 
+      // Resolve tool: explicit input wins, then fall back to auto-detected tool.
+      // If neither is available matchCandidates receives undefined and returns []
+      // (graceful degradation — no crash).
+      const resolvedTool = input.tool ?? getDetectedTool();
+
       const candidates: OfferCandidate[] = matchCandidates(
         topics,
-        input.tool,
+        resolvedTool,
         signals,
       );
 

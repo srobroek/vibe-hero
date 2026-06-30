@@ -1,0 +1,3034 @@
+# Topic: debugging (general)
+# Systematic debugging — hypothesis-driven investigation, reproducing first, root cause vs symptom, bisection, reading stack traces, targeted logging, minimal reproductions.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: debugging
+class:
+  kind: general
+title: Debugging
+summary: >-
+  Systematic debugging — hypothesis-driven investigation, reproducing first, root cause vs symptom,
+  bisection, reading stack traces, targeted logging, minimal reproductions.
+triggerSignals: []
+items:
+  - id: d-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: In debugging terminology, what is the difference between a symptom and a root cause?
+    choices:
+      - id: a
+        text: >-
+          The symptom is the observable wrong behavior; the root cause is the underlying defect that
+          produced it.
+      - id: b
+        text: >-
+          The symptom is the underlying defect; the root cause is the observable wrong behavior it
+          produces.
+      - id: c
+        text: They are two names for the same thing and can be used interchangeably.
+      - id: d
+        text: The symptom is found in production while the root cause only exists in test environments.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A symptom is what you observe (crash, wrong output, slowness); the root cause is the
+      underlying defect. Fixing only the symptom (e.g. swallowing an exception) leaves the defect
+      live and tends to produce recurring "whack-a-mole" bugs.
+  - id: d-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: What is a "core dump" (also called a crash dump) in the context of debugging?
+    choices:
+      - id: a
+        text: >-
+          A snapshot of a process's memory and register state captured at the moment it crashed, for
+          later post-mortem inspection.
+      - id: b
+        text: A live stream of every CPU instruction the process executes, written continuously to disk.
+      - id: c
+        text: A summary email sent to the on-call engineer listing which services are down.
+      - id: d
+        text: A backup of the source code taken automatically whenever a process exits abnormally.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A core dump records the process's memory image, registers, and stack at the instant it
+      crashed, so you can load it into a debugger afterward and inspect the state that produced the
+      fault. It is a post-mortem artifact, not a live trace; it differs from a stack trace, which
+      only lists the active call frames.
+  - id: d-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: What is a "Heisenbug"?
+    choices:
+      - id: a
+        text: >-
+          A bug whose behavior changes when you attempt to observe it, such as by adding a print or
+          attaching a debugger.
+      - id: b
+        text: A bug that only occurs on a specific hardware vendor's CPUs.
+      - id: c
+        text: A bug that is deterministic and always reproduces on every run.
+      - id: d
+        text: A bug introduced by a merge conflict that was resolved incorrectly.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A Heisenbug (a pun on Heisenberg's uncertainty principle) changes or disappears when observed,
+      because adding a print, logging, or a debugger alters timing or memory layout. A
+      deterministic, reliably reproducible bug is instead a "Bohrbug".
+  - id: d-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: What is "rubber duck debugging"?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that it involves explaining the problem or code aloud, line by line, to an object
+            or person.
+        - id: c2
+          text: States that the act of explaining surfaces flawed assumptions or reveals the bug.
+      referenceAnswer: >-
+        Rubber duck debugging is the practice of explaining your problem and code step by step, out
+        loud, to an inanimate object (the proverbial rubber duck) or another person. The act of
+        articulating the logic forces you to examine your assumptions and frequently surfaces the
+        bug without any external help.
+      passThreshold: 0.6
+    guidance: >-
+      The technique works because verbalizing forces you to re-examine each step and assumption
+      rather than skimming over it mentally. The "listener" need not respond; the value comes from
+      the explainer being made to slow down and justify each line.
+  - id: d-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: What is a "stack trace" (also called a backtrace or traceback)?
+    choices:
+      - id: a
+        text: A log of every system call the process made since it started.
+      - id: b
+        text: A record of how much stack memory each variable consumed.
+      - id: c
+        text: A list of the active function call frames at the moment of the error.
+      - id: d
+        text: A diff between the current and previous versions of a source file.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A stack trace lists the chain of active call frames when the error occurred, showing the path
+      of calls that led to the failure. It is distinct from a syscall log (strace) or a memory
+      report; it describes the call structure, not raw memory or syscalls.
+  - id: d-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      In a standard Python traceback, where does the line containing the exception type and message
+      appear?
+    choices:
+      - id: a
+        text: On the first line, with the most recent call shown at the top.
+      - id: b
+        text: In the middle, separating user frames from library frames.
+      - id: c
+        text: It is never shown in the traceback; you must look it up in the logs.
+      - id: d
+        text: On the final (last) line, with the oldest call shown first and "most recent call last".
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Python prints "Traceback (most recent call last)", so frames go oldest-first and the exception
+      type/message is on the final line. By contrast, Java and JavaScript conventionally print the
+      innermost (most recent) frame at the top.
+  - id: d-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: free_form
+    prompt: >-
+      What is a "regression test" in the context of fixing a bug, and what is its defining behavior
+      relative to the fix?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States it is a test written to capture a fixed bug so the same defect cannot silently
+            return.
+        - id: c2
+          text: States that it fails before the fix is applied and passes after the fix.
+      referenceAnswer: >-
+        A regression test is a test written to capture a bug that was just fixed. Its defining
+        behavior is that it fails on the buggy code (before the fix) and passes after the fix is
+        applied. Keeping it in the suite prevents the same defect from silently reappearing later.
+      passThreshold: 0.6
+    guidance: >-
+      Adding a regression test is the standard "close the loop" step of debugging: it converts the
+      fix into an automated guard. A test that does not fail before the fix proves nothing about
+      whether the fix addressed the actual defect.
+  - id: d-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: What is a "race condition"?
+    choices:
+      - id: a
+        text: A bug that occurs when two developers commit to the same file at the same time.
+      - id: b
+        text: >-
+          A defect where correctness depends on the relative timing or interleaving of concurrent
+          operations.
+      - id: c
+        text: A performance problem caused by running too many tests in parallel.
+      - id: d
+        text: An error returned when a function is called before its module finishes importing.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A race condition arises when the outcome depends on which concurrent operation runs first. It
+      is a common cause of flaky tests and is hard to reproduce because the failing interleaving is
+      rare and timing-dependent.
+  - id: d-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: Which ordering of logging severity levels is the conventional standard (least to most severe)?
+    choices:
+      - id: a
+        text: INFO < DEBUG < TRACE < WARN < FATAL < ERROR
+      - id: b
+        text: DEBUG < ERROR < INFO < WARN < TRACE < FATAL
+      - id: c
+        text: TRACE < DEBUG < INFO < WARN < ERROR < FATAL
+      - id: d
+        text: WARN < INFO < DEBUG < ERROR < TRACE < FATAL
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The conventional severity ordering is TRACE < DEBUG < INFO < WARN < ERROR < FATAL/CRITICAL.
+      Production usually runs at INFO or WARN, with DEBUG/TRACE enabled only while actively
+      investigating.
+  - id: d-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: What does the acronym MCVE (or MRE) stand for in the context of reporting bugs?
+    choices:
+      - id: a
+        text: Minimal, Complete, Verifiable (or Reproducible) Example.
+      - id: b
+        text: Maximum Coverage Verification Environment.
+      - id: c
+        text: Multi-Component Validation Engine.
+      - id: d
+        text: Managed Continuous Versioned Export.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      An MCVE/MRE is the smallest self-contained program that still reproduces the bug. Producing
+      one is valuable on its own, because the act of minimizing the case often reveals the cause
+      before anyone else even looks at it.
+  - id: d-100-ff-k
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: What is "print debugging" (also called printf debugging)?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States it is inserting print or log statements into code to expose internal state or
+            program flow.
+        - id: c2
+          text: >-
+            Notes that it requires no special tooling setup and works across process, network, or
+            timing boundaries (or that it requires re-running the code).
+      referenceAnswer: >-
+        Print debugging is the practice of inserting print or log statements into the code to
+        display internal state and trace program flow. It requires no debugger setup, works across
+        process, network, and timing boundaries, and persists its output, though it requires editing
+        the code and re-running the program.
+      passThreshold: 0.6
+    guidance: >-
+      Print debugging contrasts with an interactive debugger, which lets you pause and inspect
+      without editing code. Neither is universally superior; logging is often the more appropriate
+      tool for distributed, production, or timing-sensitive systems.
+  - id: d-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: What is a "conditional breakpoint" in an interactive debugger?
+    choices:
+      - id: a
+        text: A breakpoint that pauses execution only when a specified expression evaluates to true.
+      - id: b
+        text: A breakpoint that is automatically removed after it triggers once.
+      - id: c
+        text: A breakpoint that only works in optimized release builds.
+      - id: d
+        text: A breakpoint that pauses execution whenever any variable changes value.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A conditional breakpoint fires only when its expression is true (e.g. `i == 999`), sparing you
+      from manually stepping through many irrelevant iterations. A breakpoint that fires when a
+      memory location changes is instead a watchpoint (data breakpoint).
+  - id: d-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: What is a "watchpoint" (data breakpoint) in a debugger?
+    choices:
+      - id: a
+        text: A breakpoint that pauses every time a particular line of code is reached.
+      - id: b
+        text: A marker that records how long a function takes to execute.
+      - id: c
+        text: A breakpoint that only triggers in a specified thread.
+      - id: d
+        text: >-
+          A breakpoint that pauses execution when a specified memory location or variable changes
+          value.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A watchpoint (data breakpoint) halts the program when a watched variable or memory address is
+      modified, which is ideal for finding where an unexpected value is written. A line-triggered
+      pause is an ordinary breakpoint, not a watchpoint.
+  - id: d-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: The "5 Whys" is a technique used in debugging and problem solving. What is it?
+    choices:
+      - id: a
+        text: Repeatedly asking "why" about each answer until you reach a fundamental, underlying cause.
+      - id: b
+        text: Asking five separate developers to each guess the cause independently.
+      - id: c
+        text: A rule that you should fix at most five bugs in one pull request.
+      - id: d
+        text: A checklist of five questions to ask before opening a bug report.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The 5 Whys is a root-cause-analysis technique: you keep asking "why" of each successive answer
+      to drill past surface symptoms toward the fundamental cause. Fishbone (Ishikawa) diagrams are
+      another classic root-cause-analysis tool.
+  - id: d-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: The "three pillars of observability" are commonly described as which set of signals?
+    choices:
+      - id: a
+        text: Logs, metrics, and traces.
+      - id: b
+        text: Breakpoints, watchpoints, and core dumps.
+      - id: c
+        text: Unit tests, integration tests, and end-to-end tests.
+      - id: d
+        text: Inputs, outputs, and side effects.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Observability is conventionally framed around logs, metrics, and traces, with distributed
+      tracing correlating a single request across services. This is a widely used industry model
+      rather than a formal standard.
+  - id: d-100-ff-p
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: >-
+      What is "binary search debugging" as a general technique for locating a fault inside a body of
+      code or data (independent of any version-control tool)?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States it means repeatedly splitting the suspect space in half and testing which half
+            still exhibits the fault.
+        - id: c2
+          text: >-
+            Gives at least one concrete non-VCS application (e.g. commenting out / disabling half
+            the code, removing half of an input, bisecting a config or data range).
+      referenceAnswer: >-
+        Binary search debugging is the practice of repeatedly halving the space you are searching
+        and testing which half still produces the failure, so each step roughly halves the remaining
+        suspects. Concrete non-version-control examples include disabling or commenting out half the
+        code to see if the bug survives, deleting half of a failing input file, or narrowing a range
+        of config or data values until the smallest failing region remains.
+      passThreshold: 0.6
+    guidance: >-
+      Binary search is a general localization strategy, not just `git bisect`: it applies to code
+      regions, inputs, config, and data. Each halving step needs a reliable yes/no test for "does
+      the fault still occur here?", which is what makes the logarithmic narrowing trustworthy.
+  - id: d-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: What is the purpose of an "assertion" used as a debugging or instrumentation tool?
+    choices:
+      - id: a
+        text: To retry an operation automatically when it returns an unexpected value.
+      - id: b
+        text: >-
+          To encode an invariant and fail loudly at the exact point a violated assumption is
+          detected.
+      - id: c
+        text: To silently log expected error conditions for later review.
+      - id: d
+        text: To convert a runtime exception into a normal return value.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Assertions state invariants and fail immediately when an assumption is violated, shortening
+      the distance between the defect and its visible symptom. They are an instrumentation tool, not
+      a mechanism for handling expected conditions.
+  - id: d-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: Which category of tool does Valgrind/Memcheck and AddressSanitizer (ASan) belong to?
+    choices:
+      - id: a
+        text: Source-control bisection tools.
+      - id: b
+        text: Log aggregation and search systems.
+      - id: c
+        text: Memory error detectors.
+      - id: d
+        text: Continuous integration schedulers.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Valgrind/Memcheck and AddressSanitizer detect memory errors such as invalid reads and writes
+      and uninitialized memory use. Debuggers (gdb, lldb, pdb), profilers (perf, py-spy), and
+      syscall tracers (strace, dtrace) are separate tool categories.
+  - id: d-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: What is "structured logging", and how does it differ from plain free-text logging?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that structured logging records data as key/value pairs or fields (e.g. JSON)
+            rather than free-form text.
+        - id: c2
+          text: >-
+            States that it is machine-queryable or aggregatable, making it suited to centralized
+            search/observability systems.
+      referenceAnswer: >-
+        Structured logging emits log records as key/value pairs or structured fields (often JSON)
+        instead of unstructured free-text messages. Because the fields are machine-readable, the
+        logs can be queried, filtered, and aggregated by centralized search and observability
+        systems, which is hard to do reliably with free text.
+      passThreshold: 0.6
+    guidance: >-
+      Structured logs trade a little human readability for machine queryability, which matters most
+      when logs feed a centralized search or observability pipeline. Plain free-text logs are fine
+      locally but resist reliable automated parsing at scale.
+  - id: d-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: >-
+      Why is reliably reproducing a bug generally considered a prerequisite step before attempting a
+      fix?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that without a reproduction you cannot confirm the fix actually removed the
+            failure.
+        - id: c2
+          text: >-
+            Notes that an irreproducible bug cannot be demonstrated as gone (you cannot prove
+            absence of the failure).
+      referenceAnswer: >-
+        Reliable reproduction should precede a fix because you can only confirm a fix works by
+        showing the failure no longer occurs. If a bug cannot be reproduced, you have no way to
+        demonstrate that your change removed it; the bug may have been intermittent or unrelated to
+        whatever you changed, so the "fix" is unverifiable.
+      passThreshold: 0.6
+    guidance: >-
+      Reproduction gates both diagnosis and verification. Note that an intermittent repro is still a
+      repro: you can raise its probability with stress, loops, or added contention rather than
+      declaring the bug unreproducible.
+  - id: d-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      A crash report points to a NullPointerException thrown inside a logging utility deep in a
+      third-party library. Why is the line that threw the exception often NOT where the actual bug
+      lives?
+    choices:
+      - id: a
+        text: >-
+          Because the throw site is where a bad value (e.g. a null) was finally used, while the
+          defect is usually wherever that value was wrongly produced or passed in
+      - id: b
+        text: >-
+          Because libraries are always bug-free, so the fault must be in the operating system
+          instead
+      - id: c
+        text: >-
+          Because exceptions are thrown at random locations unrelated to the call that triggered
+          them
+      - id: d
+        text: Because stack traces only ever record the entry point of the program, not the failing code
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The throw site is the symptom location -- where a null/invalid value is finally dereferenced.
+      The root cause is typically upstream, in the caller that produced or passed the bad data.
+      Treating the crash line as "the bug" leads to a band-aid null check that hides the real
+      defect.
+  - id: d-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: free_form
+    prompt: >-
+      A debugger lets you pause and inspect state, while logging records data as the program runs.
+      Explain why an interactive debugger is often a poor fit for a bug that only appears in a live,
+      multi-process production system, and what kind of instrumentation fits better there.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that attaching/pausing a debugger requires halting a process and interactive
+            access, which is impractical or disruptive in production.
+        - id: c2
+          text: >-
+            Explains that pausing can perturb timing or break behavior in a
+            distributed/timing-sensitive system, and a debugger sees only one process.
+        - id: c3
+          text: >-
+            States that logging/tracing (ideally structured, correlated across services) is the
+            better fit because it crosses process boundaries without pausing.
+      referenceAnswer: >-
+        An interactive debugger requires attaching to a process and halting it to inspect state,
+        which you usually cannot do to a live production service without disrupting real users, and
+        it only sees the one process you attached to. Pausing also changes timing, so in a
+        distributed or timing-sensitive system the failure may dissolve while you are stopped.
+        Logging and distributed tracing fit better: they record state as the program runs, span
+        process and network boundaries, and can correlate a single request across services without
+        ever pausing the system.
+      passThreshold: 0.6
+    guidance: >-
+      Debuggers own single-process, locally reproducible, pausable bugs. Production and distributed
+      systems instead need non-pausing observation -- logging and tracing that cross process/network
+      boundaries -- because attaching and halting is both disruptive and can perturb the very timing
+      that produces the bug.
+  - id: d-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      Git bisect performs a binary search over commit history. Roughly how many commits must be
+      tested to localize a regression introduced somewhere in a range of about 1000 commits, and
+      why?
+    choices:
+      - id: a
+        text: About 1000, because each commit must be checked once in sequence
+      - id: b
+        text: About 500, because on average the bug is halfway through the range
+      - id: c
+        text: About 10, because each test halves the remaining range (logarithmic, ceil of log2 of N)
+      - id: d
+        text: About 3, because bisect only ever inspects merge commits
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Bisection is a binary search, so the cost grows with log2(N), not N. For ~1000 commits that is
+      roughly ceil(log2(1000)) = 10 tests. This logarithmic behavior is exactly why bisecting a
+      large range beats reading every diff.
+  - id: d-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Bisection (over commits, inputs, or code regions) relies on an assumption called monotonicity.
+      What does that assumption mean, and what happens when it is violated?
+    choices:
+      - id: a
+        text: It means commits are sorted alphabetically; if not, bisect refuses to run
+      - id: b
+        text: It means every commit must compile; violating it makes bisect twice as fast
+      - id: c
+        text: >-
+          It means the searched property flips exactly once from good to bad; if the bug appears and
+          disappears across the range, bisect can land on the wrong point
+      - id: d
+        text: It means the test must run in constant time; otherwise results are random
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Binary search only works if there is a single clean boundary between "good" and "bad". A
+      non-monotonic (intermittent) property gives inconsistent good/bad verdicts, so the search can
+      converge on a commit that is not the true culprit. This is why bisection suits deterministic
+      regressions.
+  - id: d-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: free_form
+    prompt: >-
+      Explain the difference between a bug's symptom and its root cause, and describe one concrete
+      consequence of fixing only the symptom.
+    rubric:
+      criteria:
+        - id: c1
+          text: Defines symptom as the observable wrong behavior (crash, wrong output, slowness)
+        - id: c2
+          text: Defines root cause as the underlying defect that produced the symptom
+        - id: c3
+          text: >-
+            States a consequence such as recurrence / "whack-a-mole" bugs or the defect remaining
+            live and hidden
+      referenceAnswer: >-
+        The symptom is what you observe -- a crash, incorrect output, or slow response. The root
+        cause is the underlying defect that produced it, often somewhere upstream of where the
+        symptom appears. If you fix only the symptom, for example by swallowing the exception or
+        adding a null check at the crash site, the real defect stays live: the same problem tends to
+        recur in new forms (whack-a-mole) and may be harder to see because the visible signal has
+        been suppressed.
+      passThreshold: 0.6
+    guidance: >-
+      Symptom-level fixes suppress the visible signal without removing the defect, so the bug
+      resurfaces elsewhere and is now harder to detect. Durable debugging targets the underlying
+      cause and confirms the symptom disappears as a result.
+  - id: d-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      A developer adds detailed print statements to investigate an intermittent timing bug, and the
+      bug vanishes whenever the prints are present. This is a classic example of which phenomenon,
+      and why does it happen?
+    choices:
+      - id: a
+        text: A Bohrbug, because the bug is now perfectly deterministic and reproducible
+      - id: b
+        text: A Schrodinbug, because the code is provably correct once observed
+      - id: c
+        text: >-
+          A Heisenbug, because the act of observing it (the added I/O) changes timing or memory
+          layout and masks the bug
+      - id: d
+        text: A syntax error, because print statements alter the parse tree of the program
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A Heisenbug changes behavior under observation: adding logging or attaching a debugger
+      perturbs timing, scheduling, or memory layout, which can hide a timing-sensitive defect. The
+      name puns on Heisenberg's uncertainty principle. A Bohrbug, by contrast, is deterministic and
+      reliably reproducible.
+  - id: d-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      Print debugging and interactive (breakpoint) debuggers are often framed as rivals. Which
+      statement best captures their actual tradeoff?
+    choices:
+      - id: a
+        text: Debuggers are always superior; print debugging is an amateur habit with no legitimate use
+      - id: b
+        text: >-
+          Print debugging needs no setup and crosses process/network/timing boundaries but requires
+          re-running and editing code; debuggers let you pause and inspect without edits but need a
+          debuggable attach and can be impractical for distributed or timing-sensitive systems
+      - id: c
+        text: They are identical in capability; the only difference is the color of the output
+      - id: d
+        text: >-
+          Print debugging works only in compiled languages, and debuggers work only in interpreted
+          languages
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Each tool owns a domain. Logging persists, requires no special attach, and survives across
+      processes and timing boundaries -- ideal for distributed, production, or intermittent bugs.
+      Debuggers shine for locally reproducible, state-heavy single-process bugs. Neither is
+      universally "better."
+  - id: d-200-ff-h
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: free_form
+    prompt: >-
+      Explain how hypothesis-driven debugging applies the scientific method. Name the steps in order
+      and explain why the hypothesis must be falsifiable.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Lists steps in order: observe the failure, form a hypothesis, make a prediction, run an
+            experiment, conclude/refine
+        - id: c2
+          text: Explains the experiment is designed to disprove the hypothesis, not merely confirm it
+        - id: c3
+          text: >-
+            Connects falsifiability to being able to discard a wrong explanation and avoid
+            confirmation bias
+      referenceAnswer: >-
+        You observe the failure, form a falsifiable hypothesis about its cause, predict what you
+        should see if the hypothesis is true, run an experiment that could disprove it, then
+        conclude -- either refining or discarding the hypothesis based on the result. The hypothesis
+        must be falsifiable so the experiment can actually rule it out; an explanation that cannot
+        be wrong can never be eliminated, which leaves you confirming your assumptions instead of
+        testing them.
+      passThreshold: 0.6
+    guidance: >-
+      Treating debugging as science -- observe, hypothesize, predict, experiment, conclude -- keeps
+      you from speculative edits. Falsifiability is the key: an experiment that can fail your
+      hypothesis is what lets you actually eliminate candidates rather than just rationalize the
+      bug.
+  - id: d-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: >-
+      Why does building a Minimal, Complete, Verifiable Example (MCVE) or running delta debugging
+      frequently reveal the cause of a bug before anyone else even looks at it?
+    choices:
+      - id: a
+        text: >-
+          Because minimizing the case strips away irrelevant code and data, isolating the
+          failure-inducing part and exposing what actually triggers it
+      - id: b
+        text: Because smaller programs are interpreted faster, so bugs cannot hide
+      - id: c
+        text: Because a minimal example automatically generates the correct patch
+      - id: d
+        text: Because compilers only emit error messages for programs under 50 lines
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Minimization (manual MCVE or automated delta debugging) repeatedly removes portions of the
+      input/program and re-tests, narrowing to the smallest piece that still fails. The act of
+      removing everything irrelevant tends to put the true trigger directly in front of you.
+  - id: d-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      A Python traceback ends with the line "TypeError: ..." and prints "Most recent call last". How
+      should you read it, and where is the failure point?
+    choices:
+      - id: a
+        text: >-
+          The oldest call is printed first and the innermost (most recent) frame plus the exception
+          type appear at the bottom
+      - id: b
+        text: The exception type is on the first line and the program entry point is last
+      - id: c
+        text: Frames are printed in random order, so position carries no meaning
+      - id: d
+        text: The innermost frame is always at the top, matching Java's convention
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Python prints tracebacks oldest-call-first, most-recent-call-last, with the exception type and
+      message on the final line -- which is why it literally says "Most recent call last." Note this
+      ordering is language-specific: Java and JavaScript conventionally print the innermost frame at
+      the top.
+  - id: d-200-ff-k
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: free_form
+    prompt: >-
+      Why is adding a sleep() call that "makes a race condition go away" usually not a real fix?
+      Explain what a race condition actually is and what the sleep is really doing.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Defines a race condition as correctness depending on the relative timing/interleaving of
+            concurrent operations
+        - id: c2
+          text: >-
+            Explains the sleep only shifts timing probabilistically, making the bad interleaving
+            less likely, not impossible
+        - id: c3
+          text: Notes the defect remains and can resurface under load, different hardware, or scheduling
+      referenceAnswer: >-
+        A race condition is a defect where correctness depends on the relative timing or
+        interleaving of concurrent operations. A sleep does not remove that dependency; it just
+        shifts the timing so the failing interleaving becomes less probable. The underlying race is
+        still present and will resurface under heavier load, different hardware, or different
+        scheduling. A real fix establishes proper synchronization or ordering so correctness no
+        longer depends on timing at all.
+      passThreshold: 0.6
+    guidance: >-
+      A sleep masks a race by changing probabilities, not by removing the timing dependency. The bad
+      interleaving still exists and reappears under different conditions. Genuine fixes use
+      synchronization (locks, atomics, ordering) so the result is correct regardless of timing.
+  - id: d-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: >-
+      Why are deterministic tools like a thread sanitizer (TSan) or a record/replay tool (rr)
+      generally more reliable than print debugging for chasing concurrency bugs?
+    choices:
+      - id: a
+        text: Because they run the program on faster hardware, eliminating the race entirely
+      - id: b
+        text: Because print statements are not allowed in multithreaded code
+      - id: c
+        text: Because sanitizers rewrite the source to remove all shared state
+      - id: d
+        text: >-
+          Because adding prints to a race changes timing (an observer effect) and can hide it,
+          whereas these tools detect or deterministically replay the problematic interleaving
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Inserting prints to investigate a race perturbs timing, which can mask the very interleaving
+      you are trying to catch. TSan detects data races structurally, and rr records an execution so
+      you can replay the exact failing interleaving deterministically -- neither depends on you
+      happening to catch the rare timing by luck.
+  - id: d-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: >-
+      A program "works in debug builds but fails in optimized release builds." Which class of cause
+      does this pattern most strongly suggest, and why?
+    choices:
+      - id: a
+        text: A licensing error, because release builds check the license and debug builds do not
+      - id: b
+        text: >-
+          Undefined behavior, uninitialized memory, or timing-dependent code, because optimization
+          and build mode can legally change how such code behaves
+      - id: c
+        text: A typo in a comment, because compilers parse comments differently when optimizing
+      - id: d
+        text: A network outage, because release builds always require the internet
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Works in debug, fails in release" is a strong signal of undefined behavior (e.g. in C/C++),
+      reliance on uninitialized memory that happened to be zero in debug, or timing-dependent code
+      -- all things optimization is allowed to change. The build mode did not create the bug; it
+      exposed a latent one.
+  - id: d-200-ff-n
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Explain why rubber duck debugging works even though the "duck" gives no advice. What is the
+      mechanism that surfaces the bug?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that you explain the problem and code step by step, as if to another listener
+        - id: c2
+          text: Identifies the mechanism as being forced to examine and articulate your own assumptions
+        - id: c3
+          text: >-
+            Notes the contradiction or flawed assumption surfaces during the act of explaining, not
+            from the duck
+      referenceAnswer: >-
+        Rubber duck debugging means explaining the problem and walking through the code line by line
+        aloud, as if teaching an inanimate object. The duck contributes nothing; the value comes
+        from being forced to make your reasoning explicit. Articulating each step exposes
+        assumptions you had been glossing over, and the moment your spoken explanation contradicts
+        what the code actually does, the flawed assumption -- and often the bug -- becomes visible.
+      passThreshold: 0.6
+    guidance: >-
+      The mechanism is self-explanation: putting silent assumptions into words forces you to check
+      them. The bug surfaces when your narration diverges from what the code really does. The
+      listener is irrelevant -- that is why a duck works as well as a colleague.
+  - id: d-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: >-
+      "What changed?" debugging compares a recently-working state with the now-broken one (recent
+      commits, dependency versions, config, environment, data). How does this relate to git bisect?
+    choices:
+      - id: a
+        text: They are unrelated; bisect ignores what changed and only inspects runtime memory
+      - id: b
+        text: >-
+          Bisect is the systematic, automated form of "what changed?" debugging -- a binary search
+          over the space of changes
+      - id: c
+        text: >-
+          "What changed?" debugging only applies to hardware, while bisect only applies to
+          documentation
+      - id: d
+        text: Bisect replaces "what changed?" reasoning by proving causation mathematically
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When something worked recently and now fails, comparing working vs. broken states is usually
+      faster than reasoning from first principles. Bisection is simply the systematic version: a
+      binary search over the change-space to pinpoint exactly which change flipped the behavior.
+  - id: d-200-mc-p
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: Why is a regression test the standard way to "close the loop" after fixing a bug?
+    choices:
+      - id: a
+        text: Because regression tests make the build artifact smaller
+      - id: b
+        text: Because writing a test deletes the original buggy code automatically
+      - id: c
+        text: Because regression tests prove the entire program is now bug-free
+      - id: d
+        text: >-
+          Because a regression test fails before the fix and passes after, guarding against the same
+          defect silently returning later
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A good regression test captures the specific failure: it should fail on the old code and pass
+      on the fixed code. That gives you proof the fix works and a permanent tripwire so the same
+      defect cannot quietly reappear in a future change. It does not prove the whole program is
+      correct.
+  - id: d-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      In distributed tracing, a single request that fans out across several services is recorded as
+      one "trace" made up of many "spans." What is the relationship between a trace and its spans,
+      and why does this structure help debugging?
+    choices:
+      - id: a
+        text: >-
+          A span is a separate, unrelated log line; spans are not connected to one another and must
+          be joined manually by timestamp alone
+      - id: b
+        text: >-
+          A trace is one severity level of logging, while spans are a different severity level
+          emitted by the same logger
+      - id: c
+        text: >-
+          Each span records one unit of work (e.g. a service call) with its own timing, and spans
+          share a trace ID and parent/child links so the whole request can be reconstructed
+          end-to-end across services
+      - id: d
+        text: >-
+          A trace stores only the final response, and spans store only the request body, so together
+          they form a complete HTTP capture
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A trace is the end-to-end story of one request; each span is a timed unit of work within it,
+      linked by a shared trace ID and parent/child relationships. Because the spans are correlated,
+      you can see where time was spent and which hop failed across many services -- something
+      isolated per-service logs cannot show without manual stitching.
+  - id: d-200-ff-r
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      Compare structured logging with free-text logging and explain why structured logging is
+      preferred when logs feed a centralized search or observability system.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes structured logging as emitting key/value or JSON fields rather than free-form
+            text
+        - id: c2
+          text: Explains structured logs are machine-queryable and aggregatable (filter/group by fields)
+        - id: c3
+          text: Notes free-text logs require fragile parsing/regex to extract the same information
+      referenceAnswer: >-
+        Structured logging emits records as key/value pairs or JSON fields (for example user_id,
+        request_id, latency_ms) instead of a single free-text string. Because each field is
+        explicit, a centralized system can index, filter, group, and aggregate on those fields
+        directly. Free-text logs bury the same data inside prose, so extracting it requires brittle
+        parsing or regular expressions that break whenever the message wording changes. When logs
+        feed search and observability tooling, the machine-queryable structure is what makes them
+        useful at scale.
+      passThreshold: 0.6
+    guidance: >-
+      The key difference is machine-queryability. Structured fields can be indexed and aggregated by
+      observability backends; free text must be parsed out with fragile regexes. At scale, the
+      structure -- not the prose -- is what makes logs searchable.
+  - id: d-200-mc-s
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: >-
+      How does an assertion differ from ordinary error handling, and why does that make assertions a
+      debugging/instrumentation tool?
+    choices:
+      - id: a
+        text: >-
+          An assertion gracefully recovers from expected failures, while error handling crashes the
+          program on purpose
+      - id: b
+        text: >-
+          An assertion encodes an invariant and fails loudly at the point an assumption is violated,
+          shortening the distance between defect and symptom; error handling deals with expected
+          runtime conditions
+      - id: c
+        text: They are identical; "assertion" is just an older word for try/catch
+      - id: d
+        text: An assertion only checks syntax at compile time and never runs
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Assertions state "this must be true here." When violated they fail immediately at the point
+      the assumption broke, so the symptom appears right next to the defect instead of far
+      downstream. That is a debugging aid for catching impossible states -- not a substitute for
+      handling expected conditions like missing files or bad user input.
+  - id: d-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: multiple_choice
+    prompt: >-
+      During a debugging session in an optimized build, the debugger shows a variable as "<optimized
+      out>" or displays a value that contradicts the visible source. Why should you treat the tool
+      itself as a possible source of the misleading observation?
+    choices:
+      - id: a
+        text: >-
+          Because debuggers are forbidden from reading optimized builds and always print fabricated
+          values
+      - id: b
+        text: >-
+          Because optimization can elide, reorder, or coalesce variables, so the debugger may report
+          stale, missing, or rearranged values that do not match a naive reading of the source
+      - id: c
+        text: Because the variable name was misspelled, which optimization detects and reports
+      - id: d
+        text: Because optimized builds disable the debugger's ability to read any memory at all
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In optimized builds the compiler may eliminate, reorder, or merge variables, so the debugger
+      can legitimately show "<optimized out>" or stale values. Trusting those readings as ground
+      truth can send you chasing a phantom. Recognizing that the instrument itself can lie -- and
+      rebuilding with debug info to confirm -- is part of disciplined debugging.
+  - id: d-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      A user files a bug report saying "the export button is broken." You click the export button on
+      your machine and it works fine. What is the most productive next step?
+    choices:
+      - id: a
+        text: Close the ticket as "cannot reproduce" since it works on your machine.
+      - id: b
+        text: >-
+          Gather the exact steps, environment, and data the user had so you can reproduce the
+          failure before attempting a fix.
+      - id: c
+        text: Rewrite the export function from scratch in case the old code was buggy.
+      - id: d
+        text: Add a try/catch around the export call and ship it to suppress any error.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A bug you cannot reproduce is a bug you cannot reliably fix or verify. Before changing code,
+      get the concrete steps, environment, browser, and input data from the reporter so you can
+      observe the failure yourself. Rewriting blindly or suppressing the error treats the symptom
+      without understanding the cause.
+  - id: d-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      A test that passed last week now fails on the latest commit, and you know it passed at a
+      known-good commit 400 commits ago. You want to find the exact commit that introduced the
+      failure with the fewest checks. Which approach fits best?
+    choices:
+      - id: a
+        text: Read every one of the 400 commit diffs in order until you spot the cause.
+      - id: b
+        text: Revert the most recent commit and hope that fixes it.
+      - id: c
+        text: >-
+          Use git bisect to binary-search the commit range, testing roughly log2(400) ~ 9 commits to
+          isolate the culprit.
+      - id: d
+        text: Re-run the test repeatedly on HEAD until it eventually passes.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      git bisect performs a binary search across the commit range: each tested commit halves the
+      remaining suspects, so 400 commits resolve in about 9 checks instead of 400. Mark commits good
+      or bad and bisect converges on the first bad commit. Reading every diff or guessing wastes
+      effort.
+  - id: d-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: >-
+      You hit a NullPointerException and the stack trace shows a chain of 30 frames spanning
+      framework code, library code, and your code. To locate where YOUR code triggered the problem,
+      where do you look first?
+    choices:
+      - id: a
+        text: The topmost frame, which is always inside your own code.
+      - id: b
+        text: The deepest framework frame, since frameworks cause most bugs.
+      - id: c
+        text: >-
+          The highest frame that points at a file in your own project, reading from the top down to
+          find your last call before the failure.
+      - id: d
+        text: The exception class name only; the frames are not useful.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The top frame is where the exception was thrown, often inside library code, but the actionable
+      line is usually the highest frame in YOUR code on the call path. Scan the trace for the first
+      file path belonging to your project; that is where you passed the bad value or made the
+      failing call.
+  - id: d-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      A bug appears only intermittently, roughly one run in twenty, on a function that processes a
+      list concurrently across threads. You want to make it reproduce reliably so you can study it.
+      Which change is most likely to help?
+    choices:
+      - id: a
+        text: >-
+          Increase thread count and add artificial delays at suspected points to widen the race
+          window and force the failure to surface more often.
+      - id: b
+        text: Run it once more; if it passes, assume it is fixed.
+      - id: c
+        text: Disable all logging so the timing is not disturbed.
+      - id: d
+        text: Switch to a faster machine so the code finishes before the bug occurs.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Intermittent concurrency bugs are race conditions that depend on timing. Amplifying contention
+      (more threads) and inserting sleeps near the suspected interleaving widens the race window,
+      turning a 1-in-20 failure into a near-certain one you can debug. Hiding the bug by going
+      faster or ignoring it does not help you find the cause.
+  - id: d-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You suspect a function returns wrong output, but it sits inside a 2000-line module with many
+      dependencies. Before touching the big system, what is the most effective way to confirm the
+      function itself is the problem?
+    choices:
+      - id: a
+        text: >-
+          Write a minimal reproduction that calls just that function with known inputs in isolation
+          and checks its output.
+      - id: b
+        text: Add logging to all 2000 lines and read the entire log.
+      - id: c
+        text: Deploy to production and watch the dashboards.
+      - id: d
+        text: Ask a teammate to guess where the bug is.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A minimal reproduction isolates one variable: by calling the suspect function alone with
+      controlled inputs, you remove all the surrounding machinery as confounders. If it misbehaves
+      in isolation, the function is the culprit; if not, the problem is in how it is called or
+      composed.
+  - id: d-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      You are debugging a checkout flow that fails only for some users. You have a hunch the failure
+      is caused by an expired auth token. Describe how you would apply hypothesis-driven debugging
+      to confirm or reject that hunch before changing any code.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States a specific, falsifiable hypothesis (e.g. "the request fails because the auth
+            token is expired at the time of checkout").
+        - id: c2
+          text: >-
+            Describes an observation or experiment that would distinguish that hypothesis from
+            alternatives (e.g. inspect the token expiry / response status, or reproduce with a
+            deliberately expired token).
+        - id: c3
+          text: >-
+            Explains acting on the result: confirm and fix the cause, or reject and form a new
+            hypothesis rather than guessing.
+      referenceAnswer: >-
+        I would state the hypothesis precisely: checkout fails because the auth token has expired by
+        the time the request is sent. Then I would gather evidence that directly tests it: log or
+        inspect the token's expiry and the server's response code for a failing user, and try to
+        reproduce by forcing an expired token in a test session. If the failing requests return a
+        401 with an expired token, the hypothesis is confirmed and I fix the refresh logic; if
+        failing requests carry valid tokens, I reject the hypothesis and form a new one (e.g. a
+        payload or race issue) rather than patching blindly.
+      passThreshold: 0.6
+    guidance: >-
+      Hypothesis-driven debugging means stating a falsifiable guess and designing an observation
+      that could disprove it, not one that merely confirms it. Inspecting the token expiry and
+      response code (or reproducing with a deliberately expired token) discriminates this hypothesis
+      from alternatives before any code changes.
+  - id: d-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      You are stuck on why a parser returns the wrong result. A teammate suggests you "rubber-duck"
+      it. What does applying this technique actually involve?
+    choices:
+      - id: a
+        text: Replacing the parser with a duck-typed interface to improve flexibility.
+      - id: b
+        text: Deleting the function and waiting for the bug to reappear elsewhere.
+      - id: c
+        text: Running the parser on random inputs until it crashes.
+      - id: d
+        text: >-
+          Explaining the code and your assumptions line by line out loud (to a person or object),
+          which often surfaces a flawed assumption you skipped over while reading silently.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Rubber-duck debugging means articulating the logic step by step out loud, as if explaining it
+      to a rubber duck. The act of verbalizing forces you to state assumptions you glossed over when
+      reading, and the contradiction usually becomes obvious. It is a thinking technique, not a code
+      change.
+  - id: d-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      You need to understand the runtime state of a complex object at one specific line that
+      executes once, and you want to inspect many fields and step through subsequent calls
+      interactively. Which tool fits this situation best?
+    choices:
+      - id: a
+        text: A single print statement of one field.
+      - id: b
+        text: Recompiling with optimizations turned up.
+      - id: c
+        text: Restarting the process and hoping the state is different.
+      - id: d
+        text: >-
+          An interactive debugger with a breakpoint at that line, so you can inspect all variables
+          and step through execution.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      When you need to inspect rich state at one reachable point and then step interactively, a
+      debugger breakpoint is the right tool: it pauses execution and lets you examine every variable
+      and walk forward. Prints shine for high-frequency or hard-to-pause code, but here interactive
+      inspection is more efficient.
+  - id: d-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      A bug occurs deep inside a tight loop that runs millions of times, and you cannot pause it
+      interactively without freezing a real-time system. You want to see how a value evolves. What
+      is the most practical approach?
+    choices:
+      - id: a
+        text: >-
+          Set a conditional breakpoint or add targeted logging that fires only when the value enters
+          the suspicious range, so you capture the relevant iterations without flooding output.
+      - id: b
+        text: Log every iteration unconditionally and read all million lines.
+      - id: c
+        text: Step through each iteration one by one in the debugger.
+      - id: d
+        text: Remove the loop to see if the bug disappears.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      In hot loops, unconditional logging or single-stepping is impractical. Conditional breakpoints
+      and guarded log statements fire only when a predicate holds (e.g. value is negative), so you
+      capture exactly the iterations that matter without drowning in noise or freezing the system.
+  - id: d-300-ff-j
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: >-
+      A coworker reports that your service "started returning 500s sometime this morning." Nothing
+      in the code changed that you know of. Describe how you would narrow down the cause by
+      isolating variables, naming at least two distinct things you would check or change one at a
+      time.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes changing or checking ONE variable at a time rather than many at once, to
+            attribute the effect.
+        - id: c2
+          text: >-
+            Names at least two distinct candidate variables across code, dependencies, config, data,
+            or infrastructure (e.g. a deploy, a config change, an upstream dependency, traffic/data
+            change).
+        - id: c3
+          text: >-
+            Uses the timeline ("this morning") to correlate the failure onset with a specific
+            change.
+      referenceAnswer: >-
+        I would first pin down when the 500s started and correlate that timestamp with anything that
+        changed: deploys, config or feature-flag flips, dependency or infra changes, or a spike in
+        traffic or unusual input data. Then I isolate one variable at a time: check whether a
+        dependency (database, downstream API) started erroring at that moment; if not, check whether
+        a config or flag changed; if not, look at whether input data shifted. By correlating the
+        onset time with each candidate and testing them individually rather than changing several at
+        once, I can attribute the failure to its actual cause instead of guessing.
+      passThreshold: 0.6
+    guidance: >-
+      "Nothing changed in the code" rarely means nothing changed at all: config, dependencies, data,
+      and infrastructure all drift. Correlating the failure onset with each candidate and testing
+      one variable at a time is what makes the cause attributable instead of a guess.
+  - id: d-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 333
+    type: multiple_choice
+    prompt: >-
+      You added three changes at once to fix a bug, and the bug went away. You want to know which
+      change actually fixed it (so you can remove the unnecessary ones). What should you do?
+    choices:
+      - id: a
+        text: Keep all three changes since the bug is gone; the cause does not matter.
+      - id: b
+        text: >-
+          Revert the changes and re-apply them one at a time, confirming after each whether the bug
+          returns, to identify the single change responsible.
+      - id: c
+        text: Delete the failing test so the question becomes moot.
+      - id: d
+        text: Assume the first change was the fix and discard the other two without testing.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Changing multiple variables at once means you cannot attribute the effect. To learn which
+      change mattered, re-introduce them one at a time and observe when the bug disappears. Keeping
+      unexplained changes leaves dead or cargo-cult code; guessing without testing risks removing
+      the real fix.
+  - id: d-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 347
+    type: multiple_choice
+    prompt: >-
+      While debugging, you are certain that a config file is being loaded from /etc/app/config.yaml.
+      You have spent an hour assuming this. What is the cheapest high-value move before you continue
+      down this path?
+    choices:
+      - id: a
+        text: >-
+          Verify the assumption directly, e.g. log the actual path the program resolves and confirm
+          the file's contents at runtime.
+      - id: b
+        text: Rewrite the config loader to be more robust.
+      - id: c
+        text: Add more features to the config schema.
+      - id: d
+        text: Assume the assumption is correct and keep debugging downstream code.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Unchecked assumptions are a leading cause of wasted debugging time. Cheaply verifying the one
+      you have been relying on (print the resolved path, dump the loaded values) either eliminates a
+      whole branch of investigation or reveals that the real config differs from what you believed.
+  - id: d-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      A web request fails with a generic "Internal Server Error" page and no detail. You need to see
+      the real error and stack trace. What is the most direct next step?
+    choices:
+      - id: a
+        text: Refresh the page several times in case it was transient.
+      - id: b
+        text: >-
+          Check the server-side logs (and enable detailed/error logging if needed) for the stack
+          trace and exception that produced the 500.
+      - id: c
+        text: Inspect only the browser's rendered HTML for clues.
+      - id: d
+        text: Clear the browser cache and cookies.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A 500 page intentionally hides internals from the client; the diagnostic detail lives in the
+      server logs. Reading the server-side stack trace (or raising the log level to capture it)
+      gives you the actual exception and location. Client-side actions like refreshing or clearing
+      cache rarely reveal a server fault.
+  - id: d-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: free_form
+    prompt: >-
+      You filed a bug against an open-source library, and the maintainers asked for a "minimal
+      reproducible example." Your real failure happens inside a large application. Describe how you
+      would produce a minimal reproduction and why it helps both you and the maintainers.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes stripping the case down by removing code/dependencies not needed to trigger
+            the failure, until only the essential trigger remains.
+        - id: c2
+          text: Notes that the reproduction must be self-contained and still reliably reproduce the bug.
+        - id: c3
+          text: >-
+            Explains a benefit: it isolates the cause / rules out your own code, or lets maintainers
+            reproduce and fix it faster.
+      referenceAnswer: >-
+        I would start from the failing behavior and remove everything that is not required to
+        trigger it: unrelated modules, frameworks, configuration, and data, shrinking the case while
+        re-checking after each removal that the bug still reproduces. The end product is a small
+        self-contained script or project that anyone can run and see fail. This helps me because the
+        act of reducing often reveals that the bug is in my own usage rather than the library, and
+        it helps the maintainers because they can reproduce it immediately without my whole
+        application, which dramatically speeds up the fix.
+      passThreshold: 0.6
+    guidance: >-
+      A minimal reproducible example must be self-contained and still fail reliably; the work is
+      removing everything inessential while re-checking the repro after each cut. That narrowing
+      often reveals the cause is your own usage, and it lets maintainers reproduce and fix without
+      your whole app.
+  - id: d-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You change a CSS file and reload the page, but the broken styling does not change at all.
+      Before assuming your edit is wrong, which check is most appropriate?
+    choices:
+      - id: a
+        text: >-
+          Confirm the browser is actually loading your edited file (hard-refresh / disable cache,
+          verify the served file in dev tools) before doubting the edit itself.
+      - id: b
+        text: Immediately rewrite all the CSS rules from scratch.
+      - id: c
+        text: Switch to a different CSS framework.
+      - id: d
+        text: Assume the browser is fine and that CSS simply cannot do what you want.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      When an edit appears to have no effect, first verify your change is actually reaching the
+      running system. Caching, a stale build, or editing the wrong file are common culprits.
+      Confirming the served bytes match your edit (via hard refresh or the network tab) rules out a
+      whole class of false leads before you question your logic.
+  - id: d-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      A function intermittently returns wrong results. You add a print statement to inspect an
+      intermediate value, and now the bug never reproduces. What is the most likely lesson, and what
+      do you do?
+    choices:
+      - id: a
+        text: The print fixed the bug; leave it in permanently and move on.
+      - id: b
+        text: >-
+          You likely have a timing- or optimization-sensitive bug (a heisenbug); switch to a less
+          intrusive observation method such as logging to a buffer or capturing state without
+          altering timing.
+      - id: c
+        text: The bug never existed; close the ticket.
+      - id: d
+        text: Add many more prints until the bug is permanently masked.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When observation changes the outcome, you have a heisenbug, often a race condition or
+      compiler/optimization interaction where the print perturbs timing or memory layout. The fix is
+      not to keep the print, which only masks the issue, but to observe less intrusively (buffered
+      logs, atomic counters, tracing) and address the underlying timing flaw.
+  - id: d-300-ff-q
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >-
+      You are about to start git bisect to find a regression. Describe the concrete steps you would
+      follow, including how you mark commits and what role a reliable test plays in the process.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies a known-good commit and a known-bad commit to bound the search (e.g. git
+            bisect start, git bisect bad, git bisect good <ref>).
+        - id: c2
+          text: >-
+            Describes testing each commit git checks out and marking it good or bad, repeating until
+            bisect reports the first bad commit.
+        - id: c3
+          text: >-
+            Explains that a reliable, deterministic test (or repeatable manual check) is required so
+            each good/bad verdict is trustworthy.
+      referenceAnswer: >-
+        I would start by finding a commit where the behavior is known good and the current commit
+        which is bad, then run git bisect start, git bisect bad on HEAD, and git bisect good on the
+        known-good ref. Git checks out a commit halfway between them; I run my test or repeatable
+        check and mark it git bisect good or git bisect bad. Bisect keeps halving the range until it
+        prints the first bad commit. The whole process depends on a reliable, deterministic test: if
+        the verdict for a commit is flaky, bisect will converge on the wrong commit, so I either
+        automate it with git bisect run <script> or apply a careful, consistent manual check at each
+        step.
+      passThreshold: 0.6
+    guidance: >-
+      Bisect needs two anchors (a known-good ref and a known-bad ref) and a trustworthy good/bad
+      verdict at each step. A flaky test breaks bisection's monotonicity assumption and lands it on
+      the wrong commit, which is why a deterministic test (or git bisect run <script>) matters.
+  - id: d-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      A bug only happens in production, never on your local machine. Both run the "same" code. What
+      is the most systematic first move to find the difference?
+    choices:
+      - id: a
+        text: Conclude the code is fine and that production hardware is simply faulty.
+      - id: b
+        text: >-
+          Enumerate and compare the environment differences (data volume, config, env vars,
+          dependency versions, OS, concurrency, secrets) and test them one at a time to find which
+          one triggers the bug.
+      - id: c
+        text: Redeploy the same build repeatedly until it works.
+      - id: d
+        text: Disable monitoring so the noise goes away.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Works on my machine" means something differs between the two environments. Systematically
+      list what is not identical (production data, config, dependency versions, scale, concurrency,
+      secrets) and vary them one at a time locally until you reproduce the failure. That isolates
+      the responsible difference instead of blaming hardware or redeploying blindly.
+  - id: d-300-mc-s
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You are debugging and the symptom appears far from where you suspect the cause is. You want to
+      confirm whether a specific function is even being reached at runtime. What is the simplest
+      targeted check?
+    choices:
+      - id: a
+        text: Profile the entire application for CPU usage.
+      - id: b
+        text: Rewrite the function to be faster.
+      - id: c
+        text: >-
+          Add a single distinctive log line (or breakpoint) at the function's entry and run the
+          scenario to see whether it prints / is hit.
+      - id: d
+        text: Comment out unrelated modules until the program no longer compiles.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Before reasoning about what a function does, confirm it actually executes on the path you
+      think it does. A single distinctive trace line or a breakpoint at the entry answers "is this
+      even reached?" instantly. Confirming reachability prevents you from analyzing code that the
+      program never runs in this scenario.
+  - id: d-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 375
+    type: free_form
+    prompt: >-
+      You have a flaky integration test that fails about 10% of the time in CI but almost never
+      locally. Describe how you would approach debugging it, addressing how you make it reproduce
+      and how you gather evidence about the cause.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes increasing reproduction odds (e.g. run the test in a loop / many times, or
+            mimic CI conditions like parallelism, slower I/O, resource limits) rather than relying
+            on a single run.
+        - id: c2
+          text: >-
+            Describes capturing evidence from failing runs specifically (logs, timestamps, seeds,
+            retained artifacts) to compare failing vs passing.
+        - id: c3
+          text: >-
+            Identifies a plausible class of cause for flakiness (timing/ordering race, shared state,
+            external dependency, nondeterministic data) to guide the hunt.
+      referenceAnswer: >-
+        First I make it fail on demand: run the test in a tight loop hundreds of times and reproduce
+        CI's conditions locally, such as running other tests in parallel, throttling I/O, or
+        limiting resources, since flakiness usually comes from timing or contention that CI exposes.
+        I capture rich evidence from the failing runs specifically, including verbose logs,
+        timestamps, any random seed, and retained artifacts, so I can diff a failing run against a
+        passing one. With that data I look for the usual flakiness causes, a race or ordering
+        dependency, shared mutable state between tests, reliance on an external service, or
+        nondeterministic data or time, and then pin down which one fits the evidence before fixing
+        it.
+      passThreshold: 0.6
+    guidance: >-
+      A 10%-in-CI failure is a reproduction-frequency problem first: loop the test and mimic CI's
+      contention before anything else. Capturing evidence from the failing runs specifically (logs,
+      timestamps, seeds) lets you diff fail vs. pass and pin the nondeterminism source instead of
+      guessing.
+  - id: d-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A service throws a NullPointerException, and the stack trace points at line 240 where
+      `order.getCustomer().getName()` runs. You add a null check there and the crash stops, but a
+      week later a different method crashes on the same null customer. What does this pattern most
+      strongly indicate about the original change?
+    choices:
+      - id: a
+        text: >-
+          The fix addressed the symptom at the crash site but not the root cause, which is wherever
+          the customer was wrongly left null.
+      - id: b
+        text: >-
+          The stack trace was misleading because Java prints the oldest frame first, so line 240 was
+          never really involved.
+      - id: c
+        text: The new crash is unrelated; a single null check cannot affect code in another method.
+      - id: d
+        text: >-
+          Null checks are never an acceptable fix, so any recurrence proves the language is at
+          fault.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The crash site is downstream of the defect: a null check there suppresses one symptom while
+      the bad data (a null customer produced elsewhere) keeps flowing and resurfaces. The root cause
+      lives wherever the customer was wrongly produced, not where it was first dereferenced.
+  - id: d-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A regression appeared somewhere in the last ~600 commits. The team wants to run `git bisect
+      run ./check.sh`, but several commits in that range do not compile because of a half-finished
+      refactor. Which adjustment keeps bisection valid?
+    choices:
+      - id: a
+        text: >-
+          Have the script exit 1 on un-buildable commits so bisect treats them as bad and narrows
+          faster.
+      - id: b
+        text: >-
+          Have the script exit 125 on commits that cannot be built or tested so bisect skips them
+          rather than scoring them good or bad.
+      - id: c
+        text: >-
+          Disable bisection entirely, since any un-buildable commit makes binary search
+          mathematically impossible.
+      - id: d
+        text: Have the script exit 0 on un-buildable commits so they are treated as good and ignored.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `git bisect run` reads exit codes: 0 = good, 1-127 (except 125) = bad, and 125 =
+      skip/untestable. Marking an un-buildable commit good (0) or bad (1) injects a false verdict
+      and can localize the wrong commit; exit 125 tells bisect to skip it.
+  - id: d-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: free_form
+    prompt: >-
+      A bug only reproduces about 1 in 50 runs. A teammate inserts detailed logging to catch it, and
+      after that the failure stops appearing entirely. Diagnose what is likely happening and explain
+      why the added logging "fixed" the failure without removing the defect.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies this as a Heisenbug / observer effect — observing the bug changed its
+            behavior.
+        - id: c2
+          text: >-
+            Explains the mechanism: logging alters timing (or memory layout), masking a likely
+            race/timing-dependent defect.
+        - id: c3
+          text: States the defect is not fixed, only hidden, and will recur under different timing/load.
+      referenceAnswer: >-
+        This is a Heisenbug: adding logging perturbs the system (extra I/O and synchronization shift
+        thread timing, or change memory layout), which makes the rare failing interleaving stop
+        occurring. The intermittent, 1-in-50 nature points to a race condition or other
+        timing-dependent defect. The logging did not fix it; it only masked it by changing timing,
+        and the bug will resurface under different load, hardware, or once the logging is removed. A
+        deterministic tool such as a thread sanitizer or a record/replay debugger is more
+        appropriate than print debugging here.
+      passThreshold: 0.6
+    guidance: >-
+      Timing-sensitive bugs change behavior when observed; logging is itself an observation that
+      shifts timing. Treating "the failure stopped" as a fix is the classic mistake — the rare
+      interleaving still exists and will return.
+  - id: d-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A test passes locally on every run but fails roughly one time in five in CI, with no code
+      changes between runs. Of the following, which is the LEAST useful next step for diagnosing the
+      flake's root cause?
+    choices:
+      - id: a
+        text: >-
+          Check for shared mutable state or test-order dependence by running the suite in randomized
+          and isolated orders.
+      - id: b
+        text: >-
+          Inspect the test for unseeded randomness, wall-clock/timezone assumptions, or sleeps that
+          assume timing.
+      - id: c
+        text: >-
+          Look for reliance on an external/network dependency that behaves differently in CI than
+          locally.
+      - id: d
+        text: >-
+          Configure CI to retry the test until it passes and treat the green run as proof the code
+          is correct.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Retrying until green masks nondeterminism rather than diagnosing it — the race,
+      order-dependence, or timing assumption remains and can fail in production. The other options
+      each test a specific, common cause of flaky tests.
+  - id: d-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      A pager alert fires at 02:00: a checkout service is returning errors for most users. You can
+      either roll back to last night's known-good build now, or spend an hour tracing the exact
+      faulty code path. Which choice best reflects sound incident-debugging judgment, and why?
+    choices:
+      - id: a
+        text: >-
+          Roll back now to restore availability, then do root-cause analysis afterward, accepting
+          that you are trading correctness-now for availability-now and logging the follow-up.
+      - id: b
+        text: >-
+          Trace the exact root cause first, because applying any symptom-level mitigation is always
+          an anti-pattern that hides the real bug.
+      - id: c
+        text: >-
+          Roll back and close the incident, since a rollback that stops the errors is by definition
+          a complete root-cause fix.
+      - id: d
+        text: >-
+          Do nothing reversible until you can reproduce the bug locally, because you cannot act
+          without a confirmed reproduction.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      During a live incident, restoring service (rollback, flag, restart) is a deliberate
+      symptom-level mitigation that buys time for proper root-cause analysis. It is not a "complete
+      fix" (the defect is still in the codebase), and waiting for a perfect local repro while users
+      are down is the wrong tradeoff.
+  - id: d-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: free_form
+    prompt: >-
+      Code "works in debug builds but crashes in the optimized release build." Without seeing the
+      code, list the categories of defect this symptom most points toward, and explain why an
+      optimized build can expose them while a debug build hides them.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names at least two of: undefined behavior, uninitialized memory/ variables, or
+            timing-dependent/race behavior.
+        - id: c2
+          text: >-
+            Explains the mechanism — optimization changes code generation, memory layout,
+            initialization, or timing, so a latent defect manifests.
+        - id: c3
+          text: >-
+            Notes the debug build was masking, not fixing, the defect (e.g., zero-initialized
+            memory, disabled optimizations, slower timing).
+      referenceAnswer: >-
+        "Works in debug, fails in release" strongly points to undefined behavior (especially in
+        C/C++), reliance on uninitialized memory or variables, or timing-dependent/concurrency bugs.
+        Optimizers are free to reorder, elide, and assume the absence of UB, and release builds
+        change memory layout and initialization (debug builds often zero or pattern-fill memory) and
+        run faster, which changes timing. The debug build was incidentally masking the defect — the
+        bug was always present but only became observable once the optimizer's assumptions or the
+        changed timing/layout took effect.
+      passThreshold: 0.6
+    guidance: >-
+      The asymmetry between build modes is itself the diagnostic clue: it isolates the suspect
+      classes (UB, uninitialized state, timing) because those are exactly the behaviors a debug
+      build accidentally stabilizes.
+  - id: d-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      You are debugging a bug that only manifests in a multi-node production deployment under real
+      traffic and disappears the moment you attach an interactive debugger and pause a process.
+      Which debugging approach is the better fit, and what is the core reason?
+    choices:
+      - id: a
+        text: >-
+          Logging/tracing, because pausing a distributed timing-sensitive system in a debugger
+          destroys the conditions that produce the bug.
+      - id: b
+        text: >-
+          An interactive debugger, because breakpoint debugging is always superior to print
+          debugging for any serious bug.
+      - id: c
+        text: An interactive debugger, because logging cannot capture state in a production system.
+      - id: d
+        text: Neither; distributed bugs cannot be debugged and must be rewritten from scratch.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Print/log/trace debugging works across process, network, and timing boundaries and does not
+      require pausing. Pausing a distributed, timing-sensitive system changes its behavior and can
+      dissolve the repro, so the blanket claim that a debugger is always superior is the
+      misconception.
+  - id: d-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: >-
+      A regression "appeared" at commit X according to `git bisect`, but when you check out X and
+      run the failing test many times, it fails only sometimes. What is the most likely explanation
+      for the bisect result, and what does it tell you?
+    choices:
+      - id: a
+        text: >-
+          Commit X is definitely the culprit; intermittent reproduction after bisect confirms the
+          result.
+      - id: b
+        text: >-
+          The bug is non-monotonic/intermittent, so each good/bad verdict was unreliable and bisect
+          may have landed on the wrong commit; bisection was the wrong tool here.
+      - id: c
+        text: >-
+          The bug must be in a merge commit, which always invalidates the first and last commits of
+          the range.
+      - id: d
+        text: The test is simply too slow; running it once per commit is enough for any bug.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Bisection assumes monotonicity — the property flips exactly once from good to bad. An
+      intermittent bug yields unreliable per-commit verdicts (a "bad" commit might pass on the run
+      bisect happened to do), so the located commit is untrustworthy. Bisection shines only with a
+      deterministic test.
+  - id: d-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A colleague is stuck on a bug for hours. You ask them to explain the failing function to you
+      line by line; halfway through the explanation they stop and say "wait — that condition is
+      backwards" and fix it without your input. Analyze why explaining the code aloud surfaced the
+      defect, even though you contributed nothing technical.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies this as rubber-duck debugging.
+        - id: c2
+          text: >-
+            Explains that articulating each step forces the author to examine assumptions they had
+            silently skipped while reading.
+        - id: c3
+          text: >-
+            Notes the listener's technical contribution is not required; the value is in the act of
+            explaining.
+      referenceAnswer: >-
+        This is rubber-duck debugging. When reading silently, the author's mind glosses over code by
+        reading what they intended rather than what is written. Forcing a line-by-line verbal
+        explanation makes each implicit assumption explicit, so the mismatch between intent and
+        actual logic (the backwards condition) becomes audible and obvious. The listener — duck or
+        human — need not contribute technically; the cognitive work of articulating the steps is
+        what exposes the flawed assumption.
+      passThreshold: 0.6
+    guidance: >-
+      Rubber-duck debugging works because verbalization defeats the silent-reading bias of seeing
+      intended logic instead of actual logic. The "expert listener" is incidental.
+  - id: d-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      Two engineers debug the same outage. One reports "the spike in latency metrics started right
+      when the deploy went out, so the deploy caused it" and closes the investigation. What is the
+      flaw in this reasoning?
+    choices:
+      - id: a
+        text: >-
+          Metrics can never be trusted, so no log or metric evidence should ever inform a debugging
+          conclusion.
+      - id: b
+        text: >-
+          Temporal correlation between the deploy and the spike is a hypothesis to test, not proof
+          of a causal mechanism.
+      - id: c
+        text: The deploy is irrelevant because correlation always implies the opposite of causation.
+      - id: d
+        text: There is no flaw; if a change precedes a failure it is always the cause.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Co-occurrence in logs/metrics (or a change preceding a failure) is a strong lead but only a
+      hypothesis. A concurrent traffic surge, dependency degradation, or coincidental cron could
+      explain the same timing; the causal link must be tested, not assumed.
+  - id: d-400-ff-k
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: free_form
+    prompt: >-
+      You inherit a vague bug report: "the export sometimes produces garbage." You have a 4,000-line
+      input file that triggers it. Describe how minimization (delta debugging / building an MCVE)
+      helps you diagnose the root cause, and explain why shrinking the failing case can reveal the
+      bug before you read much of the export code.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes systematically removing portions of the input and re-testing to find a minimal
+            failure-inducing subset (delta debugging / MCVE).
+        - id: c2
+          text: >-
+            Explains that the minimal case isolates the specific feature/structure that triggers the
+            fault.
+        - id: c3
+          text: >-
+            Notes that producing the minimal case frequently reveals the cause directly, reducing
+            the need to read all the code.
+      referenceAnswer: >-
+        Minimization (delta debugging) repeatedly removes chunks of the 4,000-line input and re-runs
+        the export, keeping only the parts whose removal makes the failure disappear, until a
+        minimal failure-inducing case remains. That minimal case isolates the exact input feature or
+        structure responsible — for example, a single row with a particular escaped character —
+        which points directly at the handling code. The act of reducing to a minimal, complete,
+        verifiable example often makes the cause self-evident, so you diagnose by narrowing the
+        trigger rather than by exhaustively reading the export implementation.
+      passThreshold: 0.6
+    guidance: >-
+      Hypothesis-driven narrowing of the input beats reading the whole codebase. A minimal
+      reproducing case localizes the trigger and frequently exposes the defect on its own.
+  - id: d-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      A race condition crashes a worker roughly once a day in production. An engineer adds a
+      `sleep(50ms)` before the contended section, the crash stops in staging, and they mark the bug
+      resolved. Why is this conclusion unsafe?
+    choices:
+      - id: a
+        text: Sleeps are guaranteed to serialize threads, so the only risk is slightly worse latency.
+      - id: b
+        text: The race is fixed because the failing interleaving is now impossible by construction.
+      - id: c
+        text: >-
+          The sleep only shifts the timing probabilistically; the race still exists and will
+          resurface under load or on different hardware.
+      - id: d
+        text: Staging not crashing always proves production is safe, so the conclusion is sound.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A sleep merely lowers the probability of the bad interleaving by changing timing; it does not
+      enforce mutual exclusion or ordering. Under heavier load, contention, or faster/slower
+      hardware the race reappears. Proper fixes use synchronization (locks, atomics) or remove the
+      shared state.
+  - id: d-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 421
+    type: multiple_choice
+    prompt: >-
+      A loop iterates 100,000 times and produces a wrong value on exactly one iteration. You want to
+      inspect program state at that iteration without stepping through the rest. Which debugger
+      feature most directly fits, and why?
+    choices:
+      - id: a
+        text: >-
+          A plain breakpoint at the loop top, because stepping 73,000 times is the most reliable way
+          to reach the iteration.
+      - id: b
+        text: >-
+          A watchpoint on the loop counter, because it pauses on every iteration which is exactly
+          what you want.
+      - id: c
+        text: >-
+          A conditional breakpoint, because it pauses only when a guard expression (e.g., `i ==
+          73421`) is true, skipping irrelevant iterations.
+      - id: d
+        text: Print debugging is the only option; debuggers cannot target a specific iteration.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A conditional breakpoint fires only when its expression is true, letting you land on the one
+      interesting iteration. A watchpoint breaks on value change (useful for "who modified this
+      variable"), but here it would trigger every iteration, defeating the purpose.
+  - id: d-400-ff-n
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A feature "works on my machine" for the developer but fails for QA. The developer insists the
+      code is therefore correct. Explain why "works on my machine" is a debugging signal rather than
+      a verdict, and name at least three concrete dimensions you would compare to localize the
+      difference.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that "works on my machine" indicates an environmental/state difference, not that
+            the code is correct.
+        - id: c2
+          text: Frames the next step as differential / "what changed/differs?" debugging.
+        - id: c3
+          text: >-
+            Names at least three concrete dimensions to compare (e.g., dependency versions, OS,
+            config/env vars, data, timezone/locale, concurrency).
+      referenceAnswer: >-
+        "Works on my machine" means the two environments differ in some uncontrolled dimension, not
+        that the code is correct — the failure is real. The right move is differential ("what
+        differs?") debugging: systematically compare the working and broken setups. Concrete
+        dimensions to diff include dependency/library versions, OS and runtime versions,
+        configuration and environment variables, the actual data each machine runs against,
+        locale/timezone, build flags, and concurrency or hardware differences. Whichever dimension
+        differs and tracks the failure is the lead to pursue.
+      passThreshold: 0.6
+    guidance: >-
+      The phrase points to an environment delta. Converting it into a differential-debugging
+      checklist (versions, OS, config, data, locale, concurrency) is faster than arguing about whose
+      machine is "right."
+  - id: d-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >-
+      A multithreaded service stops making progress: requests time out, but the process does not
+      crash. You capture a thread dump and see two worker threads both BLOCKED, each waiting on a
+      lock the other already holds, while CPU usage sits near 0%. Which diagnosis does this evidence
+      most directly support, and how does it differ from a livelock?
+    choices:
+      - id: a
+        text: >-
+          A deadlock: the threads are mutually waiting on locks in a cycle so none can proceed and
+          CPU stays idle; a livelock instead keeps threads active (often high CPU) while still
+          making no real progress.
+      - id: b
+        text: >-
+          A livelock: BLOCKED threads with near-zero CPU are the defining signature of a livelock,
+          whereas a deadlock always pegs the CPU at 100%.
+      - id: c
+        text: >-
+          A memory leak: timeouts with no crash and idle CPU are the classic sign of exhausted heap,
+          unrelated to lock ordering.
+      - id: d
+        text: >-
+          A CPU-bound hot loop: near-zero CPU with stuck threads proves the scheduler is starving a
+          compute-heavy thread.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A circular lock-wait (thread A holds L1 wanting L2, thread B holds L2 wanting L1) with BLOCKED
+      threads and idle CPU is the textbook deadlock signature, and a thread dump showing the cycle
+      is the diagnostic. A livelock differs: threads stay runnable and busy (often burning CPU)
+      reacting to each other yet never advancing. The fix for the deadlock is a consistent global
+      lock-acquisition order or a lock with timeout/try-lock, not symptom suppression.
+  - id: d-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      During a 5-Whys analysis you reach "the deploy script has no validation step." You could keep
+      asking why (org has no CI standards, no staffing for platform work, budget priorities...).
+      What is the soundest stopping rule for how deep to drill?
+    choices:
+      - id: a
+        text: Always ask exactly five whys, no more and no fewer, regardless of the answers.
+      - id: b
+        text: >-
+          Stop at the deepest cause you can actually control and verify with a concrete fix such as
+          a regression test or guard.
+      - id: c
+        text: Drill until you reach a cause outside the team's control, then file it as the root cause.
+      - id: d
+        text: Stop at the first why, since the visible symptom is the most actionable level.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Too shallow invites recurrence; too deep drifts into systemic issues you cannot fix now. The
+      practical stopping point is the deepest cause you can control and lock down with a verifiable
+      fix (test, assertion, guard). "Five" in 5-Whys is a heuristic, not a literal count.
+  - id: d-400-ff-q
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      Under a tight deadline an engineer changes five things at once — a config value, a library
+      version, a query, a retry setting, and a log level — and the bug goes away. Critique this from
+      a hypothesis-discipline standpoint, and describe one situation where testing multiple changes
+      in parallel can nonetheless be a legitimate, deliberate strategy.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the all-at-once approach as shotgun debugging that destroys attribution — you
+            cannot tell which change mattered.
+        - id: c2
+          text: >-
+            States the disciplined alternative: change one variable per experiment and predict the
+            outcome.
+        - id: c3
+          text: >-
+            Describes a legitimate parallel variant — e.g., running independent hypotheses on
+            separate copies/branches so each remains attributable.
+      referenceAnswer: >-
+        Changing five things at once is shotgun debugging: even though the symptom vanished, you
+        cannot attribute the fix to any one change, so you do not know the root cause and may have
+        introduced two new latent issues that cancel out. Disciplined debugging changes one variable
+        per experiment and predicts the result beforehand, preserving the ability to attribute
+        cause. However, parallel testing is legitimate when each hypothesis is isolated — for
+        example, deploying each candidate change to a separate branch, copy, or canary so results
+        remain individually attributable. The anti-pattern is bundling untracked changes into one
+        observation, not parallelism itself.
+      passThreshold: 0.6
+    guidance: >-
+      Shotgun debugging breaks attribution. Parallel hypothesis testing is fine only when the
+      hypotheses are isolated (separate copies/branches/canaries) so each variable's effect stays
+      distinguishable.
+  - id: d-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >-
+      You finally fix an intermittent production bug. Before closing the ticket you write a test
+      that fails on the old code and passes on the new code. Analyzing this step, what does the
+      failing-before/passing-after property primarily guarantee?
+    choices:
+      - id: a
+        text: It proves the bug can never occur again under any circumstances.
+      - id: b
+        text: It proves the fix has no performance impact.
+      - id: c
+        text: >-
+          It proves the test actually exercises the defect, so it will catch a silent regression if
+          the bug returns later.
+      - id: d
+        text: It is unnecessary; once a bug is fixed, a regression test adds no value.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A regression test must fail before the fix and pass after — the fail-before step proves the
+      test truly reproduces the defect (a test that passes on the broken code would never catch its
+      return). It guards against silent recurrence; it does not prove impossibility or measure
+      performance.
+  - id: d-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      A user reports a crash you cannot reproduce. A teammate argues "we can ship the fix and just
+      verify it in production." Analyze the central risk in fixing before reproducing.
+    choices:
+      - id: a
+        text: The only risk is that the fix takes slightly longer to write.
+      - id: b
+        text: >-
+          There is no risk; an intermittent crash that stops appearing is always proof the fix
+          worked.
+      - id: c
+        text: >-
+          Reproduction is irrelevant because production telemetry always pinpoints root cause
+          automatically.
+      - id: d
+        text: >-
+          Without a reproduction you cannot demonstrate the failure is gone, so you cannot
+          distinguish a real fix from an unrelated or intermittent change.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Reproduction generally must precede the fix: it both confirms the defect and provides the only
+      way to verify the fix removed it. Without it, an intermittent crash that "stopped" could be
+      coincidence, and you cannot prove your change was responsible.
+  - id: d-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >-
+      You have two competing hypotheses for a latency regression: (1) a slow database query, or (2)
+      lock contention in the app. You can add instrumentation but each signal has runtime cost,
+      storage cost, and PII exposure risk. Explain how you would choose what to instrument, and why
+      "just turn on maximum logging everywhere" is the wrong move.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Frames the goal as adding the minimum signal that discriminates between the two
+            competing hypotheses.
+        - id: c2
+          text: >-
+            Identifies a targeted, disambiguating signal (e.g., query timing/spans vs. lock-wait
+            time/contention metrics).
+        - id: c3
+          text: >-
+            Explains the downsides of maximal logging: cost, latency/noise, PII/security exposure,
+            and possible timing perturbation that hides the bug.
+      referenceAnswer: >-
+        Choose the minimum instrumentation that can distinguish the two hypotheses: for example, a
+        per-query timing span (or DB slow-query log) on one side and lock-wait/contention metrics on
+        the other. If query spans are flat but lock-wait time spikes with latency, hypothesis 2 is
+        supported, and vice versa — one targeted signal discriminates between them. "Maximum logging
+        everywhere" is wrong because it adds runtime and storage cost, buries the discriminating
+        signal in noise, risks leaking PII/secrets, and can itself perturb timing enough to mask the
+        very latency or contention you are chasing. Targeted instrumentation tied to the competing
+        hypotheses beats log spam.
+      passThreshold: 0.6
+    guidance: >-
+      Good instrumentation is hypothesis-driven: pick the smallest signal that tells the candidate
+      causes apart. Maximal logging costs money, adds noise, risks PII exposure, and can perturb
+      timing — so it can actively impede the diagnosis.
+  - id: d-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A teammate's heisenbug (a memory-corruption crash) disappears every time they attach an
+      interactive debugger or add a print statement to inspect state. They propose continuing to add
+      more print statements until the crash site is pinned down. Which critique is the strongest
+      evaluation of this plan?
+    choices:
+      - id: a
+        text: >-
+          The instrumentation itself perturbs timing and memory layout, which is exactly what masks
+          this class of bug; they should reach for deterministic tools (ASan/Valgrind,
+          record-replay) that observe without altering the run.
+      - id: b
+        text: >-
+          Print debugging is amateurish; any production-grade bug must be solved with a breakpoint
+          debugger, so they should keep attaching the debugger.
+      - id: c
+        text: >-
+          The plan is sound because adding prints is free and eventually one of them will coincide
+          with the crash.
+      - id: d
+        text: >-
+          They should add a sleep() before the suspected line, since slowing the program down will
+          make the corruption reproduce reliably.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A heisenbug changes behavior under observation; both prints and an attached debugger alter
+      timing/layout and can hide it. The expert move is a tool that detects the defect mechanism
+      (use-after-free, OOB) without perturbing the run, like AddressSanitizer or a record-replay
+      debugger. "Use a debugger always" (b) and "more prints" (c) ignore the observer effect;
+      sleep() (d) only shifts timing probabilistically and is not a fix.
+  - id: d-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: free_form
+    prompt: >-
+      During a SEV2 production incident, an on-call engineer rolls back the latest deploy to restore
+      service rather than diagnosing the root cause first. A reviewer calls this "just fixing the
+      symptom, not the bug." Evaluate whether the rollback was the right call and explain the
+      tradeoff the engineer made.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that during an active incident restoring availability (symptom mitigation:
+            rollback/flag/restart) is the correct priority over root-cause correctness.
+        - id: c2
+          text: >-
+            Identifies the explicit tradeoff: availability-now vs. correctness-now, accepting
+            deferred/temporary tech debt.
+        - id: c3
+          text: >-
+            Notes that root-cause analysis must still follow afterward (and the rollback/incident
+            should be documented) so the defect is actually fixed.
+      referenceAnswer: >-
+        The rollback was the right call. In an active incident the dominant concern is restoring
+        service, so a deliberate symptom-level mitigation (rollback, feature flag, or restart) is
+        correct even though it does not fix the root cause. The engineer consciously traded
+        correctness-now for availability-now, incurring tech debt. The "symptom not the bug"
+        critique is only valid if the team stops there; the loop must close with a follow-up
+        root-cause analysis, a regression test, and a postmortem so the defect is genuinely removed.
+      passThreshold: 0.6
+    guidance: >-
+      The anti-pattern "never fix symptoms" is itself a misconception in the incident context.
+      Experts intentionally mitigate the symptom to restore availability, then do root-cause work
+      afterward. The judgment is recognizing this as a deliberate, documented tradeoff rather than
+      an accidental whack-a-mole fix.
+  - id: d-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      Two engineers debate using `git bisect run` to find a regression. The bug is intermittent (it
+      reproduces only about 30% of runs), and several commits in the suspect range fail to compile.
+      Which assessment of bisection's fitness here is most defensible?
+    choices:
+      - id: a
+        text: >-
+          Bisection is ideal; the intermittency just means running the test script once per commit
+          and trusting whatever verdict comes back.
+      - id: b
+        text: >-
+          Bisection cannot be used at all when any commit fails to build, so the only option is to
+          read every diff manually.
+      - id: c
+        text: >-
+          Bisection will work as long as the bad commit is marked first; build failures are
+          automatically treated as good.
+      - id: d
+        text: >-
+          Bisection is unreliable here: the non-monotonic (intermittent) signal can mislabel a
+          commit as good, and the unbuildable commits violate independent testability unless the
+          script returns exit code 125 to skip them.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Bisection assumes monotonicity (one good-to-bad transition) and independently testable
+      commits. A 30%-reproducible bug breaks monotonicity: a "good" verdict may just be a run that
+      happened not to fail. Unbuildable commits must be skipped via exit code 125 (`git bisect
+      skip`). It is not strictly unusable (b is too absolute), and build failures are NOT
+      auto-treated as good (c).
+  - id: d-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A reviewer sees a fix for a NullPointerException that adds a null-check at the exact line in
+      the stack trace where the NPE was thrown, swallowing the case silently. The original reporter
+      says the symptom is gone. What is the best critique of accepting this fix?
+    choices:
+      - id: a
+        text: >-
+          The fix is correct because the stack trace points to the buggy line and that line is now
+          guarded.
+      - id: b
+        text: >-
+          The crash site is usually downstream of the defect; guarding it suppresses the symptom
+          while leaving the real cause (wherever the null was wrongly produced) live and now harder
+          to detect.
+      - id: c
+        text: The fix is fine as long as a comment explains the null-check.
+      - id: d
+        text: >-
+          The reviewer should reject it only because null-checks are slow, not because of where the
+          defect lives.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The frame where an exception is thrown is frequently not where the bug lives: a null/undefined
+      surfaces where it is *used*, but the root cause is wherever it was wrongly produced. Silently
+      guarding the throw site is symptom suppression that can hide the defect (it may now fail later
+      with corrupted data). The fix should trace back to where the bad value originated.
+  - id: d-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      A flaky test fails about 1 in 20 CI runs. The team configures CI to automatically retry failed
+      tests up to 3 times and mark the suite green if any attempt passes. Critique this approach and
+      describe a more defensible strategy.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that auto-retry masks/hides the underlying nondeterminism (race,
+            order-dependence, shared state, timing) rather than fixing it.
+        - id: c2
+          text: >-
+            Notes the real defect can still surface in production / under load even though CI goes
+            green.
+        - id: c3
+          text: >-
+            Proposes quarantine-and-fix (isolate the flaky test, diagnose the nondeterminism source,
+            fix the race/ordering/state) instead of blind retries.
+      referenceAnswer: >-
+        Blind retries are an anti-pattern: they hide the nondeterminism (commonly a race, test-order
+        dependence, shared mutable state, unseeded randomness, or a sleep/timing assumption) and
+        make CI green while the real defect remains and can fail in production or under different
+        load/hardware. A more defensible strategy is to quarantine the flaky test so it stops
+        blocking the pipeline, then diagnose the actual source of nondeterminism (e.g., with thread
+        sanitizers or record-replay), fix it, and only then return the test to the gating suite.
+        Retries trade a true signal for a convenient one.
+      passThreshold: 0.6
+    guidance: >-
+      Retrying-until-green mistakes timing-masking for a fix. A flaky test is a real defect signal;
+      the fix is to find and remove the nondeterminism, not to paper over it. Quarantine-and-fix
+      preserves the signal without blocking everyone.
+  - id: d-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A senior engineer fixes a flaky concurrency bug by wrapping the shared counter in a global
+      lock, but profiling shows the change cut throughput by 40% because nearly every request now
+      serializes on that one lock. A reviewer must judge the fix. Which evaluation is the most
+      defensible?
+    choices:
+      - id: a
+        text: >-
+          Ship it unchanged: any working lock is correct, and throughput is never a legitimate
+          concern when correctness is at stake.
+      - id: b
+        text: >-
+          The fix is correct but its coarse granularity is the problem; narrow the critical section
+          or use a finer-grained/lock-free primitive so correctness is preserved without serializing
+          unrelated work.
+      - id: c
+        text: >-
+          Revert to the racy version, since a 40% throughput loss is always worse than an occasional
+          wrong result.
+      - id: d
+        text: >-
+          Replace the lock with a `sleep()` before the counter update, which is the standard
+          low-overhead way to avoid contention.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A correct fix can still be a poor fix. A global lock removes the race but over-serializes, so
+      the disciplined move is to keep the synchronization guarantee while shrinking what it covers:
+      narrow the critical section, shard the lock, or use an atomic/lock-free counter. Keeping the
+      race (c) trades correctness away, "any lock is fine" (a) ignores the cost, and a sleep (d) is
+      not synchronization at all.
+  - id: d-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      Faced with a localized crash that reproduces 100% of the time on a developer's laptop in a
+      single-process CLI, one engineer wants to add JSON structured logging throughout the call path
+      and ship it to the log aggregator; another wants to set a conditional breakpoint and step
+      through. Which judgment best weighs the tradeoff?
+    choices:
+      - id: a
+        text: >-
+          For a single-process, locally and deterministically reproducible bug, the interactive
+          debugger with a conditional breakpoint is the higher-leverage tool; aggregated structured
+          logging is overkill and adds noise/cost here.
+      - id: b
+        text: >-
+          Structured logging to the aggregator is better because logs are always more professional
+          than a debugger.
+      - id: c
+        text: Both are equivalent, so pick whichever the engineer types faster.
+      - id: d
+        text: The debugger is wrong because debuggers can never inspect local CLI state.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Tool selection is contextual. Debuggers excel for single-process, locally reproducible,
+      state-heavy bugs where you can pause and inspect freely. Shipping structured logs to an
+      aggregator shines for distributed/production/intermittent bugs but is needless overhead for a
+      deterministic local crash. Neither tool is universally superior (b, d are blanket claims; c
+      ignores the fit).
+  - id: d-500-ff-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: free_form
+    prompt: >-
+      An engineer doing root-cause analysis with "5 Whys" stops at "the input validation library has
+      a bug" because that is the deepest cause they can reproduce and cover with a regression test.
+      A reviewer pushes them to keep going to "our hiring process under-screens for security."
+      Evaluate where the stopping point should be and justify the principle.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the judgment: stop at the deepest cause you can actually control AND verify
+            (e.g., with a regression test), not the most abstract cause.
+        - id: c2
+          text: >-
+            Critiques stopping too shallow (recurrence / whack-a-mole) AND too deep (analysis
+            paralysis, scope creep into unfixable systemic issues).
+        - id: c3
+          text: >-
+            Concludes the validation-library cause is the right stopping point here because it is
+            fixable and verifiable now.
+      referenceAnswer: >-
+        The right stopping depth is the deepest cause the team can control and verify with a
+        regression test, not the most philosophically fundamental one. Stopping too shallow causes
+        recurrence (whack-a-mole); drilling too deep (e.g., "our hiring process") yields analysis
+        paralysis and scope creep into systemic issues you cannot fix or verify in this change. The
+        library-bug cause is the correct stopping point here: it is actionable now and a regression
+        test can prove it is fixed. Systemic observations can be logged as separate follow-ups, but
+        they are not the stopping point for this fix.
+      passThreshold: 0.6
+    guidance: >-
+      "How many whys" is a judgment call. The disciplined rule is to stop at the deepest cause that
+      is both controllable and verifiable. Too shallow recurs; too deep paralyzes. Verifiability (a
+      regression test that fails before and passes after) is the practical anchor.
+  - id: d-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      "Works in debug, fails in release" is reported for a C++ service. An engineer concludes the
+      optimizer has a bug and files a compiler ticket. What is the most defensible evaluation of
+      this conclusion?
+    choices:
+      - id: a
+        text: 'Correct: if optimized code behaves differently, the optimizer is by definition wrong.'
+      - id: b
+        text: >-
+          Correct, because debug builds are the authoritative behavior and release builds must match
+          them exactly.
+      - id: c
+        text: >-
+          Premature: a debug/release behavior difference far more often points to undefined
+          behavior, uninitialized memory, or timing-dependent code in the program; the compiler
+          should be the last suspect, not the first.
+      - id: d
+        text: >-
+          Irrelevant: build mode never changes program behavior, so the report must be a measurement
+          error.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Optimized builds legitimately expose undefined behavior, uninitialized state, and timing
+      differences that debug builds mask. "Works in debug, fails in release" is a strong signal of
+      UB or uninitialized memory in *your* code, not a compiler defect. Blaming the optimizer first
+      (a, b) is the anti-pattern; claiming build mode never matters (d) is also false.
+  - id: d-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      While inspecting a crash in an optimized build, an engineer trusts the debugger's reported
+      value of a local variable (it shows 0) and builds their entire hypothesis on it. A colleague
+      is skeptical. Which critique is the most expert?
+    choices:
+      - id: a
+        text: The debugger is always authoritative; the variable is 0, full stop.
+      - id: b
+        text: The debugger value is meaningless and should always be ignored.
+      - id: c
+        text: The value is reliable as long as the variable is declared volatile.
+      - id: d
+        text: >-
+          In optimized builds variables may be elided, reordered, or shown as stale or <optimized
+          out>; the instrument itself can mislead, so the hypothesis should be re-tested in a debug
+          build or corroborated another way.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A top-tier debugging skill is treating your own tools as suspects. In optimized builds the
+      compiler may eliminate, coalesce, or reorder locals, so a debugger can report stale or
+      "<optimized out>" values. The disciplined move is to corroborate (rebuild with -O0/debug info,
+      add a logged checkpoint) rather than trust or wholesale-ignore the reading.
+  - id: d-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      A distributed system intermittently drops requests. An engineer correlates two log lines
+      across services that always appear together just before a drop and concludes service A is
+      causing the failure in service B. Critique the epistemic strength of this conclusion and name
+      at least two ways the instrumentation itself could be deceiving them.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that log correlation is a hypothesis to test, not proof of causation (correlation
+            != causation).
+        - id: c2
+          text: >-
+            Names at least two ways the instrumentation can lie in distributed systems (e.g., clock
+            skew across nodes making ordering wrong; log buffering/loss on crash; sampling gaps;
+            missing trace context).
+        - id: c3
+          text: >-
+            Recommends a confirmatory step: distributed tracing correlating one request across
+            services, or a controlled experiment that can disprove the hypothesis.
+      referenceAnswer: >-
+        The conclusion is weak: co-occurrence in logs is a hypothesis, not proof of a causal
+        mechanism. In a distributed system the instrumentation can deceive in several ways: clock
+        skew between nodes can make the apparent ordering of the two lines wrong; log buffering
+        means lines can be lost on crash or arrive out of order; sampling can drop the events that
+        would contradict the story; and missing trace-context means the two lines may not even
+        belong to the same request. The right move is distributed tracing that correlates a single
+        request end-to-end, plus a controlled experiment designed to disprove "A causes B," before
+        accepting the causal claim.
+      passThreshold: 0.6
+    guidance: >-
+      Two misconceptions collide here: "correlation in logs proves causation" and "the tools tell
+      the truth." Distributed instrumentation is especially treacherous (clock skew, buffering/loss,
+      sampling, missing trace context). Experts treat correlated logs as a hypothesis and confirm
+      with per-request tracing or a falsifiable experiment.
+  - id: d-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      Reviewing a postmortem, you see the team fixed a bug, manually confirmed the symptom was gone
+      in staging, and closed the incident without adding any test. Six weeks later an unrelated
+      refactor silently reintroduced the same defect and it shipped to production. Which evaluation
+      of the original closeout is most defensible?
+    choices:
+      - id: a
+        text: >-
+          The original closeout was fine; recurrence after an unrelated refactor is bad luck and
+          could not have been guarded against.
+      - id: b
+        text: >-
+          The closeout left the loop open: without a regression test that fails on the old code and
+          passes on the fixed code, nothing in CI guards against the defect silently returning,
+          which is exactly what happened.
+      - id: c
+        text: >-
+          The real mistake was confirming the fix in staging at all; symptoms should only ever be
+          verified in production.
+      - id: d
+        text: >-
+          Recurrence proves the original fix was wrong, so the team should have rewritten the whole
+          subsystem instead of fixing the defect.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Closing the loop means encoding the fix as a regression test (fails before, passes after) so a
+      future change that reintroduces the defect is caught in CI. Manual staging confirmation proves
+      the fix works today but leaves no automated guard; the silent recurrence is the predictable
+      cost. It was guardable (a is wrong), staging verification was fine (c), and a working fix that
+      later regresses does not justify a rewrite (d).
+  - id: d-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A rarely-failing production bug reproduces only about 1 in 500 runs. An engineer argues it is
+      "effectively unreproducible" and that they should just ship a speculative fix and hope.
+      Evaluate this stance.
+    choices:
+      - id: a
+        text: >-
+          Agree: a 1-in-500 repro is statistically the same as no repro, so a speculative fix is the
+          only option.
+      - id: b
+        text: >-
+          Disagree: a low-probability repro is still a repro; they can raise its probability
+          (stress, looping, added contention, reduced timeouts) to gate both diagnosis and
+          verification, and shipping a fix they cannot verify is the deeper error.
+      - id: c
+        text: >-
+          Agree: since you cannot reproduce it on demand, you also cannot write a regression test,
+          so verification is impossible regardless.
+      - id: d
+        text: Disagree, but only because speculative fixes are slower to write than proper ones.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Reproducing intermittently equals not reproducing" is a misconception. A low-probability
+      repro is still a repro and can be amplified (loop it, add contention, shrink timeouts, run
+      under stress) until it is frequent enough to diagnose and to verify a fix. Shipping an
+      unverifiable speculative fix is the real error because you cannot prove the failure is gone.
+  - id: d-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: >-
+      A team's debugging culture says: "Always read the relevant subsystem end-to-end before forming
+      any hypothesis, and never instrument until you fully understand the code." A new bug spans a
+      200k-line subsystem. Evaluate this policy and contrast it with hypothesis-driven localization.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Critiques "read everything first" as usually slower/impractical at scale and prone to
+            analysis paralysis.
+        - id: c2
+          text: >-
+            Explains hypothesis-driven localization (bisection, targeted instrumentation, input
+            narrowing/minimization) as the higher-leverage path to localize the fault.
+        - id: c3
+          text: >-
+            Concludes the policy is an anti-pattern for large subsystems (while acknowledging some
+            targeted reading of the localized region is useful).
+      referenceAnswer: >-
+        The policy is an anti-pattern at scale. Reading a 200k-line subsystem end-to-end before
+        hypothesizing is usually far slower than narrowing the fault and risks analysis paralysis.
+        Hypothesis-driven localization is the higher-leverage path: bisect over commits or inputs,
+        add targeted instrumentation to expose internal state, and minimize the failing case to
+        shrink the search space - each step disproves or confirms a falsifiable guess and shrinks
+        where you must look. You still read code, but only the small localized region the evidence
+        points to. Exhaustive up-front reading is not "thorough," it is inefficient.
+      passThreshold: 0.6
+    guidance: >-
+      "Read the whole codebase first" feels rigorous but is usually the slow path. Localization
+      tools (bisection, instrumentation, minimization) narrow the search space cheaply, after which
+      targeted reading of the implicated region is efficient. The judgment is to localize first,
+      then read narrowly.
+  - id: d-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      An engineer wants to debug a subtle behavior bug by adding TRACE-level logging on every
+      function entry/exit across a hot path in production, reasoning "more logging is always
+      better." Which evaluation best captures the tradeoff?
+    choices:
+      - id: a
+        text: >-
+          Correct: maximal logging guarantees the bug will be visible and there is no downside in
+          production.
+      - id: b
+        text: Flawed only because production should never emit any logs at all.
+      - id: c
+        text: >-
+          Flawed: blanket TRACE logging adds latency, storage cost, and noise, can leak secrets/PII,
+          and may alter timing enough to hide the bug; the goal is the minimum signal that
+          disambiguates the competing hypotheses.
+      - id: d
+        text: >-
+          Correct as long as the logs are structured JSON, since structure removes all performance
+          and privacy concerns.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      "More logging is always better" is a misconception. Instrumentation has runtime cost, storage
+      cost, PII/security exposure, and can perturb timing (hiding heisenbugs). The expert tradeoff
+      is selecting the minimum signal that distinguishes the live hypotheses, not maximal output.
+      Structured logging helps queryability (d) but does not remove cost or privacy risk.
+  - id: d-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A bug fix is proposed for a tricky off-by-one that the author reasoned about carefully but
+      never actually reproduced. The change looks correct on review. Which is the strongest reason
+      to withhold approval until reproduction is shown?
+    choices:
+      - id: a
+        text: Code that looks correct on review is always correct, so reproduction is unnecessary.
+      - id: b
+        text: Reproduction is only needed for performance bugs, not logic bugs.
+      - id: c
+        text: Approval should wait only because the author should add more comments.
+      - id: d
+        text: >-
+          Without first reproducing the failure, you cannot demonstrate the change actually removes
+          it; the original report may have been intermittent or caused by something unrelated, so
+          the fix is unverifiable.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      "You can verify a fix without reproducing the failure" is a misconception. If you never
+      reproduced the bug, you cannot prove your change removed it: the issue may have been
+      intermittent or unrelated to the line you changed. The canonical loop requires a reproduction
+      that fails before and passes after, ideally captured as a regression test.
+  - id: d-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      Compare the leverage of (1) investing a day to build an automated, minimized reproduction
+      (e.g., via delta debugging) for an intermittent production data corruption bug, versus (2)
+      shipping a plausible one-line guard now. Under what conditions is each the right expert call?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that reproduction/minimization investment is high-leverage for intermittent,
+            high-impact, hard-to-localize bugs because it gates BOTH diagnosis and verification.
+        - id: c2
+          text: >-
+            States that for an obvious, low-risk, clearly-understood defect a heavy automated repro
+            can be overkill and the small fix may be justified.
+        - id: c3
+          text: >-
+            Frames it as a cost/benefit judgment driven by impact, intermittency, and confidence in
+            the root cause - not a fixed rule.
+      referenceAnswer: >-
+        It is a cost/benefit judgment. For an intermittent, high-impact bug like data corruption,
+        building a robust or minimized (delta-debugged) reproduction is usually the highest-leverage
+        investment, because the repro gates both diagnosis and verification - without it you cannot
+        confirm a fix and a speculative guard might mask corruption while leaving it live. For an
+        obvious, well-understood, low-risk defect where the root cause is already clear, a heavy
+        automated repro is overkill and the one-line fix is reasonable. The deciding factors are
+        blast radius, how intermittent it is, and how confident you are in the root cause - not a
+        blanket rule that you must always (or never) build a repro.
+      passThreshold: 0.6
+    guidance: >-
+      Reproduction investment is a tradeoff, not a dogma. For intermittent, dangerous bugs the
+      automated/minimized repro is the highest-leverage spend because it enables both diagnosis and
+      verification. For a trivial well-understood defect it can be overkill. The expert weighs
+      impact, intermittency, and root-cause confidence.
+  - id: d-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >-
+      A bug only manifests on the CI runner, never on any developer's machine. One engineer says "it
+      works on my machine, so our code is correct and CI is misconfigured." Evaluate this reasoning.
+    choices:
+      - id: a
+        text: >-
+          Unsound: "works on my machine" is a differential-debugging signal (what differs - OS,
+          dependency versions, data, concurrency, env) to investigate, not a verdict that the code
+          is correct.
+      - id: b
+        text: >-
+          Sound: local success proves the code is correct, so the defect must be in CI's
+          configuration.
+      - id: c
+        text: >-
+          Sound, because CI environments are inherently unreliable and should be ignored when they
+          disagree with local runs.
+      - id: d
+        text: Unsound only because the engineer did not re-run the test locally enough times.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      "Works on my machine, so the code is correct" is a misconception. The divergence between local
+      and CI is itself the most valuable clue: it points to a difference in environment, dependency
+      versions, data, OS, or concurrency. Treat it as a differential-debugging prompt ("what
+      differs?"), not a verdict that exonerates the code.
+  - id: d-500-ff-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      A team closes bugs by deploying the fix and manually confirming the symptom is gone, then
+      moving on - they rarely add regression tests, arguing "the bug is fixed, a test just slows us
+      down." Evaluate this practice and explain what risk it leaves open.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that skipping the regression test leaves the loop open: the same defect can
+            silently return (regression) with no automated guard.
+        - id: c2
+          text: >-
+            Explains the value of a regression test as one that fails before the fix and passes
+            after, encoding the cause so recurrence is caught.
+        - id: c3
+          text: >-
+            Concludes the practice is short-sighted / an anti-pattern, weighing the small authoring
+            cost against the cost of silent recurrence.
+      referenceAnswer: >-
+        The practice is short-sighted. Manually confirming the symptom is gone proves the fix works
+        today, but without a regression test there is no automated guard against the defect silently
+        returning when someone later refactors or reverts the relevant code. The standard "close the
+        loop" step is to add a test that fails before the fix and passes after, encoding the cause
+        so recurrence is caught in CI. The small authoring cost is almost always worth it relative
+        to re-debugging the same issue in production later; "a test slows us down" trades a one-time
+        cost for ongoing regression risk.
+      passThreshold: 0.6
+    guidance: >-
+      Closing the loop means capturing the fix as a regression test (fails before, passes after).
+      Skipping it leaves the defect free to silently return. The "tests slow us down" argument
+      ignores the far larger cost of re-debugging a recurred bug in production.
+  - id: d-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      For a regression with a large suspect range (~2000 commits) and a fast, deterministic test
+      that exits non-zero on failure, an engineer debates whether to bisect or just read the diffs.
+      The lead says "always read the diffs; bisect is for people who don't understand their code."
+      Which evaluation is most defensible?
+    choices:
+      - id: a
+        text: >-
+          `git bisect run` with the deterministic test is the better tool here: it is logarithmic
+          (~11 steps for 2000 commits) and the deterministic exit code makes verdicts reliable;
+          reading the diff is the better call only for a tiny range.
+      - id: b
+        text: >-
+          The lead is right; reading 2000 commits' diffs is faster and more rigorous than automated
+          search.
+      - id: c
+        text: Bisection and full diff-reading take the same time, so it does not matter.
+      - id: d
+        text: Bisection cannot be automated, so the lead is correct that manual reading is required.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Bisection shines exactly here: a large range plus a deterministic, scriptable test. `git
+      bisect run` does a binary search (~log2(2000) ~ 11 steps) and the deterministic exit code (0
+      good, 1-127 except 125 bad, 125 skip) makes verdicts trustworthy. Reading every diff scales
+      linearly and is only preferable for a tiny range. The lead's blanket rule inverts when
+      bisection is appropriate.

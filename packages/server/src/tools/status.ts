@@ -23,10 +23,10 @@
  * topic already flagged `due_for_review` is skipped, so re-reading status does
  * not pile up duplicate lapsed entries.
  *
- * Gated (FR-032): this tool is NOT exempt, so `index.ts`/`withSetupGate` returns
- * SETUP_REQUIRED before the handler runs when `profile.config` is absent. The
- * handler therefore assumes a configured profile and reads `config.toolsLearning`
- * to resolve the default tool.
+ * Gated (FR-032 + FR-031): this tool is NOT exempt. The setup gate returns
+ * SETUP_REQUIRED when `profile.config` is absent; the tool gate returns
+ * UNSUPPORTED_TOOL when the host is unrecognised and no `toolsLearning` is
+ * configured. The handler therefore assumes both config and a resolvable tool.
  *
  * Each tool is exposed as a factory closing over an optional `dirOverride` (the
  * store's test seam), mirroring `config.ts`: the registry uses the default
@@ -37,7 +37,7 @@
  * spec.md US-2 / FR-021 / SC-011.
  */
 
-import { loadBundledCatalog } from "../catalog/bundled/index.js";
+import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import type { AbilityKey, ToolId } from "../schemas/common.js";
@@ -53,16 +53,27 @@ import {
   rankByWeakness,
   suggestionReason,
 } from "./us2/standing.js";
+import { getDetectedTool } from "../detection.js";
 
 /**
- * Resolve which tool `get_status` reports on. Honors an explicit `tool`; else
- * falls back to the first tool the user is learning; else `claude-code` (the
- * only tool v1 ships content for). The handler is gated, so `config` is present.
+ * Resolve which tool `get_status` reports on. Priority order:
+ *   1. explicit `tool` parameter from the caller
+ *   2. auto-detected tool from the MCP handshake ({@link getDetectedTool})
+ *   3. first tool in `config.toolsLearning` (explicit config — always valid)
+ *
+ * The handler is gated (setup gate + tool gate), so by the time this runs a
+ * supported tool is guaranteed: either detection is set or toolsLearning[0]
+ * exists. The `?? "claude-code"` hard default is intentionally removed —
+ * unknown hosts are rejected by the tool gate before reaching here.
+ *
+ * The non-null assertion is safe: the tool gate guarantees at least one of
+ * detected or toolsLearning[0] is present when the handler executes.
  */
 const resolveTool = (
   requested: ToolId | undefined,
   toolsLearning: readonly ToolId[],
-): ToolId => requested ?? toolsLearning[0] ?? "claude-code";
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+): ToolId => (requested ?? getDetectedTool() ?? toolsLearning[0])!;
 
 /** How many weakest/stale topics to surface as `suggestions`. */
 const MAX_SUGGESTIONS = 3;
@@ -111,24 +122,33 @@ const persistLapses = async (
 };
 
 /**
- * A catalog source: returns the loaded topics (+ any per-file errors). Defaults
- * to {@link loadBundledCatalog}; tests inject a fixture-dir loader so lapse
- * detection can resolve a graduated topic without populating the shared bundled
- * snapshot (mirrors the `start_quiz` / `submit_answer` seam).
+ * Sync catalog loader (test seam): returns topics synchronously from a fixture
+ * dir. Tests inject this form; production uses {@link CatalogResolver}.
+ * The optional arg is unused by sync loaders but makes the type compatible with
+ * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
  */
-export type CatalogLoader = () => CatalogLoadResult;
+export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
+
+/**
+ * Async catalog resolver (production path): resolves via fresh-fetch → cache →
+ * bundled. Mirrors {@link resolveCatalog}'s signature.
+ */
+export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /**
  * Build the `get_status` tool module (US-2).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
- * @param catalogLoader - Catalog source override (test seam); defaults to the
- *   bundled snapshot {@link loadBundledCatalog}.
+ * @param loaderOrResolver - Catalog source seam (test seam); accepts a sync
+ *   {@link CatalogLoader} (test fixtures) or an async {@link CatalogResolver}
+ *   (production). Defaults to {@link resolveCatalog} (fresh-fetch → cache →
+ *   bundled). With no `VIBE_HERO_CONTENT_URL` set, resolver falls back to
+ *   bundled — identical to the prior behavior offline.
  * @returns The erased registry entry for `get_status`.
  */
 export const makeGetStatusTool = (
   dirOverride?: string,
-  catalogLoader: CatalogLoader = loadBundledCatalog,
+  loaderOrResolver: CatalogLoader | CatalogResolver = resolveCatalog,
 ): AnyToolModule =>
   defineTool({
     name: "get_status",
@@ -139,10 +159,9 @@ export const makeGetStatusTool = (
       const profile = await loadProfile(dirOverride);
       const tool = resolveTool(input.tool, profile.config?.toolsLearning ?? []);
 
-      // Bundled catalog is always available offline (FR-025); malformed files
-      // are reported as `errors` and simply skipped here — status still lists
-      // every topic that loaded cleanly.
-      const { topics } = catalogLoader();
+      // Normalize: sync loader (tests) vs async resolver (production).
+      const rawResult = loaderOrResolver(dirOverride);
+      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
 
       const baseStandings = computeStandings(topics, profile, tool);
 

@@ -1,0 +1,3086 @@
+# Topic: git-and-version-control (general)
+# Working with Git — commits and branches, merge vs rebase, worktrees, resolving conflicts, atomic commits, bisect, reflog, and when not to force-push.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: git-and-version-control
+class:
+  kind: general
+title: Git & Version Control
+summary: >-
+  Working with Git — commits and branches, merge vs rebase, worktrees, resolving conflicts, atomic
+  commits, bisect, reflog, and when not to force-push.
+triggerSignals: []
+items:
+  - id: gavc-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: What does a Git commit object store?
+    choices:
+      - id: a
+        text: A snapshot of the entire project tree at that point
+      - id: b
+        text: Only the diff (the set of changed lines) against its parent
+      - id: c
+        text: A list of patch files applied since the last tag
+      - id: d
+        text: A compressed copy of just the files that changed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A commit stores a full snapshot of the whole tree, not a diff. Git uses delta compression
+      inside packfiles as a storage optimization, but that is invisible to the commit's logical
+      content. The common belief that "Git stores diffs between commits" confuses the internal
+      storage format with the commit model.
+  - id: gavc-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: What is HEAD in Git?
+    choices:
+      - id: a
+        text: The newest commit in the entire repository
+      - id: b
+        text: A pointer to the current ref, normally the checked-out branch
+      - id: c
+        text: The remote branch you last pushed to
+      - id: d
+        text: A backup copy of the working tree
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      HEAD points to the current ref, which is usually a branch. When HEAD points directly at a
+      commit instead of a branch, you are in a "detached HEAD" state. HEAD is not simply the newest
+      commit in the repo, and it is unrelated to remote branches.
+  - id: gavc-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: >-
+      In Git, what is a "detached HEAD" state? Briefly state what HEAD points to and what the
+      practical consequence is for new commits.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that HEAD points directly at a commit rather than at a branch
+        - id: c2
+          text: >-
+            Notes that new commits made in this state are not on any branch (and can be lost / hard
+            to find later)
+      referenceAnswer: >-
+        A detached HEAD means HEAD points directly at a specific commit instead of at a branch ref.
+        It is a valid state (for example after checking out a tag or an old commit), but any new
+        commits you make are not on a branch, so they can become hard to find or be
+        garbage-collected once nothing points to them.
+      passThreshold: 0.6
+    guidance: >-
+      Detached HEAD is not an error condition. It is a normal state used when you check out a tag or
+      historical commit. The only risk is that new commits are not recorded on any branch, so they
+      can be lost if you move away without creating a branch to keep them.
+  - id: gavc-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: free_form
+    prompt: >-
+      State how many parents each of these has: a merge commit, a regular (non-merge) commit, and
+      the very first (root) commit of a repository.
+    rubric:
+      criteria:
+        - id: c1
+          text: States a merge commit has two or more parents
+        - id: c2
+          text: States a regular commit has exactly one parent
+        - id: c3
+          text: States the root commit has zero parents
+      referenceAnswer: >-
+        A merge commit has two or more parents (an octopus merge can have several). A regular,
+        non-merge commit has exactly one parent. The very first root commit of a repository has zero
+        parents.
+      passThreshold: 0.6
+    guidance: >-
+      The number of parents is what distinguishes these commits: zero parents for the root commit,
+      exactly one for an ordinary commit, and two or more for a merge commit. This parent structure
+      is what forms the commit graph (a DAG).
+  - id: gavc-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: In Git, what is a branch?
+    choices:
+      - id: a
+        text: A movable pointer (ref) to a single commit
+      - id: b
+        text: A full copy of all the project's files
+      - id: c
+        text: A separate clone of the repository
+      - id: d
+        text: A snapshot of the working tree at branch-creation time
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A branch is just a lightweight, movable pointer to a commit, stored as a ref under
+      .git/refs/heads/. The underlying commit graph is shared, so creating a branch is an O(1),
+      cheap operation. A branch is not a copy of the files.
+  - id: gavc-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: What is a "fast-forward" merge?
+    choices:
+      - id: a
+        text: A merge that always creates a merge commit to record both branches
+      - id: b
+        text: A merge that skips conflict detection to run faster
+      - id: c
+        text: >-
+          Merging when the target's tip is an ancestor of the source, so Git just moves the branch
+          pointer forward with no merge commit
+      - id: d
+        text: Merging that rewrites both branches' commit hashes
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A fast-forward happens when the branch you are merging into is a direct ancestor of the branch
+      you are merging in. Git simply advances the pointer, creating no merge commit. Use git merge
+      --no-ff to force a merge commit even when a fast-forward is possible.
+  - id: gavc-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: What does git stash do?
+    choices:
+      - id: a
+        text: Permanently deletes all uncommitted changes in the working tree
+      - id: b
+        text: >-
+          Saves your uncommitted working-tree and index changes onto a stack and reverts the working
+          tree to a clean state
+      - id: c
+        text: Commits your changes to the current branch with an auto-generated message
+      - id: d
+        text: Pushes your local commits to a temporary remote branch
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      git stash records your uncommitted modifications (both staged and unstaged) on a stack and
+      resets the working tree to match HEAD, giving you a clean tree to switch tasks. You restore
+      the saved changes later with git stash pop or git stash apply. It does not delete, commit, or
+      push the changes.
+  - id: gavc-100-ff-h
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: State the "Golden Rule of Rebasing" and give the one-sentence reason behind it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that you should not rebase commits that exist on a shared / public branch others
+            have based work on
+        - id: c2
+          text: >-
+            Explains that rebasing rewrites history (new SHAs), which conflicts with the copies
+            others already have
+      referenceAnswer: >-
+        The Golden Rule of Rebasing is: do not rebase commits that have been published to a shared
+        or public branch that others may have based work on. Rebasing rewrites history by producing
+        new commit SHAs, so it diverges from the copies collaborators already pulled, causing
+        confusion and conflicts when they try to integrate.
+      passThreshold: 0.6
+    guidance: >-
+      Rebase changes each commit's parent, which changes its content hash and thus its SHA. If
+      others already have those commits, the rewritten versions collide with their copies. Rebase
+      freely on private branches; avoid it on shared history.
+  - id: gavc-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: What does git pull --rebase do?
+    choices:
+      - id: a
+        text: Fetches and always creates a merge commit
+      - id: b
+        text: Fetches from upstream, then rebases your local commits on top of the updated branch
+      - id: c
+        text: Discards your local commits and resets to the remote
+      - id: d
+        text: Force-pushes your rebased commits back to the remote
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      git pull --rebase performs a fetch and then replays your local commits on top of the updated
+      upstream, avoiding a merge commit and keeping history linear. It does not discard your work or
+      push anything.
+  - id: gavc-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: In a default merge conflict, which three markers does Git insert into the file?
+    choices:
+      - id: a
+        text: '--- for the start, +++ as the separator, and @@@ for the end'
+      - id: b
+        text: BEGIN, MIDDLE, and END on their own lines
+      - id: c
+        text: <<<<<<< for the start, ||||||| as the separator, and >>>>>>> for the end
+      - id: d
+        text: <<<<<<< for the start, ======= as the separator, and >>>>>>> for the end
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The standard conflict markers are <<<<<<< (start of current/ours), ======= (separator), and
+      >>>>>>> (end of incoming/theirs). The ||||||| marker only appears additionally in the diff3 or
+      zdiff3 conflict style, where it shows the common ancestor's content.
+  - id: gavc-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: What does git rerere do?
+    choices:
+      - id: a
+        text: Re-runs the last failed rebase from the beginning
+      - id: b
+        text: >-
+          Records how you resolved a conflict and auto-applies that resolution if the same conflict
+          recurs
+      - id: c
+        text: Reverts a range of commits in reverse order
+      - id: d
+        text: Re-records the reflog to a remote backup
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      rerere stands for "reuse recorded resolution." It remembers how you resolved a particular
+      conflict and replays that same resolution automatically when the identical conflict appears
+      again, which is handy during long rebases and recurring merges.
+  - id: gavc-100-ff-l
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: >-
+      What is the index (staging area) in Git, and which commands move content into it and then
+      record it?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the index is an intermediate area between the working tree and the repository
+            that holds the next commit's contents
+        - id: c2
+          text: States that git add copies working-tree content into the index
+        - id: c3
+          text: States that git commit records the index as a new commit
+      referenceAnswer: >-
+        The index, or staging area, is an intermediate area sitting between the working tree and the
+        repository that holds exactly what the next commit will contain. git add copies working-tree
+        content into the index, and git commit records the current index as a new commit.
+      passThreshold: 0.6
+    guidance: >-
+      The index is what makes Git's two-step workflow possible: you assemble a commit in the staging
+      area with git add, then snapshot it with git commit. This is what lets you commit only some of
+      your working-tree changes at a time.
+  - id: gavc-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: What does git add -p (patch mode) let you do?
+    choices:
+      - id: a
+        text: Add all files in the project, including ignored ones
+      - id: b
+        text: Permanently delete unstaged changes
+      - id: c
+        text: Stage individual hunks within a file rather than the whole file
+      - id: d
+        text: Push staged changes directly to the remote
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      git add -p walks through each change hunk and asks whether to stage it, letting you split
+      unrelated changes in one file into separate, atomic commits. It only affects staging; it does
+      not delete changes or push anything.
+  - id: gavc-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      Describe the conventional structure of a good Git commit message. Mention the subject line,
+      the blank line, and the body.
+    rubric:
+      criteria:
+        - id: c1
+          text: States a short imperative-mood subject line (around 50 characters)
+        - id: c2
+          text: States a blank line separates the subject from the body
+        - id: c3
+          text: States the body explains what and why (wrapped), not how
+      referenceAnswer: >-
+        The convention is a short subject line written in the imperative mood (around 50
+        characters), then a single blank line, then a wrapped body that explains what changed and
+        why (rather than how). The blank line is what tooling uses to separate the subject from the
+        body.
+      passThreshold: 0.6
+    guidance: >-
+      The blank line after the subject is load-bearing: Git tooling treats the first line as the
+      subject and everything after the blank line as the body. The subject is imperative ("Add", not
+      "Added"), and the body documents intent and reasoning rather than mechanical details.
+  - id: gavc-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: >-
+      In the Conventional Commits format type(scope)!: description, what does a feat: prefix
+      indicate?
+    choices:
+      - id: a
+        text: A bug fix
+      - id: b
+        text: A new feature
+      - id: c
+        text: A documentation-only change
+      - id: d
+        text: A performance regression
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In Conventional Commits, feat: marks a new feature and fix: marks a bug fix; chore:, docs:,
+      and others cover non-feature work. A trailing ! (or a BREAKING CHANGE: footer) signals a
+      breaking change that drives a major semantic-version bump in tooling.
+  - id: gavc-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: What does git bisect help you find?
+    choices:
+      - id: a
+        text: All commits that touched a given file
+      - id: b
+        text: The commit with the largest diff in the repository
+      - id: c
+        text: The first commit that introduced a bug, via a binary search over history
+      - id: d
+        text: Merge conflicts before they happen
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      git bisect performs a binary search across commit history to identify the first commit that
+      introduced a regression, testing about O(log n) commits instead of all of them. You mark a
+      known-good and a known-bad commit and Git narrows it down.
+  - id: gavc-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: free_form
+    prompt: >-
+      What does the command git bisect run <script> do, and what does the script's exit code
+      communicate to Git? Mention the special exit code for an untestable commit.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that it automates the bisection by running the script at each step
+        - id: c2
+          text: States that exit 0 means good and any other code (e.g. 1) means bad
+        - id: c3
+          text: States that exit code 125 means skip / untestable
+      referenceAnswer: >-
+        git bisect run <script> automates the bisection: at each step Git checks out a commit and
+        runs the script, using its exit code to decide. Exit code 0 marks the commit good, exit code
+        125 tells Git the commit is untestable so it should be skipped, and any other nonzero code
+        (for example 1) marks the commit bad.
+      passThreshold: 0.6
+    guidance: >-
+      Automating bisect with a test script removes the manual good/bad marking at each step. The key
+      detail is exit code 125, which signals "untestable / skip" (for example when a commit will not
+      build), distinguishing it from a genuine bad result. Note that 126 and 127 are not "bad"
+      markers: Git treats them as normal command errors that abort the bisect run entirely, so a
+      test script should return 1 (or another small nonzero value) to mean bad.
+  - id: gavc-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: multiple_choice
+    prompt: What does git reflog record?
+    choices:
+      - id: a
+        text: A server-side log of every push, shared across the team
+      - id: b
+        text: A local history of where HEAD and branch tips have pointed over time
+      - id: c
+        text: The full diff of every commit ever made
+      - id: d
+        text: A list of remote branches and their last-fetched SHAs
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The reflog is a local record of where HEAD and branch tips have moved, enabling recovery of
+      "lost" commits after a bad reset, rebase, or branch deletion. It is local-only and never
+      pushed, so it will not help a teammate recover your changes.
+  - id: gavc-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: multiple_choice
+    prompt: What does git cherry-pick <commit> do?
+    choices:
+      - id: a
+        text: Applies the changes from a specified commit as a new commit on the current branch
+      - id: b
+        text: Moves the specified commit off its original branch onto the current one
+      - id: c
+        text: Permanently deletes the specified commit from the repository
+      - id: d
+        text: Merges the entire branch that contains the specified commit
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      git cherry-pick takes the diff introduced by one specific commit and applies it as a brand-new
+      commit (with a new SHA) on your current branch. The original commit is left untouched on its
+      own branch, so the change is copied, not moved or deleted, and no full-branch merge occurs.
+  - id: gavc-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: >-
+      What is a remote-tracking branch such as origin/main, and how is it different from your own
+      local branch named main?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that origin/main is a local pointer recording where the remote's branch was as of
+            your last fetch/clone (a read-only bookmark of the remote state)
+        - id: c2
+          text: >-
+            States that your local main is the branch you commit on, while origin/main only updates
+            when you fetch/pull and you do not commit directly to it
+      referenceAnswer: >-
+        A remote-tracking branch like origin/main is a local reference that records where the remote
+        repository's main branch pointed the last time you fetched or cloned. It is effectively a
+        read-only bookmark Git updates for you on fetch/pull; you do not commit directly to it. Your
+        local branch main is the one you actually check out and commit on. They can diverge:
+        origin/main only moves when you sync with the remote, while local main moves as you commit.
+      passThreshold: 0.6
+    guidance: >-
+      Remote-tracking branches (origin/<name>) are Git's local snapshot of the remote's branch
+      positions, refreshed by fetch/pull. They let you compare your local work against the remote
+      without contacting the server, and you never commit to them directly.
+  - id: gavc-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      A teammate says "Git stores the diff between each commit and its parent." Why is this an
+      inaccurate description of Git's commit model?
+    choices:
+      - id: a
+        text: >-
+          Each commit object references a full snapshot of the project tree; storing changes as
+          deltas is only an internal packfile optimization, not the commit's logical content.
+      - id: b
+        text: >-
+          Git stores diffs, but only for text files; binary files are stored as full snapshots, so
+          the statement is half true.
+      - id: c
+        text: >-
+          Git stores neither diffs nor snapshots; it stores the editing commands you typed and
+          replays them on checkout.
+      - id: d
+        text: >-
+          The statement is correct, because `git diff` can always reconstruct any commit from its
+          parent.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Logically, every commit points at a tree that is a complete snapshot of the repository at that
+      point. Git's packfiles do use delta compression to save space, but that is a storage detail
+      invisible to the commit model. The "diffs between commits" mental model is a common
+      misconception inherited from older VCS tools.
+  - id: gavc-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: >-
+      You amend a commit's message with `git commit --amend` but change nothing about the actual
+      file contents. Why does the commit get a brand-new SHA?
+    choices:
+      - id: a
+        text: >-
+          Amending always rewrites the working-tree files, which changes the tree hash and therefore
+          the commit ID.
+      - id: b
+        text: >-
+          The commit ID is a hash over the tree, parents, author, committer, and message; changing
+          the message changes the hashed content, so the ID changes even though the tree is
+          identical.
+      - id: c
+        text: Git assigns a random new ID on every commit operation to guarantee uniqueness.
+      - id: d
+        text: >-
+          The SHA only changes because the timestamp moved; the message itself is not part of the
+          hash.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A commit's identity hashes its full content: the tree, the parent(s), the author/committer
+      identity and dates, and the message. Touching any of those yields a different commit object
+      and therefore a different ID. The message absolutely is part of the hash, which is why
+      amending it produces a new SHA.
+  - id: gavc-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: free_form
+    prompt: >-
+      Explain what a "fast-forward" merge is and why it produces no merge commit. Then explain what
+      `git merge --no-ff` changes and why a team might prefer it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a fast-forward is possible when the target branch is a direct ancestor of
+            the source, so Git just advances the branch pointer.
+        - id: c2
+          text: Explains that because no histories diverged, no merge commit is needed.
+        - id: c3
+          text: >-
+            Explains that `--no-ff` forces a merge commit even when fast-forward is possible,
+            preserving an explicit record that a branch existed.
+      referenceAnswer: >-
+        A fast-forward merge happens when the branch you are merging into is an ancestor of the
+        branch you are merging in, meaning there is no divergent work to reconcile. Git simply moves
+        the target branch pointer forward to the new tip, so no merge commit is created. `git merge
+        --no-ff` forces Git to create a merge commit anyway. Teams prefer this when they want the
+        history to explicitly record that a feature branch existed and was merged as a unit, which
+        also makes reverting the whole feature easier.
+      passThreshold: 0.6
+    guidance: >-
+      Fast-forward is purely a pointer move with no new commit because the histories never diverged.
+      `--no-ff` trades a cleaner graph for an explicit feature-boundary record, which aids `git
+      revert -m` of a whole feature at the cost of a noisier log.
+  - id: gavc-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Two developers each made commits on diverged branches. After `git merge` the log shows a merge
+      commit; after `git rebase` it shows a straight line. Which statement best explains the
+      difference in what happened?
+    choices:
+      - id: a
+        text: Rebase deletes the other developer's commits, which is why the line is straight.
+      - id: b
+        text: >-
+          Merge and rebase produce identical histories; the only difference is which command you
+          typed.
+      - id: c
+        text: >-
+          Merge preserves the actual topology and ties the two histories together with a merge
+          commit; rebase replays your commits onto the new base, producing new SHAs and a linear
+          history.
+      - id: d
+        text: >-
+          Merge creates new commit SHAs for your work while rebase keeps the original SHAs
+          unchanged.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Merge records the real integration point as a two-parent merge commit and keeps both lines of
+      history. Rebase rewrites your commits on top of the updated base, giving them new SHAs
+      (because their parent changed) and a flat history. They are not interchangeable: one preserves
+      topology, the other linearizes and rewrites.
+  - id: gavc-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      The "Golden Rule of Rebasing" warns against rebasing commits that are on a shared/public
+      branch. Why is rebasing shared history dangerous?
+    choices:
+      - id: a
+        text: Rebasing is dangerous only because it is slower than merging on large repositories.
+      - id: b
+        text: Rebasing permanently deletes the remote branch, so teammates lose all access to it.
+      - id: c
+        text: Rebasing locks the branch on the server so no one else can push until you finish.
+      - id: d
+        text: >-
+          Rebasing rewrites commits into new SHAs, so anyone who already based work on the old
+          commits now has history that diverges from yours, causing duplicate commits and painful
+          re-syncs.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Rebase produces new commit objects with new SHAs. If others already pulled the originals and
+      built on them, their history no longer matches the rewritten history, leading to duplicated
+      commits and messy merges when they next pull. That is why rebasing is safe for private
+      branches but risky for shared ones.
+  - id: gavc-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: >-
+      During a `git rebase`, you are surprised that "ours" refers to the upstream commits and
+      "theirs" refers to your own changes — the opposite of a normal merge. Explain why the labels
+      appear inverted during a rebase.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that in a merge "ours" is the branch you are on (where you ran merge) and
+            "theirs" is the branch being merged in.
+        - id: c2
+          text: >-
+            Explains that rebase replays your commits onto the upstream, so the upstream becomes the
+            base/checked-out side ("ours") and your replayed commits are applied as "theirs".
+      referenceAnswer: >-
+        In a merge, "ours" is the branch you currently have checked out (the one you ran the merge
+        from) and "theirs" is the branch you are merging in. During a rebase, Git first checks out
+        the upstream/base and then replays your commits one at a time on top of it. Because the
+        upstream is the side Git has checked out while applying each of your patches, the upstream
+        becomes "ours" and your own replayed commits become "theirs" — which feels inverted relative
+        to a merge.
+      passThreshold: 0.6
+    guidance: >-
+      The inversion is a direct consequence of how rebase works: it sets the new base as the current
+      state and applies your commits onto it, so your work is the incoming ("theirs") side. Knowing
+      this prevents picking the wrong side when resolving rebase conflicts.
+  - id: gavc-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: >-
+      A new contributor adds `build/output.log` to `.gitignore`, but Git keeps showing it as
+      modified and committing its changes. Why does the ignore rule not take effect?
+    choices:
+      - id: a
+        text: Ignore rules only work if the pattern uses a trailing slash, which this one is missing.
+      - id: b
+        text: >-
+          `.gitignore` only affects untracked files; a file already tracked by Git stays tracked
+          despite a matching rule until you run `git rm --cached` on it.
+      - id: c
+        text: >-
+          `.gitignore` must be placed in the repository root; rules never apply to files in
+          subdirectories like `build/`.
+      - id: d
+        text: >-
+          Git ignores `.log` files only when `core.autocrlf` is enabled, so the rule is silently
+          dropped.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `.gitignore` governs whether Git starts tracking untracked files. Once a file is tracked,
+      adding it to `.gitignore` does nothing until you stop tracking it with `git rm --cached
+      <file>` and commit that removal. This is one of the most common Git surprises.
+  - id: gavc-200-ff-h
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      Compare `git fetch` and `git pull`. Explain what each one actually does to your local branch
+      and working tree, and why `git fetch` is considered the "safe" download operation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that `git fetch` downloads remote objects and updates remote-tracking branches
+            (e.g. origin/main) without changing your working tree or local branch.
+        - id: c2
+          text: >-
+            Explains that `git pull` is fetch plus an integration step (merge by default, or rebase
+            with --rebase) that does change your local branch.
+        - id: c3
+          text: >-
+            Notes that fetch is safe because it cannot create surprise merge commits or conflicts in
+            your working tree, letting you inspect before integrating.
+      referenceAnswer: >-
+        `git fetch` downloads new commits and objects from the remote and updates your
+        remote-tracking branches such as origin/main, but it leaves your local branch and working
+        tree untouched. `git pull` runs a fetch and then integrates the fetched changes into your
+        current branch — by default with a merge, or with a rebase if you pass --rebase or set
+        pull.rebase. Fetch is the safe operation because it only updates references you can inspect;
+        it never modifies your working files or creates merge commits, so you can review what
+        changed before deciding how to integrate it.
+      passThreshold: 0.6
+    guidance: >-
+      The key distinction: fetch is read-only with respect to your branch and tree, while pull
+      mutates your branch by merging or rebasing. Many incidents ("a pull created a weird merge
+      commit") come from forgetting that pull integrates, not just downloads.
+  - id: gavc-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      Why is `git push --force-with-lease` generally considered safer than `git push --force` when
+      publishing a rewritten branch?
+    choices:
+      - id: a
+        text: >-
+          `--force-with-lease` only updates the remote if you have admin rights, which is why it is
+          safer.
+      - id: b
+        text: >-
+          `--force-with-lease` creates a backup branch on the server before overwriting, so nothing
+          can ever be lost.
+      - id: c
+        text: >-
+          `--force-with-lease` refuses the push if the remote branch moved since you last fetched
+          it, so it won't silently clobber commits a teammate pushed after your last sync.
+      - id: d
+        text: >-
+          `--force-with-lease` merges the remote changes into your branch first, so there is never
+          any overwrite.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `--force-with-lease` checks that the remote ref still matches what you last observed; if
+      someone pushed in the meantime, the push is rejected instead of overwriting their work. Plain
+      `--force` overwrites unconditionally. Note `--force-with-lease` can still be defeated if a
+      background fetch silently advanced your tracking ref.
+  - id: gavc-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
+    prompt: >-
+      A developer deletes a feature branch and panics that the work is "gone." Why does `git reflog`
+      usually let them recover it, and what is the key limitation of relying on the reflog?
+    choices:
+      - id: a
+        text: >-
+          Reflog works only if you enabled it before deleting the branch; otherwise the commits are
+          immediately garbage collected.
+      - id: b
+        text: >-
+          Reflog is stored on the remote, so any teammate can restore the branch; its limitation is
+          that it requires admin access.
+      - id: c
+        text: >-
+          Reflog keeps a permanent immutable copy of every commit forever, so recovery never fails;
+          there is no real limitation.
+      - id: d
+        text: >-
+          Reflog records where HEAD and branch tips pointed locally over time, so the
+          now-unreferenced commits are still findable — but the reflog is local-only, never pushed,
+          and entries expire.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The reflog is a local journal of where references have pointed, so deleted branches' tips
+      remain reachable for recovery until they age out. Its limits: it lives only in your clone
+      (never pushed, so it can't save a teammate) and entries expire over time, after which truly
+      unreachable commits become eligible for garbage collection.
+  - id: gavc-200-ff-k
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Explain how `git bisect` finds a regression efficiently, and describe what `git bisect run
+      <script>` adds. Mention what the special exit code 125 means.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that bisect does a binary search over commit history, testing about log n
+            commits instead of every commit, given a known good and known bad commit.
+        - id: c2
+          text: >-
+            Explains that `git bisect run <script>` automates the search using the script's exit
+            code to mark each tested commit good or bad.
+        - id: c3
+          text: States that exit code 125 means the commit is untestable/should be skipped.
+      referenceAnswer: >-
+        `git bisect` performs a binary search between a known-good and a known-bad commit: it checks
+        out the midpoint, you (or a script) test it, and based on good/bad it halves the remaining
+        range each step, so it inspects roughly log2(n) commits instead of all n. `git bisect run
+        <script>` automates this by running the script at each step and using its exit code to
+        decide: exit 0 means good, exit 125 means the commit is untestable and should be skipped,
+        and any other nonzero code (for example 1) means bad.
+      passThreshold: 0.6
+    guidance: >-
+      Bisect's power is the logarithmic search, which is why it beats manually walking history.
+      Automating it with `bisect run` removes human toil, and the 125 "skip" code lets the search
+      route around commits that don't build or can't be evaluated. Codes 126 and 127 are not bad
+      markers; they are command errors that abort the run, so a test script signals bad with a small
+      nonzero code such as 1.
+  - id: gavc-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: >-
+      What does a "detached HEAD" state actually mean, and why is it not inherently a sign that
+      something is broken?
+    choices:
+      - id: a
+        text: >-
+          It means your local branch lost its connection to the remote and can no longer be pushed
+          until reattached.
+      - id: b
+        text: >-
+          It means the repository's HEAD file was corrupted and must be repaired with `git fsck`
+          before you can commit again.
+      - id: c
+        text: >-
+          HEAD points directly at a commit instead of at a branch; it's a valid state (e.g. checking
+          out a tag or old commit), the only risk being that new commits aren't on any branch and
+          can be lost.
+      - id: d
+        text: >-
+          It means two branches point at the same commit, confusing Git about which one HEAD belongs
+          to.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Normally HEAD points at a branch ref; a detached HEAD points straight at a commit. This is
+      perfectly valid — it's what happens when you check out a tag or a specific commit to inspect
+      it. The only hazard is that commits made there aren't recorded on a branch, so they can become
+      hard to find if you move away without creating a branch.
+  - id: gavc-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      Why does `git revert <commit>` differ fundamentally from `git reset` as a way to "undo" a
+      change on a shared branch?
+    choices:
+      - id: a
+        text: >-
+          `revert` creates a new commit that applies the inverse of the target commit, leaving
+          history intact; `reset` moves the branch pointer and rewrites history, which is unsafe on
+          shared branches.
+      - id: b
+        text: >-
+          `revert` permanently deletes the target commit from history, while `reset` only hides it
+          temporarily.
+      - id: c
+        text: They are identical in effect; `revert` is just the newer alias for `reset --hard`.
+      - id: d
+        text: >-
+          `revert` only works on the most recent commit, while `reset` can target any commit, but
+          neither changes history.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `git revert` is additive: it records a brand-new commit that undoes the referenced commit's
+      changes, so the original stays in history and everyone's clones remain consistent. `git reset`
+      rewinds the branch pointer (optionally touching the index/working tree), rewriting history —
+      fine locally but dangerous on a branch others share. Confusing the two is a classic error.
+  - id: gavc-200-ff-n
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      The index (staging area) sits between your working tree and the repository. Explain its role
+      in the `git add` / `git commit` flow, and explain how `git add -p` enables atomic commits even
+      when one file mixes unrelated changes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that `git add` copies content from the working tree into the index, and `git
+            commit` records the index (not the working tree directly) as the new commit.
+        - id: c2
+          text: >-
+            Explains that `git add -p` (patch mode) lets you stage individual hunks, so you can
+            commit only the related changes from a file and leave the rest unstaged.
+        - id: c3
+          text: >-
+            Connects this to atomic commits — keeping each commit one logical, self-contained
+            change.
+      referenceAnswer: >-
+        The index is a staging snapshot between your working tree and the repo. `git add` copies the
+        chosen working-tree content into the index, and `git commit` records exactly what is in the
+        index as the new commit — the working tree's unstaged changes are not committed. `git add
+        -p` runs in patch mode, presenting each change as a hunk you can accept or skip, so even if
+        a single file contains two unrelated edits you can stage just the hunks belonging to one
+        logical change. That lets you build atomic commits — each commit a single, self-contained,
+        reviewable change — instead of lumping unrelated edits together.
+      passThreshold: 0.6
+    guidance: >-
+      The index is what makes "what I commit" distinct from "what I changed." Patch-mode staging
+      lets you carve a messy working tree into clean, logically atomic commits, which improves
+      reviewability, revertability, and bisecting.
+  - id: gavc-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      When you see `<<<<<<<`, `=======`, and `>>>>>>>` in a file after a merge, what is Git actually
+      telling you?
+    choices:
+      - id: a
+        text: >-
+          Git automatically merged the lines and the markers are just an audit log you can safely
+          ignore.
+      - id: b
+        text: Git made an internal error and corrupted the file; you must run `git fsck` to repair it.
+      - id: c
+        text: The file is locked by another user and the markers show who holds the lock.
+      - id: d
+        text: >-
+          Both sides changed overlapping lines in a way Git cannot safely auto-resolve, so it left
+          both versions in place for you to choose — the markers delimit "ours" above `=======` and
+          "theirs" below.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Conflict markers appear precisely when two sides changed the same region and Git can't pick a
+      winner — a human decision, not a Git bug. `<<<<<<<` to `=======` is your side (ours),
+      `=======` to `>>>>>>>` is the incoming side (theirs). The `diff3`/`zdiff3` style adds
+      `|||||||` to also show the common ancestor.
+  - id: gavc-200-mc-p
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      Why can `git worktree add ../hotfix main-fix` let you work on a second branch without
+      re-cloning, and why does Git refuse to check out the same branch in two worktrees at once?
+    choices:
+      - id: a
+        text: >-
+          Each worktree gets its own full copy of all objects, so re-cloning is avoided; the
+          same-branch restriction exists only to save disk space.
+      - id: b
+        text: >-
+          Worktrees share one object database and refs while having separate working directories;
+          Git refuses the same branch in two worktrees because both would try to move one branch
+          pointer, risking conflicting updates.
+      - id: c
+        text: >-
+          Worktrees are just symlinks to the same directory, so two checkouts of one branch would
+          overwrite the same files — that's why Git blocks it.
+      - id: d
+        text: >-
+          Worktrees require a separate remote per directory, and the same-branch rule prevents two
+          remotes from colliding.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Linked worktrees reuse the single shared object store and ref database, so no re-clone is
+      needed — only an extra working directory and a little per-worktree metadata under
+      `.git/worktrees/`. A branch is a single pointer; allowing it in two worktrees would let each
+      move that one pointer independently, so Git forbids it to keep the branch consistent.
+  - id: gavc-200-ff-q
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: free_form
+    prompt: >-
+      Explain why deleting a branch does NOT immediately delete its commits, and describe the two
+      conditions under which those commits actually become eligible for garbage collection.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a branch is just a pointer; deleting it removes the pointer, but the
+            commit objects persist as long as they remain reachable or are referenced by the reflog.
+        - id: c2
+          text: >-
+            States that commits become eligible for GC only when they are unreachable from any ref
+            AND have aged out of the reflog.
+        - id: c3
+          text: Connects this to why the reflog is the recovery path before gc prunes lost commits.
+      referenceAnswer: >-
+        Deleting a branch just removes a pointer; the underlying commit objects are not touched.
+        Those commits remain in the object store as long as something still reaches them — another
+        branch or tag, or the reflog, which still records where the deleted branch tip pointed. A
+        commit becomes eligible for garbage collection only when it is unreachable from any ref AND
+        has aged out of the reflog (entries expire after a configurable period). That is why `git
+        reflog` is the recovery path: it keeps lost commits reachable until expiry, giving you a
+        window to restore them before `git gc` prunes them.
+      passThreshold: 0.6
+    guidance: >-
+      Branches are cheap pointers, not containers of commits. Commits survive while reachable or
+      held by the reflog, and only get pruned once both conditions fail. This is why "I deleted my
+      branch" is almost always recoverable.
+  - id: gavc-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      In an interactive rebase (`git rebase -i`), what is the difference between the `squash` and
+      `fixup` actions?
+    choices:
+      - id: a
+        text: They are identical; `fixup` is just the older spelling of `squash`.
+      - id: b
+        text: '`squash` combines commits while `fixup` reorders them without combining anything.'
+      - id: c
+        text: '`squash` deletes the commit, while `fixup` keeps it but marks it as a fix.'
+      - id: d
+        text: >-
+          Both combine a commit into the previous one, but `squash` keeps (and lets you edit) the
+          squashed commit's message, while `fixup` discards that commit's message entirely.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Both `squash` and `fixup` melt a commit into its predecessor. The difference is the message:
+      `squash` opens an editor combining both messages so you can keep useful text, whereas `fixup`
+      silently drops the squashed commit's message and keeps only the earlier one — handy for "oops,
+      typo" cleanup commits.
+  - id: gavc-200-mc-s
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: >-
+      A developer says "I cherry-picked that hotfix commit onto release, so now the commit lives on
+      both branches." What is technically inaccurate about that phrasing?
+    choices:
+      - id: a
+        text: >-
+          Cherry-pick copies the change as a brand-new commit with a new SHA on the target branch;
+          the original commit still exists separately, so it isn't literally the same commit on both
+          branches.
+      - id: b
+        text: Cherry-pick moves the commit, so it no longer exists on the source branch at all.
+      - id: c
+        text: >-
+          Cherry-pick creates a merge commit linking both branches, so the commit is genuinely
+          shared.
+      - id: d
+        text: >-
+          The phrasing is fully accurate; cherry-pick preserves the original SHA on the target
+          branch.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Cherry-pick applies the diff of a commit as a new commit on your current branch, generating a
+      new SHA (the parent differs). The original commit is untouched on its branch. So the change is
+      duplicated, not the same commit living in two places — a distinction that matters when you
+      later merge the branches.
+  - id: gavc-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      Explain the difference between a lightweight tag and an annotated tag in Git, and explain why
+      releases are conventionally cut with annotated tags.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a lightweight tag is just a named pointer to a commit, with no extra
+            metadata.
+        - id: c2
+          text: >-
+            Explains that an annotated tag (`git tag -a`) is a full tag object storing tagger
+            identity, date, and a message, and can be GPG-signed.
+        - id: c3
+          text: >-
+            Explains that releases use annotated tags because the metadata and optional signature
+            provide a verifiable, self-describing record of the release.
+      referenceAnswer: >-
+        A lightweight tag is essentially just a name that points at a commit, like a branch that
+        never moves; it carries no extra information. An annotated tag, created with `git tag -a`,
+        is a full Git object that stores the tagger's name and email, a timestamp, and a tagging
+        message, and it can be GPG-signed. Releases conventionally use annotated tags because that
+        stored metadata — who cut the release, when, and why, plus an optional signature — makes the
+        tag a verifiable, self-describing record, rather than an anonymous pointer.
+      passThreshold: 0.6
+    guidance: >-
+      The practical difference is metadata and verifiability. Lightweight tags are fine for private
+      bookmarks, but annotated (and ideally signed) tags give releases provenance — author, date,
+      message, and a signature — which is why tooling and conventions favor them for version tags.
+  - id: gavc-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You committed a change but forgot to add one file and noticed a typo in the commit message.
+      You have NOT pushed yet, and this is your local-only work. What is the cleanest single action
+      to fix both?
+    choices:
+      - id: a
+        text: >-
+          Stage the missing file, then run git commit --amend to replace the last commit and edit
+          the message
+      - id: b
+        text: Run git revert HEAD to undo the commit, then re-commit everything correctly
+      - id: c
+        text: Run git reset --hard HEAD~1 and redo the whole commit from scratch
+      - id: d
+        text: Create a brand-new commit with the missing file and an empty message
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      git commit --amend replaces the last commit with a new one (new SHA), folding in the newly
+      staged file and letting you rewrite the message in one step. Because nothing was pushed,
+      rewriting this commit is safe. revert adds an inverse commit (it does not edit the original),
+      and reset --hard would needlessly throw away the work.
+  - id: gavc-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You rebased your private feature branch with rebase -i to clean up commits, so its history was
+      rewritten. You need to update the remote branch. A teammate just confirmed they have NOT based
+      any work on it. Which push is the safest correct choice?
+    choices:
+      - id: a
+        text: git push --force
+      - id: b
+        text: git push --force-with-lease
+      - id: c
+        text: git push (no flags) and let Git fast-forward
+      - id: d
+        text: git push --ff-only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --force-with-lease refuses the push if the remote moved since your last fetch, protecting
+      against silently clobbering work you have not seen, while still allowing the intended history
+      rewrite. Plain --force overwrites unconditionally. A normal or --ff-only push will be rejected
+      because the rewritten history is not a fast-forward of the old remote tip.
+  - id: gavc-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You deleted src/config.py three commits ago and committed that deletion, but now you need that
+      exact old version of just that one file back in your working tree, without disturbing any of
+      your other current files. Which command does this?
+    choices:
+      - id: a
+        text: git reset --hard HEAD~3
+      - id: b
+        text: git checkout HEAD~3 -- src/config.py (or git restore --source=HEAD~3 src/config.py)
+      - id: c
+        text: git revert HEAD~3
+      - id: d
+        text: git clean -fd src/config.py
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      git checkout <commit> -- <path> (or the modern git restore --source=<commit> <path>) pulls one
+      file's content from a specific commit into your working tree and index, leaving every other
+      file untouched. git reset --hard would rewind your whole branch and discard current work, git
+      revert undoes an entire commit as a new commit, and git clean deletes untracked files rather
+      than restoring one.
+  - id: gavc-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You accidentally ran git reset --hard HEAD~3 on your branch and lost three commits that were
+      never pushed. Working tree is now clean. What is the correct first move to recover them?
+    choices:
+      - id: a
+        text: Run git fetch origin to pull the lost commits back from the remote
+      - id: b
+        text: Run git fsck immediately because the commits were already garbage collected and deleted
+      - id: c
+        text: Restore the commits from the .gitignore file that tracked them
+      - id: d
+        text: >-
+          Run git reflog to find the SHA the branch pointed at before the reset, then reset or
+          cherry-pick back to it
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The reflog records where HEAD has pointed locally, so the pre-reset SHA is still listed and
+      you can reset --hard or cherry-pick back to it. fetch cannot help because the commits were
+      never pushed (reflog is local-only). The commits are not GC'd yet precisely because the reflog
+      still references them.
+  - id: gavc-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      A bug was already deployed to production from the shared main branch. You need to back out
+      exactly that one commit without disturbing the commits made after it and without rewriting
+      public history. Which command fits?
+    choices:
+      - id: a
+        text: git reset --hard <bad-commit-sha>~1
+      - id: b
+        text: git revert <bad-commit-sha>
+      - id: c
+        text: git rebase -i and drop the bad commit, then force-push main
+      - id: d
+        text: git cherry-pick <bad-commit-sha>
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      git revert creates a NEW commit that undoes the target commit's changes, leaving history
+      intact and safe on a shared branch. reset and an interactive rebase + force-push both rewrite
+      public history (dangerous on main). cherry-pick would re-apply the bad change, not undo it.
+  - id: gavc-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      Your repo already tracks config/local.env, but you just added config/local.env to .gitignore
+      and it still shows up in git status and keeps getting committed. What action makes Git stop
+      tracking it while leaving the file on disk?
+    choices:
+      - id: a
+        text: Delete the file from disk and commit the deletion
+      - id: b
+        text: Add a leading slash to the .gitignore pattern
+      - id: c
+        text: git rm --cached config/local.env, then commit
+      - id: d
+        text: Run git gc to purge the tracked file
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      .gitignore only affects untracked files; an already-tracked file keeps being tracked until you
+      remove it from the index. git rm --cached drops it from Git's tracking but keeps the
+      working-tree copy, after which the ignore rule takes effect. Tweaking the pattern or running
+      gc does nothing for a file already in the index.
+  - id: gavc-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >-
+      You are mid-rebase replaying your feature commits onto an updated main, and a conflict stops
+      the rebase in one file. Describe the exact sequence of commands to resolve it and finish the
+      rebase, and explain what git rebase --abort would do instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that you edit the file to resolve conflict markers, then stage it with git add
+            <file>
+        - id: c2
+          text: States that you continue with git rebase --continue (not a fresh git commit -m)
+        - id: c3
+          text: States that git rebase --abort returns the branch to its pre-rebase state
+      referenceAnswer: >-
+        Open the conflicting file, remove the <<<<<<< / ======= / >>>>>>> markers and keep the
+        correct content, then run git add <file> to stage the resolution. Continue with git rebase
+        --continue, which records the resolved commit and replays the rest. If you instead run git
+        rebase --abort, Git discards the in-progress rebase and restores the branch exactly to where
+        it was before you started, as if the rebase never ran.
+      passThreshold: 0.6
+    guidance: >-
+      After resolving, you stage with git add and run --continue; you do not start a separate git
+      commit -m to create the merge. --abort is the safe escape hatch that returns you to the
+      pre-operation state, which is the right move when a rebase gets too messy to finish cleanly.
+  - id: gavc-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You need to keep working on a long-running bugfix branch but also urgently review a
+      colleague's PR branch in a full checkout, without stashing or committing your half-done work.
+      Which approach fits best?
+    choices:
+      - id: a
+        text: Clone the whole repository again into a new folder
+      - id: b
+        text: git worktree add ../review-pr origin/their-branch to check it out in a separate directory
+      - id: c
+        text: git checkout origin/their-branch in the same directory, abandoning your changes
+      - id: d
+        text: git branch their-branch to copy all their files into your working tree
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      git worktree add gives you a second working directory linked to the same repo and object
+      database, so you can check out another branch simultaneously without re-cloning or disturbing
+      your in-progress work. A fresh full clone wastes space and loses shared objects; checking out
+      in place would clobber your uncommitted changes.
+  - id: gavc-300-ff-i
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: free_form
+    prompt: >-
+      You only want the latest commits from origin/main to update your remote-tracking branch so you
+      can inspect them in your log, but you do NOT want to change your current branch or working
+      tree yet. Name the command you would run and explain why git pull would be the wrong choice
+      here.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names git fetch (e.g. git fetch origin) as the command to run
+        - id: c2
+          text: >-
+            States fetch updates remote-tracking refs (like origin/main) and downloads objects
+            without changing the current branch or working tree
+        - id: c3
+          text: >-
+            Explains git pull is fetch plus merge/rebase, so it would integrate changes into the
+            current branch (the thing you wanted to avoid)
+      referenceAnswer: >-
+        Run git fetch origin. fetch downloads the new objects and advances the remote-tracking
+        branch origin/main, but it does not touch your checked-out branch or working tree, so you
+        can inspect the incoming commits in your log first. git pull would be wrong because it is
+        fetch plus a merge (or rebase with --rebase), which immediately integrates the changes into
+        your current branch and can create a merge commit or conflicts.
+      passThreshold: 0.6
+    guidance: >-
+      git fetch is the download-only operation; it updates origin/main without altering your branch
+      or working tree. pull = fetch + merge/rebase, so it integrates immediately, which is exactly
+      what you wanted to defer.
+  - id: gavc-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      A secret API key was committed deep in your repo's history and pushed. Your team lead asks for
+      the right ordering of remediation steps. Which sequence reflects the expert-recommended
+      approach?
+    choices:
+      - id: a
+        text: >-
+          Rotate/revoke the key first, then rewrite history with git filter-repo and force-push,
+          treating clones and CI caches as still exposed
+      - id: b
+        text: Run git filter-repo to purge the key, force-push, and consider the secret safe again
+      - id: c
+        text: Add the file to .gitignore so the key stops being tracked
+      - id: d
+        text: git revert the commit that added the key
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Rewriting history does not undo exposure: the secret may persist in forks, clones, and CI
+      caches, so you must rotate the credential FIRST, then rewrite with filter-repo as cleanup.
+      .gitignore does nothing for already-committed content, and revert leaves the key visible in
+      earlier history.
+  - id: gavc-300-ff-k
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: free_form
+    prompt: >-
+      A single file in your working tree contains two unrelated changes: a bug fix and an unrelated
+      refactor. You want to commit them as two separate atomic commits. Describe how you would stage
+      and commit them, naming the specific Git feature that makes this possible.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names git add -p (patch mode) for staging individual hunks
+        - id: c2
+          text: >-
+            Explains staging only the bug-fix hunks, then committing, then staging and committing
+            the refactor hunks
+        - id: c3
+          text: Connects this to atomic commits (each commit is one logical, self-contained change)
+      referenceAnswer: >-
+        Use git add -p to enter patch mode and stage only the hunks belonging to the bug fix, then
+        run git commit so that commit contains only the fix. Next run git add -p (or git add) again
+        to stage the refactor hunks and commit those separately. This yields two atomic commits,
+        each a logically complete, self-contained change, even though both lived in one file.
+      passThreshold: 0.6
+    guidance: >-
+      git add -p stages individual hunks rather than whole files, so you can split unrelated changes
+      in one file into separate atomic commits. Atomic commits improve bisectability, revertability,
+      and review because each represents a single logical change.
+  - id: gavc-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 324
+    type: multiple_choice
+    prompt: >-
+      A critical one-line fix landed as a single commit on main, and you need that same fix on the
+      release/1.x branch without bringing along anything else from main. What is the right command
+      from the release branch?
+    choices:
+      - id: a
+        text: git merge main
+      - id: b
+        text: git rebase main
+      - id: c
+        text: git revert <fix-commit-sha>
+      - id: d
+        text: git cherry-pick <fix-commit-sha>
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      git cherry-pick applies just that one commit's diff onto the current branch as a new commit
+      (new SHA), which is exactly how you backport a single fix. merge or rebase would drag in all
+      of main's other commits, and revert would undo the fix rather than apply it.
+  - id: gavc-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You want a quick clean inspection: switch to a colleague's branch to test something, but you
+      have uncommitted local edits you are not ready to commit and do not want to lose. Which
+      workflow keeps your edits safe and gives you a clean tree to switch?
+    choices:
+      - id: a
+        text: git commit -am "wip" then git reset --hard before switching
+      - id: b
+        text: git checkout --force their-branch to overwrite your edits
+      - id: c
+        text: git stash, switch branches and test, then git switch back and git stash pop
+      - id: d
+        text: git clean -fd to clear the working tree, then switch
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      git stash saves your uncommitted working-tree and index changes and reverts to a clean tree so
+      you can switch freely; git stash pop reapplies them afterward. checkout --force, reset --hard,
+      and git clean all destroy the uncommitted edits you wanted to preserve.
+  - id: gavc-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: free_form
+    prompt: >-
+      Your team keeps re-cloning the repo and re-resolving the SAME merge conflict every time a
+      long-lived branch is rebased. A senior engineer suggests enabling git rerere. Explain what
+      enabling rerere does in this scenario and name one risk to watch for.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains rerere records how a conflict was resolved and auto-replays that resolution
+            when the identical conflict recurs
+        - id: c2
+          text: >-
+            Notes it saves repeated manual effort on recurring conflicts (e.g. long rebases /
+            repeated merges)
+        - id: c3
+          text: >-
+            Names the risk that a wrongly-recorded resolution gets silently re-applied, potentially
+            reintroducing a bug
+      referenceAnswer: >-
+        rerere (reuse recorded resolution) records how you resolved a given conflict and, when the
+        exact same conflict shows up again during a later rebase or merge, it auto-applies that
+        recorded resolution so you do not redo it by hand. That saves significant effort on
+        long-lived branches with recurring conflicts. The risk is that if you ever recorded a wrong
+        resolution, rerere will silently replay it, quietly reintroducing the same mistake.
+      passThreshold: 0.6
+    guidance: >-
+      rerere is a force multiplier for repeated conflicts but it trusts your past resolution
+      blindly; a bad recorded resolution is replayed without prompting, which is a subtle source of
+      reintroduced bugs.
+  - id: gavc-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      Your team wants routine git pull to never silently create merge-bubble commits: if a pull
+      cannot fast-forward, the pull should just stop so the developer decides explicitly. Name a
+      configuration (or pull flag) that achieves this and describe the resulting behavior when a
+      fast-forward is not possible.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names pull.ff=only (git config pull.ff only) or equivalently git pull --ff-only
+        - id: c2
+          text: >-
+            States that when the pull cannot fast-forward, the pull aborts instead of creating a
+            merge commit
+        - id: c3
+          text: >-
+            Notes the developer then decides explicitly how to integrate (e.g. merge or rebase
+            deliberately)
+      referenceAnswer: >-
+        Set pull.ff to only (git config pull.ff only), or have developers run git pull --ff-only.
+        With this, a pull that can fast-forward proceeds normally, but if the local and remote
+        histories have diverged so a fast-forward is impossible, the pull aborts rather than
+        silently creating a merge commit. The developer then chooses deliberately whether to merge
+        or rebase.
+      passThreshold: 0.6
+    guidance: >-
+      pull.ff=only (equivalently git pull --ff-only) aborts the pull rather than creating a merge
+      commit when it cannot fast-forward, leaving the integration decision to the developer. This is
+      a safe org-wide default to avoid accidental merge bubbles.
+  - id: gavc-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      During an interactive rebase you want to combine three small "fix typo" follow-up commits into
+      the feature commit before them, discarding the throwaway "fix typo" messages entirely. Which
+      rebase -i action should you mark those three commits with?
+    choices:
+      - id: a
+        text: squash
+      - id: b
+        text: reword
+      - id: c
+        text: fixup
+      - id: d
+        text: edit
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      fixup combines a commit into the previous one and discards its message, which is exactly what
+      you want for throwaway "fix typo" commits. squash also combines but keeps the messages
+      (prompting you to merge them), reword only changes a message, and edit pauses to amend the
+      commit's contents.
+  - id: gavc-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You ran git push --force-with-lease and it succeeded, but you later discover you accidentally
+      clobbered a teammate's commit anyway. You recall your IDE runs git fetch automatically in the
+      background. What most likely defeated the lease's protection?
+    choices:
+      - id: a
+        text: '--force-with-lease is just an alias for --force and never protects anything'
+      - id: b
+        text: >-
+          The background fetch updated your remote-tracking ref, so the lease saw the remote as
+          unchanged and allowed the overwrite
+      - id: c
+        text: The teammate force-pushed, which always bypasses any lease
+      - id: d
+        text: The lease only protects tags, not branch heads
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --force-with-lease compares your remote-tracking ref to the actual remote. A background fetch
+      can quietly advance that tracking ref without you integrating the changes, so the lease
+      believes nothing moved and permits the overwrite. The precise form
+      --force-with-lease=<ref>:<expected-sha> pins the SHA you actually verified and avoids this
+      trap.
+  - id: gavc-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      You ran git checkout v2.0.0 to inspect a tagged release, then made and committed a quick
+      experimental change. git status warns you are in "detached HEAD." To keep that experimental
+      commit so it is not lost, what should you do before switching away?
+    choices:
+      - id: a
+        text: Nothing -- detached HEAD commits are automatically saved on main
+      - id: b
+        text: Run git tag -d v2.0.0 to reattach HEAD
+      - id: c
+        text: Run git reset --hard to attach HEAD back to a branch
+      - id: d
+        text: Create a branch at the current commit, e.g. git switch -c experiment
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      In detached HEAD, new commits belong to no branch and become unreachable once you switch away,
+      so they can be garbage collected later. Creating a branch at the current commit (git switch -c
+      / git branch) gives the commit a ref that keeps it reachable. Detached HEAD itself is a valid
+      state, not a breakage.
+  - id: gavc-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: free_form
+    prompt: >-
+      A file you expect to be committed is mysteriously being ignored and you cannot figure out
+      which rule excludes it, since the project has several nested .gitignore files. Name the single
+      command that pinpoints the responsible rule and describe what it reports.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names git check-ignore -v <path>
+        - id: c2
+          text: States it reports which .gitignore file and which line/pattern is excluding the path
+      referenceAnswer: >-
+        Run git check-ignore -v <path>. It prints the exact source of the exclusion: the .gitignore
+        file, the line number, and the specific pattern that matches the path, so you can see
+        precisely which rule (and which of the nested ignore files) is responsible.
+      passThreshold: 0.6
+    guidance: >-
+      git check-ignore -v is the canonical debugging tool for "why is this ignored," because nested
+      .gitignore files compound and more-deeply-nested or later patterns can win, making the
+      responsible rule hard to find by eye.
+  - id: gavc-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: free_form
+    prompt: >-
+      You started bisecting a regression, but partway through you realize the bug is flaky: it
+      reproduces only intermittently, and one early commit had a broken build. Explain two concrete
+      actions you would take so that bisect still gives a trustworthy result (or how you would
+      recognize bisect is the wrong tool here).
+    rubric:
+      criteria:
+        - id: c1
+          text: Marks the unbuildable/untestable commit with git bisect skip rather than good or bad
+        - id: c2
+          text: >-
+            Addresses the flaky bug (e.g. run the test many times per commit / use a more reliable
+            repro before marking good or bad)
+        - id: c3
+          text: >-
+            Recognizes bisect assumes a clean good->bad transition and may be the wrong tool if that
+            assumption is violated
+      referenceAnswer: >-
+        First, for the commit that will not build, use git bisect skip (or exit 125 in a run script)
+        so bisect tries a neighbor instead of being misled by a false good/bad. Second, because the
+        bug is flaky, run the reproduction many times (or harden the repro) at each tested commit
+        before marking it good or bad, so a single lucky pass does not mislabel a commit. Finally,
+        recognize that bisect assumes a clean, monotonic good-to-bad transition; if the bug was
+        fixed and reintroduced or the repro is too unreliable, bisect's assumption is broken and it
+        may be the wrong tool.
+      passThreshold: 0.6
+    guidance: >-
+      git bisect assumes a single clean good->bad transition. Untestable commits must be skipped
+      (exit 125), and a flaky bug must be repeated enough to avoid mislabeling a commit; when the
+      transition is non-monotonic (fixed then reintroduced) bisect can point at the wrong commit
+      entirely.
+  - id: gavc-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A teammate runs `git checkout v1.4.0` (a tag), commits two fixes, then runs `git checkout
+      main`. Their two commits seem to have vanished from any branch. What actually happened?
+    choices:
+      - id: a
+        text: >-
+          Tags are read-only, so Git silently discarded the two commits the moment they were
+          created.
+      - id: b
+        text: >-
+          Checking out the tag put them in a detached HEAD state, so the commits were made on no
+          branch; they are now unreachable from any ref and only findable via the reflog.
+      - id: c
+        text: >-
+          Switching back to main automatically rebased the two commits onto main, but a conflict
+          dropped them.
+      - id: d
+        text: The commits were pushed to the tag on the remote and removed from the local clone.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Checking out a tag detaches HEAD: HEAD points at a commit, not a branch, so new commits belong
+      to no branch. After moving away, those commits are unreachable from any ref but survive in the
+      reflog (and until GC), which is the recovery path. Detached HEAD is a valid state, not a bug,
+      and Git never silently rebases or pushes on a plain checkout.
+  - id: gavc-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      You rebase your feature branch onto an updated main, resolve no conflicts, and the diff
+      against main is byte-for-byte identical to before. Yet every commit on your branch now has a
+      different SHA. Why?
+    choices:
+      - id: a
+        text: >-
+          A commit's hash covers its parent(s) as well as its tree and metadata; rebasing changes
+          each commit's parent, so the content being hashed changes even when the diff is unchanged.
+      - id: b
+        text: >-
+          Rebase always re-timestamps commits to "now", and the timestamp is the only thing the SHA
+          hashes.
+      - id: c
+        text: Git regenerates SHAs randomly after any rebase to prevent collisions with the upstream.
+      - id: d
+        text: The tree objects changed because rebase recompresses the working tree into a new packfile.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A commit ID hashes the tree, parent(s), author, committer, and message. Rebase replays commits
+      onto a new base, so each new commit has a different parent, which changes the hashed content
+      and thus the SHA even if the resulting diff is identical. SHAs are content-derived, never
+      random, and the change is driven by the parent, not by repacking.
+  - id: gavc-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      During `git rebase main` on your feature branch you hit a conflict. You are surprised that the
+      `<<<<<<< HEAD` ("ours") side shows main's code and the incoming side shows your own work. What
+      explains this seeming inversion?
+    choices:
+      - id: a
+        text: >-
+          Rebase has a bug in older Git versions that swaps the conflict markers; an upgrade fixes
+          it.
+      - id: b
+        text: >-
+          During a rebase your commits are replayed on top of the upstream, so the upstream is the
+          checked-out base ("ours") and your replayed commit is the incoming change ("theirs") --
+          the opposite of a merge.
+      - id: c
+        text: >-
+          Git labels the larger of the two changes as "ours" regardless of which branch you started
+          on.
+      - id: d
+        text: >-
+          Because you ran rebase from the feature branch, "ours" is always main and "theirs" is
+          whatever you merge next.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In a merge, "ours" is the branch you ran merge from. In a rebase the model inverts: Git checks
+      out the upstream base and replays each of your commits onto it, so the base is "ours" and your
+      commit being applied is "theirs". This trips people who assume "ours" always means their own
+      branch. It is expected behavior, not a version bug or a size heuristic.
+  - id: gavc-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: free_form
+    prompt: >-
+      A developer runs `git reset --soft HEAD~1`; later they run `git reset --mixed HEAD~1`; another
+      runs `git reset --hard HEAD~1`. For each of the three modes, analyze what happens to (1) the
+      branch pointer, (2) the staging area (index), and (3) the working tree, and explain which mode
+      risks losing uncommitted work.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States all three modes move the branch pointer (HEAD) to the target commit (e.g.
+            HEAD~1).
+        - id: c2
+          text: >-
+            Distinguishes the index/working-tree effects: --soft leaves both untouched (changes left
+            staged); --mixed (the default) resets the index but leaves the working tree (changes
+            left unstaged); --hard resets both index and working tree.
+        - id: c3
+          text: >-
+            Identifies --hard as the mode that discards uncommitted work in the working tree, so it
+            is the one that can lose changes.
+      referenceAnswer: >-
+        All three move the current branch pointer to the target commit. They differ in how far the
+        reset cascades: `--soft` moves only the branch pointer and leaves the index and working tree
+        as they were, so the undone commit's changes remain staged. `--mixed` (the default) also
+        resets the index to match the target, leaving those changes in the working tree but
+        unstaged. `--hard` resets the branch pointer, the index, AND the working tree to the target,
+        discarding any uncommitted changes. `--hard` is therefore the dangerous mode: it can destroy
+        uncommitted work that has no other copy, whereas `--soft` and `--mixed` preserve the file
+        contents in the tree.
+      passThreshold: 0.6
+    guidance: >-
+      The three reset modes form a cascade of "how much state gets reset": --soft (pointer only) <
+      --mixed (pointer + index, the default) < --hard (pointer + index + working tree). Only --hard
+      touches the working tree, which is why it is the only mode that can silently throw away
+      uncommitted edits. Note that committed work moved past by a reset is still recoverable via the
+      reflog; it is uncommitted working-tree changes that --hard destroys outright.
+  - id: gavc-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A repo's nested `.gitignore` has `logs/` ignored at the root, but a developer added
+      `!logs/keep.txt` to re-include one file and it still does not appear with `git add`. What is
+      the cause?
+    choices:
+      - id: a
+        text: Negation patterns (`!`) only work in the top-level `.gitignore`, never in nested ones.
+      - id: b
+        text: '`keep.txt` must be added with `git add -f` because negation patterns are advisory only.'
+      - id: c
+        text: >-
+          Git never descends into an excluded directory, so a negation cannot re-include a file
+          whose parent directory is itself ignored; you must un-ignore the directory pattern
+          instead.
+      - id: d
+        text: The trailing slash on `logs/` disables all negations beneath it for security reasons.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Once a directory is excluded, Git does not even recurse into it, so a later `!logs/keep.txt`
+      can never re-include the file. The fix is to not exclude the parent wholesale (e.g. ignore
+      `logs/*` then negate `!logs/keep.txt`, keeping the directory itself reachable). `git
+      check-ignore -v` pinpoints the offending rule. Negation is not limited to the top-level file,
+      and force-add is a workaround, not the cause.
+  - id: gavc-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 423
+    type: multiple_choice
+    prompt: >-
+      Your CI shows `origin/main` is 5 commits ahead, but `git log` on your local main does not show
+      them and your working tree is unchanged. You ran `git fetch` 10 minutes ago. What is the
+      correct diagnosis?
+    choices:
+      - id: a
+        text: >-
+          `git fetch` updates remote-tracking refs like `origin/main` but never touches your local
+          branch or working tree; you still need to merge or rebase (e.g. `git pull` / `git merge
+          origin/main`) to integrate.
+      - id: b
+        text: '`git fetch` failed silently; the only reliable way to see remote commits is to re-clone.'
+      - id: c
+        text: Your local main is corrupt because fetch should have fast-forwarded it automatically.
+      - id: d
+        text: >-
+          The commits exist only on the server and cannot be inspected locally until they are
+          pulled.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `git fetch` downloads objects and advances remote-tracking branches (`origin/main`) but
+      deliberately leaves your local branch and working tree alone. The new commits ARE local now
+      (you can `git log origin/main`); they just are not integrated into your branch until you merge
+      or rebase. `git pull` is fetch plus that integration step.
+  - id: gavc-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 471
+    type: free_form
+    prompt: >-
+      A secret API key was committed and pushed to a public repo two weeks ago. A colleague proposes
+      running `git filter-repo` to purge it from all history and considers the leak resolved.
+      Critique this plan and state the correct order of operations.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that rewriting history does NOT undo the exposure; the secret must be
+            rotated/revoked because it may already be compromised.
+        - id: c2
+          text: >-
+            Notes the old SHAs/secret can persist in forks, existing clones, CI caches, and
+            PR/cached views, so the rewrite cannot guarantee removal everywhere.
+        - id: c3
+          text: >-
+            Concludes the correct order is rotate the secret FIRST, then rewrite history
+            (filter-repo/BFG), and that the rewrite invalidates everyone's existing history
+            (force-push, coordinated re-clone).
+      referenceAnswer: >-
+        Rewriting history with `git filter-repo` does not undo a two-week-old public exposure:
+        assume the key is compromised and rotate/revoke it first. The old commits and secret can
+        survive in forks, prior clones, CI caches, and cached PR views, so the purge cannot
+        guarantee global removal. The expert order is "rotate first, rewrite second"; the rewrite
+        also changes every affected SHA, so it invalidates everyone's history and requires a
+        coordinated force-push and re-clone.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is "rewrite history and the leak is gone." Exposure is irreversible once
+      public: rotation is mandatory and comes first. History rewriting reduces future
+      discoverability but cannot reach forks, clones, and caches, and it rewrites every downstream
+      SHA, forcing the whole team to re-sync.
+  - id: gavc-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 459
+    type: multiple_choice
+    prompt: >-
+      A background IDE fetch already advanced your remote-tracking ref, so an earlier `git push
+      --force-with-lease` silently clobbered a teammate's commit. You now must re-publish your
+      rewritten branch but GUARANTEE you only overwrite the exact remote tip you personally verified
+      is safe (SHA `abc123`). Which command form gives that guarantee?
+    choices:
+      - id: a
+        text: >-
+          `git push --force-with-lease` again, since the lease automatically re-checks against the
+          freshly fetched remote tip.
+      - id: b
+        text: >-
+          `git push --force-with-lease=main:abc123`, pinning the expected remote SHA so the push is
+          rejected unless the remote tip is exactly the value you verified.
+      - id: c
+        text: '`git push --force-if-includes`, which always supersedes any lease and force-pushes safely.'
+      - id: d
+        text: >-
+          `git fetch` first and then `git push --force`, because a fresh fetch makes a plain force
+          safe.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The plain `--force-with-lease` (option a) compares against your remote-tracking ref, which a
+      background fetch can silently advance -- exactly the failure you just hit -- so it cannot
+      guarantee safety here. The explicit `--force-with-lease=<ref>:<expected-sha>` form (option b)
+      pins the precise SHA you verified, so the push is refused unless the remote is exactly at that
+      value, immune to a stray auto-fetch. A plain `--force` after a fetch (d) drops the safety
+      check entirely, and `--force-if-includes` is a complementary guard, not a way to "always
+      supersede" the lease.
+  - id: gavc-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 477
+    type: free_form
+    prompt: >-
+      Your team must choose between squash-merge and rebase-merge for pull requests into main.
+      Compare the tradeoffs and explain what each choice optimizes for and what it sacrifices.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Squash-merge: one tidy commit per PR (clean main, easy revert/readability) but collapses
+            intra-PR atomic commits, hurting fine-grained bisect and blame.
+        - id: c2
+          text: >-
+            Rebase-merge: keeps individual commits (preserving per-commit granularity for
+            bisect/blame) but rewrites their SHAs and loses an explicit PR-boundary record.
+        - id: c3
+          text: >-
+            Concludes there is no universally correct answer; the choice depends on whether the team
+            values per-PR readability or per-commit granularity.
+      referenceAnswer: >-
+        Squash-merge produces a single commit per PR, which keeps main readable and makes reverting
+        a whole PR trivial, but it collapses the atomic commits inside the PR so fine-grained `git
+        bisect` and `git blame` lose resolution. Rebase-merge preserves each individual commit (good
+        for granular bisect and blame) but rewrites their SHAs and discards the explicit PR-boundary
+        record. Neither is universally right: pick squash if you value per-PR tidiness, rebase if
+        you value per-commit granularity.
+      passThreshold: 0.6
+    guidance: >-
+      This is a genuine tradeoff, not a "rebase is always cleaner" rule. Squash optimizes main-line
+      readability at the cost of intra-PR detail; rebase-merge keeps detail but rewrites SHAs and
+      erases the PR seam. The right call depends on which granularity the team's bisect/blame
+      workflows rely on.
+  - id: gavc-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      You are bisecting a regression. Several commits in the suspect range do not compile, so your
+      test script cannot even run on them. What is the correct way to keep the bisection valid?
+    choices:
+      - id: a
+        text: Mark every non-compiling commit as `bad`, since a broken build is clearly a defect.
+      - id: b
+        text: Mark every non-compiling commit as `good` so the search continues past them.
+      - id: c
+        text: >-
+          Mark those commits with `git bisect skip` (or have the run-script exit 125) so Git treats
+          them as untestable and narrows the search around them instead of mislabeling them good or
+          bad.
+      - id: d
+        text: Abandon bisect entirely; it cannot tolerate any untestable commit in the range.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `git bisect` assumes a clean good-to-bad transition. An untestable commit is neither:
+      mislabeling it good or bad poisons the binary search. `git bisect skip` (and exit code 125 in
+      `git bisect run`) tells Git to set it aside and pick a nearby testable commit, preserving
+      correctness without aborting.
+  - id: gavc-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      Running `git blame` on a source file shows that nearly every line was "last changed" by a
+      single commit whose message is "reformat with new code style." You actually want to see who
+      made the real logic changes underneath that bulk reformat. What is the correct analysis and
+      fix?
+    choices:
+      - id: a
+        text: >-
+          Blame is permanently broken for this file because the reformat overwrote the per-line
+          author history in Git's object store; only a re-clone can restore it.
+      - id: b
+        text: >-
+          The reformat commit genuinely touched those lines, so blame is technically correct; you
+          can tell blame to skip that commit using `--ignore-rev <sha>` (or list it in a
+          `.git-blame-ignore-revs` file) so it attributes each line to the prior substantive change
+          instead.
+      - id: c
+        text: You must `git revert` the reformat commit before blame will show the original authors.
+      - id: d
+        text: >-
+          Blame always shows the first commit that introduced a line, so the reformat commit could
+          not possibly appear; the output indicates repository corruption.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `git blame` attributes each line to the most recent commit that changed it, so a
+      whitespace/style-only reformat legitimately "wins" every line — blame is not broken and no
+      history was destroyed. The fix is `git blame --ignore-rev <sha>`, or better, record such
+      commits in a `.git-blame-ignore-revs` file (referenced via `blame.ignoreRevsFile`) so blame
+      routinely looks past them to the prior meaningful change. Reverting (c) would undo the
+      formatting, and blame shows the latest change, not the first (d).
+  - id: gavc-400-ff-l
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: free_form
+    prompt: >-
+      A junior dev accidentally ran `git reset --hard HEAD~5` on their local feature branch and lost
+      5 unpushed commits. The branch was never pushed. Explain how to recover the commits and why
+      recovery is possible.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses `git reflog` to find the SHA of the commit the branch pointed at before the reset.
+        - id: c2
+          text: >-
+            Recovers by resetting/branching back to that SHA (e.g. `git reset --hard <sha>` or `git
+            branch recover <sha>`).
+        - id: c3
+          text: >-
+            Explains the commits still exist because reset only moved the branch pointer; they
+            remain reachable via the reflog and are not GC'd until unreachable AND expired.
+      referenceAnswer: >-
+        Run `git reflog` to find the entry recording where the branch tip pointed just before the
+        reset, then move the branch back to that SHA with `git reset --hard <sha>` (or create a
+        rescue branch with `git branch recover <sha>`). Recovery works because `reset --hard` only
+        moves the branch pointer and resets the working tree; the original commits still exist in
+        the object database, kept reachable by the reflog, and are not garbage-collected until they
+        are both unreachable and aged out of the reflog.
+      passThreshold: 0.6
+    guidance: >-
+      `git reset --hard` is destructive to uncommitted work but does not erase committed objects; it
+      just repoints the branch. The reflog records the prior tip locally, so the "lost" commits are
+      recoverable until reflog expiry/GC. This is exactly why reflog is the first-line recovery
+      tool.
+  - id: gavc-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 429
+    type: multiple_choice
+    prompt: >-
+      You try `git worktree add ../hotfix main` to work on a quick fix while your main checkout
+      stays put, but Git refuses with an error about `main` already being checked out. Why does Git
+      block this, and what is the safe fix?
+    choices:
+      - id: a
+        text: >-
+          Worktrees require a separate clone per branch; you must re-clone the repo to use main
+          twice.
+      - id: b
+        text: >-
+          Worktrees share one object DB and refs, so the same branch cannot be checked out in two
+          worktrees at once; check out a new branch (e.g. `git worktree add ../hotfix -b hotfix
+          main`) instead.
+      - id: c
+        text: The error is a permissions issue; running with sudo lets both worktrees use main.
+      - id: d
+        text: Git allows it only if you first delete the original working directory.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Linked worktrees share one object database and one set of refs, so allowing the same branch in
+      two worktrees would let two trees fight over a single branch pointer. Git refuses to prevent
+      that. The fix is to base a new branch off main (`-b hotfix main`), giving each worktree its
+      own branch pointer. No re-clone, sudo, or deletion is needed.
+  - id: gavc-400-ff-n
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      Your team enabled `git rerere` to ease a long-running release branch with recurring merges.
+      Weeks later a subtle bug appears in merges that "resolved cleanly with no conflicts shown."
+      Explain how rerere could be the cause and the tradeoff it represents.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains rerere records a conflict resolution and auto-replays it when the identical
+            conflict recurs, without showing the conflict.
+        - id: c2
+          text: >-
+            Identifies that a previously-recorded WRONG resolution gets silently reapplied,
+            reintroducing a bug with no visible conflict to review.
+        - id: c3
+          text: >-
+            States the tradeoff: rerere saves large amounts of repeated conflict work but trades it
+            for the risk of silently propagating a bad recorded resolution.
+      referenceAnswer: >-
+        `git rerere` records how you resolved a given conflict and, when the byte-identical conflict
+        recurs, replays that resolution automatically and silently. If the original recorded
+        resolution was wrong, it is reapplied every time the conflict reappears, reintroducing the
+        bug with no conflict surfaced for a human to review. That is the tradeoff: rerere eliminates
+        huge amounts of repetitive conflict resolution on long-lived branches, but at the cost of
+        silently propagating any incorrect recorded resolution. The fix is to clear the bad
+        recording (e.g. `git rerere forget <path>`) and re-resolve.
+      passThreshold: 0.6
+    guidance: >-
+      Rerere's power -- auto-applying a remembered resolution -- is also its hazard: a wrong
+      recording becomes invisible automation that re-injects the same mistake. On long-lived
+      branches the labor savings are large, but the silent-replay risk is real, so a bad entry must
+      be forgotten and re-resolved.
+  - id: gavc-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: >-
+      A teammate wants to "undo" a bad commit that is already on the shared main branch. They are
+      deciding between `git reset --hard <prev>` and `git revert <bad>`. Which analysis is correct?
+    choices:
+      - id: a
+        text: >-
+          Use `git reset --hard`: it is the only command that truly removes the bad changes, and
+          revert just hides them.
+      - id: b
+        text: >-
+          They are interchangeable on a shared branch; both create a new commit and neither rewrites
+          history.
+      - id: c
+        text: >-
+          Use `git revert` only on private branches; on shared branches `git reset --hard` is the
+          safe option.
+      - id: d
+        text: >-
+          Use `git revert`: it adds a new inverse commit and rewrites no history, so other clones
+          stay consistent; `git reset --hard` would rewind the shared branch and force a destructive
+          push.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      On a shared branch, `git revert` is the safe undo: it records a new commit that inverts the
+      bad change while leaving history intact, so everyone's clones stay consistent. `git reset
+      --hard` rewinds the branch pointer and requires a force-push that rewrites history others
+      already have. Confusing revert (adds an inverse) with reset (rewinds) is a classic error.
+  - id: gavc-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 441
+    type: multiple_choice
+    prompt: >-
+      You amended the last commit with `git commit --amend` to fix a typo, but that commit was
+      already pushed and a teammate had pulled it. Now `git push` is rejected as non-fast-forward.
+      What is the precise cause?
+    choices:
+      - id: a
+        text: >-
+          `--amend` replaced the pushed commit with a new commit (new SHA), so your local history
+          diverged from the remote; the remote tip is no longer an ancestor of yours, hence the
+          non-fast-forward rejection.
+      - id: b
+        text: Amend cannot be pushed at all; it only ever applies to local-only commits by design.
+      - id: c
+        text: The rejection is a transient network error; retrying the push will succeed.
+      - id: d
+        text: >-
+          Your teammate locked the branch, which is the only thing that causes non-fast-forward
+          errors.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `git commit --amend` does not edit a commit in place; it creates a replacement commit with a
+      new SHA. Once the original was pushed, your branch and the remote share no fast-forward path,
+      so the push is rejected. This is why amending pushed commits on shared branches is
+      discouraged; resolving it requires a (careful) force-push and coordination, which is itself
+      history rewriting others must absorb.
+  - id: gavc-400-ff-q
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: free_form
+    prompt: >-
+      A reviewer rejects a PR whose 600-line diff is a single commit titled "stuff". Separately,
+      another reviewer warns a different author against splitting one logical fix into 30
+      micro-commits. Explain the atomic-commit granularity tradeoff that both reviewers are pointing
+      at.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Too-coarse commits hurt review, bisect, and blame (you cannot isolate one logical
+            change), as in the 600-line "stuff" commit.
+        - id: c2
+          text: >-
+            Too-fine commits create noisy history and risk broken intermediate states that do not
+            build/pass on their own.
+        - id: c3
+          text: >-
+            The right size is a judgment call: each commit should be one logically complete,
+            reviewable change that builds/passes on its own.
+      referenceAnswer: >-
+        Both reviewers are pointing at commit granularity. Commits that are too coarse (one 600-line
+        "stuff" commit) are unreviewable and ruin bisect and blame because no single logical change
+        can be isolated or reverted. Commits that are too fine (30 micro-commits for one fix) make
+        noisy history and often leave intermediate commits that do not build or pass tests. The
+        right granularity is a judgment call: each commit should be one logically complete,
+        self-contained change that builds and passes on its own, maximizing reviewability,
+        bisectability, and revertability.
+      passThreshold: 0.6
+    guidance: >-
+      Atomicity is about logical completeness, not a fixed line count and not "one commit per PR."
+      Too coarse destroys bisect/blame/reviewability; too fine yields noise and broken intermediate
+      states. The target is "each commit builds and represents one reviewable change."
+  - id: gavc-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 447
+    type: multiple_choice
+    prompt: >-
+      A release was tagged a week ago and shipped. Now the team wants to backport just one bug-fix
+      commit from main onto the older `release-2.3` branch, without bringing along the dozen other
+      commits since the tag. Which approach fits, and what is the consequence?
+    choices:
+      - id: a
+        text: >-
+          `git merge main` into release-2.3, which is the only way to move a single commit between
+          branches.
+      - id: b
+        text: '`git rebase release-2.3` from main, which moves the one commit and deletes it from main.'
+      - id: c
+        text: >-
+          `git cherry-pick <fix-sha>` onto release-2.3, which copies that single change as a NEW
+          commit (new SHA) on the release branch; the original commit on main is unchanged.
+      - id: d
+        text: >-
+          `git cherry-pick` physically relocates the commit, so it disappears from main after
+          backporting.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `git cherry-pick` applies the diff of a chosen commit onto the current branch as a brand-new
+      commit with its own SHA, perfect for backporting a single fix without dragging unrelated
+      history. It copies, it does not move: the original commit stays on main. Merging would bring
+      everything; rebase is the wrong tool and does not "move one commit."
+  - id: gavc-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 453
+    type: multiple_choice
+    prompt: >-
+      Your team uses `git merge --no-ff` so every feature lands as a merge commit. Months later you
+      must back out an entire feature, so you `git revert -m 1 <merge>`. Later the same feature
+      branch needs to be re-merged, but its changes do not come back. What is the nuanced cause?
+    choices:
+      - id: a
+        text: '`--no-ff` merges cannot be reverted at all, so the revert silently did nothing.'
+      - id: b
+        text: >-
+          Reverting a merge commit records that the merged content is now undone, so a later
+          re-merge sees nothing new to bring in; you must revert the revert (or re-apply the
+          changes) before re-merging.
+      - id: c
+        text: >-
+          Reverting deleted the feature branch's commits from history, so there is nothing left to
+          merge.
+      - id: d
+        text: Re-merging requires a force-push; the changes are there but hidden until you force.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `--no-ff` makes feature boundaries explicit and lets you revert a whole feature with `revert
+      -m 1`. But that revert is itself a commit saying "these merged changes are undone." Since the
+      feature commits are still ancestors, a later re-merge finds nothing new. You must revert the
+      revert (or otherwise re-apply) to bring the feature back -- a well-known complication of
+      reverting merge commits.
+  - id: gavc-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      An org wants to set a repo-wide default to stop accidental merge bubbles from routine pulls.
+      They are weighing `pull.ff=only` versus `pull.rebase=true`. Analyze the tradeoffs of each as
+      an org-wide default.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            `pull.ff=only` aborts the pull when it cannot fast-forward, forcing an explicit choice
+            and never silently creating a merge commit or rewriting commits -- safe but can
+            interrupt contributors.
+        - id: c2
+          text: >-
+            `pull.rebase=true` replays local commits on top of upstream (no merge bubble) but can
+            surprise contributors by rewriting their local-but-unpushed commits during a routine
+            pull.
+        - id: c3
+          text: >-
+            Concludes both prevent accidental merge commits, but rebase carries a
+            history-rewriting/surprise risk that ff-only does not; the choice depends on team
+            familiarity and tolerance for interruption.
+      referenceAnswer: >-
+        `pull.ff=only` makes `git pull` refuse and abort whenever it cannot fast-forward, so it
+        never silently creates a merge commit and never rewrites anything; the cost is that
+        contributors hit an explicit stop and must decide how to integrate. `pull.rebase=true`
+        avoids merge bubbles by replaying local commits onto the updated upstream, but it rewrites
+        the contributor's local-but-unpushed commits during an otherwise routine pull, which can
+        surprise people and complicate conflict handling. Both stop accidental merge bubbles;
+        ff-only is the more conservative, no-surprise default, while rebase gives linear history at
+        the price of silent local-history rewriting. The right org default depends on team fluency
+        and how much an aborted pull versus a surprise rebase disrupts the workflow.
+      passThreshold: 0.6
+    guidance: >-
+      Both settings kill accidental merge commits, but they fail differently. `pull.ff=only` is
+      fail-safe: it stops and asks rather than acting. `pull.rebase=true` acts automatically and can
+      rewrite a contributor's unpushed commits, which surprises less-experienced users. The decision
+      is a team-fluency and disruption-tolerance tradeoff, not a clear win for either.
+  - id: gavc-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on squash-merging every PR into a single commit on main, arguing it keeps
+      the log tidy. A senior engineer pushes back. Which critique is the strongest evaluation of
+      this policy?
+    choices:
+      - id: a
+        text: >-
+          Squash-merge rewrites the SHAs of main's existing commits, so older history becomes
+          unreachable and prone to garbage collection.
+      - id: b
+        text: >-
+          Squash collapses the PR's individual atomic commits into one, which can hurt fine-grained
+          bisect and blame even though it improves main's top-level readability — so it is a
+          granularity tradeoff, not a strict win.
+      - id: c
+        text: >-
+          Squash-merge prevents anyone from ever reverting the change, because the original commits
+          no longer exist anywhere.
+      - id: d
+        text: >-
+          Squash-merge is objectively wrong; rebase-merge is always the correct choice for any team
+          that values clean history.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Squash-merge is a real tradeoff: one commit per PR aids main readability but discards intra-PR
+      atomicity that fine-grained bisect and blame rely on. It does not touch existing main SHAs (a
+      is false), the single commit is fully revertable (c is false), and no merge style is
+      universally correct (d overstates). The expert framing is per-PR vs per-commit granularity.
+  - id: gavc-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      A developer leaks an API key in a commit three weeks ago, then runs git filter-repo to purge
+      it from all history and force-pushes. They declare the incident resolved. What is the most
+      important flaw in that conclusion?
+    choices:
+      - id: a
+        text: >-
+          filter-repo only edits the working tree, so the secret is still in every commit object and
+          was never actually removed.
+      - id: b
+        text: >-
+          Rewriting history does not undo exposure: the key must be rotated, and old SHAs can
+          persist in forks, clones, and CI caches — rotate first, rewrite second.
+      - id: c
+        text: >-
+          force-pushing the rewrite is harmless to collaborators because everyone can simply pull to
+          receive the cleaned history automatically.
+      - id: d
+        text: filter-repo cannot remove secrets at all; only git revert can undo a committed secret.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      History rewriting removes the secret from the canonical repo but cannot recall copies already
+      pulled, forked, or cached, and the secret was exposed the moment it was pushed. The expert
+      move is rotate-then-rewrite. filter-repo does rewrite every commit's content (not just the
+      working tree), the rewrite breaks everyone's history (not a clean auto-pull), and revert would
+      only add an inverse commit leaving the secret in history.
+  - id: gavc-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: free_form
+    prompt: >-
+      Your org is debating mandating pull.rebase=true globally so routine git pull stops creating
+      "merge bubbles." Evaluate this policy: give one real benefit and one real risk it imposes on
+      contributors.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States a benefit such as avoiding accidental merge commits / keeping a linear, readable
+            upstream history on pull.
+        - id: c2
+          text: >-
+            States the risk that pull.rebase rewrites the contributor's local (unpushed) commits
+            during a routine pull, which can surprise them.
+        - id: c3
+          text: >-
+            Frames it as a tradeoff or notes pull.ff=only as a less invasive alternative that aborts
+            instead of rewriting.
+      referenceAnswer: >-
+        Benefit: pull.rebase=true replays local commits onto the updated upstream instead of
+        merging, so routine pulls stop producing spurious merge commits and the history stays
+        linear. Risk: it silently rewrites the contributor's local-but-unpushed commits (new SHAs)
+        on every pull, which can surprise people mid-work or interact badly with in-progress
+        conflicts. A milder alternative is pull.ff=only, which simply aborts a non-fast-forward pull
+        rather than rewriting anything, leaving the choice explicit.
+      passThreshold: 0.6
+    guidance: >-
+      pull.rebase prevents merge bubbles but the cost is that it rewrites local commits during what
+      feels like a download, which can confuse contributors. pull.ff=only is the safer default for
+      many teams because it refuses to do anything surprising — it just stops and makes you choose.
+  - id: gavc-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A teammate insists "--force-with-lease is always safe, so we can use it freely on any branch."
+      Which scenario best demonstrates the limit of that claim?
+    choices:
+      - id: a
+        text: The remote branch is protected, so the push is rejected regardless of the lease.
+      - id: b
+        text: >-
+          --force-with-lease only works over SSH, so an HTTPS remote silently falls back to a plain
+          --force.
+      - id: c
+        text: >-
+          An editor or background job ran git fetch, advancing your remote-tracking ref without you
+          integrating the new commits, so the lease check passes and you still clobber a teammate's
+          work.
+      - id: d
+        text: The lease compares commit messages rather than SHAs, so a reworded commit defeats it.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --force-with-lease compares your remote-tracking ref against the remote. If a background fetch
+      already updated that ref without you integrating the changes, the lease "thinks" you have seen
+      them and the force succeeds anyway, destroying the new commits. The precise defense is
+      --force-with-lease=<ref>:<expected-sha>. The other options describe mechanisms that do not
+      exist.
+  - id: gavc-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      A team adopts a strict "rebase everything, never merge" rule for all branches including the
+      shared main. Which consequence is the most serious correctness/collaboration problem with this
+      rule?
+    choices:
+      - id: a
+        text: >-
+          Rebase cannot resolve conflicts, so any divergence on main becomes permanently
+          unmergeable.
+      - id: b
+        text: Rebasing main deletes the reflog, removing the only recovery path for the whole team.
+      - id: c
+        text: >-
+          Rebasing the shared main rewrites commits others have already based work on, forcing
+          painful re-syncs and risking lost or duplicated commits — this violates the Golden Rule of
+          Rebasing.
+      - id: d
+        text: >-
+          Rebase produces identical SHAs to the originals, so consumers see no change and the rule
+          is pointless rather than harmful.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The Golden Rule of Rebasing forbids rebasing commits on a shared/public branch because it
+      rewrites history others already have (c, the correct answer). The distractors are each false:
+      rebase does resolve conflicts (a is false), the reflog is local per-clone and not deleted by a
+      rebase (b is false), and rebase changes parents and therefore SHAs, so they are not identical
+      (d is false). Rebasing local branches before pushing is fine; rebasing shared main is the
+      anti-pattern.
+  - id: gavc-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: >-
+      A colleague reverts a feature by reverting its no-ff merge commit on main. Weeks later they
+      try to re-merge the same feature branch to "bring it back" and almost nothing comes through.
+      Evaluate what went wrong and the right way to restore the feature.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that reverting a merge commit records that the merged content is undone, so
+            re-merging the same branch brings nothing new because Git sees those commits as already
+            integrated.
+        - id: c2
+          text: >-
+            Identifies the fix as reverting the revert (or rebasing/cherry-picking the feature
+            commits onto a fresh branch) to actually restore the changes.
+      referenceAnswer: >-
+        Reverting the merge commit (with -m) adds an inverse commit but the original feature commits
+        remain in history and are still considered merged. So a second merge of the same branch is a
+        near no-op — Git thinks the content is already present. To restore the feature you typically
+        revert the revert commit, or cherry-pick / rebase the feature commits onto a new branch and
+        merge that. This is a known cost of the merge --no-ff + revert workflow.
+      passThreshold: 0.6
+    guidance: >-
+      Reverting a merge undoes the content but leaves the branch's commits marked as merged, so
+      re-merging brings nothing. You must revert the revert (or re-introduce the commits via
+      cherry-pick/rebase). This is a classic gotcha of the no-ff-plus-revert pattern for
+      whole-feature rollbacks.
+  - id: gavc-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      During a long, painful interactive rebase, a developer enables rerere globally and recommends
+      the whole team do the same "to never resolve the same conflict twice." What is the sharpest
+      caveat to that recommendation?
+    choices:
+      - id: a
+        text: >-
+          rerere only works during merges, so it provides zero benefit during the rebase that
+          motivated enabling it.
+      - id: b
+        text: >-
+          A wrongly-recorded resolution is silently replayed on the identical future conflict, which
+          can quietly reintroduce a bug.
+      - id: c
+        text: >-
+          rerere uploads recorded resolutions to the remote, leaking how conflicts were resolved to
+          everyone.
+      - id: d
+        text: >-
+          rerere disables conflict markers entirely, so future conflicts fail without any
+          indication.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      rerere's power — auto-replaying a recorded resolution on a recurring conflict — is also its
+      danger: if you resolved it wrong once, the same wrong resolution is silently reapplied. It
+      works for both merges and rebases (a false), is purely local (c false), and does not disable
+      markers (d false). The judgment is that it is high-leverage but demands you trust your
+      recorded resolutions.
+  - id: gavc-500-ff-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: free_form
+    prompt: >-
+      A regression is somewhere in 800 commits. An engineer sets up git bisect run with a test
+      script, but the bisect keeps landing on commits where the project does not even build, and the
+      bug seems to come and go. Critique the use of bisect here and explain what the engineer should
+      do.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes that bisect assumes a single clean good->bad transition and is undermined by
+            non-buildable intermediate commits and flaky/intermittent bugs.
+        - id: c2
+          text: >-
+            Recommends having the script exit 125 (skip) for untestable/unbuildable commits so
+            bisect routes around them.
+        - id: c3
+          text: >-
+            Recognizes that for a flaky or fixed-then-reintroduced bug, bisect may be the wrong tool
+            or needs careful bracketing.
+      referenceAnswer: >-
+        git bisect assumes a clean good->bad monotonic transition. Commits that do not build break
+        the test, and a bug that "comes and goes" violates monotonicity, so plain bisect will
+        mislead. The script should detect an untestable/unbuildable commit and exit 125 so bisect
+        skips it. For a flaky or fixed-then-reintroduced bug, the engineer must first make the test
+        reliable (or bracket the range tightly); otherwise bisect is the wrong tool because its core
+        assumption is violated.
+      passThreshold: 0.6
+    guidance: >-
+      Exit code 125 tells git bisect run to skip an untestable commit instead of scoring it
+      good/bad. But the deeper issue is that bisect needs a monotonic good->bad transition; flaky or
+      reintroduced bugs break that assumption and call for a more reliable test or a different
+      approach.
+  - id: gavc-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      Two engineers debate commit granularity. One wants every keystroke-level change in its own
+      commit; the other wants the entire feature in one giant commit. Which evaluation best captures
+      the right principle?
+    choices:
+      - id: a
+        text: >-
+          The one-giant-commit approach is best because fewer commits always improves bisect and
+          blame.
+      - id: b
+        text: >-
+          Both extremes are flawed: too fine yields noisy history and broken intermediate states,
+          too coarse yields unreviewable diffs and useless bisect — the target is each commit being
+          one reviewable change that builds on its own.
+      - id: c
+        text: >-
+          Per-keystroke commits are ideal because maximally fine granularity always maximizes
+          revertability.
+      - id: d
+        text: >-
+          Granularity is irrelevant since squash-merge will flatten it anyway, so either extreme is
+          equally fine.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Atomicity is a judgment call between two failure modes. Too coarse makes diffs unreviewable
+      and bisect coarse; too fine adds noise and produces intermediate commits that do not build
+      (hurting bisect and revert). The target is "each commit is one logically complete, reviewable
+      change that builds on its own." The other options absolutize one extreme.
+  - id: gavc-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: >-
+      A team with frequent releases and a strong CI/feature-flag setup debates adopting trunk-based
+      development (short-lived branches merged to one trunk daily) versus a Git Flow model with
+      long-lived develop and release branches. Which evaluation is most sound?
+    choices:
+      - id: a
+        text: >-
+          Git Flow is universally better because more long-lived branches always mean safer
+          releases.
+      - id: b
+        text: >-
+          Trunk-based development minimizes long-lived divergence and merge debt and pairs well with
+          strong CI and feature flags, while Git Flow's long-lived branches add release structure
+          but accumulate merge conflicts and integration risk — the right choice depends on release
+          cadence and tooling.
+      - id: c
+        text: >-
+          Trunk-based development eliminates the need for code review because everything merges to
+          trunk automatically.
+      - id: d
+        text: The two models produce identical branch graphs, so the decision is purely cosmetic.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Trunk-based development keeps branches short-lived and integrates constantly, reducing merge
+      debt and big-bang integration risk, but it leans heavily on strong CI and feature flags to
+      keep an always-releasable trunk. Git Flow's long-lived develop/release branches give explicit
+      release staging but invite drift and painful merges. Neither is universally correct:
+      high-cadence teams with good automation favor trunk-based, whereas slower, batched-release
+      contexts may still benefit from Git Flow's structure. Review is orthogonal to both (c is
+      false), and the models clearly differ (d is false).
+  - id: gavc-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      A staff engineer proposes the team policy: "Rebase your branch locally to clean it up before
+      pushing, but always merge (no-ff) into main." A junior asks why not just pick one of rebase or
+      merge everywhere. Defend the hybrid policy by naming what each half buys you.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the local-rebase half: it produces clean, atomic, linear commits and a readable
+            per-PR history without violating the Golden Rule because the branch is private/unshared.
+        - id: c2
+          text: >-
+            Explains the merge-into-main half: it preserves the true integration record / feature
+            boundary and avoids rewriting shared history on main.
+        - id: c3
+          text: >-
+            Frames it as a deliberate compromise between rebase's clean history and merge's
+            preserved context.
+      referenceAnswer: >-
+        Local rebase before pushing lets you reorder, squash fixups, and linearize your own private
+        branch so each commit is atomic and reviewable — safe because no one else has based work on
+        it (no Golden Rule violation). Merging no-ff into main preserves the real integration point
+        and feature boundary and never rewrites the shared branch others depend on. The hybrid
+        captures rebase's clean per-PR commits and merge's preserved integration context, rather
+        than forcing one tool's downside everywhere: pure-rebase risks rewriting shared history,
+        pure-merge clutters branch-local history with fixup noise.
+      passThreshold: 0.6
+    guidance: >-
+      The hybrid is a common expert compromise: rebase is safe and valuable on private branches
+      (clean atomic commits), while merge is safe and meaningful on shared main (preserves the
+      integration record and never rewrites shared history). Each half is applied exactly where its
+      risk profile fits.
+  - id: gavc-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      A team needs to share a common library across several repositories and is choosing between a
+      Git submodule and a Git subtree for it. Which evaluation most accurately weighs the two?
+    choices:
+      - id: a
+        text: >-
+          Submodules are always superior because the parent repo stores the library's full source,
+          so consumers never need network access.
+      - id: b
+        text: >-
+          A submodule pins the dependency as a separate repo referenced by a commit SHA (extra
+          clone/update steps, easy version pinning); a subtree vendors the library's files into the
+          main repo's history (simpler for consumers, but updates and contributing upstream are more
+          involved) — neither is universally correct.
+      - id: c
+        text: Subtrees and submodules are identical in effect; the only difference is the command name.
+      - id: d
+        text: >-
+          Subtrees are always superior because they automatically push your local changes back to
+          the upstream library on every commit.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A submodule keeps the dependency as its own repository, recorded in the parent by a gitlink (a
+      specific commit SHA), which makes version pinning explicit but adds clone/update ceremony (git
+      submodule update --init). A subtree merges the library's files directly into the main repo's
+      tree and history, so consumers clone normally with nothing extra, at the cost of more involved
+      update and upstream-contribution workflows. The choice is a tradeoff, not an absolute:
+      submodules favor clean separation and pinning, subtrees favor consumer simplicity.
+  - id: gavc-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 491
+    type: multiple_choice
+    prompt: >-
+      A developer wants a single fix from a long-lived release branch brought into main without
+      dragging along the branch's other 20 unrelated commits. They debate cherry-pick vs merge vs
+      rebase. Which evaluation is correct?
+    choices:
+      - id: a
+        text: >-
+          cherry-pick is appropriate: it copies that one commit's diff as a new commit on main,
+          leaving the original in place — accept that the duplicate SHA can cause minor noise if the
+          branches are later merged.
+      - id: b
+        text: >-
+          merge is correct because it can selectively bring only the chosen commit while ignoring
+          the other 20.
+      - id: c
+        text: >-
+          rebase the release branch onto main is correct, since rebase moves a single commit without
+          touching the others.
+      - id: d
+        text: >-
+          cherry-pick physically moves the commit off the release branch, so the fix disappears from
+          the release branch.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      cherry-pick copies a specific commit's change as a NEW commit (new SHA) onto the current
+      branch and leaves the original untouched — exactly right for backporting/forward-porting one
+      fix. merge cannot select a single commit (b), rebase replays a whole range not one commit in
+      isolation (c), and cherry-pick copies rather than moves (d). The tradeoff to accept is
+      duplicate-change noise if the branches later merge.
+  - id: gavc-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: >-
+      A teammate reports their work "disappeared" after they ran git reset --hard to abandon some
+      changes and then realized they actually needed one of the discarded commits. Another teammate
+      says "it's gone, the reset deleted it permanently." Evaluate that claim and describe the
+      recovery path and its limits.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Rejects "permanently deleted": the commit is likely still recoverable via git reflog
+            while it remains in the local reflog and before GC.
+        - id: c2
+          text: >-
+            Describes recovery: find the lost commit's SHA in the reflog and
+            reset/branch/cherry-pick back to it.
+        - id: c3
+          text: >-
+            Notes limits: reflog is local-only (a teammate's reflog will not help) and entries
+            expire / become GC-eligible once unreachable and aged out.
+      referenceAnswer: >-
+        The claim is wrong while the commit is still in the reflog. git reflog records where HEAD
+        pointed before the reset, so you can find the lost commit's SHA and recover it with git
+        reset --hard <sha>, git branch <name> <sha>, or git cherry-pick <sha>. Limits: the reflog is
+        local to that clone, so no teammate's reflog can recover it; and a commit becomes eligible
+        for garbage collection only once it is unreachable from any ref AND has aged out of the
+        reflog (defaults around 30 days for unreachable), after which git gc can truly prune it.
+      passThreshold: 0.6
+    guidance: >-
+      A --hard reset only moves refs; the old commit stays reachable through the reflog and is
+      recoverable until it both falls out of the reflog and gets GC'd. The crucial limit is that the
+      reflog is local-only — it is your own safety net, not a server-side backup, and a teammate
+      cannot recover your lost commit from their reflog.
+  - id: gavc-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 503
+    type: multiple_choice
+    prompt: >-
+      A build secret file keeps showing up in git status. A developer adds it to .gitignore,
+      commits, and is surprised it still appears in diffs and gets committed. Which diagnosis and
+      fix is correct?
+    choices:
+      - id: a
+        text: >-
+          .gitignore only affects untracked files; the file was already tracked, so you must git rm
+          --cached it (and commit) for the ignore rule to take effect.
+      - id: b
+        text: >-
+          The .gitignore pattern is wrong; ignore rules apply to tracked files too, so only the
+          pattern syntax can be at fault.
+      - id: c
+        text: >-
+          You must delete the file from disk first, because .gitignore cannot match a file that
+          currently exists.
+      - id: d
+        text: .gitignore changes only apply after running git gc to rebuild the index.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      .gitignore governs only untracked files. A file Git already tracks keeps being tracked despite
+      a matching pattern until you git rm --cached it and commit the removal. The pattern is not the
+      issue (b is wrong about scope), you do not delete it from disk (c), and gc is unrelated (d).
+      git check-ignore -v would also confirm whether a rule even matches.
+  - id: gavc-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 509
+    type: multiple_choice
+    prompt: >-
+      A security-conscious team wants every commit on main to be cryptographically attributable and
+      proposes requiring signed commits (GPG/SSH/X.509) enforced by branch protection. A lead
+      objects that "commit signing is redundant because the author name/email already proves who
+      wrote the code." Which evaluation is the most accurate?
+    choices:
+      - id: a
+        text: >-
+          The lead is right: Git cryptographically verifies the author and committer name/email
+          fields, so a signature adds nothing.
+      - id: b
+        text: >-
+          A commit's author/committer fields are plain, unverified metadata that anyone can set to
+          any value; a verified signature instead binds the commit to a key the signer controls, so
+          requiring signatures adds real attribution the name fields cannot provide -- though it
+          proves key control, not that that person authored the code.
+      - id: c
+        text: >-
+          Signing is pointless because the signature covers only the commit message, leaving the
+          actual code changes unattested.
+      - id: d
+        text: >-
+          Requiring signed commits is counterproductive because signing rewrites every commit's SHA
+          on push, breaking history for collaborators.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Git's author and committer fields are free-form, unauthenticated metadata (you can set them to
+      anyone via git -c user.email=...), so they prove nothing about who actually made the commit. A
+      signature signs the commit object -- which includes its tree and parents, not just the message
+      -- binding it to a key the signer controls, which is exactly what branch protection can
+      enforce. The honest caveat is that it proves key control, not code authorship. Signing is part
+      of the object from creation and does not change the SHA on push, so d is false.
+  - id: gavc-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: free_form
+    prompt: >-
+      A developer juggles a long-running feature and frequent hotfixes by repeatedly git stash / git
+      stash pop on one working directory, and keeps losing context and occasionally dropping
+      changes. Evaluate whether git worktree would be a better fit and name one tradeoff or
+      constraint of worktrees.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Argues worktrees are a better fit: separate working directories let you keep feature and
+            hotfix checked out simultaneously without stashing.
+        - id: c2
+          text: >-
+            Names a real constraint, e.g., the same branch cannot be checked out in two worktrees at
+            once, or worktrees share one object DB/refs and need disk + cleanup (prune/remove).
+      referenceAnswer: >-
+        Worktrees are the better fit: git worktree add gives a second working directory linked to
+        the same repo, so you can have the feature branch and a hotfix branch checked out at the
+        same time without stash juggling, avoiding the dropped-change risk. Tradeoffs/constraints:
+        worktrees share one object database and refs, so Git refuses to check out the same branch in
+        two worktrees simultaneously; they also consume extra disk and need housekeeping (git
+        worktree list / remove / prune). The stash workflow is fine for brief interruptions but
+        error-prone for sustained parallel work.
+      passThreshold: 0.6
+    guidance: >-
+      Stash is meant for short, single-directory interruptions; sustained parallel work is exactly
+      the worktree use case — multiple working directories on one shared object store. The notable
+      constraint is that the same branch cannot be checked out in two worktrees at once, which is by
+      design to protect that one branch pointer.
+  - id: gavc-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 521
+    type: multiple_choice
+    prompt: >-
+      A release manager tags releases with plain git tag v2.0 (lightweight) and argues annotated
+      tags are unnecessary ceremony. Which evaluation best weighs the choice for release tagging?
+    choices:
+      - id: a
+        text: Lightweight tags are preferable for releases because only they can be signed and verified.
+      - id: b
+        text: There is no difference; both store a tagger and message identically.
+      - id: c
+        text: >-
+          Annotated tags move automatically as the branch advances, so they better track the latest
+          release.
+      - id: d
+        text: >-
+          Annotated tags are preferable for releases because they are real objects carrying tagger,
+          date, and message and can be GPG-signed for provenance — lightweight tags are just a bare
+          pointer with none of that.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Annotated tags are full objects with tagger, date, and message and can be GPG-signed, giving
+      releases auditable provenance; lightweight tags are just a name pointing at a commit. So a is
+      backwards (signing is an annotated-tag capability), b is false (only annotated tags store that
+      metadata), and c is false — tags are fixed pointers, not moving like branches. For releases
+      the small ceremony of annotated tags buys real metadata and signing.
+  - id: gavc-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 527
+    type: multiple_choice
+    prompt: >-
+      A team standardizes commit messages on Conventional Commits to drive automated
+      semantic-version bumps. A developer writes "feat: refactor logging and remove the deprecated
+      v1 endpoint" for a change that breaks API consumers. Which critique is most important for
+      their tooling goal?
+    choices:
+      - id: a
+        text: >-
+          A breaking change must be signaled with a ! (e.g. feat!:) or a BREAKING CHANGE: footer;
+          otherwise the tooling will bump a minor version and consumers get a breaking change
+          without a major bump.
+      - id: b
+        text: >-
+          The type must be fix, not feat, because removing an endpoint is a bug fix and only fix
+          drives version bumps.
+      - id: c
+        text: >-
+          Conventional Commits forbids mentioning two changes, so the message is invalid regardless
+          of the breaking change.
+      - id: d
+        text: The subject is too long, and length alone is what determines the semantic-version bump.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Under Conventional Commits, a breaking change is signaled by a ! after the type/scope or a
+      BREAKING CHANGE: footer, which is what drives a major version bump. Without it, feat: triggers
+      only a minor bump and consumers receive a breaking change unannounced. The type need not be
+      fix (b), multiple-change mentions are not forbidden by the spec (c), and subject length does
+      not drive version bumps (d) — though the message also conflates concerns, which is a separate
+      hygiene issue.
+  - id: gavc-500-ff-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 533
+    type: free_form
+    prompt: >-
+      A reviewer sees a contributor commit directly while in a detached HEAD state (they had checked
+      out a tag to test something) and warns "you should never commit in detached HEAD, it corrupts
+      the repo." Evaluate the accuracy of that warning, including the real risk and how to preserve
+      the work.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Corrects the claim: detached HEAD is a valid, non-corrupting state; committing there
+            does not damage the repo.
+        - id: c2
+          text: >-
+            States the real risk: the new commits are not on any branch, so once HEAD moves they
+            become unreachable and can be lost / GC'd.
+        - id: c3
+          text: >-
+            Gives the fix: create a branch at the current commit (git switch -c / git branch) before
+            moving away, or recover via reflog if already moved.
+      referenceAnswer: >-
+        The warning overstates it: detached HEAD is a legitimate state (you get it by checking out a
+        tag or old commit) and committing there does not corrupt anything. The genuine risk is that
+        those commits are not attached to any branch, so once you check out something else, they
+        become unreachable and are eventually garbage-collected — effectively lost. The fix is to
+        create a branch at the current commit before moving (git switch -c <name> or git branch
+        <name>), or, if you already moved away, recover the SHA from the reflog and branch from it.
+      passThreshold: 0.6
+    guidance: >-
+      Detached HEAD is normal and safe — it is how you inspect tags or old commits. It does not
+      corrupt the repo. The only real hazard is orphaning commits made there; anchoring them with a
+      branch (before leaving) or recovering via reflog preserves the work.

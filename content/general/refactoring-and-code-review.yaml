@@ -1,0 +1,3091 @@
+# Topic: refactoring-and-code-review (general)
+# Improving code safely — recognising code smells, refactoring under test coverage, small reviewable diffs, naming, idiomatic style, reuse vs duplication, constructive review.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: refactoring-and-code-review
+class:
+  kind: general
+title: Refactoring & Code Review
+summary: >-
+  Improving code safely — recognising code smells, refactoring under test coverage, small reviewable
+  diffs, naming, idiomatic style, reuse vs duplication, constructive review.
+triggerSignals: []
+items:
+  - id: racr-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: According to Martin Fowler, what is the defining constraint of refactoring?
+    choices:
+      - id: a
+        text: It improves runtime performance by optimizing hot code paths.
+      - id: b
+        text: It adds new features while cleaning up surrounding code.
+      - id: c
+        text: It changes the internal structure of software without changing its observable behavior.
+      - id: d
+        text: It rewrites a module from scratch using a cleaner design.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Fowler defines refactoring as a change to internal structure that makes code easier to
+      understand and cheaper to modify without changing observable behavior. Behavior preservation
+      is the point: adding features, optimizing, or rewriting are different activities.
+  - id: racr-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: >-
+      Kent Beck's "Two Hats" metaphor says that while developing you should wear which two hats, but
+      never both at the same time?
+    choices:
+      - id: a
+        text: The "adding function" hat and the "refactoring" hat.
+      - id: b
+        text: The "writing tests" hat and the "writing docs" hat.
+      - id: c
+        text: The "author" hat and the "reviewer" hat.
+      - id: d
+        text: The "design" hat and the "debugging" hat.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Two Hats metaphor separates adding functionality from refactoring. You switch hats
+      deliberately and often, but you never add a feature and refactor in the same step, which keeps
+      changes small and easy to review.
+  - id: racr-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: >-
+      The "Rule of Three" for refactoring duplication states that you should refactor when
+      duplication appears for which occurrence?
+    choices:
+      - id: a
+        text: The first time.
+      - id: b
+        text: The second time.
+      - id: c
+        text: The third time.
+      - id: d
+        text: The fifth time.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The Rule of Three (Don Roberts, cited by Fowler): do it once, wince at the duplication the
+      second time but proceed, and refactor on the third occurrence. The second time is when you
+      notice duplication, not necessarily when you act on it.
+  - id: racr-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: Define the DRY principle as stated by Hunt and Thomas in The Pragmatic Programmer.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that every piece of knowledge must have a single, unambiguous, authoritative
+            representation.
+        - id: c2
+          text: Indicates DRY is about knowledge or intent, not merely identical-looking text.
+      referenceAnswer: >-
+        DRY (Don't Repeat Yourself) states that every piece of knowledge must have a single,
+        unambiguous, authoritative representation within a system. It targets duplicated knowledge
+        or intent, not coincidental textual similarity.
+      passThreshold: 0.6
+    guidance: >-
+      DRY is precisely about knowledge duplication. Two fragments that merely look alike but change
+      for different reasons are accidental duplication, and merging them creates harmful coupling
+      rather than satisfying DRY.
+  - id: racr-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: >-
+      Which refactoring technique does Fowler describe as the most common one, typically triggered
+      by a code fragment that needs a comment to explain it?
+    choices:
+      - id: a
+        text: Replace Conditional with Polymorphism.
+      - id: b
+        text: Extract Function (Extract Method).
+      - id: c
+        text: Introduce Parameter Object.
+      - id: d
+        text: Inline Variable.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Extract Function is the most common refactoring. When a fragment needs a comment to explain
+      what it does, that is a signal to extract it into a function named after the "what" (its
+      intent), turning the comment into a name.
+  - id: racr-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: >-
+      In Fowler's code smell taxonomy, which smell describes a method that is more interested in
+      another class's data than its own?
+    choices:
+      - id: a
+        text: Shotgun Surgery.
+      - id: b
+        text: Refused Bequest.
+      - id: c
+        text: Primitive Obsession.
+      - id: d
+        text: Feature Envy.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Feature Envy is a method that reaches into another class's data more than its own. The
+      standard cure is Move Function, relocating the method to the class whose data it actually
+      uses.
+  - id: racr-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: free_form
+    prompt: How does Michael Feathers define "legacy code" in Working Effectively with Legacy Code?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that legacy code is code without tests.
+        - id: c2
+          text: Notes the definition is independent of the code's age or quality.
+      referenceAnswer: >-
+        Feathers defines legacy code as code without tests, regardless of its age or how well it is
+        written. The absence of tests is what makes changing the code dangerous.
+      passThreshold: 0.6
+    guidance: >-
+      Feathers' deliberately provocative definition focuses on the safety net: without tests you
+      cannot verify that a change preserves behavior, so even brand-new untested code qualifies as
+      legacy.
+  - id: racr-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: >-
+      What is the term for tests written to capture and pin the current actual behavior of legacy
+      code (even if that behavior is "wrong") so it can be refactored safely?
+    choices:
+      - id: a
+        text: Smoke tests.
+      - id: b
+        text: Characterization tests.
+      - id: c
+        text: Contract tests.
+      - id: d
+        text: Mutation tests.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Characterization tests (Feathers) record the system's current observable behavior to create a
+      safety net before refactoring. They pin "what the code does now" rather than asserting what it
+      should do.
+  - id: racr-100-ff-i
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: free_form
+    prompt: >-
+      In code review, what does prefixing a comment with "Nit:" conventionally signal to the author,
+      and why do reviewers use the label?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that "Nit:" marks a minor, optional, non-blocking suggestion.
+        - id: c2
+          text: Notes that labeling severity lets the author know the point is not required to merge.
+      referenceAnswer: >-
+        Prefixing a comment with "Nit:" (nitpick) signals that the point is a minor, optional,
+        non-blocking suggestion the author is not required to act on. Reviewers label severity this
+        way so the author can distinguish must-fix issues from preferences and the review does not
+        stall on trivia.
+      passThreshold: 0.6
+    guidance: >-
+      "Nit" (nitpick) marks a minor, optional, non-blocking suggestion so the author knows they are
+      not required to act on it. Labeling severity this way keeps reviews from stalling on trivia.
+  - id: racr-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: In code review shorthand, what does "LGTM" mean?
+    choices:
+      - id: a
+        text: Let's Get This Merged immediately.
+      - id: b
+        text: Likely Going To Miss (a deadline).
+      - id: c
+        text: Logged, Going To Monitor.
+      - id: d
+        text: Looks Good To Me (approval).
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      "LGTM" stands for "Looks Good To Me" and signals the reviewer's approval of the change. It is
+      one of the most common shorthand approvals in modern code review tooling.
+  - id: racr-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: >-
+      According to Google's code review guide, what standard should a reviewer apply when deciding
+      whether to approve a change list (CL)?
+    choices:
+      - id: a
+        text: Approve only when the CL is exactly how the reviewer would have written it.
+      - id: b
+        text: Approve only when the CL is completely free of any stylistic issues.
+      - id: c
+        text: >-
+          Approve once the CL definitely improves the overall code health of the system, even if it
+          isn't perfect.
+      - id: d
+        text: Approve only after the author has addressed every comment, blocking or not.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Google's standard is "improves overall code health," not perfection. Reviewers should not
+      block on achieving an ideal state or on personal style preferences; the goal is steady
+      improvement, not "do it my way."
+  - id: racr-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: >-
+      What is the recommended size for change lists (CLs/PRs) according to Google's code review
+      practice?
+    choices:
+      - id: a
+        text: Small, self-contained changes.
+      - id: b
+        text: As large as possible to minimize review overhead.
+      - id: c
+        text: Exactly 1000 lines to standardize review effort.
+      - id: d
+        text: One CL per sprint regardless of content.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Small CLs are reviewed faster and more thoroughly, are less bug-prone, and are easier to merge
+      or roll back. "Small" means one self-contained change, not a hard line count, though very
+      large diffs measurably degrade review quality.
+  - id: racr-100-ff-m
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: >-
+      Name the "Boy Scout rule" (campsite rule) as it applies to refactoring and state who
+      popularized it.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the rule as always leave the code cleaner than you found it.
+        - id: c2
+          text: Attributes it to Robert C. Martin (Uncle Bob) / Clean Code.
+      referenceAnswer: >-
+        The Boy Scout rule is "always leave the code cleaner than you found it," popularized by
+        Robert C. Martin (Uncle Bob). It describes opportunistic, continuous cleanup woven into
+        everyday work.
+      passThreshold: 0.6
+    guidance: >-
+      The campsite or Boy Scout rule frames refactoring as opportunistic litter-pickup done as you
+      touch code, rather than deferred to a separate "refactoring sprint." Robert C. Martin
+      popularized it in Clean Code.
+  - id: racr-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: >-
+      Which code smell describes a single change that forces you to make many small edits scattered
+      across several different classes or modules?
+    choices:
+      - id: a
+        text: Divergent Change.
+      - id: b
+        text: Shotgun Surgery.
+      - id: c
+        text: Long Method.
+      - id: d
+        text: Lazy Class.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Shotgun Surgery means one conceptual change requires edits in many places. Its opposite,
+      Divergent Change, is when one module is changed for many different reasons. The cure for
+      Shotgun Surgery is to gather the scattered logic together.
+  - id: racr-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: Who coined the phrase "premature optimization is the root of all evil"?
+    choices:
+      - id: a
+        text: Martin Fowler.
+      - id: b
+        text: Kent Beck.
+      - id: c
+        text: Donald Knuth.
+      - id: d
+        text: Edsger Dijkstra.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Donald Knuth wrote that premature optimization is the root of all evil. The fuller passage
+      notes you should still optimize the critical small fraction of code, but only after measuring;
+      clarity first, then profile and optimize the proven hot spots.
+  - id: racr-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: What does the abbreviation YAGNI stand for?
+    choices:
+      - id: a
+        text: Yet Another Generic Naming Issue.
+      - id: b
+        text: You Aren't Gonna Need It.
+      - id: c
+        text: You Always Get New Imports.
+      - id: d
+        text: Yield And Get Next Iteration.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      YAGNI ("You Aren't Gonna Need It") argues against building for hypothetical future needs. It
+      is the counter to the Speculative Generality smell: add abstractions for today's known
+      requirements, not for imagined ones.
+  - id: racr-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: >-
+      Which named code smell refers to creating abstractions, hooks, or parameters to support
+      hypothetical future requirements that do not yet exist?
+    choices:
+      - id: a
+        text: Data Clumps.
+      - id: b
+        text: Message Chains.
+      - id: c
+        text: Temporary Field.
+      - id: d
+        text: Speculative Generality.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Speculative Generality is a Dispensable smell: unused flexibility added "just in case" becomes
+      dead weight. YAGNI is the principle that warns against it; build for known requirements
+      instead.
+  - id: racr-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      What does McCabe's cyclomatic complexity metric measure, and why is it used as a refactoring
+      signal?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that it measures the number of linearly independent paths through the code
+            (roughly decision points plus one).
+        - id: c2
+          text: Notes it serves as a quantitative proxy for code that is hard to test or understand.
+      referenceAnswer: >-
+        Cyclomatic complexity measures the number of linearly independent paths through a piece of
+        code, roughly the number of decision points (branches) plus one. It is used as a refactoring
+        signal because a high count is a quantitative proxy for code that is hard to test and
+        understand, motivating extraction and simplification.
+      passThreshold: 0.6
+    guidance: >-
+      Cyclomatic complexity counts the linearly independent paths through code (roughly the number
+      of decision points plus one). It is a common quantitative proxy for "hard to test or
+      understand," motivating extraction and simplification.
+  - id: racr-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: >-
+      What is a "guard clause" (as in Replace Nested Conditional with Guard Clauses), and what
+      problem does it address?
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes handling edge or special cases up front and returning early.
+        - id: c2
+          text: States that it reduces nesting depth / flattens nested conditionals.
+      referenceAnswer: >-
+        A guard clause handles an edge or special case at the top of a function and returns early,
+        rather than wrapping the main logic in nested if/else blocks. It flattens deep nesting and
+        reduces cognitive load.
+      passThreshold: 0.6
+    guidance: >-
+      Guard clauses (early returns) deal with exceptional or boundary conditions immediately,
+      leaving the "happy path" un-nested. This lowers nesting depth and makes the primary logic
+      easier to read.
+  - id: racr-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: >-
+      According to Robert C. Martin in Clean Code, how should the length of a name relate to its
+      scope?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that name length should correspond to (scale with) the size of the scope.
+        - id: c2
+          text: >-
+            Gives the direction correctly, short names for small scopes and longer descriptive names
+            for larger scopes.
+      referenceAnswer: >-
+        The length of a name should correspond to the size of its scope: short names (like a loop
+        counter i) are fine in small, local scopes, while larger scopes (such as a public API) call
+        for longer, more descriptive, intention-revealing names.
+      passThreshold: 0.6
+    guidance: >-
+      Martin ties name length to scope: brief names suit tight local scopes, while broad scopes
+      demand descriptive, intention-revealing names. Names should also avoid disinformation and
+      reveal intent.
+  - id: racr-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: >-
+      Fowler defines refactoring as changing the internal structure of software to make it easier to
+      understand and cheaper to modify without changing its observable behavior. Why is "without
+      changing observable behavior" the defining constraint rather than just a nice-to-have?
+    choices:
+      - id: a
+        text: >-
+          It is what separates refactoring from other changes: because behavior is held constant, a
+          passing test suite can confirm the restructuring introduced no functional change
+      - id: b
+        text: >-
+          It guarantees the new structure will run faster than the old one, which is the real point
+          of refactoring
+      - id: c
+        text: >-
+          It means refactoring can only ever be applied to code that has no bugs, since bugs are a
+          kind of behavior
+      - id: d
+        text: >-
+          It allows you to skip writing tests, because behavior is preserved by definition no matter
+          what edits you make
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Behavior preservation is what makes refactoring verifiable and low-risk: you can restructure
+      aggressively and lean on tests to prove nothing functional changed. It is not a performance
+      promise, and it does not let you skip tests -- the tests are precisely what confirm behavior
+      was held constant.
+  - id: racr-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 223
+    type: multiple_choice
+    prompt: >-
+      Kent Beck's "Two Hats" metaphor says that while developing you wear either the "adding
+      function" hat or the "refactoring" hat. What is the practical reason for never wearing both at
+      the same time within a single step?
+    choices:
+      - id: a
+        text: >-
+          Doing both at once is forbidden by version control systems, which reject commits that
+          touch behavior and structure together
+      - id: b
+        text: >-
+          Mixing behavior changes with restructuring in one step makes it hard to tell which edit
+          caused a test failure and muddies review and bisection
+      - id: c
+        text: >-
+          Refactoring and adding features use entirely different programming languages, so they
+          cannot be combined in one file
+      - id: d
+        text: Wearing both hats permanently doubles the compile time of the project
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The point of separating the hats is diagnostic clarity. If a step both restructures and
+      changes behavior, a failing test could be caused by either, and reviewers cannot cleanly
+      reason about what actually changed. You switch hats often, but you keep each step pure.
+  - id: racr-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: free_form
+    prompt: >-
+      A teammate says "I see this code duplicated for the second time, so by the Rule of Three I
+      must extract it now." Explain what the Rule of Three actually prescribes and why acting on the
+      second occurrence can be premature.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the Rule of Three says to refactor on the third occurrence, not the second
+        - id: c2
+          text: >-
+            Notes the second time is when you notice/wince at the duplication, not necessarily when
+            you act
+        - id: c3
+          text: >-
+            Explains that two occurrences may not yet reveal the true shared abstraction, so
+            extracting early risks the wrong abstraction
+      referenceAnswer: >-
+        The Rule of Three says the first time you just do it, the second time you notice the
+        duplication and wince but still tolerate it, and on the third occurrence you refactor. The
+        second occurrence is the signal to pay attention, not the trigger to extract. With only two
+        instances you often cannot yet tell whether they share genuine knowledge or just look alike,
+        so extracting now risks creating an abstraction that the third case will not fit, forcing
+        parameters and conditionals later.
+      passThreshold: 0.6
+    guidance: >-
+      The Rule of Three deliberately waits for the third instance so the real pattern is visible
+      before you commit to an abstraction. Acting on the second occurrence can lock in a shape that
+      the next case breaks, which is more expensive to undo than the duplication would have been.
+  - id: racr-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 229
+    type: multiple_choice
+    prompt: >-
+      DRY (Don't Repeat Yourself) is often misquoted as "no two pieces of code should ever look
+      alike." How does the original definition actually frame duplication?
+    choices:
+      - id: a
+        text: >-
+          DRY forbids any textual similarity, so identical-looking lines must always be merged
+          regardless of why they exist
+      - id: b
+        text: DRY applies only to comments and documentation, never to executable code
+      - id: c
+        text: >-
+          DRY targets duplicated knowledge: every piece of knowledge should have a single
+          authoritative representation, so two snippets that merely look alike but encode different
+          decisions are not DRY violations
+      - id: d
+        text: DRY means each function may be called from only one place in the codebase
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      DRY is about knowledge having one authoritative source, not about textual coincidence. Two
+      fragments that look identical today but change for different reasons are accidental
+      duplication; merging them couples unrelated decisions and creates the wrong abstraction.
+  - id: racr-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      Divergent Change and Shotgun Surgery are described as opposite code smells. How do they
+      differ, and how does that difference shape the cure?
+    choices:
+      - id: a
+        text: >-
+          Divergent Change is one module edited for many unrelated reasons (cure: split it); Shotgun
+          Surgery is one logical change forcing edits across many modules (cure: gather the
+          scattered logic together)
+      - id: b
+        text: >-
+          They are two names for the same smell, so both are cured by adding more comments to
+          explain the change
+      - id: c
+        text: >-
+          Divergent Change means tests diverge from code; Shotgun Surgery means a merge conflict,
+          and both are cured by rebasing
+      - id: d
+        text: >-
+          Divergent Change is caused by too few classes; Shotgun Surgery is caused by too much test
+          coverage
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The two smells are mirror images. Divergent Change concentrates too many responsibilities in
+      one module, so you split it; Shotgun Surgery scatters one responsibility across many modules,
+      so you pull the related logic back together (e.g. Move Function/Field). Recognizing which one
+      you have points directly at the opposite cure.
+  - id: racr-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: free_form
+    prompt: >-
+      Explain why proceeding in small steps and running the tests after each step is the discipline
+      that makes refactoring safe rather than risky rewriting.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains that small steps localize the cause of any failure to the last change
+        - id: c2
+          text: >-
+            Identifies a fast, self-checking test suite as the safety net that verifies behavior is
+            preserved
+        - id: c3
+          text: >-
+            Contrasts this with large unverified changes where breakage is hard to attribute and
+            behavior drift goes undetected
+      referenceAnswer: >-
+        If you change one small thing and run the tests, a red test points directly at that last
+        edit, so you can fix or revert it immediately. The test suite is the safety net: because it
+        is fast and self-checking, it confirms after each step that observable behavior is
+        unchanged. Take big unverified leaps instead and a failure could be anywhere in the batch,
+        and subtle behavior drift can slip through unnoticed -- which is what turns refactoring into
+        risky rewriting.
+      passThreshold: 0.6
+    guidance: >-
+      Small steps plus frequent tests give you tight error localization and continuous proof of
+      behavior preservation. The safety net is why refactoring is a controlled, reversible
+      discipline instead of a hopeful rewrite.
+  - id: racr-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: >-
+      A method spends most of its body reaching into another object's fields and methods to do its
+      work. Why does Fowler call this "Feature Envy," and why is Move Function the usual cure?
+    choices:
+      - id: a
+        text: >-
+          The method envies a faster algorithm, so it should be rewritten in a lower-level language
+          for speed
+      - id: b
+        text: >-
+          The method is more interested in another class's data than its own, so moving it to the
+          class whose data it uses puts behavior next to the data it operates on and reduces
+          coupling
+      - id: c
+        text: >-
+          The method has too many comments, so the cure is to delete the comments and rename the
+          variables
+      - id: d
+        text: The class has too many tests, so the cure is to move some tests into the other class
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Feature Envy describes a method drawn to another class's data more than its own. Co-locating
+      behavior with the data it uses (Move Function) honors encapsulation and cuts the chatty
+      cross-object coupling that the envy revealed.
+  - id: racr-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 241
+    type: multiple_choice
+    prompt: >-
+      Fowler says a strong trigger for Extract Function is "a fragment of code that needs a comment
+      to explain what it does." Why does extracting and naming it often beat leaving the comment in
+      place?
+    choices:
+      - id: a
+        text: >-
+          A well-chosen function name expresses the intent (the "what") at the call site so readers
+          need not re-derive it, turning a redundant explanatory comment into self-documenting code
+      - id: b
+        text: >-
+          Comments are illegal in most programming languages, so the code would not compile
+          otherwise
+      - id: c
+        text: >-
+          Extracting a function always makes the program run measurably faster than an inline block
+          with a comment
+      - id: d
+        text: A function name can be longer than a comment, and longer text is always clearer
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      When a fragment needs a comment to explain it, that comment is usually naming intent that an
+      extracted function could carry directly. The name lives at the call site, cannot drift out of
+      sync the way a stale comment can, and names the "what" rather than narrating the "how."
+  - id: racr-200-ff-i
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Fowler advises refactoring for clarity first and optimizing later. Explain the reasoning
+      behind "refactor first, then profile and optimize," and why well-factored code can actually
+      make optimization easier.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that most refactorings have negligible performance impact and that clarity should
+            come before micro-optimizing
+        - id: c2
+          text: >-
+            Explains that you profile/measure to find actual hot spots rather than guessing where
+            time is spent
+        - id: c3
+          text: >-
+            Notes that well-factored code localizes hot spots, making targeted optimization easier
+            and safer
+      referenceAnswer: >-
+        Most refactorings barely affect performance, and scattering hand optimizations everywhere
+        mainly makes code harder to read. So you first refactor for clarity, then profile the
+        running program to find where time is genuinely spent, because intuition about hot spots is
+        usually wrong. Well-factored code helps here: behavior is concentrated in small, well-named
+        units, so the real hot spots are localized and you can optimize just those few places with
+        confidence that you have not disturbed the rest.
+      passThreshold: 0.6
+    guidance: >-
+      Premature optimization spreads complexity for guessed-at gains. Refactor for clarity, measure
+      with a profiler to find the true bottlenecks, then optimize only those -- and clean structure
+      makes that targeted work tractable.
+  - id: racr-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 247
+    type: multiple_choice
+    prompt: >-
+      A developer adds extra configuration hooks and an abstract base class "in case we need it
+      later," though nothing uses them yet. Why do YAGNI and the Speculative Generality smell argue
+      against this?
+    choices:
+      - id: a
+        text: >-
+          Adding abstractions early is always cheaper than adding them later, so the only downside
+          is mild over-engineering
+      - id: b
+        text: >-
+          More abstraction is by definition better engineering, so the only risk is forgetting to
+          document it
+      - id: c
+        text: Speculative Generality only applies to test code, not to production classes
+      - id: d
+        text: >-
+          Unused flexibility is dead weight that adds complexity and maintenance cost now for a
+          hypothetical future that may never arrive; build for today's known requirements instead
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Speculative Generality is a named smell because unused hooks and abstractions are pure
+      carrying cost: more code to read, test, and maintain for needs that may never materialize.
+      YAGNI says build for what you actually need today; the abstraction is cheaper to add when a
+      real second case appears.
+  - id: racr-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      Google's code-review guide says a reviewer should approve a change once it "definitely
+      improves the overall code health of the system, even if it isn't perfect." How should a
+      reviewer interpret this standard?
+    choices:
+      - id: a
+        text: >-
+          Withhold approval until the code exactly matches how the reviewer would have written it,
+          since consistency with the reviewer's taste is the bar
+      - id: b
+        text: >-
+          Approve when the change leaves the codebase healthier than before; raise genuine
+          maintainability or correctness issues, but mark pure style preferences as optional rather
+          than blocking on perfection
+      - id: c
+        text: Approve every change automatically, because reviewers should never block anything
+      - id: d
+        text: Reject any change that is not measurably faster than the code it replaces
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The standard is "improves code health," not "is ideal." Reviewers should block on things that
+      genuinely harm correctness or maintainability and flag personal-style points as non-blocking
+      nits. Insisting on "do it my way" or chasing perfection slows the team without improving
+      outcomes.
+  - id: racr-200-ff-l
+    tier: 200
+    bloom: understand
+    difficulty: 253
+    type: free_form
+    prompt: >-
+      Explain why small, self-contained pull requests tend to produce better code review than large
+      ones. Give at least two distinct mechanisms.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes reviewer attention/defect detection degrades as the change grows large (large
+            diffs get skimmed)
+        - id: c2
+          text: >-
+            Gives a second mechanism such as faster review turnaround, easier rollback/merge, or
+            clearer focused discussion
+        - id: c3
+          text: Frames "small" as one self-contained change rather than a strict line count
+      referenceAnswer: >-
+        Reviewers have limited attention, and studies show defect detection drops sharply once a
+        change passes a few hundred lines -- large diffs get skimmed and rubber-stamped. Smaller
+        changes are also reviewed faster, are easier to merge and roll back, and produce focused
+        discussion because there is one coherent thing to reason about. "Small" really means one
+        self-contained change that does a single thing, not a hard line-count limit, though the
+        practical sweet spot is well under a few hundred lines.
+      passThreshold: 0.6
+    guidance: >-
+      Small CLs win on multiple axes: reviewers actually read them so defect detection stays high,
+      turnaround is faster, and rollback is cleaner. The key framing is self-containment -- one
+      logical change -- rather than a rigid line count.
+  - id: racr-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      On a review, one comment is prefixed "Nit:" and the overall verdict is "LGTM." What do these
+      conventions communicate to the author?
+    choices:
+      - id: a
+        text: >-
+          "Nit:" means the change is rejected outright, and "LGTM" means it needs a second reviewer
+          before merging
+      - id: b
+        text: >-
+          Both are blocking: the author must resolve the nit and re-request review before LGTM takes
+          effect
+      - id: c
+        text: >-
+          "Nit:" marks a minor, optional suggestion the author is not obligated to act on, while
+          "LGTM" signals the reviewer's approval of the change
+      - id: d
+        text: >-
+          "Nit:" indicates a security vulnerability, and "LGTM" waives all further testing
+          requirements
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Labeling the severity of comments keeps reviews efficient. A "Nit:" prefix tells the author a
+      point is optional, so they can apply judgment instead of treating every remark as a blocker;
+      "LGTM" (Looks Good To Me) communicates approval.
+  - id: racr-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 259
+    type: multiple_choice
+    prompt: >-
+      Michael Feathers defines legacy code as "code without tests," independent of its age or
+      quality. Why frame the definition around the absence of tests rather than how old or messy the
+      code is?
+    choices:
+      - id: a
+        text: >-
+          Because code written before a certain calendar year is always poorly designed and
+          untestable
+      - id: b
+        text: Because tests are the only artifact that makes code compile, so untested code cannot run
+      - id: c
+        text: Because well-tested code can never contain bugs, so only untested code ever needs changing
+      - id: d
+        text: >-
+          Without tests you have no safety net to confirm a change preserved behavior, which is what
+          makes the code dangerous to modify regardless of when it was written
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Feathers ties "legacy" to risk, not nostalgia. It is the missing safety net, not the calendar
+      date or surface ugliness, that makes change perilous: with no tests you cannot tell whether an
+      edit changed behavior. Clean, recent code without tests is still legacy by this definition.
+  - id: racr-200-ff-o
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: free_form
+    prompt: >-
+      Explain the purpose of characterization tests when working with untested legacy code, and why
+      they capture the current behavior even if that behavior looks wrong.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that characterization tests pin/document the system's current actual behavior
+        - id: c2
+          text: >-
+            Explains they create a safety net so you can refactor without unintentionally changing
+            behavior
+        - id: c3
+          text: >-
+            Explains that capturing even "wrong" behavior is intentional, because you must hold
+            behavior constant while restructuring before you deliberately change it
+      referenceAnswer: >-
+        Characterization tests are written to capture what the legacy code actually does right now,
+        not what it ideally should do. Their job is to give you a safety net so that when you
+        restructure the code you can confirm you did not accidentally alter behavior. You pin the
+        current behavior even when it looks wrong, because refactoring must hold behavior constant;
+        once the code is under test and safely restructured, you can change the behavior on purpose
+        as a separate, verified step.
+      passThreshold: 0.6
+    guidance: >-
+      Characterization tests document reality so you can refactor untested code under a net. Pinning
+      even buggy behavior is deliberate: refactoring preserves behavior, so you lock in the current
+      contract first and only then change it intentionally, in a separate step.
+  - id: racr-200-mc-p
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: >-
+      Replacing deeply nested conditionals with guard clauses (early returns) handles edge cases up
+      front and returns immediately. Why does this typically reduce cognitive load for a reader?
+    choices:
+      - id: a
+        text: >-
+          It removes all conditionals from the program, so there are no branches left to reason
+          about at all
+      - id: b
+        text: >-
+          It flattens nesting so the main path is no longer buried inside several levels of
+          conditionals; the reader disposes of exceptional cases early and follows one clear primary
+          flow
+      - id: c
+        text: >-
+          It guarantees the function will execute faster because early returns skip the CPU's branch
+          predictor
+      - id: d
+        text: >-
+          It converts the function into a single expression, which is always easier to read than any
+          statement form
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Guard clauses cut nesting depth: edge cases are dispatched at the top and the happy path runs
+      at the outermost level, so the reader is not tracking several open conditionals at once. It is
+      a clarity move (less nesting, lower cognitive load), not a performance trick, and the branches
+      still exist.
+  - id: racr-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      A reviewer praises a change for being "idiomatic." What does idiomatic code actually mean, and
+      why is a clever, surprising one-liner usually NOT the idiomatic choice?
+    choices:
+      - id: a
+        text: >-
+          Idiomatic means using the fewest characters possible, so the terse one-liner is by
+          definition the most idiomatic form
+      - id: b
+        text: >-
+          Idiomatic means using the newest language features regardless of whether the team
+          understands them
+      - id: c
+        text: >-
+          Idiomatic means following established language and team conventions so the code behaves
+          the way maintainers expect (principle of least surprise); a clever, surprising one-liner
+          increases the reader's effort and error risk
+      - id: d
+        text: >-
+          Idiomatic means matching the personal style of whoever is reviewing, since their taste
+          defines the idiom
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Idiomatic code follows the shared conventions of the language and team so it reads the way
+      maintainers expect -- the principle of least surprise. Clever one-liners optimize for the
+      author's satisfaction over the reader's comprehension and are usually a liability, not a sign
+      of idiomatic style.
+  - id: racr-200-ff-r
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: free_form
+    prompt: >-
+      Many developers assume the main job of code review is catching bugs. Drawing on empirical
+      studies of modern code review, explain what other outcomes are equally or more important, and
+      why bug-finding turns out to be harder than reviewers expect.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies knowledge transfer / shared understanding / team awareness as a major outcome
+            of code review
+        - id: c2
+          text: >-
+            Mentions another non-defect benefit such as design feedback or maintaining code-health
+            and convention norms
+        - id: c3
+          text: >-
+            Explains that reviewers find fewer functional defects than expected, so framing review
+            purely as a bug gate undervalues it
+      referenceAnswer: >-
+        Studies of modern code review (e.g. the Microsoft work on expectations vs. outcomes) find
+        that knowledge transfer and team awareness are among the biggest payoffs: reviewing spreads
+        understanding of the codebase and shares context across the team. Review also provides
+        design feedback and upholds code-health and convention norms. Meanwhile, reviewers actually
+        find fewer functional defects than they anticipate, partly because deep bugs are hard to
+        spot by reading. So treating review purely as a bug gate undervalues it; its durable value
+        is shared understanding and design quality.
+      passThreshold: 0.6
+    guidance: >-
+      Empirically, code review's largest payoffs are knowledge sharing, team awareness, and
+      design/convention feedback -- often more than defect-finding, which is harder than reviewers
+      assume. Framing review as a pure bug gate sets the wrong expectations and undersells its real
+      benefits.
+  - id: racr-200-mc-s
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: >-
+      Sandi Metz argues "duplication is far cheaper than the wrong abstraction," and Kent C. Dodds
+      promotes AHA ("Avoid Hasty Abstractions"). How do these ideas qualify a naive reading of DRY?
+    choices:
+      - id: a
+        text: >-
+          They reject DRY entirely and recommend copy-pasting code as the permanent default in all
+          situations
+      - id: b
+        text: >-
+          They warn that deduplicating too early can lock in an abstraction that diverging callers
+          then bend with flags and conditionals; tolerating duplication until the true shared
+          pattern is clear avoids that costly mistake
+      - id: c
+        text: >-
+          They argue abstractions should always be created on the first occurrence to maximize reuse
+          from the start
+      - id: d
+        text: They claim duplication never has any cost, so deduplication is always a waste of time
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      AHA and "the wrong abstraction" temper a naive DRY reflex. A premature abstraction over
+      callers that later diverge accumulates parameters and conditionals and is expensive to unwind.
+      The heuristic: when unsure, prefer duplication -- it is cheaper to merge later than to
+      un-merge a wrong abstraction. This refines DRY, it does not abolish it.
+  - id: racr-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      Robert C. Martin advises that the length of a name should correspond to the size of its scope.
+      Explain the reasoning, and why a single-letter loop counter can be fine while a one-letter
+      name for a widely-used public value would not be.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the principle: short names for small scopes, longer descriptive names for large
+            scopes
+        - id: c2
+          text: >-
+            Explains that in a tiny scope the reader sees the declaration and use together, so
+            context supplies the meaning
+        - id: c3
+          text: >-
+            Explains that across a large scope the name must carry meaning on its own because the
+            declaration is far from the use sites
+      referenceAnswer: >-
+        The guidance is that a name should be as long as its scope is wide: short names for short
+        scopes, longer descriptive names for large ones. In a tiny loop, the declaration and every
+        use of a counter sit within a few lines, so the surrounding context already makes its role
+        obvious and a single letter like i reads fine. A value used across a large scope -- a public
+        API field, say -- is referenced far from where it is declared, so the name must carry its
+        full meaning on its own; a one-letter name forces every reader to hunt for the declaration
+        and invites misunderstanding.
+      passThreshold: 0.6
+    guidance: >-
+      Name length should scale with scope because context shrinks as scope grows. In a tight scope
+      the reader sees declaration and use together, so brevity is fine; across a wide scope the name
+      is all the context the reader gets, so it must be descriptive and intention-revealing.
+  - id: racr-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You are restructuring a payment module to make an upcoming feature easier to add. Midway
+      through, you notice the module computes tax incorrectly for one region. According to the
+      discipline of refactoring, what should you do?
+    choices:
+      - id: a
+        text: >-
+          Fix the tax bug inside the same commit since you are already in this code, then keep
+          restructuring.
+      - id: b
+        text: >-
+          Stop, switch hats: finish or stash the behavior-preserving restructuring, then fix the tax
+          bug as a separate, explicit change with its own test.
+      - id: c
+        text: >-
+          Abandon the refactor entirely because the presence of a bug means the code is not safe to
+          touch.
+      - id: d
+        text: >-
+          Adjust the tax logic quietly as part of "cleanup" without a separate test, since
+          refactoring already keeps things correct.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Refactoring preserves observable behavior; fixing the tax bug is a behavior change. Beck's Two
+      Hats rule says you wear the refactoring hat or the feature/fix hat, never both at once, so you
+      keep the changes separate. Folding the bug fix into the refactor makes review and bisection
+      much harder.
+  - id: racr-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      A teammate adds a third nearly identical block of code that formats a date for an invoice.
+      They had grumbled at the duplication on the second copy but left it. Applying the Rule of
+      Three, what is the right move now?
+    choices:
+      - id: a
+        text: >-
+          Now is the time to extract the shared logic, because the third occurrence is the trigger
+          to refactor the duplication away.
+      - id: b
+        text: Leave it; three copies is still within tolerance and you only act on the fourth.
+      - id: c
+        text: They should have extracted it on the second copy; doing it now is too late to help.
+      - id: d
+        text: >-
+          Extract a fully generic formatting framework anticipating every future date format the
+          team might ever need.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Rule of Three (Don Roberts, via Fowler): you do it once, wince but tolerate it the second
+      time, and refactor on the third occurrence. The second copy is when you notice, not
+      necessarily when you act. Building a speculative generic framework would be Speculative
+      Generality.
+  - id: racr-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You inherit a 40-line method with no tests and need to change one branch of its logic. Before
+      refactoring, you want a safety net. What is the most appropriate first step?
+    choices:
+      - id: a
+        text: >-
+          Rewrite the method from scratch using your understanding of what it should do, then add
+          tests for the new version.
+      - id: b
+        text: >-
+          Write characterization tests that pin the method's current observable behavior (even
+          quirks), then refactor with those tests green.
+      - id: c
+        text: >-
+          Add detailed comments describing each line so future readers understand it, then change
+          the branch.
+      - id: d
+        text: >-
+          Refactor in one large step and manually click through the app afterward to confirm nothing
+          broke.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Feathers defines legacy code as code without tests. Characterization tests capture the current
+      actual behavior so you can restructure under a safety net before deliberately changing
+      behavior. Rewriting from your assumptions discards the existing (possibly correct) edge-case
+      handling.
+  - id: racr-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: >-
+      Your team gets a 900-line pull request that mixes a new feature, a large rename across files,
+      and a bug fix. Describe how you would advise the author to restructure this for review, and
+      why it improves the review.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends splitting into smaller, self-contained CLs/PRs (e.g., separate the rename,
+            the bug fix, and the feature).
+        - id: c2
+          text: >-
+            Gives a concrete reason smaller diffs help (faster/more thorough review, fewer escaped
+            defects, easier rollback/bisection).
+        - id: c3
+          text: >-
+            Notes that mixing pure refactoring (the rename) with behavior changes should be avoided
+            or at least clearly flagged.
+      referenceAnswer: >-
+        Ask the author to split the PR into self-contained changes: one pure-refactoring CL for the
+        cross-file rename, one for the bug fix (with a regression test), and one for the feature.
+        Smaller diffs get reviewed faster and more thoroughly, surface more defects, and are easier
+        to roll back or bisect. Keeping the mechanical rename separate from behavior changes lets
+        reviewers reason about each independently; if any inline cleanup remains, flag it explicitly
+        in the description.
+      passThreshold: 0.6
+    guidance: >-
+      Google's small-CL guidance: smaller self-contained changes are reviewed faster, find more
+      defects, and are safer to merge/roll back. Mixing a behavior-preserving rename with a feature
+      and a fix forces reviewers to untangle three concerns at once and breaks clean bisection.
+  - id: racr-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      During review you see a calculateShipping method on Order that reads almost exclusively from
+      the Customer object's address, tier, and region fields, barely touching Order's own data.
+      Which refactoring best addresses this?
+    choices:
+      - id: a
+        text: Introduce Parameter Object to bundle the Customer fields into one argument.
+      - id: b
+        text: Replace Conditional with Polymorphism on the shipping tiers.
+      - id: c
+        text: Move Function to relocate calculateShipping onto Customer, the class whose data it uses.
+      - id: d
+        text: Extract Class to pull a new ShippingCalculator out of Order.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A method more interested in another class's data than its own is Feature Envy. The standard
+      cure is Move Function, putting the method where the data lives. Introduce Parameter Object
+      addresses long parameter lists, not misplaced behavior.
+  - id: racr-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      Adding a new payment provider currently requires editing the validator, the persistence layer,
+      the UI, and the report generator. You realize that every time a provider is added, edits
+      scatter across many modules. Which smell is this, and what is the right direction of fix?
+    choices:
+      - id: a
+        text: Divergent Change; fix by splitting the one module that changes for many reasons.
+      - id: b
+        text: Feature Envy; fix by moving each edited method to a different class.
+      - id: c
+        text: Primitive Obsession; fix by wrapping the provider id in a value object.
+      - id: d
+        text: Shotgun Surgery; fix by gathering the scattered provider logic into one place.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      One change forcing edits across many modules is Shotgun Surgery; the cure is to gather the
+      scattered logic together (e.g., Move Function/Field). Divergent Change is the opposite, one
+      module edited for many different reasons.
+  - id: racr-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      You are reviewing a PR. The code is correct and clearly improves the area, but you would have
+      named two variables differently and structured one loop another way. Describe how you should
+      handle these comments and whether you should approve.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Approves (or signals approval) because the CL improves overall code health, rather than
+            blocking for personal-style perfection.
+        - id: c2
+          text: >-
+            Marks the optional style preferences as non-blocking (e.g., prefix with "Nit:") so the
+            author knows they are not required.
+        - id: c3
+          text: >-
+            Distinguishes genuine maintainability/correctness concerns (worth blocking) from mere
+            preference (not worth blocking).
+      referenceAnswer: >-
+        Approve the change; the standard is that a CL should be merged once it definitely improves
+        overall code health, not once it is perfect or matches how you would have written it. Leave
+        the naming and loop suggestions as explicit nits (e.g., "Nit: consider renaming...") so the
+        author knows they are optional. Reserve blocking for things that genuinely harm correctness
+        or maintainability.
+      passThreshold: 0.6
+    guidance: >-
+      Google's guidance: favor approving once the CL improves code health; do not block on
+      perfection or your personal style. Labeling optional comments as nits keeps the author
+      unblocked and respects their reasonable choices.
+  - id: racr-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      A function has four levels of nested if/else where most branches are early-exit edge cases
+      (null input, empty list, unauthorized user) and only the innermost branch does real work.
+      Which refactoring most directly reduces the nesting?
+    choices:
+      - id: a
+        text: Replace Nested Conditional with Guard Clauses, returning early for each edge case.
+      - id: b
+        text: Replace Conditional with Polymorphism, creating a subclass per branch.
+      - id: c
+        text: Introduce Parameter Object to combine the inputs.
+      - id: d
+        text: Inline Function to merge the helper back into the caller.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Guard clauses handle edge cases up front and return early, flattening deep nesting and
+      reducing cognitive load so the main path reads at the top level. Replace Conditional with
+      Polymorphism fits type-based branching, not a chain of edge-case guards.
+  - id: racr-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      Two report exporters (CSV and PDF) share an identical 15-line block today, but you know they
+      are expected to diverge significantly next quarter as each format gains its own rules. A
+      reviewer insists you extract the block into one shared helper to satisfy DRY. What is the
+      soundest response?
+    choices:
+      - id: a
+        text: >-
+          Extract immediately; any textually identical code must be deduplicated to satisfy DRY no
+          matter what.
+      - id: b
+        text: >-
+          Keep the duplication for now, because the two blocks represent knowledge expected to
+          diverge; a premature shared abstraction would create the wrong abstraction.
+      - id: c
+        text: >-
+          Extract into a shared helper but add a boolean flag parameter to handle the upcoming
+          differences.
+      - id: d
+        text: Delete one exporter so there is only one copy of the code.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      DRY targets duplicated knowledge, not coincidental textual similarity. Since the blocks will
+      diverge, merging them now creates the wrong abstraction; Sandi Metz's heuristic is that
+      duplication is cheaper than the wrong abstraction. The flag-parameter helper (option c) is
+      exactly how a wrong abstraction accretes conditionals.
+  - id: racr-300-ff-j
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      A user reports a feature feels slow. Your teammate immediately starts rewriting several
+      functions to be "faster" by inlining helpers and hand-optimizing loops, with no measurements.
+      Describe the order of operations you would recommend and why.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends profiling/measuring to find the actual hot spot before optimizing.
+        - id: c2
+          text: >-
+            Advises against blanket hand-optimization without data (premature optimization),
+            optimizing only the measured bottleneck.
+        - id: c3
+          text: >-
+            Notes that refactoring for clarity first can make hot spots easier to find/optimize and
+            that most refactorings have negligible performance cost.
+      referenceAnswer: >-
+        Profile the feature first to find where the time actually goes; do not hand-optimize
+        functions blindly. Refactor for clarity, then measure, then optimize only the measured hot
+        spot. Most refactorings have negligible performance impact, and well-factored code localizes
+        hot spots so the real bottleneck is easier to find and fix. Optimizing everything by guess
+        is premature optimization and usually wastes effort on code that is not the bottleneck.
+      passThreshold: 0.6
+    guidance: >-
+      Fowler's stance: refactor for clarity first, then profile to find real hot spots, and optimize
+      only those. Knuth's "premature optimization" warning applies to broad hand-optimization
+      without measurement; clean, localized code is usually easier to optimize once you know where
+      to look.
+  - id: racr-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      A method takes nine positional parameters, several of which are fields of the same Customer
+      object (name, email, address, tier). What is the most appropriate refactoring?
+    choices:
+      - id: a
+        text: Leave it; if all nine parameters are genuinely needed, a long parameter list is fine.
+      - id: b
+        text: Replace Conditional with Polymorphism.
+      - id: c
+        text: >-
+          Introduce Parameter Object / Preserve Whole Object to group related parameters, shortening
+          the list and reducing coupling.
+      - id: d
+        text: Add default values to the parameters so callers can omit most of them.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Long Parameter List is a Bloater smell; the issue is comprehensibility and coupling, not
+      whether the data is "needed." Introduce Parameter Object or Preserve Whole Object groups
+      related arguments, shrinking and clarifying the signature.
+  - id: racr-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      While reading unfamiliar code you find a six-line block preceded by the comment "// validate
+      the coupon and compute discount." You understand it now but it slows down every reader.
+      Following Fowler and Martin, what is the best response?
+    choices:
+      - id: a
+        text: Leave the comment; explanatory comments are a sign of well-documented code.
+      - id: b
+        text: Expand the comment into a full paragraph so future readers need less effort.
+      - id: c
+        text: Move the block into a region/fold so it can be collapsed when not needed.
+      - id: d
+        text: >-
+          Extract the block into a function named for what it does (e.g., applyCouponDiscount) and
+          remove the now-redundant comment.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A fragment that needs a comment to explain what it does is the classic trigger for Extract
+      Function, naming it after the intent. Self-documenting code via good names is cheaper to
+      maintain than redundant comments, which are a Dispensable smell; comments should explain why,
+      not narrate what.
+  - id: racr-300-ff-m
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      Under a hard release deadline you must ship now, and doing it cleanly would require a day of
+      refactoring you cannot afford. Describe how to handle the shortcut responsibly using the
+      technical-debt metaphor, and what the anti-pattern would be.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends taking the shortcut deliberately and documenting the debt with a payback path
+            (e.g., a tracked follow-up) so the cost/interest is understood.
+        - id: c2
+          text: >-
+            Identifies the anti-pattern as incurring debt silently/without awareness or any record
+            (reckless or inadvertent debt).
+      referenceAnswer: >-
+        The responsible move is to take the shortcut deliberately and prudently: record the debt and
+        a concrete payback path (such as a tracked follow-up ticket) so the team understands the
+        interest it will pay in slower, riskier future changes. Under a real deadline, knowingly
+        taking documented debt can be the right call. The anti-pattern is incurring the debt
+        silently, without realizing or recording it, so it compounds invisibly with no plan to
+        repay.
+      passThreshold: 0.6
+    guidance: >-
+      Fowler's debt quadrant distinguishes deliberate-prudent debt from reckless debt. Under
+      deadline, knowingly taking documented debt with a payback path can be the right call; the
+      anti-pattern is incurring debt without realizing or recording it.
+  - id: racr-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      A pull request opens with a polished new abstraction: a generic RuleEngine with plugin hooks
+      and a config DSL, all introduced to support a single current validation requirement, with no
+      second use case yet. As reviewer, what should you flag?
+    choices:
+      - id: a
+        text: Praise it; more generality and extension points are always better engineering.
+      - id: b
+        text: >-
+          Flag Speculative Generality: the unused flexibility is dead weight (YAGNI); recommend
+          building for today's single requirement and generalizing when a real second case appears.
+      - id: c
+        text: Flag Shotgun Surgery, since the new engine touches several files.
+      - id: d
+        text: Approve as-is but ask the author to add comments explaining each hook.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Building hooks and abstractions for hypothetical future needs is Speculative Generality, a
+      named Dispensable smell; YAGNI says build for known requirements. Unused flexibility adds
+      maintenance cost without payoff until a real second use case justifies it.
+  - id: racr-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: free_form
+    prompt: >-
+      You open a PR and your CI test suite is flaky and slow, and several tests assert on private
+      internal helper names rather than outputs. You want to do a structural refactor of the module.
+      Explain what problem these tests pose and what you would do before refactoring.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that tests asserting on internals/implementation will break on any
+            restructuring and thus impede refactoring (fragile/over-specified tests).
+        - id: c2
+          text: States that tests should pin observable behavior/contracts, not private structure.
+        - id: c3
+          text: >-
+            Proposes rewriting/retargeting tests to behavior (or adding behavior-level coverage)
+            before refactoring so the safety net does not forbid restructuring.
+      referenceAnswer: >-
+        Tests that assert on private helper names pin the implementation, so any restructuring
+        breaks them even when behavior is unchanged; that turns the safety net into an obstacle
+        (test-induced design damage / fragile tests). Before refactoring I would retarget those
+        tests to assert on observable outputs and contracts rather than internals, ensuring the
+        suite pins behavior. Then refactoring can proceed in small steps with the behavior tests
+        staying green.
+      passThreshold: 0.6
+    guidance: >-
+      Tests must pin behavior (enabling refactoring) without pinning implementation (which forbids
+      it). Over-specified tests on internals break on harmless restructuring; retargeting them to
+      observable contracts restores a safety net that permits change.
+  - id: racr-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      You are adding a feature, but the surrounding code makes the change awkward. A small
+      restructuring first would make the feature a near-trivial edit. Which principle and action fit
+      best?
+    choices:
+      - id: a
+        text: Speculative Generality; add extension points first so the feature drops in.
+      - id: b
+        text: >-
+          Defer all refactoring to a dedicated cleanup sprint and force the feature into the awkward
+          code now.
+      - id: c
+        text: >-
+          Preparatory refactoring: "make the change easy, then make the easy change" — restructure
+          first, then add the feature.
+      - id: d
+        text: Rewrite the surrounding module from scratch before touching the feature.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      This is preparatory refactoring (Beck: "make the change easy, then make the easy change"), one
+      of Fowler's main reasons to refactor. It pays for itself within the same change. Refactoring
+      is meant to be woven into feature work, not deferred to a mythical separate sprint.
+  - id: racr-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You want to refactor a small utility class for clarity, but you also know that next sprint the
+      feature it supports is being removed and the class will be deleted. What is the best decision?
+    choices:
+      - id: a
+        text: Refactor it anyway; leaving any code cleaner is always worth the effort.
+      - id: b
+        text: >-
+          Skip the refactor: refactoring is an investment that pays off in future changes, and code
+          about to be deleted has no future to pay back.
+      - id: c
+        text: Refactor it and write extensive new tests so the cleanup is well covered before deletion.
+      - id: d
+        text: Refactor it into a reusable generic component so it survives the feature removal.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Fowler lists "about to delete it soon" as an explicit case for NOT refactoring. Refactoring is
+      an investment whose payoff comes from future changes to that code; if there is no future, the
+      effort has no return.
+  - id: racr-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      Your team's codebase consistently uses an older, slightly non-idiomatic error-handling
+      pattern. You are submitting a small bug fix inside one such module. Explain whether your fix
+      should follow the modern language idiom or the local pattern, and how you would handle the
+      idiom question.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends following the existing local pattern for the small change (consistency /
+            least surprise for maintainers).
+        - id: c2
+          text: >-
+            States that a large-scale idiom migration should be done as a separate, deliberate,
+            mechanical refactor rather than smuggled into the bug fix.
+      referenceAnswer: >-
+        For a small, localized bug fix, follow the existing local pattern so the module stays
+        internally consistent; consistency-within-the-module usually wins short-term and gives
+        maintainers least surprise. A lone idiom rewrite inside a bug fix surprises readers and
+        mixes two changes. If the team genuinely wants the modern idiom, do that as a separate,
+        deliberate, largely mechanical refactor reviewed on its own, not piecemeal inside an
+        unrelated fix where it bloats the diff and half-migrates the file.
+      passThreshold: 0.6
+    guidance: >-
+      Consistency-within-the-module usually wins short-term (principle of least surprise for
+      maintainers). Large-scale idiom migrations should be done as separate, deliberate, mechanical
+      refactors, not smuggled into an unrelated bug fix where they bloat the diff.
+  - id: racr-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >-
+      While extracting a function during a refactor, you cannot find a clean name for it because it
+      both parses input and updates a cache. A reviewer asks why you left it named doStuff2. What
+      does this naming difficulty signal, and what should you do?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recognizes that difficulty naming signals a design problem (the function does more than
+            one thing / lacks cohesion), not just a vocabulary gap.
+        - id: c2
+          text: >-
+            Proposes splitting/extracting it into cohesive units each with a clear
+            intention-revealing name.
+        - id: c3
+          text: States the resulting names should reveal intent (what), enabling self-documenting code.
+      referenceAnswer: >-
+        A name that is hard to choose is design pressure: the function is doing two things (parsing
+        and cache update) so no single intent-revealing name fits. Split it into two cohesive
+        functions — one that parses the input and one that updates the cache — each named for what
+        it does (e.g., parseRequest and refreshCache). The clean names then become documentation,
+        and "I can't name this" stops being a problem because each unit now has a single clear
+        purpose.
+      passThreshold: 0.6
+    guidance: >-
+      Expert reviewers treat "I can't name this cleanly" as a smell pointing to Extract/Split, not a
+      vocabulary problem. Cohesive single-purpose units get intention-revealing names, which is the
+      cheapest documentation.
+  - id: racr-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: multiple_choice
+    prompt: >-
+      A reviewer and an author disagree: the reviewer wants a different design, the author argues
+      theirs is fine and improves the code. The thread has gone back and forth for a day and the
+      change is blocked. What is the healthiest way to resolve it?
+    choices:
+      - id: a
+        text: The author should defer to the reviewer because the reviewer holds approval authority.
+      - id: b
+        text: The more senior person's preference should decide it to end the stalemate quickly.
+      - id: c
+        text: >-
+          Resolve it on data, principles, or documented style guidance — and escalate to a third
+          party if still unresolved — rather than by seniority or stubbornness.
+      - id: d
+        text: >-
+          Merge the author's version immediately since blocking on design wastes reviewer-latency
+          budget.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Google's guidance: genuine author/reviewer disagreements are resolved by facts, engineering
+      principles, or the style guide, escalating to a broader discussion or a decision-maker if
+      needed — never by seniority or simply wearing the other party down. The aim is the right
+      outcome for code health, not winning.
+  - id: racr-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      Two handlers, processInvoice and processRefund, share a 12-line block that today is
+      byte-for-byte identical. A teammate wants to extract it into a shared helper to satisfy DRY.
+      You suspect the two blocks will diverge as invoice and refund rules evolve independently.
+      Which analysis best identifies the real risk of extracting now?
+    choices:
+      - id: a
+        text: >-
+          The duplication is likely coincidental (false duplication); merging it couples two
+          concepts that change for different reasons, and a future caller will start adding flags to
+          the shared helper.
+      - id: b
+        text: Extraction always violates DRY, so the helper itself is the smell and should be avoided.
+      - id: c
+        text: The risk is only performance, since an extra function call adds overhead to both paths.
+      - id: d
+        text: >-
+          There is no risk; identical text is always true duplication and must be merged
+          immediately.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      DRY is about a single source of one piece of knowledge, not identical-looking text. When two
+      blocks represent concepts that will change independently, this is accidental duplication;
+      merging it creates the wrong abstraction, which later accretes conditionals/flags to serve
+      diverging callers. Sandi Metz's heuristic: prefer duplication when unsure, because un-merging
+      a wrong abstraction is costlier.
+  - id: racr-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 423
+    type: multiple_choice
+    prompt: >-
+      A class OrderService is edited in nearly every sprint: tax-rule work, shipping-logic work, and
+      discount-engine work all force changes inside it, but each kind of change touches only that
+      one class. Which code smell is this, and what is the corresponding cure?
+    choices:
+      - id: a
+        text: Shotgun Surgery; gather the scattered tax, shipping, and discount logic into OrderService.
+      - id: b
+        text: Divergent Change; split OrderService so each reason-to-change lives in its own module.
+      - id: c
+        text: Feature Envy; move OrderService's methods into the classes whose data they use.
+      - id: d
+        text: Long Parameter List; introduce a parameter object for the order data.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      One module changed for many unrelated reasons is Divergent Change; the cure is to split it so
+      each axis of change is isolated. Shotgun Surgery is the opposite (one change forces edits
+      across many modules) and its cure is gathering logic, so it is the inverse diagnosis and
+      inverse remedy here.
+  - id: racr-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: free_form
+    prompt: >-
+      A reviewer keeps a 600-line pull request open for four days, repeatedly asking for changes
+      until the code matches exactly how they would have written it, including stylistic rewrites
+      they admit are personal taste. Diagnose two distinct things going wrong here against accepted
+      code-review norms, and state the correct behavior for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the reviewer is blocking on personal preference / perfection rather than
+            "improves overall code health," and that style preferences should be marked as nits
+            (non-blocking).
+        - id: c2
+          text: >-
+            Identifies that the 600-line PR is too large (degrades review quality / defect
+            detection) and/or that the multi-day latency violates the prompt-review norm (~one
+            business day).
+        - id: c3
+          text: >-
+            States the corrective behavior for at least one issue (approve once code health
+            improves, split into small CLs, respond promptly).
+      referenceAnswer: >-
+        First, the reviewer is applying the wrong standard: Google's bar is "approve once the CL
+        definitely improves overall code health, even if it isn't perfect," not "do it exactly how I
+        would." Personal-taste rewrites should be marked "Nit:" (optional, non-blocking), and the
+        author's reasonable choices stand. Second, both the size and the latency are problems: a
+        600-line PR is past the ~200-400 LOC range where defect detection drops, so it should be
+        split into small self-contained CLs; and a four-day turnaround violates the norm of
+        responding within roughly one business day, which harms developer flow more than a slightly
+        imperfect review.
+      passThreshold: 0.6
+    guidance: >-
+      Two independent anti-patterns are stacked here. Reviewers should not block on perfection or
+      personal style (mark those as nits); and large, slow reviews measurably reduce quality and
+      throughput. The fix is smaller CLs, prompt turnaround, and approving once code health
+      improves.
+  - id: racr-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 429
+    type: multiple_choice
+    prompt: >-
+      You need to add a feature to a tangled function. The cleanest path is to first restructure the
+      function so the new behavior slots in trivially, then add the behavior. A teammate objects
+      that "we don't have time to refactor." Which framing best captures why the restructuring is
+      justified even under time pressure?
+    choices:
+      - id: a
+        text: It is a separate concern that must be deferred to a dedicated refactoring sprint.
+      - id: b
+        text: It is speculative generality; you are adding flexibility for a future you cannot predict.
+      - id: c
+        text: >-
+          It is preparatory refactoring ("make the change easy, then make the easy change"); the
+          cleanup pays for itself within this same change, not in some hypothetical future.
+      - id: d
+        text: >-
+          It is comprehension refactoring, done only to help you read the code, with no functional
+          payoff.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Beck's "make the change easy, then make the easy change" is preparatory refactoring, one of
+      Fowler's three when-to-refactor categories. Its payoff is immediate, within the current
+      change, which is exactly why it is defensible under deadline. Speculative generality (b) is
+      the opposite, adding unused flexibility.
+  - id: racr-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      A previously clean helper formatLabel(item) now takes formatLabel(item, isCompact, isLegacy,
+      skipIcon) because four different callers each needed a tweak, and its body is a thicket of
+      if-branches keyed on those flags. Applying Sandi Metz's "wrong abstraction" reasoning, what is
+      the recommended move?
+    choices:
+      - id: a
+        text: >-
+          Add a fifth boolean flag for the next caller; the abstraction is fine, it just needs more
+          options.
+      - id: b
+        text: >-
+          Inline the abstraction back into each caller (re-introduce the duplication), then let the
+          genuinely shared parts re-emerge once the true abstraction is clear.
+      - id: c
+        text: Convert all four flags into a single configuration object to hide the branching.
+      - id: d
+        text: Extract each if-branch into its own private method but keep the single shared entry point.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Metz's rule: "duplication is far cheaper than the wrong abstraction." When an abstraction
+      grows flags and conditionals to serve diverging callers, the cure is to re-inline it,
+      re-create the duplication, and wait for the real abstraction to reveal itself (AHA: Avoid
+      Hasty Abstractions). Options b-d just hide or entrench the wrong abstraction.
+  - id: racr-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: free_form
+    prompt: >-
+      A team has a unit test suite with green coverage, yet every attempt to refactor the internals
+      of a module breaks dozens of tests even though the module's public outputs are unchanged.
+      Diagnose the likely cause and explain the distinction that resolves the tension between
+      tests-as-enabler and tests-as-obstacle.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the tests are over-specified / pin implementation details (e.g., heavy
+            mocking, asserting on internal structure or private methods) rather than observable
+            behavior.
+        - id: c2
+          text: >-
+            States the resolving distinction: tests should pin observable behavior / contracts
+            (which enables refactoring) and not internal implementation (which forbids it).
+        - id: c3
+          text: >-
+            Notes a corrective direction, e.g., assert on outputs/public contract, reduce mocking,
+            or write characterization tests against observable behavior.
+      referenceAnswer: >-
+        The tests are over-specified: they assert on internal structure (private methods, call
+        sequences, heavy mocks) rather than the module's observable outputs, so any restructuring
+        breaks them even though behavior is preserved. This is the classic tests-as-obstacle problem
+        (test-induced design damage / fragile tests). The resolving distinction is that tests must
+        pin observable behavior and contracts, not implementation: behavior-pinning tests enable
+        refactoring, while implementation-pinning tests forbid it. The fix is to assert on public
+        outputs and contracts and cut the mocking down to true external boundaries.
+      passThreshold: 0.6
+    guidance: >-
+      A test suite is only a refactoring safety net if it tests behavior, not implementation. Tests
+      that mirror internal structure invert their purpose: they make every restructuring "fail"
+      despite preserved behavior. Characterization tests should target observable outputs/contracts
+      for exactly this reason.
+  - id: racr-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A large feature PR also contains a sizable, unrelated rename-and-extract refactor of a
+      neighboring module. Both are correct. Why is bundling them together specifically problematic,
+      beyond just "big PRs are bad"?
+    choices:
+      - id: a
+        text: The refactor will silently revert when the feature is merged, losing the cleanup.
+      - id: b
+        text: Refactoring and features must always ship in separate releases for compliance reasons.
+      - id: c
+        text: A refactor inside a feature PR automatically violates DRY.
+      - id: d
+        text: >-
+          Mixing a behavior-changing feature with a behavior-preserving refactor makes the diff hard
+          to review and hard to bisect later, because a reviewer cannot tell which lines could have
+          changed behavior.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The core issue is the Two Hats principle made concrete: feature changes alter behavior,
+      refactors do not, and combining them destroys the reviewer's (and bisect's) ability to reason
+      about which lines could have introduced a regression. Best practice is to land large refactors
+      as their own CLs, allowing only small, obviously-safe local cleanups inline and flagging them
+      in the description.
+  - id: racr-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 441
+    type: multiple_choice
+    prompt: >-
+      You inherit a 400-line payment module with no tests. The behavior is poorly documented and you
+      suspect some of it is subtly wrong, but production depends on exactly what it does today. You
+      must change it safely. What is the correct first step, and why?
+    choices:
+      - id: a
+        text: >-
+          Write characterization tests that pin the module's current observable behavior (even the
+          suspect parts), so you have a safety net before any restructuring.
+      - id: b
+        text: >-
+          Fix the suspected bugs first, since you should never preserve known-wrong behavior under a
+          test.
+      - id: c
+        text: >-
+          Rewrite the module from scratch with a clean design, since untested code is worthless
+          anyway.
+      - id: d
+        text: >-
+          Refactor immediately in small steps; tests are optional as long as the steps are small
+          enough.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Feathers' technique for legacy (untested) code: write characterization tests that capture
+      current behavior, including behavior you suspect is wrong, before touching structure. That net
+      lets you refactor safely; only afterward do you deliberately change behavior. Fixing bugs (b)
+      or rewriting (c) before the net exists removes the very protection you need.
+  - id: racr-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A developer says: "I struggled for an hour to name this function and finally called it
+      handleAndValidateAndCacheRequest." A senior engineer responds that the naming difficulty is
+      itself a signal. Explain what design problem the hard-to-name function likely indicates and
+      what refactoring move follows from that diagnosis.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that difficulty naming signals the function is doing more than one thing / lacks
+            a single cohesive responsibility (low cohesion).
+        - id: c2
+          text: >-
+            Concludes the corrective move is to split / Extract Function so each piece has one clear
+            responsibility and an intention-revealing name.
+      referenceAnswer: >-
+        The conjunctive name (handle-and-validate-and-cache) reveals that the function has more than
+        one responsibility, so no single intention-revealing name fits. Naming is design pressure:
+        an unclonable name points to low cohesion, not a vocabulary problem. The move is to split
+        the function via Extract Function into separate, single-responsibility units (validate,
+        cache, handle), each of which can then take a clean, intention-revealing name.
+      passThreshold: 0.6
+    guidance: >-
+      Expert reviewers treat "I can't name this cleanly" as a smell pointing to Extract/Split, not
+      just a thesaurus problem. A name full of "and" signals multiple responsibilities; separating
+      them yields cohesive units that each name themselves naturally.
+  - id: racr-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 447
+    type: multiple_choice
+    prompt: >-
+      A profiler shows that 95% of a report's runtime is in one nested loop. A teammate proposes
+      hand-inlining and micro-optimizing several small helper functions across the whole module "to
+      be safe." Using Fowler's refactoring-and-performance stance, what is the flaw in the
+      teammate's plan?
+    choices:
+      - id: a
+        text: >-
+          Refactoring and optimization are the same activity, so the plan is internally
+          inconsistent.
+      - id: b
+        text: >-
+          Inlining helpers always improves performance, so the only flaw is that it should be
+          automated.
+      - id: c
+        text: >-
+          It optimizes everywhere instead of the measured hot spot; well-factored code localizes the
+          hot spot, so you should keep the helpers clean and optimize only the proven 5%.
+      - id: d
+        text: >-
+          The profiler is unreliable; you should optimize broadly because hot spots cannot be
+          located.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Fowler: refactor for clarity first, then profile, then optimize only the measured hot spots.
+      Most refactorings have negligible performance impact, and clean factoring actually makes hot
+      spots easier to find and fix. Spraying micro-optimizations across cold code adds complexity
+      for no measurable gain.
+  - id: racr-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      A new contributor opens a PR using a terse, clever one-liner with a reduce and nested
+      ternaries. It is correct and three lines shorter. The module it lives in uses plain, explicit
+      loops everywhere else. As a reviewer, what is the strongest analysis-based reason to request a
+      change?
+    choices:
+      - id: a
+        text: Clever code is always slower, so the one-liner will hurt performance.
+      - id: b
+        text: >-
+          It violates the principle of least surprise and module consistency; "idiomatic" means
+          matching team conventions and readability, not maximal cleverness or brevity.
+      - id: c
+        text: One-liners are forbidden by DRY because they repeat operators.
+      - id: d
+        text: >-
+          The change must be blocked because it differs from how the reviewer personally writes
+          reduce.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Idiomatic code follows established language/team conventions and the principle of least
+      surprise; cleverness that surprises readers is a liability, not a virtue. The valid objection
+      is consistency and readability within the module, not performance (b) or personal taste (d),
+      and DRY (c) is irrelevant here.
+  - id: racr-400-ff-l
+    tier: 400
+    bloom: analyze
+    difficulty: 453
+    type: free_form
+    prompt: >-
+      A team is under a hard launch deadline and chooses to ship a known-suboptimal data layer,
+      writing a ticket that documents the shortcut, the cost it imposes, and a planned payback. A
+      second team ships similar shortcuts but neither notices nor records them. Using the
+      technical-debt metaphor, contrast these two situations and explain which is defensible and
+      why.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Classifies the first team as deliberate-and-prudent debt (knowingly taken, understood
+            interest, documented payback path).
+        - id: c2
+          text: >-
+            Classifies the second as reckless / inadvertent debt (incurred without awareness, no
+            plan).
+        - id: c3
+          text: >-
+            Concludes the first is defensible because the interest is understood and there is a
+            payback path, whereas the second is the dangerous case.
+      referenceAnswer: >-
+        The first team is taking deliberate, prudent technical debt: they know they are borrowing
+        against future velocity, they understand the interest (the ongoing cost the shortcut
+        imposes), and they have a documented payback path. That is defensible under a real deadline.
+        The second team is incurring reckless or inadvertent debt: they do not know they took it, so
+        the interest compounds silently with no plan to repay. The metaphor's whole point is that
+        debt is acceptable when chosen knowingly with a repayment plan and dangerous when invisible.
+      passThreshold: 0.6
+    guidance: >-
+      Fowler's debt quadrant separates deliberate vs. inadvertent and prudent vs. reckless.
+      Deliberate-prudent debt with understood interest and a payback path can be the right call
+      under deadline; the anti-pattern is reckless debt you do not even realize you are
+      accumulating.
+  - id: racr-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A reviewer and an author deadlock: the author insists their approach is fine, the reviewer
+      insists on a different design. The reviewer says "I've been here longer, so do it my way."
+      According to modern code-review norms, what is wrong with resolving the disagreement this way?
+    choices:
+      - id: a
+        text: >-
+          The reviewer should approve immediately to avoid latency, regardless of the design
+          concern.
+      - id: b
+        text: Nothing is wrong; the senior engineer always has final authority over any design choice.
+      - id: c
+        text: The author should always win, because the author owns the code being changed.
+      - id: d
+        text: >-
+          Disagreements should be resolved by data, principles, or escalation, not by seniority or
+          stubbornness; "do it my way" is an explicit anti-pattern.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Google's guide is explicit that reviewers must not say "do it my way" and that genuine
+      disagreements are resolved through technical facts and data, agreed principles/style guides,
+      or escalation, not by pulling rank. Neither pure seniority (b) nor "author always wins" (c)
+      nor rubber-stamping to cut latency (a) is correct; resolving on the merits or escalating (d)
+      is.
+  - id: racr-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 459
+    type: multiple_choice
+    prompt: >-
+      A module currently uses an established but non-idiomatic in-house pattern throughout. Your
+      small bugfix touches one function in it. You could either follow the local in-house pattern or
+      rewrite that function in the modern language idiom. Which choice best reflects expert
+      practice, and why?
+    choices:
+      - id: a
+        text: >-
+          Rewrite the one function in the modern idiom now, since idiomatic code always beats local
+          consistency.
+      - id: b
+        text: >-
+          Follow the local in-house pattern for this small change (consistency / least surprise for
+          maintainers); do idiom migrations as a separate, deliberate, mechanical refactor.
+      - id: c
+        text: Leave the bug unfixed until the whole module is migrated to the idiom.
+      - id: d
+        text: Mix both styles in the function so reviewers can compare them side by side.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In a module with an established pattern, short-term consistency usually wins: a lone idiom
+      rewrite inside a bugfix surprises maintainers and mixes two changes. Large-scale idiom
+      migrations are valuable but should be done as separate, deliberate, mechanical refactors, not
+      smuggled into an unrelated fix.
+  - id: racr-400-ff-o
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >-
+      A teammate proposes replacing a 30-line, well-tested, behavior-rich legacy parser with a
+      from-scratch rewrite "because the code is ugly." Identify the key risk a full rewrite carries
+      that incremental refactoring avoids, and name one specific condition under which a rewrite
+      (rather than refactor) would actually be the justified choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the rewrite risk: it discards the accumulated bug fixes / edge-case behavior and
+            abandons the safety net (tests stay green throughout a refactor; a rewrite loses that).
+        - id: c2
+          text: >-
+            Names a legitimate rewrite condition, e.g., the code is so broken it is genuinely easier
+            to rewrite, or it is about to be deleted/replaced, or it can no longer be incrementally
+            changed.
+      referenceAnswer: >-
+        The danger of a full rewrite is that it throws away accumulated bug fixes and hard-won
+        edge-case knowledge embedded in the existing parser, and it abandons the safety net:
+        refactoring keeps tests green at every small step, while a rewrite replaces everything at
+        once with no continuous verification. "Ugly" alone is not a reason. A rewrite is justified
+        only in narrow cases, for example when the code is so broken that incremental change is
+        genuinely harder than starting over, or when the code is about to be deleted or replaced
+        wholesale anyway.
+      passThreshold: 0.6
+    guidance: >-
+      Refactoring is incremental and behavior-preserving with tests green throughout; a rewrite
+      discards the accumulated fixes and the safety net (Spolsky's "never rewrite" warning).
+      Rewrites are defensible only in narrow cases such as code too broken to evolve or code slated
+      for deletion.
+  - id: racr-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: multiple_choice
+    prompt: >-
+      A widely-consumed public library function has a slightly awkward parameter order that you
+      would normally clean up via a Rename/Change Signature refactor. Dozens of external projects
+      call it. What is the correct analysis of whether to refactor it?
+    choices:
+      - id: a
+        text: Never refactor anything in a library, since libraries are frozen by definition.
+      - id: b
+        text: Always refactor; internal cleanliness outranks any consumer breakage.
+      - id: c
+        text: >-
+          Weigh the cleanliness gain against the cost of breaking external consumers; for a
+          published API that cost can exceed the benefit, so the refactor may not be worth it (or
+          needs a compatibility path).
+      - id: d
+        text: Refactor silently; consumers should pin versions, so breakage is their problem.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Fowler's explicit exception: refactoring a published API/interface you cannot safely change
+      may cost more (in broken consumers) than the cleanliness is worth. Refactoring is an
+      investment that must pay off in future changes; when the blast radius is external consumers,
+      you weigh the tradeoff or provide a compatibility path (c), rather than refactoring blindly
+      (b) or refusing on principle (a).
+  - id: racr-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      Empirically, when reviewers in a study were asked what code review accomplishes versus what it
+      actually delivers, a recurring finding emerged. Which statement best reflects the
+      Bacchelli-Bird "Expectations, Outcomes, and Challenges of Modern Code Review" findings?
+    choices:
+      - id: a
+        text: >-
+          Participants expected defect-finding to dominate, but knowledge transfer and team
+          awareness emerged as major outcomes, and finding functional defects proved harder than
+          expected.
+      - id: b
+        text: Code review was found to have no measurable value beyond satisfying process requirements.
+      - id: c
+        text: >-
+          Reviewers found nearly all functional defects, confirming review as the primary
+          bug-catching gate.
+      - id: d
+        text: The study concluded that pair programming fully replaces the need for code review.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Microsoft study found a gap between expectation and outcome: people expect defect
+      detection to be the main payoff, but knowledge sharing, design feedback, and team awareness
+      turn out to be equally or more valuable, and finding real functional defects is harder than
+      reviewers expect. Review is not primarily a bug-catching gate.
+  - id: racr-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 471
+    type: free_form
+    prompt: >-
+      A function contains a comment "// loop over the active users and total their unpaid balances"
+      sitting above an 8-line block, inside a 60-line method. A reviewer flags both "the comment"
+      and "the method length" as smells. Explain how a single refactoring move can address both, and
+      what kind of comment (if any) should survive.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies Extract Function/Method as the move: extract the commented block into a
+            function named after the comment's intent (e.g., totalUnpaidBalancesForActiveUsers).
+        - id: c2
+          text: >-
+            Explains the redundant/narrating comment becomes unnecessary because the function name
+            now reveals intent, and the host method shrinks (addressing Long Method).
+        - id: c3
+          text: >-
+            States that surviving comments should explain WHY (rationale), not narrate WHAT the code
+            does.
+      referenceAnswer: >-
+        Extract Function is the single move: pull the 8-line block into a function named after the
+        comment's intent, e.g., totalUnpaidBalancesForActiveUsers(). That simultaneously removes a
+        redundant "what" comment (a Dispensable smell), since the name now reveals intent, and
+        shrinks the 60-line host method, easing the Long Method smell. The only comments that should
+        survive are ones that explain why something is done (a non-obvious rationale or constraint),
+        not ones that narrate what the code is doing.
+      passThreshold: 0.6
+    guidance: >-
+      A comment that narrates what a block does is a signal to Extract Function and turn the comment
+      into an intention-revealing name. This kills the redundant comment and reduces method length
+      in one move. Comments that explain why (rationale, gotchas) are the kind worth keeping.
+  - id: racr-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: >-
+      A code-review tool reports the average review rate for a struggling team as ~1200 LOC/hour
+      with reviews routinely covering 800-line diffs, yet they wonder why post-merge defects are
+      high. Based on the SmartBear/Cisco review findings, which conclusion is best supported
+      (treating the exact thresholds as approximate)?
+    choices:
+      - id: a
+        text: >-
+          A precise cutoff of exactly 400 LOC and 500 LOC/hour must be enforced or all benefit is
+          lost.
+      - id: b
+        text: The defect rate is unrelated to review size or speed; only test coverage matters.
+      - id: c
+        text: Reviewing faster is strictly better, so 1200 LOC/hour is an efficiency win to celebrate.
+      - id: d
+        text: >-
+          Both the diff size and the inspection rate are well past the ranges where defect detection
+          holds up; smaller diffs and a slower review pace would likely surface more defects.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The Cisco/SmartBear study shows defect detection drops sharply when reviewing well over
+      ~200-400 LOC at once or faster than ~300-500 LOC/hour. An 800-line diff at 1200 LOC/hour is
+      far past both, so smaller diffs and slower pacing should help. The direction is solid even
+      though the exact numbers vary by retelling, so treating them as hard cutoffs (d) overstates
+      the evidence.
+  - id: racr-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      During review you spot three things in a CL: (1) an off-by-one that will corrupt data, (2) a
+      public method that lacks any test, and (3) a variable you would have named slightly
+      differently. The author is on a tight timeline. How should you triage these in a way that is
+      consistent with "improves code health" review norms?
+    choices:
+      - id: a
+        text: >-
+          Block on (1) and (2) because they harm correctness/maintainability; mark (3) as a
+          non-blocking nit, since it is a personal-style preference.
+      - id: b
+        text: Block on all three equally; any reviewer comment must be resolved before approval.
+      - id: c
+        text: >-
+          Approve immediately to respect the timeline; none of these should block a
+          deadline-pressured CL.
+      - id: d
+        text: >-
+          Block only on (3) (naming), since style is what review is really for, and treat the bug as
+          the author's risk.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The judgment is to block on things that genuinely harm correctness or maintainability (a
+      data-corrupting bug, and a public method with no test) while marking pure style preferences as
+      nits. That balances "don't block on perfection" against letting real harm through; timeline
+      pressure does not justify shipping a data-corruption bug (c), nor does it make naming the
+      priority (d).
+  - id: racr-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A team proposes a CI gate that auto-rejects any pull request unless every changed file reaches
+      90% line coverage and keeps cyclomatic complexity under a fixed number. Which evaluation of
+      using these code-quality metrics as hard merge gates is the soundest expert judgment?
+    choices:
+      - id: a
+        text: >-
+          Treat the metrics as signals that prompt human judgment, not as absolute gates; rigid
+          thresholds invite gaming (vacuous assertion-free tests, awkward splits to dodge the limit)
+          and can block sound changes while passing weak ones.
+      - id: b
+        text: >-
+          Hard gates are strictly better because any numeric threshold removes subjective
+          disagreement, so 90% coverage guarantees the code is correct.
+      - id: c
+        text: >-
+          Coverage and complexity should be ignored entirely, since no quantitative metric carries
+          any useful information about code health.
+      - id: d
+        text: >-
+          The only valid gate is 100% coverage with zero branches, because any uncovered line or
+          branch is by definition a latent defect.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Metrics like coverage and cyclomatic complexity are useful proxies but poor absolute gates:
+      90% coverage can be met with assertion-free tests, and a hard complexity cap pressures
+      developers to game the number rather than improve design. Goodhart's law applies -- a measure
+      made a target stops being a good measure. Use them to focus human review, not to replace it;
+      dismissing metrics entirely or demanding 100% are both extremes.
+  - id: racr-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A reviewer refuses to approve a CL because, although it measurably improves the module, it is
+      not written exactly how they would have written it and has a few stylistic choices they
+      dislike. Per Google's code-review standard, what is the soundest critique of the reviewer's
+      stance?
+    choices:
+      - id: a
+        text: >-
+          The reviewer is correct: approval should be withheld until the code matches the reviewer's
+          preferred style, since consistency with the reviewer is paramount.
+      - id: b
+        text: >-
+          The reviewer should approve only after the author rewrites everything, because any
+          disagreement means the design is unsound.
+      - id: c
+        text: >-
+          The reviewer should approve once the CL definitely improves overall code health even if
+          imperfect, and mark personal style preferences as non-blocking nits rather than blocking
+          on them.
+      - id: d
+        text: >-
+          The reviewer should defer entirely to the author and never raise style points, since style
+          is always out of scope for review.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The standard is "improves overall code health," not "matches my preference." Style preferences
+      should be marked as nits and not block; insisting on "do it my way" is a documented
+      anti-pattern. Neither rewriting everything nor suppressing all feedback is correct.
+  - id: racr-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: free_form
+    prompt: >-
+      A team mixes a large refactoring and a new feature in one 900-line PR "to save round-trips."
+      Evaluate this choice. Identify the primary risks it creates and describe the expert practice
+      that balances reviewability against PR-splitting overhead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that mixing behavior-preserving refactoring with behavior changes makes review
+            and bisection hard (you cannot tell which change caused a defect).
+        - id: c2
+          text: >-
+            Notes that large diffs measurably reduce defect detection and slow/degrade review
+            quality.
+        - id: c3
+          text: >-
+            Recommends separating large refactors into pure-refactoring CLs while allowing small
+            obviously-safe inline cleanups, clearly flagged in the description so reviewers can
+            mentally separate them.
+      referenceAnswer: >-
+        Combining a big refactor with a feature violates the Two Hats discipline: a reviewer cannot
+        tell which diff lines preserve behavior and which change it, and a later bisect cannot
+        isolate the regression. A 900-line diff also sits well past the ~200-400 LOC range where
+        defect detection drops sharply, so the review will be slower and shallower. The expert
+        balance is to land large refactors as separate pure-refactoring CLs (tests green throughout)
+        and feature work in its own CL; tiny, obviously-safe local cleanups can stay inline if they
+        are explicitly flagged in the PR description. This keeps each change reviewable without
+        exploding PR count and merge-ordering overhead.
+      passThreshold: 0.6
+    guidance: >-
+      The Two Hats rule keeps refactoring and feature work separate so reviewers and bisection can
+      localize behavior changes. Large diffs degrade detection (Cisco/SmartBear), so the judgment is
+      to split large refactors out while tolerating small flagged cleanups, not to dogmatically
+      split everything.
+  - id: racr-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A shared abstraction has accumulated five boolean flags and several conditionals to serve
+      increasingly divergent callers. Which course of action best reflects expert judgment about the
+      "wrong abstraction"?
+    choices:
+      - id: a
+        text: >-
+          Add a sixth flag and more conditionals, since centralizing all variants in one place is
+          always more DRY and therefore better.
+      - id: b
+        text: >-
+          Freeze the abstraction and forbid any further callers, leaving new use cases to copy-paste
+          around it permanently.
+      - id: c
+        text: >-
+          Extract a deeper inheritance hierarchy so each caller overrides the flags, since
+          polymorphism always beats conditionals.
+      - id: d
+        text: >-
+          Re-inline the abstraction back into its callers (accept the duplication) so the true,
+          stable abstraction can re-emerge once the real shared knowledge is clear.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Flag/conditional accretion is the classic symptom of the wrong abstraction. Metz's guidance is
+      to re-inline (re-duplicate) and let the genuine abstraction reveal itself, rather than piling
+      on flags (more coupling) or reaching reflexively for inheritance, which can entrench the wrong
+      model.
+  - id: racr-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: free_form
+    prompt: >-
+      A developer argues "we can't refactor this legacy module because it has no tests, and you must
+      never refactor without tests." Critique this reasoning and describe the technique that
+      resolves the apparent deadlock.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the flaw: "no tests therefore can't refactor" is a false deadlock; the
+            absence of tests is exactly what defines legacy code (Feathers), not a permanent
+            blocker.
+        - id: c2
+          text: >-
+            Explains writing characterization tests that pin the current actual behavior (even if
+            "wrong") before refactoring, and/or introducing seams to break dependencies for testing.
+        - id: c3
+          text: >-
+            Notes the characterization tests should target observable behavior/contracts so they
+            enable rather than obstruct the restructuring.
+      referenceAnswer: >-
+        Feathers defines legacy code as code without tests, so "no tests" is the condition you
+        address, not a reason to give up. The technique is to write characterization tests that
+        capture the code's current observable behavior (pinning it even where it is arguably wrong),
+        introducing seams where needed to break dependencies and get the code under test. With that
+        safety net you can refactor in small steps, verifying behavior is preserved. The tests
+        should assert on observable outputs/contracts, not private internals, so they enable
+        restructuring instead of fossilizing the implementation.
+      passThreshold: 0.6
+    guidance: >-
+      Characterization tests plus seams are precisely how Feathers makes untested legacy code
+      refactorable. Pinning current behavior on observable contracts (not internals) gives a safety
+      net without forbidding the restructuring you want to do.
+  - id: racr-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      A reviewer spends most of their effort policing minor style and rarely finds functional
+      defects, then concludes "code review doesn't really catch bugs, so it's low value." Which
+      evaluation is most consistent with the empirical understanding of modern code review?
+    choices:
+      - id: a
+        text: >-
+          The reviewer is right; since defect-finding is the only real purpose of review, low defect
+          yield proves review is not worthwhile.
+      - id: b
+        text: >-
+          Finding functional defects is genuinely harder than reviewers expect, but review's major
+          value also includes knowledge transfer, team awareness, and design feedback, which the
+          reviewer is ignoring.
+      - id: c
+        text: >-
+          Review value is determined solely by lines reviewed per hour, so the conclusion is
+          unsupported until throughput is measured.
+      - id: d
+        text: >-
+          Style policing is the highest-value review activity, so the reviewer is allocating effort
+          correctly.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Bacchelli-Bird study found defect-finding is harder than expected and that knowledge
+      sharing, team awareness, and design feedback are major outcomes. Treating bug-catching as the
+      sole purpose undervalues review; over-investing in style policing misallocates the reviewer's
+      effort.
+  - id: racr-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A test suite breaks on nearly every refactoring even when externally observable behavior is
+      unchanged, because the tests assert heavily on private method calls and internal state via
+      mocks. What is the best expert diagnosis and remedy?
+    choices:
+      - id: a
+        text: >-
+          The refactorings are unsafe; the fix is to stop refactoring and freeze the implementation
+          so the tests keep passing.
+      - id: b
+        text: >-
+          The tests are correct and refactoring should always preserve internal structure too, so
+          the refactorings must be reverted.
+      - id: c
+        text: >-
+          The tests pin implementation rather than behavior (test-induced design damage); the remedy
+          is to re-target them at observable outputs/contracts so they enable rather than forbid
+          restructuring.
+      - id: d
+        text: >-
+          Mocking is mandatory for fast tests, so the breakage is unavoidable and the team should
+          delete the failing tests after each refactor.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Over-mocked, structure-asserting tests are fragile and create test-induced design damage: any
+      behavior-preserving change breaks them. Refactoring's whole point is changing internal
+      structure, so tests must pin observable behavior, not internals. Freezing structure or
+      deleting tests both abandon the safety net.
+  - id: racr-500-ff-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      Under a hard external deadline, a team chooses to ship with a known shortcut rather than do
+      preparatory refactoring first. Using the technical-debt metaphor, explain when this is a
+      defensible expert decision versus an anti-pattern.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Frames the shortcut as taking on technical debt that accrues "interest" (future changes
+            get slower/riskier).
+        - id: c2
+          text: >-
+            States it is defensible when the debt is deliberate and prudent: the team knows it is
+            incurring it, understands the cost, and has a payback path.
+        - id: c3
+          text: >-
+            Identifies the anti-pattern as reckless debt (not realizing you are taking it on / no
+            plan to repay), and notes preparatory refactoring often pays back within the same
+            change.
+      referenceAnswer: >-
+        Shipping a known shortcut is borrowing against future maintainability: the debt charges
+        interest because later changes to that code become slower and more error-prone. It is a
+        defensible call when it is deliberate and prudent in Fowler's debt quadrant: the team
+        consciously chooses it under the deadline, understands the interest it will pay, and has a
+        concrete plan and path to pay it back. It becomes an anti-pattern when the debt is reckless:
+        incurred without awareness or without any repayment intent, so it silently compounds. Note
+        that preparatory refactoring ("make the change easy, then make the easy change") frequently
+        pays for itself within the same change, so the shortcut is only worth it when that is
+        genuinely not the case under the time available.
+      passThreshold: 0.6
+    guidance: >-
+      Fowler's debt quadrant distinguishes deliberate-prudent debt (acceptable, with eyes open and a
+      payback path) from reckless debt (incurred unknowingly). Preparatory refactoring usually pays
+      back immediately, so the deadline shortcut is only justified when that payback genuinely will
+      not land in time.
+  - id: racr-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      A teammate proposes throwing away a working but messy 50k-line service and rewriting it from
+      scratch "because it'll be cleaner." Which critique best captures the expert risk relative to
+      incremental refactoring?
+    choices:
+      - id: a
+        text: >-
+          A rewrite is strictly safer because it has no legacy constraints, so it should always be
+          preferred over refactoring for messy code.
+      - id: b
+        text: >-
+          Rewrites and refactorings are equivalent in risk because both change code, so the choice
+          is purely a matter of taste.
+      - id: c
+        text: >-
+          Refactoring is impossible at 50k lines, so a rewrite is the only technically feasible
+          option.
+      - id: d
+        text: >-
+          A from-scratch rewrite discards the accumulated bug fixes and edge-case knowledge baked
+          into the old code and abandons the green-tests safety net that incremental refactoring
+          preserves.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Refactoring is incremental and behavior-preserving with tests green throughout; a big rewrite
+      throws away years of hard-won bug fixes and edge-case handling and loses the safety net (cf.
+      Spolsky). It is occasionally the right call, but it is not "strictly safer," equivalent, or
+      the only option.
+  - id: racr-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >-
+      A reviewer flags a clever, terse one-liner that the rest of the team finds hard to parse,
+      arguing it "is the most idiomatic and efficient form." How should this claim be evaluated?
+    choices:
+      - id: a
+        text: >-
+          Idiomatic means clever and concise, so the one-liner is correct and the reviewer should
+          approve as-is.
+      - id: b
+        text: >-
+          Idiomatic means following established conventions and the principle of least surprise; a
+          one-liner that surprises maintainers is a liability, and clarity should win unless the
+          terse form is the team's accepted idiom.
+      - id: c
+        text: >-
+          Performance always overrides readability, so if the one-liner is faster it must be kept
+          regardless of comprehension cost.
+      - id: d
+        text: >-
+          Any line that can be shortened should be, because fewer lines always means lower
+          cyclomatic complexity and better code.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Idiomatic code follows team/language conventions and the principle of least surprise, not
+      maximal cleverness. Cleverness that surprises readers is usually a liability. Line count is
+      not a proxy for complexity, and unmeasured performance does not override comprehensibility.
+  - id: racr-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 489
+    type: multiple_choice
+    prompt: >-
+      During review, a function turns out to be genuinely hard to name because every candidate name
+      only describes part of what it does. What does an expert reviewer most likely conclude?
+    choices:
+      - id: a
+        text: >-
+          The difficulty is just a vocabulary problem; pick the longest descriptive name and move
+          on.
+      - id: b
+        text: Hard-to-name functions should be left unnamed (anonymous) to avoid disinformation.
+      - id: c
+        text: >-
+          The naming difficulty is a design smell signaling the function may be doing more than one
+          thing; the fix is likely to split/extract it so each piece has a single, nameable
+          responsibility.
+      - id: d
+        text: >-
+          Naming difficulty means the function is too short and should absorb more behavior until a
+          name becomes obvious.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Experts treat "I can't name this cleanly" as design pressure: a name that resists you usually
+      points to low cohesion or a function doing two things, so the cure is Extract/Split, not a
+      longer label or absorbing more behavior.
+  - id: racr-500-ff-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: free_form
+    prompt: >-
+      A new change must touch a module that already follows an established but non-idiomatic local
+      pattern. The author wants to write the new code in the modern language idiom instead. Evaluate
+      the competing concerns and give the expert recommendation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names the tension: language idiom / least surprise for newcomers vs.
+            consistency-within-the-module for existing maintainers.
+        - id: c2
+          text: >-
+            Recommends, for a small change, following the local convention so the module stays
+            internally consistent (least surprise for maintainers of that module).
+        - id: c3
+          text: >-
+            Adds that large-scale idiom migration should be done as a separate, deliberate,
+            mechanical refactor rather than mixed piecemeal into a feature change.
+      referenceAnswer: >-
+        The tension is between the language idiom (least surprise for someone arriving fresh) and
+        consistency within the existing module (least surprise for the people who maintain it day to
+        day). For a small, localized change the expert default is to follow the established local
+        convention so the module does not become a patchwork of two styles; internal consistency
+        usually wins short-term. If the team genuinely wants to move to the modern idiom, that
+        should be a separate, deliberate, largely mechanical refactor across the module, reviewed on
+        its own, rather than smuggled piecemeal into a feature change where it muddies review and
+        leaves the file half-migrated.
+      passThreshold: 0.6
+    guidance: >-
+      Least surprise cuts both ways. Within an established module, short-term consistency usually
+      wins, while a deliberate, separate, mechanical migration is the right vehicle for adopting the
+      idiom wholesale.
+  - id: racr-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 501
+    type: multiple_choice
+    prompt: >-
+      A reviewer rejects a PR that fixes a real bug because "it has no comments." The author replies
+      that the code is already self-explanatory via extracted functions and intention-revealing
+      names. Which evaluation aligns best with Clean Code principles?
+    choices:
+      - id: a
+        text: >-
+          All comments are harmful and should be banned, including those explaining non-obvious
+          rationale.
+      - id: b
+        text: >-
+          The reviewer is right; more comments are always a sign of higher quality and should be
+          required.
+      - id: c
+        text: Comment density should match line count at a fixed ratio to guarantee maintainability.
+      - id: d
+        text: >-
+          Redundant comments that merely narrate what the code does are a dispensable smell;
+          self-documenting code is preferred, and comments are best reserved for explaining why, not
+          what.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Redundant what-comments are a Dispensable smell; Clean Code favors self-documenting code via
+      Extract Function and good names, reserving comments for non-obvious why. Demanding comments by
+      default, banning all comments, or enforcing a fixed ratio are all wrong.
+  - id: racr-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 507
+    type: free_form
+    prompt: >-
+      A profiler shows a function is a real hot spot. A teammate insists the right first move is to
+      micro-optimize it with hand-tuned tricks, citing the need for speed. Critique this ordering
+      and state the expert relationship between refactoring and optimization.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the general ordering: refactor for clarity first, then profile to find actual hot
+            spots, then optimize only the measured ones.
+        - id: c2
+          text: >-
+            Notes that most refactorings have negligible performance impact and that well-factored
+            code is often easier to optimize because hot spots are localized.
+        - id: c3
+          text: >-
+            Recognizes that since profiling already identified this hot spot, targeted optimization
+            here is legitimate, but it should be measured before/after and not generalized to
+            premature optimization everywhere.
+      referenceAnswer: >-
+        The standard discipline is refactor for clarity first, profile to find the genuine hot
+        spots, then optimize only those, measuring before and after. Most refactorings have
+        negligible performance cost, and clean, well-factored code is usually easier to optimize
+        because the hot spots are localized and isolated. In this case the profiler has already done
+        its job and flagged a real hot spot, so targeted optimization here is justified, not
+        premature. The critique of the teammate is the temptation to micro-optimize on instinct and
+        generalize it elsewhere: optimization should stay confined to the measured critical path,
+        with clarity preserved everywhere else.
+      passThreshold: 0.6
+    guidance: >-
+      Refactor-then-profile-then-optimize is the rule; Knuth's "premature optimization" warning
+      targets unmeasured tuning, not the measured critical few percent. A confirmed hot spot
+      legitimizes targeted, measured optimization, but not a blanket micro-optimization habit.
+  - id: racr-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 513
+    type: multiple_choice
+    prompt: >-
+      A team plans to defer all cleanup to a quarterly "refactoring sprint" and forbid any
+      restructuring during feature work. Which critique reflects Fowler's stance most accurately?
+    choices:
+      - id: a
+        text: >-
+          This is ideal; refactoring must be isolated from feature work and scheduled as its own
+          phase to keep diffs clean.
+      - id: b
+        text: >-
+          Refactoring should mostly be opportunistic and continuous, woven into feature work as
+          preparatory and comprehension refactoring, not deferred to a mythical separate sprint.
+      - id: c
+        text: >-
+          Refactoring should never happen at all unless a dedicated ticket exists, because untracked
+          restructuring is always reckless.
+      - id: d
+        text: Continuous refactoring is reckless; the only safe model is a once-a-year full rewrite.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Fowler argues refactoring is best done opportunistically and continuously: preparatory ("make
+      the change easy"), comprehension, and litter-pickup. Quarantining all of it into a separate
+      sprint starves the everyday cleanup that keeps code healthy; it is the opposite of the
+      recommended practice.
+  - id: racr-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
+    type: multiple_choice
+    prompt: >-
+      A reviewer mixes blocking objections and optional preferences into a single unlabeled list of
+      comments, and the author cannot tell which must be addressed to merge. Which review practice
+      best fixes this, and why does it matter?
+    choices:
+      - id: a
+        text: >-
+          Treat every comment as blocking by default, since that maximizes code quality regardless
+          of latency.
+      - id: b
+        text: Remove all optional comments entirely, since only blocking objections belong in a review.
+      - id: c
+        text: >-
+          Label optionality explicitly (e.g., prefix non-blocking suggestions with "Nit:") so the
+          author knows what is required versus optional, reducing churn and unnecessary review
+          latency.
+      - id: d
+        text: Approve immediately with "LGTM" and let the author guess which comments mattered.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Labeling each comment's severity (the "Nit:" convention for non-blocking suggestions) lets the
+      author act efficiently and avoids needless back-and-forth. Treating everything as blocking
+      inflates latency; deleting all optional feedback loses useful signal; an unqualified LGTM with
+      hidden expectations is ambiguous.
+  - id: racr-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: free_form
+    prompt: >-
+      An author and reviewer reach a genuine standoff over a design choice. The reviewer says "I'm
+      more senior, so we do it my way." Evaluate this resolution mechanism and describe how expert
+      teams should settle author/reviewer disagreements.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Rejects seniority/stubbornness as the deciding factor; "do it my way because I'm senior"
+            is an anti-pattern.
+        - id: c2
+          text: >-
+            States disagreements should be resolved by data, evidence, principles, or established
+            style/standards rather than rank.
+        - id: c3
+          text: >-
+            Notes that if consensus still cannot be reached, the proper path is escalation to a
+            wider group / tech lead, not unilateral imposition.
+      referenceAnswer: >-
+        Settling a design dispute by seniority is an anti-pattern: "do it my way because I outrank
+        you" is exactly the behavior Google's guidance warns against, because it substitutes
+        authority for reasoning and erodes trust. Disagreements should be resolved on the merits, by
+        appealing to data and evidence, to engineering principles, and to the team's documented
+        standards and style guide, so the decision is defensible independent of who made it. When
+        the two still cannot converge, the correct move is to escalate to a broader forum or tech
+        lead for a decision, rather than either party unilaterally imposing their preference. The
+        reviewer also should not block on mere preference at all; that belongs in a nit.
+      passThreshold: 0.6
+    guidance: >-
+      Expert teams resolve review disputes by facts, principles, and documented standards,
+      escalating when needed, never by rank. Imposing a choice via seniority is the named
+      anti-pattern and undermines the collaborative purpose of review.
+  - id: racr-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 531
+    type: multiple_choice
+    prompt: >-
+      A reviewer's queue is full, so they sit on incoming review requests for several days while
+      polishing their own work, reasoning that thoroughness on their own code matters more than
+      review latency. Which evaluation best reflects healthy team norms?
+    choices:
+      - id: a
+        text: >-
+          Correct: review latency is unimportant as long as each review the reviewer eventually does
+          is thorough.
+      - id: b
+        text: >-
+          Reviewers are responsible for prompt review (the norm is roughly within one business day);
+          multi-day stalls block teammates' flow far more than a slightly imperfect or slightly
+          slower-but-prompt review.
+      - id: c
+        text: >-
+          Reviewers should always drop everything instantly for every request regardless of whether
+          it is blocking, since any delay is unacceptable.
+      - id: d
+        text: >-
+          Review requests should be ignored until the author pings three times, to filter out
+          non-urgent changes.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Google's norm is to respond to review requests promptly, typically within one business day
+      (faster if it is blocking). Letting reviews sit for days throttles the whole team's flow. The
+      remedy is promptness, not literally interrupting all work for everything, nor making authors
+      nag.
+  - id: racr-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A polished generic plugin framework is added to support file formats the product does not yet
+      handle and has no committed roadmap for. A reviewer praises its flexibility. Which evaluation
+      is the strongest expert critique?
+    choices:
+      - id: a
+        text: >-
+          This is Speculative Generality: unused flexibility for hypothetical needs is dead weight
+          (YAGNI) that adds comprehension and maintenance cost without delivering value for today's
+          known requirements.
+      - id: b
+        text: >-
+          The framework is good engineering because more abstraction and flexibility is always
+          better and future-proofs the code.
+      - id: c
+        text: The framework violates DRY because plugins might share code, so it should be inlined.
+      - id: d
+        text: >-
+          Flexibility is fine here because cyclomatic complexity only counts conditionals, and a
+          plugin framework has none.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Building elaborate hooks for hypothetical futures is the Speculative Generality smell, and
+      YAGNI says build for today's known requirements. Unused generality is carrying cost (more to
+      read, test, and maintain). The DRY and cyclomatic-complexity framings misdiagnose the actual
+      problem.
+  - id: racr-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 483
+    type: multiple_choice
+    prompt: >-
+      A reviewer notices that a small business-rule change required edits in eight different
+      classes, while a separate "OrderProcessor" class keeps changing for unrelated reasons (tax,
+      shipping, logging). How should the reviewer characterize and prescribe for these two smells?
+    choices:
+      - id: a
+        text: >-
+          Both are Shotgun Surgery; merge all eight classes and OrderProcessor into one to
+          centralize change.
+      - id: b
+        text: Both are Divergent Change; the cure for both is to split every class into smaller pieces.
+      - id: c
+        text: >-
+          The eight-class edit is Shotgun Surgery (gather the scattered logic into one place);
+          OrderProcessor is Divergent Change (split it so each reason to change lives in its own
+          module). They are opposites.
+      - id: d
+        text: >-
+          These are not smells at all; needing to edit multiple files and having a busy central
+          class are normal and require no action.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      One change rippling across many modules is Shotgun Surgery (cure: gather the logic together);
+      one module changing for many unrelated reasons is Divergent Change (cure: split it). They are
+      opposite smells with opposite cures, so blanket merging or blanket splitting both
+      misprescribe.

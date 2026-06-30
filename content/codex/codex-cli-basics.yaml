@@ -1,0 +1,2603 @@
+# Topic: codex-cli-basics (codex)
+# The OpenAI Codex agentic CLI — the codex command, sessions, model selection, and working in a repo.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: codex-cli-basics
+class:
+  kind: tool
+  tool: codex
+title: Codex CLI Basics
+summary: >-
+  The OpenAI Codex agentic CLI — the codex command, sessions, model selection, and working in a
+  repo.
+triggerSignals: []
+items:
+  - id: ccb-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: |
+      What is the name of the executable installed by the modern OpenAI Codex CLI?
+    choices:
+      - id: a
+        text: codex
+      - id: b
+        text: openai-code
+      - id: c
+        text: gpt-cli
+      - id: d
+        text: oai
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The modern agentic Codex CLI installs a binary named `codex`.
+  - id: ccb-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      The modern Codex CLI is implemented predominantly in which programming language?
+    choices:
+      - id: a
+        text: Python
+      - id: b
+        text: Rust (the codex-rs implementation)
+      - id: c
+        text: Go
+      - id: d
+        text: TypeScript only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Codex ships as a Rust binary; the implementation lives in the `codex-rs` directory.
+      An earlier TypeScript implementation was rewritten in Rust.
+  - id: ccb-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      Which command runs Codex non-interactively for scripting and CI, piping its result to stdout?
+    choices:
+      - id: a
+        text: codex batch "..."
+      - id: b
+        text: codex run "..."
+      - id: c
+        text: codex exec "..."
+      - id: d
+        text: codex --silent "..."
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `codex exec "..."` is the canonical non-interactive automation entry point.
+  - id: ccb-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      What happens when you run `codex` with no subcommand and no prompt?
+    choices:
+      - id: a
+        text: It starts an MCP server
+      - id: b
+        text: It prints the version and exits
+      - id: c
+        text: It immediately edits files in the current directory
+      - id: d
+        text: It opens an interactive full-screen TUI
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Bare `codex` launches the interactive TUI. `codex "prompt"` seeds the TUI with an initial
+      prompt.
+  - id: ccb-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which three sandbox modes does Codex CLI support?
+    choices:
+      - id: a
+        text: safe, normal, unsafe
+      - id: b
+        text: read-only, workspace-write, danger-full-access
+      - id: c
+        text: locked, open, admin
+      - id: d
+        text: none, partial, full
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The three sandbox modes are `read-only`, `workspace-write`, and `danger-full-access`.
+  - id: ccb-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: |
+      What file format and name is used for Codex's main configuration file?
+    choices:
+      - id: a
+        text: YAML, codex.yaml
+      - id: b
+        text: JSON, config.json
+      - id: c
+        text: TOML, config.toml
+      - id: d
+        text: INI, .codexrc
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Codex configuration is TOML at `~/.codex/config.toml`.
+  - id: ccb-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: |
+      Which set lists the current Codex CLI approval policies accepted by `--ask-for-approval`?
+    choices:
+      - id: a
+        text: manual, semi, auto, full
+      - id: b
+        text: always, sometimes, never, auto
+      - id: c
+        text: strict, relaxed, off, prompt
+      - id: d
+        text: untrusted, on-request, never
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      The current approval policies are `untrusted`, `on-request`, and `never`. The older
+      `on-failure`
+
+      value is deprecated and now treated as an alias for `on-request`.
+  - id: ccb-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: |
+      Which command continues the most recent prior Codex session?
+    choices:
+      - id: a
+        text: codex resume --last
+      - id: b
+        text: codex continue
+      - id: c
+        text: codex --restore
+      - id: d
+        text: codex session reopen
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      `codex resume --last` resumes the most recent session; `codex resume <id>` resumes a specific
+      one.
+  - id: ccb-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      What is the project instruction/memory file that Codex reads, written in Markdown?
+    choices:
+      - id: a
+        text: INSTRUCTIONS.txt
+      - id: b
+        text: CODEX.md
+      - id: c
+        text: AGENTS.md
+      - id: d
+        text: .codexconfig
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      AGENTS.md is the Markdown project instruction file Codex reads; it is a cross-vendor open
+      standard.
+  - id: ccb-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Which protocol does Codex use to connect external tools and servers?
+    choices:
+      - id: a
+        text: GraphQL
+      - id: b
+        text: LSP (Language Server Protocol)
+      - id: c
+        text: gRPC
+      - id: d
+        text: MCP (Model Context Protocol)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Codex supports the Model Context Protocol (MCP) for external tools and servers.
+  - id: ccb-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: |
+      Which flag attaches an image input to a Codex run?
+    choices:
+      - id: a
+        text: '-i / --image'
+      - id: b
+        text: '-p / --picture'
+      - id: c
+        text: '--attach-img'
+      - id: d
+        text: '--vision'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Image inputs are supplied via `-i` / `--image`.
+  - id: ccb-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: |
+      Which alias and flag disables BOTH approvals and the sandbox at once?
+    choices:
+      - id: a
+        text: '--fast'
+      - id: b
+        text: '--yolo (--dangerously-bypass-approvals-and-sandbox)'
+      - id: c
+        text: '--trust-me'
+      - id: d
+        text: '--no-sandbox-only'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      `--yolo` is the alias for `--dangerously-bypass-approvals-and-sandbox`, giving full
+      unsandboxed access.
+  - id: ccb-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: |
+      Which two commands handle Codex authentication?
+    choices:
+      - id: a
+        text: codex key add and codex key rm
+      - id: b
+        text: codex auth and codex deauth
+      - id: c
+        text: codex signin and codex signout
+      - id: d
+        text: codex login and codex logout
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Authentication uses `codex login` / `codex logout`. You can sign in with ChatGPT or an OpenAI
+      API key.
+  - id: ccb-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: |
+      Name the two primary ways to authenticate the Codex CLI.
+    guidance: |
+      Expect both: "Sign in with ChatGPT" (a paid ChatGPT plan) and using an OpenAI API key.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions signing in with a ChatGPT account/plan
+        - id: c2
+          text: Mentions using an OpenAI API key
+      referenceAnswer: >
+        You can sign in with a ChatGPT account (Plus/Pro/Business/Edu/Enterprise) or authenticate
+        with an OpenAI API key.
+      passThreshold: 0.6
+  - id: ccb-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: |
+      Where does Codex store its main configuration file by default, and what format is it in?
+    guidance: |
+      Expect ~/.codex/config.toml (directory $CODEX_HOME defaults to ~/.codex) and TOML format.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the path is ~/.codex/config.toml (or $CODEX_HOME/config.toml)
+        - id: c2
+          text: States the format is TOML
+      referenceAnswer: >
+        The config file is TOML at ~/.codex/config.toml; the directory is $CODEX_HOME (default
+        ~/.codex).
+      passThreshold: 0.6
+  - id: ccb-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: |
+      List the three Codex sandbox modes.
+    guidance: |
+      Expect read-only, workspace-write, danger-full-access.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists read-only and workspace-write
+        - id: c2
+          text: Lists danger-full-access
+      referenceAnswer: |
+        read-only, workspace-write, and danger-full-access.
+      passThreshold: 0.6
+  - id: ccb-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: free_form
+    prompt: |
+      What is the canonical command for running Codex non-interactively in a script or CI pipeline?
+    guidance: |
+      Expect `codex exec "..."` (alias codex e).
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies codex exec as the non-interactive command
+        - id: c2
+          text: Associates it with scripting/CI/stdout
+      referenceAnswer: |
+        `codex exec "..."` runs non-interactively for scripting and CI, piping results to stdout.
+      passThreshold: 0.6
+  - id: ccb-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: free_form
+    prompt: |
+      Name the current Codex approval policies accepted by `--ask-for-approval`.
+    guidance: >
+      Expect untrusted, on-request, never. The legacy on-failure value is deprecated (alias for
+      on-request).
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists untrusted and never
+        - id: c2
+          text: Lists on-request
+      referenceAnswer: >
+        untrusted, on-request, and never. (The older on-failure value is deprecated and now aliases
+        on-request.)
+      passThreshold: 0.6
+  - id: ccb-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: |
+      What is the name of the cross-vendor Markdown file Codex reads for project instructions?
+    guidance: |
+      Expect AGENTS.md.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names AGENTS.md
+      referenceAnswer: |
+        AGENTS.md.
+      passThreshold: 0.6
+  - id: ccb-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: free_form
+    prompt: |
+      Name two install channels for the Codex CLI.
+    guidance: >
+      Expect any two of: npm (@openai/codex), Homebrew cask, official installer script, GitHub
+      Releases binaries.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names one valid channel (npm, Homebrew, installer script, or GitHub Releases)
+        - id: c2
+          text: Names a second distinct valid channel
+      referenceAnswer: >
+        npm (npm install -g @openai/codex), Homebrew (brew install --cask codex), the official
+        installer script, or prebuilt GitHub Release binaries.
+      passThreshold: 0.6
+  - id: ccb-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: |
+      Why is it a misconception to call Codex CLI "the 2021 OpenAI code-completion model"?
+    choices:
+      - id: a
+        text: >-
+          The modern Codex is an agentic terminal CLI/agent; the old completion model API is
+          deprecated
+      - id: b
+        text: The 2021 model was never released publicly
+      - id: c
+        text: The modern Codex only does completions, not agentic work
+      - id: d
+        text: They are the same product, just renamed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The deprecated 2021 Codex completion model API is unrelated to the modern agentic Codex CLI.
+  - id: ccb-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      In workspace-write mode, why can't Codex reach the network by default?
+    choices:
+      - id: a
+        text: workspace-write physically blocks all I/O including disk
+      - id: b
+        text: Network access is disabled by default and must be explicitly enabled via config
+      - id: c
+        text: The network only works in read-only mode
+      - id: d
+        text: Codex never supports network access in any mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      workspace-write allows reading/editing files and running commands in the workspace, but
+      network
+
+      is disabled by default and enabled via sandbox_workspace_write.network_access.
+  - id: ccb-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      How do sandbox mode and approval policy relate to each other in Codex?
+    choices:
+      - id: a
+        text: Approval policy overrides and disables the sandbox
+      - id: b
+        text: They are the same setting under two names
+      - id: c
+        text: >-
+          They are orthogonal axes; sandbox limits what runs without asking, approval governs when
+          Codex pauses to escalate
+      - id: d
+        text: Sandbox mode is only meaningful when approvals are off
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Sandbox and approvals are independent axes. Presets like Auto combine a specific pair of
+      values.
+  - id: ccb-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      How does Codex merge multiple AGENTS.md files when several exist in a path?
+    choices:
+      - id: a
+        text: All files are merged alphabetically by filename
+      - id: b
+        text: Only the repo-root AGENTS.md is ever read
+      - id: c
+        text: Only the cwd AGENTS.md is read; others are ignored
+      - id: d
+        text: >-
+          Global ~/.codex/AGENTS.md first, then repo root down to cwd, with files closer to cwd
+          overriding earlier guidance
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Precedence flows global -> repo root -> cwd, with the nearest file taking precedence. The
+      combined
+
+      size is capped by project_doc_max_bytes (default 32 KiB).
+  - id: ccb-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: |
+      Why is `--full-auto` no longer the recommended way to run Codex autonomously?
+    choices:
+      - id: a
+        text: It was renamed to --yolo with identical behavior
+      - id: b
+        text: >-
+          It is deprecated in favor of --sandbox workspace-write (with an approval policy) or the
+          Auto preset
+      - id: c
+        text: It only ever worked on macOS
+      - id: d
+        text: It disabled the sandbox entirely, which the new flag does not
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `--full-auto` is deprecated; the recommended approach is `--sandbox workspace-write` with an
+      appropriate approval policy, or the named Auto preset.
+  - id: ccb-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: |
+      Why does the "AGENTS.md is OpenAI-proprietary" claim mislead users?
+    choices:
+      - id: a
+        text: AGENTS.md only works inside the Codex IDE extension
+      - id: b
+        text: AGENTS.md is actually a closed format requiring a license
+      - id: c
+        text: AGENTS.md is a cross-vendor open standard adopted by many agents, not OpenAI-only
+      - id: d
+        text: AGENTS.md is generated automatically and cannot be edited
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      AGENTS.md is an open standard used by tools like Cursor, Aider, Jules, and VS Code, stewarded
+      under
+
+      the Agentic AI Foundation / Linux Foundation.
+  - id: ccb-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: |
+      What does the `untrusted` approval policy actually do?
+    choices:
+      - id: a
+        text: It treats every command as safe to run silently
+      - id: b
+        text: It refuses to run any command at all
+      - id: c
+        text: It runs all commands without ever asking
+      - id: d
+        text: It auto-runs only known-safe commands and asks for approval on everything else
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Under `untrusted`, only commands Codex deems known-safe run automatically; the rest require
+      approval.
+  - id: ccb-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: |
+      How does the named "Auto" preset map to underlying flags?
+    choices:
+      - id: a
+        text: '--sandbox workspace-write combined with --ask-for-approval on-request'
+      - id: b
+        text: '--sandbox read-only with --ask-for-approval never'
+      - id: c
+        text: '--dangerously-bypass-approvals-and-sandbox'
+      - id: d
+        text: '--sandbox danger-full-access with --ask-for-approval untrusted'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Auto = `--sandbox workspace-write --ask-for-approval on-request`. Read Only = `--sandbox
+      read-only`.
+  - id: ccb-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: |
+      In what sense can Codex act in BOTH directions with MCP?
+    choices:
+      - id: a
+        text: It only runs as a server and cannot consume other servers
+      - id: b
+        text: It only consumes MCP servers and can never be one
+      - id: c
+        text: >-
+          It is an MCP client consuming servers and can also run as an MCP server exposing itself as
+          a tool
+      - id: d
+        text: MCP only works between two Codex instances
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Codex is an MCP client (consuming servers) and can run as an MCP server via `codex
+      mcp-server`.
+  - id: ccb-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: |
+      Why does npm being an install channel NOT make Codex a Node.js/TypeScript tool?
+    choices:
+      - id: a
+        text: npm installs a Python shim that calls a server
+      - id: b
+        text: npm only installs documentation, not the tool
+      - id: c
+        text: The npm package contains the full TypeScript source that runs at runtime
+      - id: d
+        text: Codex ships as a Rust binary; npm is just one channel that wraps and delivers that binary
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The npm package wraps the Rust (codex-rs) binary; the runtime is the compiled Rust executable.
+  - id: ccb-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      What is the practical difference between `codex "fix the bug"` and `codex exec "fix the bug"`?
+    choices:
+      - id: a
+        text: >-
+          The first opens the interactive TUI seeded with that prompt; the second runs
+          non-interactively to stdout
+      - id: b
+        text: Both open the TUI; exec just adds logging
+      - id: c
+        text: The first runs in CI; the second is interactive
+      - id: d
+        text: There is no difference
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      `codex "prompt"` seeds the interactive TUI; `codex exec "prompt"` is the non-interactive
+      automation path.
+  - id: ccb-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: |
+      Why does read-only mode still let Codex answer questions about your code?
+    choices:
+      - id: a
+        text: read-only blocks all file access, so answers come from the model's memory only
+      - id: b
+        text: >-
+          read-only permits reading files; it only blocks edits, command execution, and network
+          without approval
+      - id: c
+        text: read-only secretly allows writes to temp files
+      - id: d
+        text: read-only is identical to workspace-write for reads and writes
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      In read-only mode Codex can read files and answer questions but needs approval to edit, run
+      commands, or use the network.
+  - id: ccb-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: |
+      What is the role of the `model_provider` config key, and what is its default?
+    choices:
+      - id: a
+        text: It names the MCP server; it has no default
+      - id: b
+        text: It sets the UI theme; it defaults to "dark"
+      - id: c
+        text: It chooses the sandbox backend; it defaults to "seatbelt"
+      - id: d
+        text: It selects the backend provider for model requests; it defaults to "openai"
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      `model_provider` chooses the request backend and defaults to `"openai"`.
+  - id: ccb-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: free_form
+    prompt: >
+      Explain why sandbox mode and approval policy are considered two independent settings rather
+      than one.
+    guidance: >
+      Should explain the sandbox constrains what runs without prompting, while the approval policy
+      decides
+
+      when Codex pauses to ask for escalation; presets combine a specific pair.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the sandbox limits/constrains what commands can run (and where they can
+            write/network)
+        - id: c2
+          text: States the approval policy governs when Codex pauses to request escalation
+        - id: c3
+          text: Conveys they are orthogonal and combined by presets
+      referenceAnswer: >
+        The sandbox sets the technical boundary for what can execute and what files/network are
+        reachable without
+
+        asking. The approval policy is a separate axis that decides when Codex pauses to request
+        permission to
+
+        escalate (e.g., write outside the workspace or use the network). Because they are
+        orthogonal, named
+
+        presets like Auto pick a specific (sandbox, approval) pair.
+      passThreshold: 0.6
+  - id: ccb-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: free_form
+    prompt: >
+      Describe how Codex merges AGENTS.md files when global, repo-root, and current-directory files
+      all exist.
+    guidance: >
+      Should describe global first, then repo root downward to cwd, with nearest file overriding,
+      and a size cap.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions global ~/.codex/AGENTS.md is read first
+        - id: c2
+          text: Describes concatenation from repo/Git root down to cwd
+        - id: c3
+          text: States files closer to cwd override earlier guidance
+      referenceAnswer: >
+        Codex reads the global ~/.codex/AGENTS.md first, then concatenates files from the repo/Git
+        root down to the
+
+        current directory, with files nearer the cwd overriding earlier guidance. The combined
+        content is capped by
+
+        project_doc_max_bytes (default 32 KiB).
+      passThreshold: 0.6
+  - id: ccb-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: free_form
+    prompt: |
+      Explain why calling Codex CLI "a Node.js tool" is inaccurate even though it installs via npm.
+    guidance: |
+      Should note Codex is a Rust binary (codex-rs); npm just wraps/delivers the binary.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Codex ships as a compiled Rust binary (codex-rs)
+        - id: c2
+          text: Explains npm is just one delivery channel wrapping the binary
+      referenceAnswer: >
+        Codex is a Rust binary (the codex-rs implementation). npm is only one of several install
+        channels that wraps
+
+        and delivers that prebuilt binary, so the runtime is Rust, not Node.js/TypeScript.
+      passThreshold: 0.6
+  - id: ccb-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >
+      Compare the read-only and workspace-write sandbox modes in terms of what Codex may do without
+      approval.
+    guidance: >
+      Should contrast: read-only can read but needs approval to edit/run/network; workspace-write
+      can edit and run
+
+      in the workspace, with network off by default.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes read-only as read/answer only, requiring approval to edit, run commands, or
+            use network
+        - id: c2
+          text: Describes workspace-write as able to edit files and run commands within the workspace
+        - id: c3
+          text: Notes network is disabled by default in workspace-write
+      referenceAnswer: >
+        In read-only, Codex can read files and answer questions but needs approval to edit, run
+        commands, or access
+
+        the network. In workspace-write, it can read/edit files and run commands within the
+        workspace without
+
+        per-action approval, but network access is disabled by default (enabled only via config).
+      passThreshold: 0.6
+  - id: ccb-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: |
+      Explain what makes `--yolo` more dangerous than simply turning off approval prompts.
+    guidance: >
+      Should explain --yolo (--dangerously-bypass-approvals-and-sandbox) disables BOTH approvals and
+      the sandbox.
+    rubric:
+      criteria:
+        - id: c1
+          text: States --yolo disables approvals AND the sandbox (not just prompts)
+        - id: c2
+          text: Conveys this grants full unsandboxed system access
+      referenceAnswer: >
+        `--yolo` is the alias for `--dangerously-bypass-approvals-and-sandbox`. It removes both the
+        approval prompts
+
+        and the sandbox boundary, so Codex runs with full unsandboxed system access. Merely
+        disabling prompts
+
+        (e.g., approval never with a sandbox) still keeps the sandbox constraints in place.
+      passThreshold: 0.6
+  - id: ccb-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: free_form
+    prompt: |
+      Explain the two directions in which Codex participates in the Model Context Protocol.
+    guidance: >
+      Should cover Codex as an MCP client (consuming external servers) and Codex running as an MCP
+      server.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains Codex consumes external MCP servers (as a client)
+        - id: c2
+          text: Explains Codex can run as an MCP server exposing itself to other clients
+      referenceAnswer: >
+        As an MCP client, Codex connects to external MCP servers to gain extra tools. Conversely,
+        via its MCP server
+
+        mode (codex mcp-server), Codex exposes itself as a tool that other MCP clients can call. So
+        it works in both directions.
+      passThreshold: 0.6
+  - id: ccb-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: free_form
+    prompt: |
+      Why does the Read Only named preset still allow Codex to be useful for code questions?
+    guidance: >
+      Should explain that reading files is permitted, so Codex can analyze and answer even though it
+      can't edit/run.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Read Only maps to --sandbox read-only
+        - id: c2
+          text: Explains reading is allowed, so analysis/Q&A works while edits/commands need approval
+      referenceAnswer: >
+        The Read Only preset uses --sandbox read-only, which lets Codex read your files and reason
+        about them. It can
+
+        therefore answer questions and analyze code; it just needs approval before editing, running
+        commands, or
+
+        using the network.
+      passThreshold: 0.6
+  - id: ccb-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: >
+      You want a single non-interactive Codex run in CI that prints a summary of failing tests to
+      stdout. Which invocation fits?
+    choices:
+      - id: a
+        text: codex exec "summarize the failing tests"
+      - id: b
+        text: codex "summarize the failing tests"
+      - id: c
+        text: codex resume --last
+      - id: d
+        text: codex mcp "summarize the failing tests"
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `codex exec` is the non-interactive path designed for scripting/CI with stdout output.
+  - id: ccb-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: >
+      You want Codex to edit files and run commands in the project without per-action prompts, but
+      still ask before stepping outside. Which preset/flags fit?
+    choices:
+      - id: a
+        text: '--dangerously-bypass-approvals-and-sandbox'
+      - id: b
+        text: '--sandbox workspace-write --ask-for-approval on-request (the Auto preset)'
+      - id: c
+        text: '--sandbox read-only --ask-for-approval never'
+      - id: d
+        text: '--sandbox danger-full-access'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Auto = workspace-write + on-request: it works freely in the workspace and escalates only when
+      needed.
+  - id: ccb-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: >
+      A workspace-write Codex run needs to `npm install` from the registry. What is the correct
+      configuration change?
+    choices:
+      - id: a
+        text: Add the registry URL to AGENTS.md
+      - id: b
+        text: Switch to read-only mode
+      - id: c
+        text: Set sandbox_workspace_write.network_access = true in config.toml
+      - id: d
+        text: Set approval_policy = "never"
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Network is off by default in workspace-write; enable it with
+      sandbox_workspace_write.network_access = true.
+  - id: ccb-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      You want to override just the model for one run without editing config.toml. Which flag works?
+    choices:
+      - id: a
+        text: '-c sandbox_mode=...'
+      - id: b
+        text: '--set-model only in config.toml'
+      - id: c
+        text: '--provider'
+      - id: d
+        text: '-m / --model'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Use `-m` / `--model` for a per-run model override; you can also use `/model` in the TUI or the
+      `model` config key.
+  - id: ccb-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: >
+      You want to add a local STDIO MCP server named "fs" that runs `my-fs-server` from the CLI.
+      Which command fits?
+    choices:
+      - id: a
+        text: codex add-server fs my-fs-server
+      - id: b
+        text: codex mcp add fs -- my-fs-server
+      - id: c
+        text: codex mcp fs=my-fs-server
+      - id: d
+        text: codex tool install fs
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      `codex mcp add <name> -- <command>` registers a STDIO MCP server; the `--` separates Codex
+      flags from the server command.
+  - id: ccb-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >
+      You keep several config bundles (one for fast iteration, one for careful review) and want to
+      switch between them. What should you use?
+    choices:
+      - id: a
+        text: Pass --bundle for each setting
+      - id: b
+        text: Create separate ~/.codex directories per bundle
+      - id: c
+        text: Define profiles in config.toml and select with --profile / -p
+      - id: d
+        text: Edit AGENTS.md before each run
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Profiles are named config bundles selected with `--profile` / `-p`. Ad-hoc tweaks use `-c
+      key=value`.
+  - id: ccb-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: |
+      Inside the TUI you want to see which MCP servers are currently active. What do you type?
+    choices:
+      - id: a
+        text: /status mcp
+      - id: b
+        text: /servers
+      - id: c
+        text: /tools list
+      - id: d
+        text: /mcp
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The `/mcp` slash command lists active MCP servers in the TUI.
+  - id: ccb-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >
+      You want to run Codex against a different directory than the current shell location for one
+      invocation. Which flag fits?
+    choices:
+      - id: a
+        text: '--cd / -C'
+      - id: b
+        text: '--chdir-config'
+      - id: c
+        text: '-c cwd=...'
+      - id: d
+        text: '--root'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `--cd` / `-C` sets the working directory for the run.
+  - id: ccb-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >
+      You need to override a single nested config key (the model) for one run without a profile.
+      Which works?
+    choices:
+      - id: a
+        text: codex set model "do the task"
+      - id: b
+        text: codex --config-file model "do the task"
+      - id: c
+        text: codex -c model="some-model" "do the task"
+      - id: d
+        text: codex --profile model "do the task"
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `-c key=value` applies an ad-hoc override for a single run; it is repeatable.
+  - id: ccb-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 375
+    type: multiple_choice
+    prompt: >
+      You want to expose Codex itself as a tool to another MCP client (e.g., another agent). What do
+      you run?
+    choices:
+      - id: a
+        text: codex login --server
+      - id: b
+        text: codex exec --as-server
+      - id: c
+        text: codex resume --mcp
+      - id: d
+        text: Run Codex in its MCP server mode via codex mcp-server
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      `codex mcp-server` runs Codex itself as an MCP server over stdio, exposing it as a tool other
+      MCP clients
+
+      can call. (The `codex mcp` subcommands instead manage MCP servers Codex connects to as a
+      client.)
+  - id: ccb-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >
+      You ran a long Codex session yesterday and want to continue that exact session by its
+      identifier. What do you use?
+    choices:
+      - id: a
+        text: codex resume <session-id>
+      - id: b
+        text: codex exec --resume <session-id>
+      - id: c
+        text: codex --replay <session-id>
+      - id: d
+        text: codex login <session-id>
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      `codex resume <id>` continues a specific prior session; `codex resume --last` resumes the most
+      recent.
+  - id: ccb-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >
+      You want Codex to read a screenshot of an error and a log file when describing a bug. Which
+      flag attaches the image?
+    choices:
+      - id: a
+        text: '--attach'
+      - id: b
+        text: '-i / --image'
+      - id: c
+        text: '-f / --file'
+      - id: d
+        text: '--screenshot'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Image inputs are attached with `-i` / `--image`.
+  - id: ccb-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >
+      In workspace-write mode you also need Codex to write build output into /var/cache/myapp
+      (outside the workspace). What config makes that path writable without full access?
+    choices:
+      - id: a
+        text: Add the path to AGENTS.md
+      - id: b
+        text: Switch sandbox_mode to danger-full-access
+      - id: c
+        text: Set approval_policy to never
+      - id: d
+        text: Add the path to sandbox_workspace_write.writable_roots
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      sandbox_workspace_write.writable_roots adds extra writable paths while keeping the rest of the
+      sandbox intact.
+  - id: ccb-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: >
+      Write the exact CLI flags (or named preset) to launch Codex so it can freely edit and run
+      commands in the
+
+      current project but must ask before doing anything outside it, and explain your choice in one
+      sentence.
+    guidance: >
+      Should give --sandbox workspace-write --ask-for-approval on-request (the Auto preset) and
+      justify briefly.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Provides --sandbox workspace-write with --ask-for-approval on-request (or names the Auto
+            preset)
+        - id: c2
+          text: >-
+            Explains workspace-write allows in-project edits/commands while on-request escalates for
+            outside actions
+      referenceAnswer: >
+        Use `--sandbox workspace-write --ask-for-approval on-request` (the Auto preset).
+        workspace-write lets Codex
+
+        edit files and run commands inside the project without prompting, while on-request makes it
+        pause and ask
+
+        before escalating (e.g., writing outside the workspace or using the network).
+      passThreshold: 0.6
+  - id: ccb-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >
+      A teammate's workspace-write Codex run fails because `pip install` cannot reach the network.
+      Describe the
+
+      config.toml change that fixes it and where it lives.
+    guidance: |
+      Should set sandbox_workspace_write.network_access = true in config.toml (or via -c override).
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that network is disabled by default in workspace-write
+        - id: c2
+          text: Sets sandbox_workspace_write.network_access = true (in config.toml or via -c)
+      referenceAnswer: >
+        In workspace-write, outbound network is off by default. Set
+        sandbox_workspace_write.network_access = true in
+
+        ~/.codex/config.toml (or pass -c sandbox_workspace_write.network_access=true for a single
+        run) to allow the
+
+        install to reach the registry.
+      passThreshold: 0.6
+  - id: ccb-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >
+      Show the command to register a local STDIO MCP server named "github" that launches the
+      executable
+
+      `gh-mcp-server`, and explain the role of the `--` in the command.
+    guidance: >
+      Should give codex mcp add github -- gh-mcp-server and explain -- separates Codex options from
+      the server command.
+    rubric:
+      criteria:
+        - id: c1
+          text: Provides codex mcp add github -- gh-mcp-server (or equivalent correct form)
+        - id: c2
+          text: Explains -- separates Codex's own flags from the server command/args
+      referenceAnswer: >
+        Run `codex mcp add github -- gh-mcp-server`. The `--` marks the end of Codex's own options
+        so everything
+
+        after it (the command and any args) is treated as the MCP server's launch command for the
+        STDIO transport.
+      passThreshold: 0.6
+  - id: ccb-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: >
+      You maintain two Codex setups: a "review" bundle (read-only, careful) and a "build" bundle
+      (workspace-write).
+
+      Describe how to express these and switch between them at launch.
+    guidance: |
+      Should describe defining profiles in config.toml and selecting with --profile / -p.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes defining named profiles in config.toml
+        - id: c2
+          text: Describes selecting one at launch with --profile / -p
+      referenceAnswer: >
+        Define two named profiles in config.toml (e.g., [profiles.review] and [profiles.build]) each
+        setting the
+
+        relevant sandbox_mode/approval_policy, then launch with `--profile review` or `--profile
+        build` (alias -p) to
+
+        pick the bundle for that run.
+      passThreshold: 0.6
+  - id: ccb-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >
+      A nightly job should run Codex over a checked-out repo located at /srv/repo regardless of the
+      shell's current
+
+      directory, and produce machine-readable output. Outline the invocation.
+    guidance: >
+      Should combine codex exec with --cd/-C /srv/repo (non-interactive run targeting that directory
+      to stdout).
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses codex exec for non-interactive/stdout output
+        - id: c2
+          text: Uses --cd / -C to target /srv/repo
+      referenceAnswer: >
+        Use a non-interactive run pointed at the repo, e.g. `codex exec -C /srv/repo "..."` (or --cd
+        /srv/repo). exec
+
+        gives scriptable stdout output and -C/--cd sets the working directory regardless of where
+        the cron shell starts.
+      passThreshold: 0.6
+  - id: ccb-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: >
+      You want to add a remote MCP server reachable over Streamable HTTP with a bearer token.
+      Describe how you would
+
+      configure it in config.toml at a high level (transport and auth).
+    guidance: >
+      Should describe an [mcp_servers.<id>] table using url (HTTP transport) with bearer-token/OAuth
+      auth, vs STDIO command/args.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Uses an [mcp_servers.<id>] table in config.toml with a url for the Streamable HTTP
+            transport
+        - id: c2
+          text: Mentions configuring bearer-token/OAuth auth for the HTTP server
+      referenceAnswer: >
+        Add an [mcp_servers.<id>] table in config.toml that sets a url (Streamable HTTP transport)
+        instead of a
+
+        command/args (which would be STDIO), and configure its bearer-token/OAuth authentication.
+        Per-server enabled
+
+        and enabled_tools/disabled_tools controls can further scope it.
+      passThreshold: 0.6
+  - id: ccb-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: free_form
+    prompt: >
+      Inside an interactive Codex session you want to change the model and check active MCP servers
+      without leaving
+
+      the TUI. Which slash commands do you use?
+    guidance: |
+      Should name /model (change model) and /mcp (list MCP servers).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names /model for changing the model
+        - id: c2
+          text: Names /mcp for listing MCP servers
+      referenceAnswer: >
+        Use /model to switch the model and /mcp to list the active MCP servers, both from within the
+        TUI.
+      passThreshold: 0.6
+  - id: ccb-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: >
+      A user sets approval_policy = "never" but keeps sandbox_mode = "read-only" and is surprised
+      Codex still refuses
+
+      to edit files. What is the correct diagnosis?
+    choices:
+      - id: a
+        text: >-
+          read-only blocks edits at the sandbox layer; "never" only removes prompts, it does not
+          grant write capability
+      - id: b
+        text: approval_policy "never" is invalid and is ignored
+      - id: c
+        text: The two settings conflict, so Codex defaults to danger-full-access
+      - id: d
+        text: read-only silently upgrades to workspace-write when approvals are never
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Sandbox and approval are independent. Disabling prompts does not expand the sandbox; read-only
+      still forbids edits.
+  - id: ccb-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: >
+      A repo-root AGENTS.md says "use 4-space indent" but a nested package's AGENTS.md says "use
+      2-space indent."
+
+      Codex working inside the nested package uses 2-space. Why?
+    choices:
+      - id: a
+        text: AGENTS.md files are merged alphabetically and "2" sorts first
+      - id: b
+        text: >-
+          Files closer to the cwd override earlier ones; the nested AGENTS.md wins over the
+          repo-root file
+      - id: c
+        text: Only the repo-root file is read; the 2-space must come from elsewhere
+      - id: d
+        text: Codex randomly picks one AGENTS.md per run
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Precedence runs global -> repo root -> cwd, with the nearest file overriding earlier guidance.
+  - id: ccb-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: >
+      On Linux, a workspace-write Codex run is unexpectedly blocked from a syscall even though the
+      path is in the
+
+      workspace. Which underlying mechanism most likely explains the block?
+    choices:
+      - id: a
+        text: Linux has no sandbox, so the block must be a filesystem permission bug
+      - id: b
+        text: Codex on Linux uses Apple Seatbelt, which is misconfigured
+      - id: c
+        text: >-
+          The Linux sandbox uses Landlock/seccomp (sometimes bwrap), which can restrict
+          syscalls/paths beyond file mode
+      - id: d
+        text: workspace-write disables all syscalls by design
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Linux sandboxing uses Landlock/seccomp (and bwrap in some setups); macOS uses Apple Seatbelt
+      via sandbox-exec.
+  - id: ccb-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: >
+      A migration guide tells a team to "just keep using --full-auto." A reviewer flags this. What
+      is the most
+
+      accurate reason to update the guidance?
+    choices:
+      - id: a
+        text: '--full-auto only works in non-interactive exec mode'
+      - id: b
+        text: '--full-auto now means full unsandboxed access, which is unsafe'
+      - id: c
+        text: '--full-auto was renamed to --yolo with identical semantics'
+      - id: d
+        text: >-
+          --full-auto is deprecated; the modern equivalent is --sandbox workspace-write with an
+          approval policy (or the Auto preset)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      `--full-auto` is deprecated in favor of `--sandbox workspace-write` (plus an approval policy)
+      / the Auto preset.
+  - id: ccb-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: multiple_choice
+    prompt: >
+      A team ships a config.json file expecting Codex to read it, but their settings are ignored.
+      What is the root cause?
+    choices:
+      - id: a
+        text: config.json must be placed in the repo root, not ~/.codex
+      - id: b
+        text: >-
+          Codex config is TOML (config.toml), not JSON; a config.json is not read as Codex
+          configuration
+      - id: c
+        text: JSON is valid but only for MCP servers, not general config
+      - id: d
+        text: Codex caches the first config and ignores later files
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Codex configuration is TOML at ~/.codex/config.toml. A JSON/YAML file is not the Codex config
+      format.
+  - id: ccb-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: >
+      A project-scoped .codex/config.toml exists but its settings are not applied. The user runs in
+      a directory Codex
+
+      has not been told to trust. What is the most likely explanation?
+    choices:
+      - id: a
+        text: The file must be named config.json to be project-scoped
+      - id: b
+        text: Project-scoped config files are never supported
+      - id: c
+        text: Project-scoped .codex/config.toml is honored only when the project is trusted
+      - id: d
+        text: Project config only applies in danger-full-access mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      A project-scoped .codex/config.toml is honored when the project is trusted; otherwise it is
+      not applied.
+  - id: ccb-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >
+      An older guide sets approval_policy = "on-failure". On a current Codex CLI, how should you
+      expect this value to
+
+      behave, and what is the correct guidance?
+    choices:
+      - id: a
+        text: It is rejected as an invalid value and aborts the run
+      - id: b
+        text: >-
+          It is deprecated and now treated as an alias for on-request; update the config to
+          on-request explicitly
+      - id: c
+        text: It silently disables the sandbox after the first command failure
+      - id: d
+        text: It is identical to never and suppresses all prompts
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      `on-failure` is deprecated. Current Codex accepts it only as a backward-compat alias for
+      `on-request`; the
+
+      documented guidance is to use `on-request` (interactive) or `never` (non-interactive)
+      explicitly.
+  - id: ccb-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >
+      A team wants strong autonomy but their CISO objects to --yolo. Which compromise preserves a
+      real safety
+
+      boundary while still letting Codex work without constant prompts?
+    choices:
+      - id: a
+        text: >-
+          workspace-write with on-request approvals (Auto) keeps the sandbox boundary while reducing
+          prompts
+      - id: b
+        text: danger-full-access with never approvals, which is safer than --yolo
+      - id: c
+        text: read-only with never, which lets Codex edit silently
+      - id: d
+        text: '--yolo but only in CI, which keeps the sandbox'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Auto (workspace-write + on-request) keeps the sandbox and escalation path, unlike --yolo which
+      removes both.
+  - id: ccb-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >
+      A Windows user reports the sandbox behaves inconsistently when running Codex natively. What is
+      the recommended
+
+      remedy reflecting Codex's platform support?
+    choices:
+      - id: a
+        text: Use danger-full-access because Windows lacks any sandbox
+      - id: b
+        text: Disable the sandbox with --yolo, the only Windows option
+      - id: c
+        text: Run Codex via WSL2, which is the recommended environment on Windows
+      - id: d
+        text: Switch to read-only permanently on Windows
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Codex recommends running via WSL2 on Windows; macOS uses Seatbelt and Linux uses
+      Landlock/seccomp.
+  - id: ccb-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >
+      A huge AGENTS.md hierarchy means some lower-priority guidance seems to be dropped. Which
+      configuration value is
+
+      most relevant to investigate?
+    choices:
+      - id: a
+        text: approval_policy, which blocks large files
+      - id: b
+        text: model_reasoning_effort, which truncates instructions
+      - id: c
+        text: sandbox_mode, which limits file reads
+      - id: d
+        text: project_doc_max_bytes (default 32 KiB), which caps the combined AGENTS.md size
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      The combined AGENTS.md content is capped by project_doc_max_bytes (default 32 KiB); exceeding
+      it can drop guidance.
+  - id: ccb-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >
+      An MCP server is configured but a specific dangerous tool keeps appearing. The team wants to
+      keep the server but
+
+      hide that one tool. Which mechanism is correct?
+    choices:
+      - id: a
+        text: Use the per-server disabled_tools (or enabled_tools allowlist) control
+      - id: b
+        text: Set approval_policy = "never" for the whole CLI
+      - id: c
+        text: Delete the server entirely; tools cannot be scoped
+      - id: d
+        text: Move the server config to AGENTS.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Per-server enabled/enabled_tools/disabled_tools controls let you scope which tools a server
+      exposes.
+  - id: ccb-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >
+      A user claims "Auto mode and --yolo are basically the same since both reduce prompts." What is
+      the key technical
+
+      distinction a reviewer should point out?
+    choices:
+      - id: a
+        text: Auto removes the sandbox; --yolo keeps it
+      - id: b
+        text: >-
+          Auto keeps a sandbox (workspace-write) and an escalation path; --yolo removes the sandbox
+          entirely
+      - id: c
+        text: Both keep identical sandboxes and only differ in logging
+      - id: d
+        text: Auto requires API keys while --yolo requires ChatGPT login
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Auto = workspace-write + on-request (sandbox intact). --yolo = bypass approvals AND sandbox
+      (no boundary).
+  - id: ccb-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >
+      A `-c` override and a `--profile` selection set conflicting values for the same key in one
+      run. Which is the
+
+      sound way to reason about which applies?
+    choices:
+      - id: a
+        text: Whichever is read first from disk wins, regardless of source
+      - id: b
+        text: The profile always wins because it is named
+      - id: c
+        text: Conflicts abort the run with an error every time
+      - id: d
+        text: >-
+          Ad-hoc -c overrides are the most specific per-run signal and take precedence over a
+          profile's value
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Explicit per-run `-c key=value` overrides are the most specific signal and override
+      profile/config defaults.
+  - id: ccb-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: free_form
+    prompt: >
+      A user sets approval_policy = "never" hoping Codex will start editing files, but it is still
+      in read-only mode and
+
+      refuses to write. Diagnose the misunderstanding and state the fix.
+    guidance: >
+      Should identify that sandbox (read-only) and approval policy are independent; "never" only
+      removes prompts, it
+
+      does not grant write capability. Fix: switch sandbox_mode to workspace-write.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that read-only blocks writes at the sandbox layer, independent of approval
+            policy
+        - id: c2
+          text: Explains approval_policy never only suppresses prompts, not capabilities
+        - id: c3
+          text: States the fix is to set sandbox_mode to workspace-write (or use a preset that does)
+      referenceAnswer: >
+        The two settings are orthogonal. read-only forbids file edits at the sandbox layer; setting
+        approval_policy
+
+        to "never" only stops Codex from prompting, it does not grant write permission. To edit
+        files, change
+
+        sandbox_mode to workspace-write (e.g., via the Auto preset), not the approval policy.
+      passThreshold: 0.6
+  - id: ccb-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: free_form
+    prompt: >
+      Two AGENTS.md files give conflicting style rules: the repo root says tabs, a subdirectory says
+      spaces. Codex in
+
+      the subdirectory follows spaces. Explain the precedence rule that produces this and what would
+      change the outcome.
+    guidance: >
+      Should explain nearest-to-cwd file overrides earlier ones (global -> root -> cwd), and that
+      editing the
+
+      subdirectory file or running from a different directory changes which wins.
+    rubric:
+      criteria:
+        - id: c1
+          text: States precedence runs global -> repo root -> cwd with nearest file overriding
+        - id: c2
+          text: Explains the subdirectory AGENTS.md is nearest to cwd so it wins
+        - id: c3
+          text: Notes changing cwd or editing the nearer file would change the effective rule
+      referenceAnswer: >
+        Codex concatenates AGENTS.md from global to repo root down to the cwd, and files closer to
+        the cwd override
+
+        earlier guidance. Running inside the subdirectory makes its AGENTS.md the nearest, so its
+        "spaces" rule wins
+
+        over the root "tabs" rule. Editing the subdirectory file, or running from a directory above
+        it, would change
+
+        which guidance is effective.
+      passThreshold: 0.6
+  - id: ccb-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >
+      A team's autonomy guide recommends `--full-auto`. As a reviewer, explain why this is outdated
+      and what to
+
+      recommend instead, including the safety implications.
+    guidance: >
+      Should note --full-auto is deprecated, recommend --sandbox workspace-write with an approval
+      policy / Auto preset,
+
+      and contrast with --yolo which removes the sandbox.
+    rubric:
+      criteria:
+        - id: c1
+          text: States --full-auto is deprecated
+        - id: c2
+          text: Recommends --sandbox workspace-write with an approval policy (or the Auto preset)
+        - id: c3
+          text: Notes this preserves the sandbox boundary unlike --yolo
+      referenceAnswer: >
+        `--full-auto` is deprecated. Recommend `--sandbox workspace-write` together with an approval
+        policy (or the
+
+        named Auto preset = workspace-write + on-request). This keeps the sandbox boundary and an
+        escalation path,
+
+        whereas --yolo (--dangerously-bypass-approvals-and-sandbox) removes both and grants full
+        unsandboxed access.
+      passThreshold: 0.6
+  - id: ccb-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >
+      On macOS a workspace-write run is denied an operation that "should" be allowed. Walk through
+      how you would
+
+      determine whether the platform sandbox mechanism is the cause and how it differs from Linux.
+    guidance: >
+      Should mention macOS uses Apple Seatbelt via sandbox-exec, Linux uses Landlock/seccomp (and
+      bwrap), and that the
+
+      sandbox can deny operations beyond simple file permissions.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies macOS uses Apple Seatbelt via sandbox-exec
+        - id: c2
+          text: Contrasts with Linux Landlock/seccomp (possibly bwrap)
+        - id: c3
+          text: Explains the sandbox can deny operations independent of normal file permissions
+      referenceAnswer: >
+        On macOS the workspace-write sandbox is enforced by Apple Seatbelt via sandbox-exec, which
+        can deny operations
+
+        (paths, network, certain syscalls) beyond normal Unix permissions. To confirm it is the
+        sandbox, check whether
+
+        the same operation succeeds in danger-full-access or outside the sandbox. On Linux the
+        equivalent layer is
+
+        Landlock/seccomp (sometimes bwrap), so the specific denials and diagnostics differ by
+        platform.
+      passThreshold: 0.6
+  - id: ccb-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: free_form
+    prompt: >
+      A user complains that some of their AGENTS.md instructions are silently ignored only when
+      their instruction
+
+      files grow large. Identify the most likely cause and the relevant config knob.
+    guidance: |
+      Should point to project_doc_max_bytes (default 32 KiB) capping combined AGENTS.md content.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that combined AGENTS.md content is size-capped
+        - id: c2
+          text: Names project_doc_max_bytes (default 32 KiB) as the relevant knob
+      referenceAnswer: >
+        The combined AGENTS.md content has a size cap controlled by project_doc_max_bytes (default
+        32 KiB). When the
+
+        merged instruction files exceed it, later/overflowing content is dropped, which looks like
+        silently ignored
+
+        instructions. Raising project_doc_max_bytes or trimming the files resolves it.
+      passThreshold: 0.6
+  - id: ccb-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: >
+      A reviewer says "Auto mode is just --yolo with extra steps." Refute or support this claim with
+      the precise
+
+      technical difference in the resulting security posture.
+    guidance: >
+      Should refute: Auto = workspace-write + on-request (sandbox + escalation intact); --yolo
+      bypasses both approvals
+
+      and sandbox.
+    rubric:
+      criteria:
+        - id: c1
+          text: Refutes the claim
+        - id: c2
+          text: States Auto keeps the workspace-write sandbox and on-request escalation
+        - id: c3
+          text: States --yolo removes both the sandbox and approvals
+      referenceAnswer: >
+        The claim is wrong. Auto maps to --sandbox workspace-write --ask-for-approval on-request, so
+        the sandbox
+
+        boundary and an escalation/approval path remain in force. --yolo
+
+        (--dangerously-bypass-approvals-and-sandbox) removes both the sandbox and approvals, giving
+        full unsandboxed
+
+        system access. The security postures are fundamentally different.
+      passThreshold: 0.6
+  - id: ccb-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >
+      A run uses a "careful" profile but a teammate also passed -c approval_policy=never on the
+      command line, and the
+
+      run no longer prompts. Explain why, and how to reason about override precedence.
+    guidance: >
+      Should explain that explicit per-run -c overrides are the most specific and take precedence
+      over profile/config values.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains -c is an ad-hoc per-run override
+        - id: c2
+          text: States -c takes precedence over the selected profile's value
+      referenceAnswer: >
+        The explicit `-c approval_policy=never` is an ad-hoc per-run override, which is the most
+        specific signal and
+
+        takes precedence over the profile's approval_policy. So even though the profile is
+        "careful," the command-line
+
+        override wins and prompting is disabled for that run. Remove the -c override to restore the
+        profile's behavior.
+      passThreshold: 0.6
+  - id: ccb-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: >
+      A CI pipeline runs Codex with --dangerously-bypass-approvals-and-sandbox on every pull request
+      from external
+
+      contributors. Which critique is most defensible?
+    choices:
+      - id: a
+        text: >-
+          It removes both sandbox and approvals on untrusted input, a serious security anti-pattern;
+          prefer workspace-write with on-request or read-only
+      - id: b
+        text: It is fine because CI is isolated by definition
+      - id: c
+        text: It is fine as long as the model is the recommended GPT-5 family
+      - id: d
+        text: It is safe because --yolo only skips confirmation prompts
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Running fully unsandboxed on untrusted PRs is a major anti-pattern; use a sandboxed mode with
+      an approval policy instead.
+  - id: ccb-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: >
+      Two teams debate pinning a specific model id (e.g., "gpt-5.4") in shared docs vs. describing
+      it durably. Which
+
+      judgment best reflects how Codex model selection evolves?
+    choices:
+      - id: a
+        text: Always hard-pin the exact id; it never changes
+      - id: b
+        text: >-
+          Pin loosely; the recommended id changes frequently, so reference the GPT-5/GPT-5-Codex
+          family selectable via /model, -m, or the model key
+      - id: c
+        text: Model choice cannot be changed once installed, so docs are irrelevant
+      - id: d
+        text: The model is fixed by the sandbox mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Exact model ids change often; durable docs describe the GPT-5-family default and the selection
+      mechanisms.
+  - id: ccb-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: >
+      A team commits secrets and environment-specific paths into the repo-root AGENTS.md "so Codex
+      always has them."
+
+      What is the strongest objection?
+    choices:
+      - id: a
+        text: AGENTS.md is only read in danger-full-access mode
+      - id: b
+        text: AGENTS.md cannot hold text longer than one line
+      - id: c
+        text: >-
+          AGENTS.md is shared project guidance committed to the repo; secrets belong in
+          env/credentials, not in a checked-in instruction file
+      - id: d
+        text: Codex ignores AGENTS.md entirely, so it is harmless
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      AGENTS.md is committed, shared guidance. Secrets should live in environment/credential stores,
+      not in it.
+  - id: ccb-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: >
+      A team proposes replacing all interactive use with `codex exec` in scripts but wants iterative
+      back-and-forth
+
+      debugging too. Evaluate this plan.
+    choices:
+      - id: a
+        text: exec and the TUI are identical, so the choice is cosmetic
+      - id: b
+        text: exec fully replaces the TUI including interactive debugging
+      - id: c
+        text: The TUI cannot resume, so exec is the only durable option
+      - id: d
+        text: >-
+          exec is right for automation/CI, but interactive debugging is better served by the TUI
+          plus resume; use each where it fits
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      `codex exec` is the automation path; interactive iteration belongs in the TUI, with `codex
+      resume` to continue sessions.
+  - id: ccb-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: >
+      A team enables sandbox_workspace_write.network_access = true globally for every project "to
+      avoid install
+
+      errors." Which assessment is most sound?
+    choices:
+      - id: a
+        text: It is required for Codex to function at all
+      - id: b
+        text: >-
+          Blanket network access weakens the sandbox's main protection; enable it narrowly
+          per-project/profile where needed
+      - id: c
+        text: It has no security impact since edits are still sandboxed
+      - id: d
+        text: It is equivalent to read-only mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Network being off by default is a deliberate protection; enabling it everywhere broadens
+      exfiltration/SSRF risk.
+  - id: ccb-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: multiple_choice
+    prompt: >
+      A reviewer must judge an MCP integration that registers a remote HTTP server with a long-lived
+      bearer token in
+
+      plaintext config and enables every tool. What is the best critique?
+    choices:
+      - id: a
+        text: Enabling all tools is required; disabled_tools does not exist
+      - id: b
+        text: It is fine because HTTP MCP servers are inherently trusted
+      - id: c
+        text: >-
+          Scope it down: prefer least-privilege via enabled_tools, protect/rotate the token, and
+          avoid plaintext secrets in committed config
+      - id: d
+        text: Tokens in config.toml are encrypted automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Use enabled_tools/disabled_tools for least privilege, protect/rotate credentials, and keep
+      secrets out of committed config.
+  - id: ccb-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >
+      A proposal standardizes on danger-full-access for all developers "because approvals slow
+      people down." Which
+
+      counter-argument is strongest?
+    choices:
+      - id: a
+        text: danger-full-access still sandboxes the network, so it is safe
+      - id: b
+        text: danger-full-access is slower than read-only, defeating the purpose
+      - id: c
+        text: Approvals cannot be tuned, so full access is the only option
+      - id: d
+        text: >-
+          danger-full-access removes the sandbox entirely; Auto (workspace-write + on-request) keeps
+          most of the speed with a real safety boundary
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      danger-full-access is explicitly not recommended; Auto preserves a sandbox while minimizing
+      friction.
+  - id: ccb-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >
+      A team relies on the deprecated 2021 Codex completion API in a new product and cites "Codex"
+      docs from the CLI to
+
+      justify capabilities. What is the core problem with this reasoning?
+    choices:
+      - id: a
+        text: >-
+          They conflate two different products; the agentic Codex CLI docs do not describe the
+          deprecated completion model API
+      - id: b
+        text: The CLI docs are wrong and should be ignored
+      - id: c
+        text: The completion API is the same as the CLI, so the docs apply
+      - id: d
+        text: The CLI is deprecated and the completion API is current
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      The modern agentic Codex CLI and the deprecated 2021 completion model are distinct; CLI docs
+      do not justify completion-API plans.
+  - id: ccb-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >
+      A team duplicates the same sandbox/approval/model settings across dozens of shell aliases
+      instead of using
+
+      profiles. Evaluate the maintainability tradeoff.
+    choices:
+      - id: a
+        text: Profiles and aliases are equivalent in maintainability
+      - id: b
+        text: Aliases are superior because profiles cannot set sandbox mode
+      - id: c
+        text: >-
+          Profiles centralize named config bundles, reducing drift; scattered aliases duplicate
+          settings and are error-prone
+      - id: d
+        text: Profiles only work in exec mode, so aliases are necessary
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Profiles are the intended way to bundle and reuse config; alias duplication invites drift and
+      inconsistency.
+  - id: ccb-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: >
+      A design review weighs whether to expose Codex as an MCP server to a fleet of internal agents.
+      Which consideration
+
+      is most important to flag?
+    choices:
+      - id: a
+        text: Only the model id matters when exposing Codex as a server
+      - id: b
+        text: MCP server mode is read-only by nature, so there is nothing to govern
+      - id: c
+        text: Codex cannot be an MCP server, so the proposal is impossible
+      - id: d
+        text: >-
+          Exposing Codex as an MCP server grants callers an agent that can run commands/edit code,
+          so its sandbox/approval posture and access scope must be governed
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      Codex-as-MCP-server hands other clients a capable agent; its sandbox, approvals, and access
+      scope must be controlled.
+  - id: ccb-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: multiple_choice
+    prompt: >
+      A team argues "AGENTS.md is just an OpenAI thing, so we shouldn't invest in maintaining it
+      carefully." Critique
+
+      this stance.
+    choices:
+      - id: a
+        text: >-
+          AGENTS.md is a cross-vendor open standard used by many agents, so investing in it pays off
+          across tools, not just Codex
+      - id: b
+        text: AGENTS.md is proprietary, so the stance is correct
+      - id: c
+        text: AGENTS.md only matters for the IDE extension
+      - id: d
+        text: AGENTS.md is auto-generated, so maintenance is pointless
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      AGENTS.md is an open standard adopted by many agents; good AGENTS.md guidance benefits
+      multiple tools.
+  - id: ccb-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >
+      A platform team wants one global config.toml to enforce safe defaults but still let individual
+      repos opt into more
+
+      autonomy. Which design best balances control and flexibility?
+    choices:
+      - id: a
+        text: Put everything in --yolo aliases and forbid config files
+      - id: b
+        text: >-
+          Set conservative global defaults and use profiles plus trusted project-scoped
+          .codex/config.toml for opt-in autonomy
+      - id: c
+        text: Disable project-scoped config entirely and hard-code one mode
+      - id: d
+        text: Store per-repo settings only in AGENTS.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Conservative global defaults plus profiles and trusted project-scoped config give safe
+      defaults with controlled opt-in.
+  - id: ccb-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >
+      A team sets model_reasoning_effort to its highest value for every task to "always get the best
+      answers."
+
+      Evaluate this blanket policy.
+    choices:
+      - id: a
+        text: Reasoning effort only affects the TUI theme
+      - id: b
+        text: Reasoning effort has no cost, so maxing it is strictly better
+      - id: c
+        text: Reasoning effort changes the sandbox mode, so it must be maxed
+      - id: d
+        text: >-
+          Higher reasoning effort costs more latency/tokens; match effort to task complexity rather
+          than maxing it globally
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >
+      model_reasoning_effort trades latency/cost for depth; right-size it per task instead of always
+      maxing it.
+  - id: ccb-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: free_form
+    prompt: >
+      Critique a policy of running `codex --yolo` for all developer tasks on the grounds of "speed."
+      Give at least two
+
+      concrete risks and a safer default that preserves most of the speed.
+    guidance: >
+      Should explain --yolo removes both sandbox and approvals (full system access), cite risks
+      (accidental destructive
+
+      commands, exfiltration, untrusted-input exposure), and recommend Auto (workspace-write +
+      on-request) as a safer default.
+    rubric:
+      criteria:
+        - id: c1
+          text: States --yolo disables both the sandbox and approvals (full unsandboxed access)
+        - id: c2
+          text: >-
+            Gives at least two concrete risks (e.g., destructive commands, data exfiltration,
+            network/SSRF, untrusted input)
+        - id: c3
+          text: Recommends a safer default such as Auto (workspace-write + on-request)
+      referenceAnswer: >
+        --yolo (--dangerously-bypass-approvals-and-sandbox) removes both the sandbox and approval
+        prompts, giving full
+
+        unsandboxed system access. Risks include accidental destructive commands (rm, force-push),
+        data exfiltration or
+
+        SSRF via unrestricted network, and amplified blast radius when acting on untrusted input. A
+        safer default that
+
+        keeps most of the speed is the Auto preset (--sandbox workspace-write --ask-for-approval
+        on-request), which lets
+
+        Codex work freely in the project while escalating only when it must step outside.
+      passThreshold: 0.6
+  - id: ccb-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: >
+      Your org's onboarding doc hard-pins a specific Codex model id. Argue whether this is wise
+      given how the tool
+
+      evolves, and propose durable wording.
+    guidance: >
+      Should note exact recommended model ids change frequently; propose describing the
+      GPT-5/GPT-5-Codex family and the
+
+      selection mechanisms (/model, -m, model config key) rather than a brittle pin.
+    rubric:
+      criteria:
+        - id: c1
+          text: Argues that hard-pinning a model id is brittle because recommended ids change frequently
+        - id: c2
+          text: Proposes durable wording referencing the GPT-5/GPT-5-Codex family
+        - id: c3
+          text: Mentions selection mechanisms (/model, -m/--model, or the model config key)
+      referenceAnswer: >
+        Hard-pinning is brittle: the recommended Codex model id changes frequently, so the doc will
+        drift and may name a
+
+        retired id. Better durable wording: "Codex defaults to a current GPT-5 / GPT-5-Codex-family
+        model; pick one via
+
+        /model in the TUI, -m/--model on the CLI, or the `model` key in config.toml." This stays
+        correct as versions roll.
+      passThreshold: 0.6
+  - id: ccb-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >
+      Evaluate a proposal to expose Codex as an MCP server to many internal agents. What governance
+      controls would you
+
+      require before approving, and why?
+    guidance: >
+      Should recognize Codex-as-MCP-server grants callers a capable agent; require controlling
+      sandbox mode, approval
+
+      policy, access scope/credentials, and possibly tool scoping; justify by blast radius.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recognizes exposing Codex as a server hands callers an agent that can run commands/edit
+            code
+        - id: c2
+          text: Requires governing sandbox mode and approval policy for the exposed instance
+        - id: c3
+          text: >-
+            Addresses access scope/credentials and least-privilege (e.g., directory scope, tool
+            scoping)
+      referenceAnswer: >
+        Running Codex in MCP server mode lets any connected client invoke a capable agent that can
+        edit code and run
+
+        commands, so the blast radius is large. Before approving I would require: a constrained
+        sandbox (read-only or
+
+        workspace-write, never danger-full-access/--yolo), an explicit approval policy, a scoped
+        working directory and
+
+        least-privilege credentials, network disabled unless justified, and auditing. These bound
+        what callers can make
+
+        Codex do.
+      passThreshold: 0.6
+  - id: ccb-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: free_form
+    prompt: >
+      A platform team wants safe org-wide defaults but lets individual repos opt into more autonomy.
+      Recommend a config
+
+      layering design using Codex's mechanisms and justify it.
+    guidance: >
+      Should propose conservative global ~/.codex/config.toml defaults, named profiles for autonomy
+      levels, and trusted
+
+      project-scoped .codex/config.toml for opt-in; justify by control + flexibility.
+    rubric:
+      criteria:
+        - id: c1
+          text: Proposes conservative defaults in the global config.toml
+        - id: c2
+          text: Uses named profiles and/or trusted project-scoped .codex/config.toml for opt-in autonomy
+        - id: c3
+          text: Justifies the balance of central control with per-repo flexibility
+      referenceAnswer: >
+        Set conservative defaults in the global ~/.codex/config.toml (e.g., workspace-write +
+        on-request, network off).
+
+        Define named profiles for higher-autonomy modes so opting in is explicit and reviewable.
+        Allow trusted
+
+        project-scoped .codex/config.toml so individual repos can raise autonomy where justified
+        (project trust gates
+
+        this). This keeps safe org defaults while letting teams opt into more autonomy without
+        editing everyone's config.
+      passThreshold: 0.6
+  - id: ccb-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: free_form
+    prompt: >
+      A team enables sandbox_workspace_write.network_access globally and adds many writable_roots to
+      "stop hitting
+
+      sandbox errors." Critique this and recommend a more disciplined approach.
+    guidance: >
+      Should explain blanket network access and broad writable_roots erode the sandbox's protection
+      (exfiltration, wider
+
+      write blast radius); recommend enabling narrowly per-project/profile only where needed.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains that blanket network access weakens the sandbox (exfiltration/SSRF risk)
+        - id: c2
+          text: Explains broad writable_roots widen the write blast radius
+        - id: c3
+          text: Recommends enabling these narrowly per-project/profile only where needed
+      referenceAnswer: >
+        Defaulting network on and widely expanding writable_roots dismantles the protections
+        workspace-write is meant to
+
+        provide: network exposure enables data exfiltration/SSRF, and extra writable roots let
+        mistakes or malicious
+
+        steps damage files outside the project. The disciplined approach is to keep these off by
+        default and enable them
+
+        narrowly, per-project or per-profile, only for the specific path/host a task needs, ideally
+        scoped and reviewed.
+      passThreshold: 0.6
+  - id: ccb-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: free_form
+    prompt: >
+      Assess this CI design: external-contributor PRs trigger a Codex run with
+      --dangerously-bypass-approvals-and-sandbox
+
+      so it can "fully fix" things automatically. Judge the design and propose a safer alternative.
+    guidance: >
+      Should judge it as a serious anti-pattern (untrusted input + no sandbox/approvals = arbitrary
+      code execution risk);
+
+      propose a sandboxed read-only or workspace-write run with approvals, no auto-merge, network
+      off, and human review.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Judges running fully unsandboxed on untrusted external PRs as a serious security
+            anti-pattern
+        - id: c2
+          text: >-
+            Explains the risk (arbitrary code execution / exfiltration from prompt-injected or
+            malicious PR content)
+        - id: c3
+          text: >-
+            Proposes a safer alternative (sandboxed mode, network off, no auto-apply/merge, human
+            review)
+      referenceAnswer: >
+        This is a serious anti-pattern: external PRs are untrusted input, and
+        --dangerously-bypass-approvals-and-sandbox
+
+        removes both the sandbox and approvals, so prompt-injected or malicious PR content could
+        trigger arbitrary code
+
+        execution or data exfiltration in CI. A safer alternative: run Codex in a sandboxed mode
+        (read-only or
+
+        workspace-write) with network disabled, no auto-apply/auto-merge, gated by an approval
+        policy, and require human
+
+        review of any proposed diff before it lands.
+      passThreshold: 0.6
+  - id: ccb-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: free_form
+    prompt: >
+      A new hire insists Codex CLI is "just the old 2021 Codex code-completion model with a terminal
+      wrapper." Evaluate
+
+      this claim and explain the practical consequences of believing it.
+    guidance: >
+      Should refute: the modern Codex is an agentic Rust CLI (sandbox/approvals/MCP/AGENTS.md); the
+      2021 completion model
+
+      API is deprecated and unrelated; consequences include wrong capability assumptions and
+      depending on a deprecated API.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Refutes the claim and distinguishes the modern agentic CLI from the deprecated 2021
+            completion model
+        - id: c2
+          text: >-
+            Notes the modern CLI's agentic capabilities (sandbox/approvals, MCP, AGENTS.md, running
+            commands/editing)
+        - id: c3
+          text: >-
+            Explains a practical consequence (wrong capability assumptions or building on a
+            deprecated API)
+      referenceAnswer: >
+        The claim is false. The modern Codex CLI is an agentic Rust tool (codex-rs) that reads/edits
+        files, runs commands
+
+        under sandbox and approval controls, speaks MCP, and uses AGENTS.md. The 2021 Codex
+        code-completion model API is a
+
+        separate, deprecated product. Believing they are the same leads to wrong capability
+        assumptions (treating Codex
+
+        as a stateless completion endpoint) and risks building on a deprecated API instead of the
+        supported agent.
+      passThreshold: 0.6

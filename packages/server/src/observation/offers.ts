@@ -27,7 +27,7 @@
  */
 
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { abilityKey, type AbilityKey } from "../schemas/common.js";
+import { abilityKey, type AbilityKey, type ToolId } from "../schemas/common.js";
 import type {
   Config,
   OfferBackoff,
@@ -112,7 +112,7 @@ const safeRegexTest = (pattern: string, value: string): boolean => {
  */
 export const matchCandidates = (
   topics: readonly Topic[],
-  tool: Config["toolsLearning"][number],
+  tool: ToolId | undefined,
   signals: readonly ObservedSignal[],
 ): OfferCandidate[] => {
   const candidates: OfferCandidate[] = [];

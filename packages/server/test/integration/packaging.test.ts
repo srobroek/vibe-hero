@@ -7,7 +7,7 @@
  *
  *   1. bin dispatch (V2 / FR-002) — spawn the built `dist/cli/index.js`:
  *        - no args         → starts the stdio MCP server; an MCP `initialize` +
- *                            `tools/list` handshake returns exactly 10 tools.
+ *                            `tools/list` handshake returns exactly 11 tools.
  *        - `get-offer …`   → prints ONE JSON line, exits 0 (suppressed on an
  *                            unconfigured profile under a temp VIBE_HERO_HOME).
  *        - `bogus`         → usage to stderr, nonzero exit.
@@ -50,7 +50,7 @@ const PKG_ROOT = path.resolve(
 const CLI_DIST = path.join(PKG_ROOT, "dist", "cli", "index.js");
 
 /** Expected MCP tool count (spec-001 server — unchanged). */
-const EXPECTED_TOOL_COUNT = 10;
+const EXPECTED_TOOL_COUNT = 11;
 
 /** Generous build budget; the rest of the suite uses tight per-test timeouts. */
 const BUILD_TIMEOUT_MS = 120_000;
@@ -75,7 +75,7 @@ describe("packaging: built + packed artifact (T006 / V1–V3 / FR-019a)", () => 
   // ── 1. bin dispatch ───────────────────────────────────────────────────────
 
   it(
-    "no subcommand → starts the stdio MCP server with all 10 tools",
+    "no subcommand → starts the stdio MCP server with all 11 tools",
     async () => {
       const home = await mkdtemp(path.join(tmpdir(), "vibe-hero-pkg-mcp-"));
       // The SDK transport spawns the child and owns its lifecycle; closing the

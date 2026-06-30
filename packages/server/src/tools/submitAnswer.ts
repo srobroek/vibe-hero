@@ -55,7 +55,7 @@
  */
 
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { loadBundledCatalog } from "../catalog/bundled/index.js";
+import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
 import { updateAbility } from "../engine/elo.js";
 import {
@@ -74,6 +74,7 @@ import { abilityKey, type AbilityKey, type Grade } from "../schemas/common.js";
 import type { ContentItem, Topic } from "../schemas/content.js";
 import type {
   AbilityEstimate,
+  AbilitySnapshot,
   AnsweredItem,
   Profile,
   QuizRecord,
@@ -402,12 +403,20 @@ const persistGrade = async (
             grad.spacedReview,
           ];
 
+    // Append an ability snapshot so get_dashboard can plot history over time.
+    const snapshot: AbilitySnapshot = {
+      ts: answeredAt,
+      key,
+      ability: estimate.value,
+    };
+
     return {
       ...current,
       abilities: { ...current.abilities, [key]: estimateWithDwell },
       graduations,
       reviewSchedule,
       quizHistory,
+      abilitySnapshots: [...(current.abilitySnapshots ?? []), snapshot],
     };
   }, dirOverride);
 
@@ -419,12 +428,18 @@ const persistGrade = async (
 };
 
 /**
- * A catalog source: returns the loaded topics (+ any per-file errors). Defaults
- * to {@link loadBundledCatalog}; tests inject a fixture-dir loader so grading can
- * resolve a topic with ≥5 deterministic items without disturbing the shared
- * bundled snapshot.
+ * Sync catalog loader (test seam): returns topics synchronously from a fixture
+ * dir. Tests inject this form; production uses {@link CatalogResolver}.
+ * The optional arg is unused by sync loaders but makes the type compatible with
+ * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
  */
-export type CatalogLoader = () => CatalogLoadResult;
+export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
+
+/**
+ * Async catalog resolver (production path): resolves via fresh-fetch → cache →
+ * bundled. Mirrors {@link resolveCatalog}'s signature.
+ */
+export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /** The graded outcome of one item, agnostic of which path produced it. */
 interface GradedOutcome {
@@ -477,12 +492,15 @@ const gradeItem = (input: SubmitAnswerInput, item: ContentItem): GradedOutcome =
  * Build the `submit_answer` tool module (US-1 deterministic + US-4 free-form).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
- * @param catalogLoader - Catalog source override (test seam); defaults to the
- *   bundled snapshot {@link loadBundledCatalog}.
+ * @param loaderOrResolver - Catalog source seam (test seam); accepts a sync
+ *   {@link CatalogLoader} (test fixtures) or an async {@link CatalogResolver}
+ *   (production). Defaults to {@link resolveCatalog} (fresh-fetch → cache →
+ *   bundled). With no `VIBE_HERO_CONTENT_URL` set, resolver falls back to
+ *   bundled — identical to the prior behavior offline.
  */
 export const makeSubmitAnswerTool = (
   dirOverride?: string,
-  catalogLoader: CatalogLoader = loadBundledCatalog,
+  loaderOrResolver: CatalogLoader | CatalogResolver = resolveCatalog,
 ): AnyToolModule =>
   defineTool({
     name: "submit_answer",
@@ -508,7 +526,9 @@ export const makeSubmitAnswerTool = (
         );
       }
 
-      const { topics } = catalogLoader();
+      // Normalize: sync loader (tests) vs async resolver (production).
+      const rawResult = loaderOrResolver(dirOverride);
+      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
       const found = findItem(topics, input.itemId);
       if (found === undefined) {
         throw new Error(

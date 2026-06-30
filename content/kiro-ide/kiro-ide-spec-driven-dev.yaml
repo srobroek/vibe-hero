@@ -1,0 +1,2488 @@
+# Topic: kiro-ide-spec-driven-dev (kiro-ide)
+# Kiro IDE's spec-driven workflow — requirements → design → tasks, and how specs drive implementation.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-spec-driven-dev
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE Spec-Driven Development
+summary: >-
+  Kiro IDE's spec-driven workflow — requirements → design → tasks, and how specs drive
+  implementation.
+triggerSignals: []
+items:
+  - id: kiro-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: |
+      In Kiro's spec-driven development, what are the three sequential phases
+      of the spec workflow?
+    choices:
+      - id: a
+        text: Design -> Requirements -> Review
+      - id: b
+        text: Plan -> Build -> Deploy
+      - id: c
+        text: Requirements -> Design -> Tasks
+      - id: d
+        text: Tasks -> Tests -> Release
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The Kiro spec workflow proceeds Requirements -> Design -> Tasks, each
+      producing a markdown artifact reviewed before the next phase.
+  - id: kiro-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: |
+      Which three markdown files does a Kiro feature spec generate?
+    choices:
+      - id: a
+        text: spec.md, plan.md, todo.md
+      - id: b
+        text: requirements.md, design.md, tasks.md
+      - id: c
+        text: product.md, tech.md, structure.md
+      - id: d
+        text: readme.md, architecture.md, backlog.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A spec produces requirements.md, design.md, and tasks.md. The
+      product/tech/structure trio belongs to steering, not specs.
+  - id: kiro-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      What does the acronym EARS stand for in Kiro's requirements?
+    choices:
+      - id: a
+        text: Event-Action Requirement Specification
+      - id: b
+        text: Enterprise Agile Requirements Standard
+      - id: c
+        text: Estimated Acceptance Review Stage
+      - id: d
+        text: Easy Approach to Requirements Syntax
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      EARS = Easy Approach to Requirements Syntax, the notation Kiro uses for
+      acceptance criteria in requirements.md.
+  - id: kiro-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      Where do Kiro specs live in a workspace?
+    choices:
+      - id: a
+        text: .kiro/specs/<feature-name>/
+      - id: b
+        text: .kiro/steering/
+      - id: c
+        text: .specify/specs/
+      - id: d
+        text: docs/specs/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Each spec is stored under .kiro/specs/<feature-name>/ as a folder of
+      markdown artifacts.
+  - id: kiro-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      Kiro is built on which open-source editor base?
+    choices:
+      - id: a
+        text: Atom
+      - id: b
+        text: Code OSS (the open-source base of VS Code)
+      - id: c
+        text: Eclipse Theia from scratch
+      - id: d
+        text: A fully proprietary editor with no shared lineage
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Kiro is built on Code OSS, so it can import VS Code settings, themes, and
+      Open VSX-compatible plugins.
+  - id: kiro-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      What are Kiro's three signature differentiators beyond agentic chat and MCP?
+    choices:
+      - id: a
+        text: Branches, Commits, and Pull Requests
+      - id: b
+        text: Linting, Formatting, and Debugging
+      - id: c
+        text: Snippets, Macros, and Extensions
+      - id: d
+        text: Specs, Steering, and Agent Hooks
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Specs, Steering, and Agent Hooks are Kiro's signature features alongside
+      agentic chat and MCP integration.
+  - id: kiro-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Which directory holds Kiro's three default foundation steering files?
+    choices:
+      - id: a
+        text: .kiro/steering/
+      - id: b
+        text: .kiro/specs/
+      - id: c
+        text: .kiro/hooks/
+      - id: d
+        text: .kiro/settings/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Workspace steering files, including product.md/tech.md/structure.md, live
+      under .kiro/steering/.
+  - id: kiro-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which file stores a Kiro MCP server configuration at workspace scope?
+    choices:
+      - id: a
+        text: .kiro/mcp/servers.yaml
+      - id: b
+        text: .vscode/mcp.json
+      - id: c
+        text: .kiro/settings/mcp.json
+      - id: d
+        text: .kiro/specs/mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Workspace MCP config is .kiro/settings/mcp.json; user-scope config is
+      ~/.kiro/settings/mcp.json.
+  - id: kiro-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: |
+      In Kiro MCP config, what is the top-level object that contains server
+      definitions?
+    choices:
+      - id: a
+        text: servers
+      - id: b
+        text: providers
+      - id: c
+        text: connections
+      - id: d
+        text: mcpServers
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      MCP configuration is rooted in an mcpServers object keyed by server name.
+  - id: kiro-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: |
+      Which set of trigger events is part of Kiro's agent hooks?
+    choices:
+      - id: a
+        text: File create, file save, file delete, and manual triggers
+      - id: b
+        text: Only scheduled cron timers
+      - id: c
+        text: Only git pre-commit and pre-push events
+      - id: d
+        text: Only mouse-click and keypress events
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Hooks fire on IDE events such as file create/save/delete and on manual
+      triggers (plus broader agent/tool events in current docs).
+  - id: kiro-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: |
+      Which company develops the Kiro agentic IDE?
+    choices:
+      - id: a
+        text: Microsoft
+      - id: b
+        text: JetBrains
+      - id: c
+        text: AWS (Amazon)
+      - id: d
+        text: GitHub
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro is developed by AWS (Amazon) and integrates AWS/IAM authentication.
+  - id: kiro-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: multiple_choice
+    prompt: |
+      What is the syntax for embedding a live file reference inside a Kiro
+      steering file?
+    choices:
+      - id: a
+        text: '@import(relative/path)'
+      - id: b
+        text: '#[[file:relative/path]]'
+      - id: c
+        text: '{{ file: relative/path }}'
+      - id: d
+        text: <<file relative/path>>
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Steering files embed live references with #[[file:relative/path]], e.g.
+      #[[file:api/openapi.yaml]].
+  - id: kiro-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: |
+      Which two action types can a Kiro agent hook run?
+    choices:
+      - id: a
+        text: An agent prompt (AI task) or a shell command
+      - id: b
+        text: Only a shell command
+      - id: c
+        text: Only a webhook HTTP POST
+      - id: d
+        text: A database migration or a container build
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      A hook action is either an agent prompt (run an AI task) or a shell command.
+  - id: kiro-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: free_form
+    prompt: |
+      Name the three default foundation steering files in Kiro and state, in a
+      few words, what each one captures.
+    guidance: |
+      Looking for product.md (purpose/users/business goals), tech.md
+      (frameworks/libraries/tools/constraints), and structure.md
+      (file organization/naming/architecture).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names product.md as purpose/users/business goals.
+        - id: c2
+          text: Names tech.md as frameworks/libraries/tools/constraints.
+        - id: c3
+          text: Names structure.md as file organization/naming/architecture.
+      referenceAnswer: |
+        The three foundation files are product.md (product purpose, target users,
+        and business goals), tech.md (frameworks, libraries, tools, and technical
+        constraints), and structure.md (file organization, naming conventions,
+        and architecture).
+      passThreshold: 0.6
+  - id: kiro-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: free_form
+    prompt: |
+      State the basic EARS acceptance-criteria pattern used in a Kiro
+      requirements.md file.
+    guidance: |
+      Looking for the WHEN [condition] THEN the system SHALL [behavior] pattern.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes a WHEN [condition] clause.
+        - id: c2
+          text: Includes a THEN the system SHALL [behavior] clause.
+      referenceAnswer: |
+        EARS acceptance criteria follow the pattern "WHEN [condition] THEN the
+        system SHALL [behavior]", with a "SHALL CONTINUE TO" variant for
+        unchanged/regression behavior.
+      passThreshold: 0.6
+  - id: kiro-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: |
+      List the three subdirectories under .kiro/ that hold, respectively, specs,
+      steering, and hooks, and name the file that holds MCP config.
+    guidance: |
+      Looking for .kiro/specs/, .kiro/steering/, .kiro/hooks/, and
+      .kiro/settings/mcp.json.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies .kiro/specs/ for specs.
+        - id: c2
+          text: Identifies .kiro/steering/ for steering and .kiro/hooks/ for hooks.
+        - id: c3
+          text: Identifies .kiro/settings/mcp.json for MCP config.
+      referenceAnswer: |
+        Specs live in .kiro/specs/, steering in .kiro/steering/, and hooks in
+        .kiro/hooks/; MCP servers are configured in .kiro/settings/mcp.json.
+      passThreshold: 0.6
+  - id: kiro-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: free_form
+    prompt: |
+      What is the purpose of Kiro steering files in one or two sentences?
+    guidance: |
+      Looking for: persistent project knowledge (patterns/libraries/standards)
+      so the user does not re-explain context every conversation.
+    rubric:
+      criteria:
+        - id: c1
+          text: States steering gives Kiro persistent project knowledge/context.
+        - id: c2
+          text: Notes it avoids re-explaining context each conversation.
+      referenceAnswer: |
+        Steering files are markdown docs that give Kiro persistent project
+        knowledge (patterns, libraries, standards) so you do not have to
+        re-explain the same context in every conversation.
+      passThreshold: 0.6
+  - id: kiro-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: |
+      Name the steering inclusion modes Kiro supports that control when a
+      steering file is loaded, and state in a few words what each controls.
+    guidance: |
+      Looking for Always (every interaction), fileMatch/Conditional (glob-matched),
+      Manual (on-demand # mention), and Auto (loaded when a request matches the
+      file's description).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Always (every interaction).
+        - id: c2
+          text: Names fileMatch/Conditional (glob-matched).
+        - id: c3
+          text: Names Manual (referenced on demand) and Auto (description-matched).
+      referenceAnswer: |
+        Kiro supports four inclusion modes: Always (loaded every interaction),
+        fileMatch / Conditional (loaded when working on files matching a glob),
+        Manual (referenced on demand via a # mention), and Auto (loaded when a
+        request matches the file's declared description).
+      passThreshold: 0.6
+  - id: kiro-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: |
+      Where can a Kiro MCP server be configured for ALL workspaces (user/global
+      scope), and what is the workspace-scope path?
+    guidance: |
+      Looking for ~/.kiro/settings/mcp.json (global) and .kiro/settings/mcp.json
+      (workspace).
+    rubric:
+      criteria:
+        - id: c1
+          text: Gives ~/.kiro/settings/mcp.json for user/global scope.
+        - id: c2
+          text: Gives .kiro/settings/mcp.json for workspace scope.
+      referenceAnswer: |
+        User/global MCP config is ~/.kiro/settings/mcp.json; workspace-scope
+        config is .kiro/settings/mcp.json.
+      passThreshold: 0.6
+  - id: kiro-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: |
+      In what month and year did Kiro publicly launch in preview, and what
+      company released it?
+    guidance: |
+      Looking for July 2025 (July 14, 2025) and AWS/Amazon.
+    rubric:
+      criteria:
+        - id: c1
+          text: States July 2025 (or July 14, 2025).
+        - id: c2
+          text: Attributes it to AWS/Amazon.
+      referenceAnswer: |
+        Kiro launched in preview in July 2025 (July 14, 2025), released by AWS
+        (Amazon).
+      passThreshold: 0.6
+  - id: kiro-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: |
+      Why does Kiro separate a spec into requirements.md, design.md, and tasks.md
+      rather than one document?
+    choices:
+      - id: a
+        text: Markdown files cannot exceed a few kilobytes each
+      - id: b
+        text: The three files must each be edited by a different team member
+      - id: c
+        text: |
+          Each phase produces a reviewable artifact and an approval gate, so
+          intent is agreed before design and design before code
+      - id: d
+        text: Splitting files is required to enable syntax highlighting
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Phased artifacts enable human-in-the-loop approval gates: requirements are
+      agreed before design, and design before tasks/implementation.
+  - id: kiro-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      How does steering differ from a spec in Kiro?
+    choices:
+      - id: a
+        text: Steering is per-feature; a spec is project-wide and permanent
+      - id: b
+        text: |
+          Steering is persistent, cross-feature project guidance; a spec is a
+          per-feature planning artifact
+      - id: c
+        text: They are the same thing under two names
+      - id: d
+        text: Steering runs shell commands while specs only store text
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Steering (.kiro/steering/) provides reusable always/conditional project
+      context; specs (.kiro/specs/) plan one feature at a time.
+  - id: kiro-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      Why use EARS notation instead of free-form prose for acceptance criteria?
+    choices:
+      - id: a
+        text: It renders as a table automatically in the IDE
+      - id: b
+        text: It is the only format Kiro can store in markdown
+      - id: c
+        text: It compiles directly into executable unit tests
+      - id: d
+        text: |
+          Its WHEN/THEN/SHALL structure makes each criterion testable and
+          unambiguous
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      EARS forces a structured condition/behavior form, reducing ambiguity and
+      making each criterion verifiable.
+  - id: kiro-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      A steering file uses fileMatch mode with pattern "components/**/*.tsx".
+      What does this accomplish?
+    choices:
+      - id: a
+        text: |
+          The file is loaded into context only when the user works on files
+          matching that glob
+      - id: b
+        text: The file is loaded in every interaction regardless of files
+      - id: c
+        text: The file is deleted unless a matching file exists
+      - id: d
+        text: It restricts which files Kiro is allowed to edit
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      fileMatch (conditional) mode loads the steering only when active files
+      match the glob, keeping unrelated context out.
+  - id: kiro-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: |
+      What is the value of the #[[file:...]] reference syntax in a steering file
+      versus pasting the file's contents?
+    choices:
+      - id: a
+        text: It encrypts the referenced file before loading
+      - id: b
+        text: |
+          It links the live file so the guidance stays in sync as that file
+          changes, avoiding stale copies
+      - id: c
+        text: It prevents the referenced file from being edited
+      - id: d
+        text: It is purely cosmetic and behaves like a comment
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A live reference pulls in the current file contents, so steering does not
+      drift from the actual artifact (e.g., an OpenAPI spec).
+  - id: kiro-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 275
+    type: multiple_choice
+    prompt: |
+      Why are Kiro agent hooks described as detect-then-act rather than just
+      "scripts you run"?
+    choices:
+      - id: a
+        text: Hooks can only ever run after a build finishes
+      - id: b
+        text: Hooks must be compiled before they can detect anything
+      - id: c
+        text: Hooks only detect events but can never take an action
+      - id: d
+        text: |
+          Kiro monitors an IDE event and then automatically runs an action, so
+          the automation is triggered by events rather than invoked manually
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      A hook is a two-step model: detect a configured event, then act
+      (agent prompt or shell command) automatically.
+  - id: kiro-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: |
+      Why does Kiro require approval at the end of the requirements phase before
+      generating design?
+    choices:
+      - id: a
+        text: |
+          To keep a human in the loop so misunderstood intent is caught before
+          it propagates into design and code
+      - id: b
+        text: Because design.md cannot be created until requirements.md is deleted
+      - id: c
+        text: To bill the user for the next phase
+      - id: d
+        text: Because the model cannot read two files at once
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Approval gates are human-in-the-loop checkpoints; correcting requirements
+      is far cheaper than fixing downstream design and code.
+  - id: kiro-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: |
+      What does listing a tool name under autoApprove in an MCP server config do?
+    choices:
+      - id: a
+        text: It permanently disables the tool
+      - id: b
+        text: It forces the tool to require two approvals
+      - id: c
+        text: |
+          It lets that tool run without per-call confirmation; otherwise Kiro
+          prompts before invoking it
+      - id: d
+        text: It hides the tool from the MCP panel
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      autoApprove names tools allowed to run without prompting ("*" for all);
+      everything else needs user approval.
+  - id: kiro-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: |
+      When both ~/.kiro/settings/mcp.json and .kiro/settings/mcp.json define a
+      server, how does Kiro resolve it?
+    choices:
+      - id: a
+        text: Only the global file is ever read
+      - id: b
+        text: Kiro errors and refuses to start any MCP server
+      - id: c
+        text: The newest file by timestamp wins regardless of scope
+      - id: d
+        text: The two configs are merged, with workspace taking precedence
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      User and workspace MCP configs are merged; on conflict the workspace
+      config wins.
+  - id: kiro-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: |
+      How does Kiro distinguish a local MCP server from a remote one in config?
+    choices:
+      - id: a
+        text: |
+          Local servers use command + args (a launched process); remote servers
+          use a url
+      - id: b
+        text: Local servers use url; remote servers use command + args
+      - id: c
+        text: Both must use command + args; remote is not supported
+      - id: d
+        text: The difference is set only by the disabled flag
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Local servers are launched via command/args (+ optional env); remote
+      servers are reached via url (+ headers/oauth).
+  - id: kiro-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: |
+      How does an AGENTS.md file behave differently from a normal Kiro steering
+      file?
+    choices:
+      - id: a
+        text: AGENTS.md must declare an inclusion mode or it is ignored
+      - id: b
+        text: AGENTS.md can only contain shell commands
+      - id: c
+        text: |
+          AGENTS.md is auto-detected and loaded but does not support inclusion
+          modes
+      - id: d
+        text: AGENTS.md overrides all spec files automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      AGENTS.md (in .kiro/steering/ or workspace root) loads automatically but
+      has no inclusion-mode front matter.
+  - id: kiro-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: |
+      What does the "Quick Plan" feature-spec variant change about the normal
+      workflow?
+    choices:
+      - id: a
+        text: It skips tasks.md and only writes requirements and design
+      - id: b
+        text: |
+          It generates all three artifacts at once instead of gating on
+          per-phase approval
+      - id: c
+        text: It converts a feature spec into a bugfix spec
+      - id: d
+        text: It removes EARS notation from requirements
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Quick Plan auto-generates requirements, design, and tasks immediately,
+      bypassing the per-phase approval gates of Requirements-First/Design-First.
+  - id: kiro-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: |
+      Why can a Kiro hook action be an "agent prompt" rather than only a shell
+      command?
+    choices:
+      - id: a
+        text: |
+          So the automation can perform an intelligent AI task (e.g., generate
+          tests) that fixed scripts cannot
+      - id: b
+        text: Because shell commands are not allowed in any hook
+      - id: c
+        text: Because agent prompts run faster than shell commands always
+      - id: d
+        text: Because prompts are the only way to set a timeout
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      An agent-prompt action lets the hook do reasoning-based work (like writing
+      tests on save) that a static shell command cannot.
+  - id: kiro-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: |
+      Explain how steering and specs play complementary roles in a Kiro project.
+    guidance: |
+      Looking for: steering = persistent, reusable, cross-feature project
+      context; specs = per-feature planning artifacts (requirements/design/tasks).
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes steering as persistent cross-feature project context.
+        - id: c2
+          text: Describes specs as per-feature planning artifacts.
+        - id: c3
+          text: Notes they are stored separately (.kiro/steering vs .kiro/specs).
+      referenceAnswer: |
+        Steering supplies durable project-wide guidance (patterns, stack,
+        conventions) that applies across all work, stored in .kiro/steering/.
+        Specs plan a single feature through requirements/design/tasks artifacts
+        in .kiro/specs/<feature>/. Steering sets the standing context; specs
+        apply that context to one feature at a time.
+      passThreshold: 0.6
+  - id: kiro-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: |
+      Explain why Kiro's per-phase approval checkpoints exist and what they
+      protect against.
+    guidance: |
+      Looking for: human-in-the-loop gating; catching misunderstandings early;
+      cheaper to fix requirements than design/code.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the gates as human-in-the-loop review.
+        - id: c2
+          text: Explains they catch errors before they propagate downstream.
+      referenceAnswer: |
+        The approval checkpoints keep a human in the loop between phases. By
+        reviewing requirements before design and design before tasks, a
+        misunderstanding is caught while it is still cheap to fix, instead of
+        surfacing later as wrong code.
+      passThreshold: 0.6
+  - id: kiro-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: free_form
+    prompt: |
+      Compare the steering inclusion modes Always, fileMatch, Manual, and Auto in
+      terms of when each loads.
+    guidance: |
+      Looking for: Always = every interaction; fileMatch = when active files
+      match a glob; Manual = only when # mentioned; Auto = when a request matches
+      the file's description.
+    rubric:
+      criteria:
+        - id: c1
+          text: Always loads in every interaction.
+        - id: c2
+          text: fileMatch loads conditionally on glob-matching files.
+        - id: c3
+          text: |-
+            Manual loads only when referenced with a # mention; Auto loads when a
+            request matches the file's description.
+      referenceAnswer: |
+        Always-mode steering loads in every interaction. fileMatch (conditional)
+        steering loads only when the files being worked on match its glob.
+        Manual-mode steering loads only when the user explicitly references it
+        with a # mention. Auto-mode steering loads when the user's request matches
+        the description declared in the file's front matter.
+      passThreshold: 0.6
+  - id: kiro-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: |
+      Explain the difference between a feature spec and a bugfix spec in Kiro.
+    guidance: |
+      Looking for: feature spec = new capability via requirements/design/tasks;
+      bugfix spec = systematic diagnosis + regression prevention/surgical fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: Feature spec addresses new capabilities (requirements-first/design-first/quick plan).
+        - id: c2
+          text: Bugfix spec focuses on diagnosis and regression prevention.
+      referenceAnswer: |
+        A feature spec plans a new capability through requirements, design, and
+        tasks (Requirements-First, Design-First, or Quick Plan). A bugfix spec
+        instead drives a systematic diagnosis of an existing defect and a
+        surgical fix with regression prevention.
+      passThreshold: 0.6
+  - id: kiro-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: free_form
+    prompt: |
+      Why does the #[[file:...]] reference keep steering accurate over time?
+      Explain the mechanism.
+    guidance: |
+      Looking for: it links the live file rather than copying contents, so
+      updates to that file are reflected and steering does not go stale.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains it references the live file rather than a static copy.
+        - id: c2
+          text: Notes that changes to the file are reflected, avoiding drift.
+      referenceAnswer: |
+        #[[file:...]] embeds a live reference to the workspace file. Because Kiro
+        pulls the current contents at load time rather than a frozen copy, edits
+        to the referenced file (e.g., an OpenAPI spec) are reflected
+        automatically, so the steering never drifts from reality.
+      passThreshold: 0.6
+  - id: kiro-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: free_form
+    prompt: |
+      Explain why MCP tool calls in Kiro require approval by default and how
+      autoApprove changes that.
+    guidance: |
+      Looking for: tools can take real actions, so Kiro prompts before each call;
+      autoApprove whitelists named tools (or "*") to skip the prompt.
+    rubric:
+      criteria:
+        - id: c1
+          text: States tools require user approval by default for safety.
+        - id: c2
+          text: Explains autoApprove lets named tools (or all via "*") run without prompting.
+      referenceAnswer: |
+        MCP tools can perform real, possibly side-effecting actions, so by default
+        Kiro prompts the user to approve each invocation. Listing tool names in
+        autoApprove (or "*" for all) lets those specific tools run without a
+        per-call confirmation.
+      passThreshold: 0.6
+  - id: kiro-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: |
+      Explain why building Kiro on Code OSS is an advantage for users migrating
+      from VS Code.
+    guidance: |
+      Looking for: import VS Code settings/themes, Open VSX plugins, familiar UX;
+      not a from-scratch editor.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes Code OSS is the VS Code open-source base.
+        - id: c2
+          text: Explains settings/themes/Open VSX plugins and familiarity carry over.
+      referenceAnswer: |
+        Because Kiro is built on Code OSS (the open-source base of VS Code),
+        migrating users can import their VS Code settings and themes, keep
+        Open VSX-compatible plugins, and work in a familiar interface, lowering
+        the switching cost rather than learning a brand-new editor.
+      passThreshold: 0.6
+  - id: kiro-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: |
+      You want a steering file with TypeScript React conventions to load only
+      while editing .tsx components. Which front-matter configuration applies?
+    choices:
+      - id: a
+        text: inclusion Always
+      - id: b
+        text: inclusion Manual referenced by
+      - id: c
+        text: |
+          inclusion fileMatch with fileMatchPattern "components/**/*.tsx"
+      - id: d
+        text: Place it in .kiro/specs/ so it loads with the active spec
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      fileMatch with a glob like components/**/*.tsx loads the steering only when
+      matching files are active.
+  - id: kiro-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      A reviewer asks you to write an EARS acceptance criterion for: "when a user
+      submits an empty search, show a validation message." Which is correctly
+      formed?
+    choices:
+      - id: a
+        text: The search should probably warn the user if it is empty
+      - id: b
+        text: |
+          WHEN the user submits an empty search query THEN the system SHALL
+          display a validation message
+      - id: c
+        text: validateSearch() returns false on empty input
+      - id: d
+        text: Empty search = bad; show error somewhere
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A valid EARS criterion uses WHEN [condition] THEN the system SHALL
+      [behavior]; the others are prose or code, not EARS.
+  - id: kiro-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      You want Kiro to automatically generate/update a unit test file every time
+      a component file is saved. What should you create?
+    choices:
+      - id: a
+        text: A new spec under .kiro/specs/ named tests
+      - id: b
+        text: A steering file in Always mode containing the test code
+      - id: c
+        text: An entry in .kiro/settings/mcp.json under autoApprove
+      - id: d
+        text: |
+          An agent hook triggered on file save (matching the component glob) with
+          an agent-prompt action to update the test
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Test-sync-on-save is a canonical agent hook: a file-save trigger plus an
+      agent-prompt action.
+  - id: kiro-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      You add a local MCP server that launches via "npx some-mcp-server". Which
+      config shape is correct?
+    choices:
+      - id: a
+        text: |
+          Under mcpServers, define the server with "command": "npx" and
+          "args": ["some-mcp-server"]
+      - id: b
+        text: Under mcpServers, define the server with only a "url" field
+      - id: c
+        text: Put the npx command in tasks.md so it runs with the spec
+      - id: d
+        text: |
+          Add "command": "npx" under the steering front matter
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Local (process-launched) MCP servers use command + args (+ optional env)
+      inside the mcpServers object.
+  - id: kiro-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      Your team's API contract lives in api/openapi.yaml and you want tech.md
+      steering to always reflect the current contract. What do you put in tech.md?
+    choices:
+      - id: a
+        text: A copy-pasted snapshot of the YAML
+      - id: b
+        text: '#[[file:api/openapi.yaml]]'
+      - id: c
+        text: 'autoApprove: [openapi]'
+      - id: d
+        text: A bugfix spec referencing the YAML
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Embedding #[[file:api/openapi.yaml]] links the live contract so steering
+      stays in sync as the file changes.
+  - id: kiro-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 375
+    type: multiple_choice
+    prompt: |
+      You have a "security-review" steering file you only want pulled in when you
+      explicitly ask. How do you bring it into a conversation?
+    choices:
+      - id: a
+        text: Set it to Always so it never has to be referenced
+      - id: b
+        text: Move it to .kiro/hooks/ so a save triggers it
+      - id: c
+        text: Add it to mcpServers with autoApprove "*"
+      - id: d
+        text: |
+          Set it to Manual mode and reference it with a # mention
+          (e.g., #security-review)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Manual-mode steering is pulled in on demand via a # mention of the file.
+  - id: kiro-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: |
+      You are starting a brand-new feature and want Kiro to first agree on
+      intent, then architecture, then a task list, with your review at each
+      step. Which approach fits?
+    choices:
+      - id: a
+        text: |
+          A Feature Spec using the Requirements-First (or Design-First) workflow
+          with approval at each phase
+      - id: b
+        text: A Quick Plan, because it gates each phase for review
+      - id: c
+        text: A Bugfix Spec, since it diagnoses before designing
+      - id: d
+        text: An agent hook on file save
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The gated phase-by-phase flow is the Requirements-First/Design-First
+      Feature Spec; Quick Plan skips the gates.
+  - id: kiro-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: |
+      You want a pre-commit-style guard that scans for leaked credentials before
+      code is committed. Within Kiro, what is the idiomatic mechanism?
+    choices:
+      - id: a
+        text: A requirements.md acceptance criterion in EARS
+      - id: b
+        text: An Always-mode steering file containing a regex
+      - id: c
+        text: |
+          An agent hook configured to scan for secrets, triggered on the
+          relevant event before commit
+      - id: d
+        text: A remote MCP server set to disabled
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Secret-scanning before commit is a documented canonical agent hook use case.
+  - id: kiro-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: |
+      A remote MCP server needs an auth token sent on every request. Where does
+      that belong in the server's config entry?
+    choices:
+      - id: a
+        text: In the "args" array of a command-based entry
+      - id: b
+        text: In tasks.md as a setup task
+      - id: c
+        text: In the requirements.md front matter
+      - id: d
+        text: In the "headers" of the url-based remote server entry
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Remote (url) servers accept headers (and oauth) for auth; command/args is
+      for local process launch.
+  - id: kiro-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: |
+      An MCP tool you just added is not appearing or keeps failing to connect.
+      Where do you look first in Kiro to diagnose it?
+    choices:
+      - id: a
+        text: |
+          The MCP servers panel for connection status and the Output tab logs
+          for errors
+      - id: b
+        text: The tasks.md status column
+      - id: c
+        text: The design.md sequence diagrams
+      - id: d
+        text: The product.md steering file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The MCP servers panel shows connection status; MCP logs in the Output tab
+      surface connection/permission/config errors.
+  - id: kiro-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: |
+      You want one steering file to apply to every project on your machine, not
+      just this repo. Where do you put it?
+    choices:
+      - id: a
+        text: .kiro/steering/ in each repo
+      - id: b
+        text: .kiro/settings/mcp.json
+      - id: c
+        text: ~/.kiro/steering/ (global/user scope)
+      - id: d
+        text: The workspace root as a spec
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      User/global steering lives in ~/.kiro/steering/ and applies across
+      workspaces; workspace steering wins on conflict.
+  - id: kiro-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: |
+      A tasks.md has several independent tasks plus a few that depend on others.
+      What does Kiro do when you run the tasks?
+    choices:
+      - id: a
+        text: It runs every task strictly one at a time, top to bottom
+      - id: b
+        text: |
+          It builds a dependency graph and runs independent tasks concurrently in
+          sequential waves
+      - id: c
+        text: It refuses to run until you remove all dependencies
+      - id: d
+        text: It runs only the first task and stops
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Kiro groups independent tasks into waves that run concurrently and execute
+      waves sequentially per the dependency graph.
+  - id: kiro-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: |
+      You want to temporarily turn off one MCP server without deleting its
+      config. What is the minimal change?
+    choices:
+      - id: a
+        text: |
+          Set "disabled": true on that server entry
+      - id: b
+        text: Delete the entire mcpServers object
+      - id: c
+        text: Move the entry into tasks.md
+      - id: d
+        text: Add it to autoApprove
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The disabled flag toggles a server off while preserving its configuration.
+  - id: kiro-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: free_form
+    prompt: |
+      Describe how you would set up a Kiro agent hook that runs a linter shell
+      command whenever a Python file is saved. Mention trigger, matcher, and
+      action.
+    guidance: |
+      Looking for: save trigger + file matcher (e.g., **/*.py) + shell-command
+      action; stored as JSON in .kiro/hooks/.
+    rubric:
+      criteria:
+        - id: c1
+          text: Specifies a file-save trigger.
+        - id: c2
+          text: Specifies a matcher/glob for Python files (e.g., **/*.py).
+        - id: c3
+          text: Uses a shell-command action (and notes .kiro/hooks/ JSON storage).
+      referenceAnswer: |
+        Create a hook (via natural language or the form UI) with a file-save
+        trigger, a matcher like **/*.py, and a shell-command action that runs the
+        linter. Kiro stores it as a JSON file in .kiro/hooks/, so on each save of
+        a matching file the linter runs automatically.
+      passThreshold: 0.6
+  - id: kiro-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: |
+      Walk through how you would author a single EARS acceptance criterion for a
+      login feature that locks the account after five failed attempts.
+    guidance: |
+      Looking for: a WHEN [5 failed attempts] THEN the system SHALL [lock the
+      account] form, with sensible condition/behavior.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the WHEN [condition] clause for five failed attempts.
+        - id: c2
+          text: Uses the THEN the system SHALL [behavior] clause for locking.
+      referenceAnswer: |
+        For example: "WHEN a user submits five consecutive failed login attempts
+        THEN the system SHALL lock the account and require a reset before further
+        attempts." It follows the EARS WHEN/THEN/SHALL structure with a clear
+        condition and a testable behavior.
+      passThreshold: 0.6
+  - id: kiro-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: |
+      You need to add both a local stdio-style MCP server (launched by a command)
+      and a remote URL-based one. Describe the two config entries' key fields.
+    guidance: |
+      Looking for: local uses command + args (+ env); remote uses url
+      (+ headers/oauth); both under mcpServers in .kiro/settings/mcp.json.
+    rubric:
+      criteria:
+        - id: c1
+          text: Local entry uses command + args (optionally env).
+        - id: c2
+          text: Remote entry uses url (optionally headers/oauth).
+        - id: c3
+          text: Both placed under mcpServers in .kiro/settings/mcp.json.
+      referenceAnswer: |
+        In mcpServers (in .kiro/settings/mcp.json), the local server gets a
+        command (e.g., "npx") plus an args array and optional env. The remote
+        server gets a url plus optional headers (or oauth) for auth. Both can
+        also set disabled, autoApprove, and disabledTools.
+      passThreshold: 0.6
+  - id: kiro-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: |
+      Describe how you would organize steering for a monorepo where the backend
+      is Go and the frontend is React, so each stack's conventions only load when
+      relevant.
+    guidance: |
+      Looking for: separate fileMatch steering files keyed to backend vs frontend
+      globs; shared standards in Always/foundation files.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses fileMatch steering scoped to backend globs (e.g., **/*.go).
+        - id: c2
+          text: Uses fileMatch steering scoped to frontend globs (e.g., **/*.tsx).
+        - id: c3
+          text: Keeps shared/project-wide rules in Always-mode/foundation files.
+      referenceAnswer: |
+        I would create a fileMatch steering file scoped to Go files (e.g.,
+        backend/**/*.go) with Go conventions, and a separate fileMatch file scoped
+        to React files (e.g., frontend/**/*.tsx) with frontend conventions.
+        Cross-cutting rules go in Always-mode foundation files (product/tech/
+        structure) so each stack's detail loads only when its files are active.
+      passThreshold: 0.6
+  - id: kiro-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: |
+      You inherited a vague feature request. Describe the sequence of Kiro spec
+      steps you'd follow to turn it into reviewed, trackable work.
+    guidance: |
+      Looking for: create a feature spec; produce requirements.md (EARS) and
+      approve; produce design.md and approve; generate tasks.md and execute.
+    rubric:
+      criteria:
+        - id: c1
+          text: Starts by generating requirements (with EARS) and approving them.
+        - id: c2
+          text: Proceeds to design.md and approves it.
+        - id: c3
+          text: Generates tasks.md and executes/tracks the tasks.
+      referenceAnswer: |
+        Start a feature spec; have Kiro draft requirements.md with EARS criteria
+        and review/approve it. Then generate design.md (architecture, sequence
+        diagrams, error handling) and approve. Finally generate tasks.md and run
+        the discrete tasks, tracking status as they complete.
+      passThreshold: 0.6
+  - id: kiro-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: |
+      A teammate keeps re-explaining the project's logging and error-handling
+      conventions in every chat. How would you fix this with Kiro steering?
+    guidance: |
+      Looking for: capture the conventions in a steering file (likely Always or
+      foundation tech.md), stored in .kiro/steering/, so it loads automatically.
+    rubric:
+      criteria:
+        - id: c1
+          text: Captures the conventions in a steering markdown file.
+        - id: c2
+          text: Places it in .kiro/steering/ (with Always/appropriate inclusion).
+      referenceAnswer: |
+        Write the logging and error-handling conventions into a steering file in
+        .kiro/steering/ (for example, in tech.md or a dedicated Always-mode file).
+        Once it loads automatically, Kiro follows the conventions without anyone
+        re-explaining them each conversation.
+      passThreshold: 0.6
+  - id: kiro-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: |
+      You want a steering rule to apply across every repo you work in, but a
+      specific repo needs to override one part of it. Explain how Kiro's scoping
+      lets you do this.
+    guidance: |
+      Looking for: put the general rule in ~/.kiro/steering/ (global), override
+      in .kiro/steering/ (workspace), workspace wins on conflict.
+    rubric:
+      criteria:
+        - id: c1
+          text: Puts the shared rule in ~/.kiro/steering/ (global scope).
+        - id: c2
+          text: Puts the override in the repo's .kiro/steering/ (workspace scope).
+        - id: c3
+          text: Notes workspace steering takes precedence on conflict.
+      referenceAnswer: |
+        Put the general rule in global steering at ~/.kiro/steering/ so it applies
+        everywhere. In the specific repo, add a workspace steering file in
+        .kiro/steering/ that overrides the relevant part. Because workspace
+        steering takes precedence on conflict, the repo-specific version wins
+        there while the global rule applies elsewhere.
+      passThreshold: 0.6
+  - id: kiro-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: |
+      A team complains the agent "ignores" a steering file with React rules.
+      The file has inclusion Manual and is never # mentioned. What is the
+      root cause?
+    choices:
+      - id: a
+        text: Manual mode is broken and should always load
+      - id: b
+        text: The file must be in .kiro/specs/ to be read
+      - id: c
+        text: |
+          Manual-mode steering loads only when explicitly referenced; it is not
+          auto-included, so it is never in context
+      - id: d
+        text: Steering only works for shell-command actions
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Manual steering is opt-in via # mention. To auto-apply, switch it to
+      Always or fileMatch.
+  - id: kiro-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: |
+      A global and a workspace steering file give conflicting naming
+      conventions, and the agent follows the workspace one. A dev insists this is
+      a bug. Who is right and why?
+    choices:
+      - id: a
+        text: |
+          The dev is correct: global should always win
+      - id: b
+        text: |
+          The agent is correct: workspace steering takes precedence over global
+          on conflict
+      - id: c
+        text: Both files should be ignored when they conflict
+      - id: d
+        text: The most recently edited file wins regardless of scope
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      By design, workspace steering overrides global on conflict, so the
+      behavior is correct.
+  - id: kiro-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: |
+      A "requirement" reads: "The app should be fast and user-friendly." Why does
+      this fail as a Kiro EARS acceptance criterion?
+    choices:
+      - id: a
+        text: It is too long to fit in requirements.md
+      - id: b
+        text: EARS forbids the word "should" only in design.md
+      - id: c
+        text: It must be written in tasks.md instead
+      - id: d
+        text: |
+          It is unmeasurable prose with no WHEN/THEN/SHALL condition-behavior
+          structure, so it is not testable
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      EARS demands a structured, testable condition->behavior; vague quality
+      adjectives provide nothing to verify.
+  - id: kiro-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      A team sets autoApprove "*" on a third-party remote MCP server to stop
+      approval prompts. What is the primary risk being introduced?
+    choices:
+      - id: a
+        text: |
+          Every tool from that server can run with side effects without review,
+          removing the human safety check
+      - id: b
+        text: The server will be disabled automatically
+      - id: c
+        text: Specs will stop generating tasks.md
+      - id: d
+        text: The MCP panel will hide the server
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      autoApprove "*" trusts every tool unconditionally; for untrusted servers
+      this can allow harmful side effects with no review.
+  - id: kiro-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: multiple_choice
+    prompt: |
+      A hook with a file-save trigger and an agent-prompt action that edits the
+      saved file causes the editor to keep re-triggering. What is the likely
+      flaw?
+    choices:
+      - id: a
+        text: Agent-prompt actions are not allowed on save at all
+      - id: b
+        text: |
+          The action's own write fires the save trigger again, creating a
+          feedback loop; the trigger/matcher needs to exclude its own output
+      - id: c
+        text: The hook must be moved to .kiro/specs/
+      - id: d
+        text: Save triggers can never modify files
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A save-triggered action that writes the same matched file can re-trigger
+      itself; scope the matcher or target a different file to break the loop.
+  - id: kiro-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: |
+      Someone proposes putting all project knowledge into one giant Always-mode
+      steering file. What is the main downside compared to scoped steering?
+    choices:
+      - id: a
+        text: Always mode is not supported for large files
+      - id: b
+        text: It would automatically convert into a spec
+      - id: c
+        text: Always mode disables the MCP panel
+      - id: d
+        text: |
+          It loads irrelevant context every interaction, wasting tokens and
+          diluting focus; fileMatch/Manual scope context to when it matters
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Always-mode loads in every interaction; cramming everything in wastes
+      context. fileMatch/Manual keep niche guidance scoped.
+  - id: kiro-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: |
+      A team chose Quick Plan for a high-risk, ambiguous feature and was
+      surprised by misaligned design. Why did the workflow choice contribute?
+    choices:
+      - id: a
+        text: |
+          Quick Plan auto-generates all artifacts without per-phase approval, so
+          ambiguous intent was never reviewed before design
+      - id: b
+        text: Quick Plan omits design.md entirely
+      - id: c
+        text: Quick Plan only works for bugfixes
+      - id: d
+        text: Quick Plan forces EARS off
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Quick Plan trades the approval gates for speed; for ambiguous/high-risk
+      work, the gated Requirements-First flow is safer.
+  - id: kiro-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: |
+      A developer treats Kiro agent hooks as equivalent to git pre-commit hooks
+      and is confused that one fires on file save during editing. What
+      misconception explains this?
+    choices:
+      - id: a
+        text: Agent hooks only run inside CI pipelines
+      - id: b
+        text: Agent hooks can only fire on git events
+      - id: c
+        text: |
+          Agent hooks are IDE-event automations (save/create/delete/manual etc.),
+          not just VCS commit-time hooks
+      - id: d
+        text: Agent hooks are identical to MCP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro hooks respond to a broad set of IDE events, not only commit-time VCS
+      events.
+  - id: kiro-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: |
+      A command-action hook should block an operation when a check fails. Which
+      exit code should the command return to block in Kiro?
+    choices:
+      - id: a
+        text: Exit code 0
+      - id: b
+        text: Exit code 1 always blocks
+      - id: c
+        text: Any nonzero code silently blocks
+      - id: d
+        text: Exit code 2
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Command actions return 0 for success, 2 to block; other nonzero codes
+      produce warnings rather than a block.
+  - id: kiro-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: |
+      A spec's tasks.md runs slower than expected even though many tasks are
+      independent. Inspection shows artificial dependencies linking unrelated
+      tasks. How does that hurt execution?
+    choices:
+      - id: a
+        text: |
+          False dependencies prevent tasks from grouping into the same
+          concurrent wave, forcing them into more sequential waves
+      - id: b
+        text: Dependencies have no effect on execution order
+      - id: c
+        text: Tasks always run fully sequentially regardless of dependencies
+      - id: d
+        text: Dependencies only affect design.md, not tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Kiro parallelizes independent tasks into waves; spurious dependencies
+      serialize work that could have run concurrently.
+  - id: kiro-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: |
+      A team copies a config file's contents into a steering doc, then the config
+      changes and the agent acts on stale rules. What was the better design?
+    choices:
+      - id: a
+        text: Paste the contents into tasks.md instead
+      - id: b
+        text: Set the steering file to Manual mode
+      - id: c
+        text: |
+          Use a #[[file:...]] live reference so steering always reflects the
+          current file
+      - id: d
+        text: Add the file path to autoApprove
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Live #[[file:...]] references prevent the stale-copy problem by linking the
+      current file contents.
+  - id: kiro-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: |
+      Two engineers debate whether an AGENTS.md at the repo root can be set to
+      fileMatch so it only loads for certain files. Who is correct?
+    choices:
+      - id: a
+        text: It supports all inclusion modes like any steering file
+      - id: b
+        text: |
+          Neither can scope it: AGENTS.md loads automatically and does not support
+          inclusion modes
+      - id: c
+        text: It supports only Manual mode
+      - id: d
+        text: It must be converted to mcp.json first
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      AGENTS.md is auto-loaded and has no inclusion-mode support; to scope
+      loading, use a regular steering file with front matter.
+  - id: kiro-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: |
+      A reviewer skips the requirements approval gate and approves only the
+      design, then implementation diverges from stakeholder intent. What does
+      this reveal about the gate's role?
+    choices:
+      - id: a
+        text: |
+          The requirements gate is where intent is validated; skipping it lets
+          unvalidated assumptions flow into design and code
+      - id: b
+        text: Gates are decorative and do not affect outcomes
+      - id: c
+        text: The design gate alone fully validates intent
+      - id: d
+        text: Skipping a gate deletes the corresponding artifact
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Each gate validates a different layer; the requirements gate guards intent,
+      which design review cannot recover if intent was wrong.
+  - id: kiro-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: |
+      A team reports that their carefully written conditional (fileMatch)
+      steering "never loads." Diagnose the most likely causes and how to confirm
+      each.
+    guidance: |
+      Looking for: glob doesn't match the active files; wrong inclusion mode/front
+      matter; file not in .kiro/steering/. Confirm by checking the pattern vs open
+      files and the front matter.
+    rubric:
+      criteria:
+        - id: c1
+          text: Considers the fileMatch glob not matching the files being edited.
+        - id: c2
+          text: Considers misconfigured front matter / wrong inclusion mode.
+        - id: c3
+          text: Suggests verifying placement in .kiro/steering/ and the active files.
+      referenceAnswer: |
+        The most common cause is the fileMatch glob not matching the files
+        actually open/edited, so the conditional file never activates; check the
+        pattern against the real paths. Also verify the YAML front matter actually
+        sets fileMatch (not Manual) and a valid pattern, and that the file lives
+        in .kiro/steering/. Confirm by opening a clearly matching file and seeing
+        whether the guidance takes effect.
+      passThreshold: 0.6
+  - id: kiro-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: free_form
+    prompt: |
+      Critique this hook design: "On every file save in the repo, run an
+      agent-prompt that reviews the entire codebase and updates all docs." List
+      the problems and propose a better-scoped design.
+    guidance: |
+      Looking for: too broad/expensive, fires constantly, slow, potential loops;
+      propose narrower matcher, targeted action, maybe manual/turn-based trigger.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that an every-save full-codebase action is too broad/costly.
+        - id: c2
+          text: Notes risks like constant firing, latency, or feedback loops.
+        - id: c3
+          text: Proposes narrowing the matcher/action or changing the trigger.
+      referenceAnswer: |
+        Reviewing the whole codebase on every save is wasteful and slow, fires far
+        too often, and risks feedback loops if the action writes files that
+        re-trigger saves. A better design scopes the matcher to the relevant files
+        (e.g., a docs or component glob), limits the action to the changed unit,
+        and/or uses a more deliberate trigger (manual or agent-turn) instead of
+        every save.
+      passThreshold: 0.6
+  - id: kiro-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: |
+      Two engineers disagree: one wants all acceptance criteria as EARS, the
+      other says EARS is pointless ceremony. Analyze when EARS adds value and when
+      it might not.
+    guidance: |
+      Looking for: EARS shines for testable behavioral criteria/edge cases; less
+      useful for non-behavioral notes; value is unambiguous, verifiable criteria.
+    rubric:
+      criteria:
+        - id: c1
+          text: Argues EARS adds value by making behavioral criteria testable/unambiguous.
+        - id: c2
+          text: Acknowledges limits (non-behavioral or trivially obvious items).
+      referenceAnswer: |
+        EARS adds the most value for behavioral, conditional requirements and
+        edge cases, where WHEN/THEN/SHALL forces a single, testable interpretation
+        and exposes missing conditions. It adds less for purely descriptive notes
+        or trivially obvious statements, where the structure is overhead. The
+        pragmatic stance is to use EARS for verifiable behavior and not force it
+        onto non-behavioral context.
+      passThreshold: 0.6
+  - id: kiro-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: |
+      An MCP-connected tool intermittently fails and the agent "hallucinates"
+      success. Walk through how you'd isolate whether the problem is config,
+      connection, or approval.
+    guidance: |
+      Looking for: check MCP panel status, read Output-tab MCP logs, verify
+      command/args or url/headers, check disabled/autoApprove/disabledTools.
+    rubric:
+      criteria:
+        - id: c1
+          text: Checks the MCP servers panel for connection status.
+        - id: c2
+          text: Reads MCP logs in the Output tab for errors.
+        - id: c3
+          text: Verifies config fields (command/args or url/headers) and approval flags.
+      referenceAnswer: |
+        Start at the MCP servers panel to see whether the server is connected.
+        Read the MCP logs in the Output tab to distinguish connection errors,
+        permission/approval prompts, and config problems. Verify the config:
+        command/args (+env) for local or url/headers (+oauth) for remote, and
+        check disabled, autoApprove, and disabledTools. That triage separates a
+        config typo from a transport failure from a blocked/unapproved call.
+      passThreshold: 0.6
+  - id: kiro-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: free_form
+    prompt: |
+      A team stuffs feature-specific implementation steps into a steering file and
+      treats it as a backlog. Explain why this conflates steering with specs and
+      what breaks.
+    guidance: |
+      Looking for: steering is persistent reusable guidance, not per-feature
+      tasks; specs (tasks.md) track implementation; mixing pollutes context and
+      loses tracking.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains steering is durable guidance, not per-feature task tracking.
+        - id: c2
+          text: Notes implementation steps belong in a spec's tasks.md.
+        - id: c3
+          text: Identifies a concrete harm (context pollution / lost tracking).
+      referenceAnswer: |
+        Steering is meant for persistent, reusable project guidance, while
+        per-feature implementation steps belong in a spec's tasks.md with trackable
+        status. Putting backlog items into steering means that transient,
+        feature-specific content gets loaded as standing context (polluting every
+        relevant interaction) while losing the spec's task tracking and approval
+        structure.
+      passThreshold: 0.6
+  - id: kiro-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: |
+      Analyze the trade-off of granting autoApprove to MCP tools: what do you
+      gain, what do you risk, and how would you decide which tools qualify?
+    guidance: |
+      Looking for: gain = less friction/faster; risk = unreviewed side effects;
+      decide by read-only vs side-effecting and server trust level.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes the gain (less approval friction / faster flow).
+        - id: c2
+          text: Notes the risk (unreviewed, possibly side-effecting actions).
+        - id: c3
+          text: Proposes a criterion (e.g., auto-approve only safe/read-only trusted tools).
+      referenceAnswer: |
+        Auto-approving removes per-call confirmation friction and speeds up
+        workflows, but it removes the human safety check, so a misbehaving or
+        malicious tool can act with side effects unreviewed. A reasonable policy is
+        to auto-approve only read-only, low-risk tools from trusted servers, and
+        keep confirmation on anything that writes, deletes, spends, or comes from
+        an untrusted source.
+      passThreshold: 0.6
+  - id: kiro-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: free_form
+    prompt: |
+      A reviewer says approval gates "just slow us down" and proposes removing
+      them for all specs. Break down what is lost and where gates matter most.
+    guidance: |
+      Looking for: gates catch errors cheaply; most valuable for ambiguous/high-
+      risk work; Quick Plan suits low-risk; blanket removal risks downstream rework.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains gates catch errors early/cheaply (human-in-the-loop).
+        - id: c2
+          text: Notes gates matter most for ambiguous or high-risk features.
+        - id: c3
+          text: Allows that low-risk work can use Quick Plan, but blanket removal is risky.
+      referenceAnswer: |
+        Removing all gates loses the cheap, early correction of misunderstood
+        intent and architecture; errors then surface as expensive rework in code.
+        Gates matter most for ambiguous or high-risk features where intent is
+        uncertain. For genuinely small, low-risk changes, the faster gate-free
+        Quick Plan is reasonable, but removing gates everywhere trades safety for
+        speed indiscriminately.
+      passThreshold: 0.6
+  - id: kiro-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: |
+      A startup wants to ship a tiny, well-understood copy change. Which Kiro
+      workflow is the most defensible choice, and why?
+    choices:
+      - id: a
+        text: A full Requirements-First spec, because every change needs three gates
+      - id: b
+        text: A bugfix spec, because all changes are bugs
+      - id: c
+        text: |
+          Quick Plan, because the gated phase-by-phase flow adds little value when
+          intent is already clear and risk is low
+      - id: d
+        text: An agent hook, because copy changes should fire on save
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Matching process weight to risk: Quick Plan fits low-risk, well-understood
+      work; full gating is overhead there.
+  - id: kiro-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: |
+      Which steering strategy best balances consistency and context economy for a
+      large codebase?
+    choices:
+      - id: a
+        text: Put everything in one Always file so nothing is ever missed
+      - id: b
+        text: |
+          Keep cross-cutting rules in Always foundation files and push
+          stack/area-specific detail into fileMatch and Manual files
+      - id: c
+        text: Make every steering file Manual so the agent stays lean
+      - id: d
+        text: Store steering in .kiro/specs/ to version it with features
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The strongest design loads universal rules always and scopes niche guidance
+      with fileMatch/Manual to conserve context.
+  - id: kiro-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: |
+      A team wants to judge whether to automate a routine with an agent hook or
+      leave it manual. Which criterion is the soundest basis for the decision?
+    choices:
+      - id: a
+        text: Always automate everything to maximize hooks
+      - id: b
+        text: Never automate; hooks are inherently unsafe
+      - id: c
+        text: Automate only tasks that touch the most files
+      - id: d
+        text: |
+          Automate it when the trigger is well-defined and the action is safe and
+          repeatable; keep it manual when judgment or risky side effects dominate
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Good automation candidates have clear triggers and safe, repeatable
+      actions; ambiguous or risky tasks deserve a human.
+  - id: kiro-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: |
+      Evaluate this claim: "Because Kiro generates the spec for you, you can
+      approve every phase without reading it." What is the best critique?
+    choices:
+      - id: a
+        text: |
+          It defeats the purpose of the approval gates; unread approvals let
+          generated misunderstandings propagate into code
+      - id: b
+        text: It is fine because Kiro never makes mistakes
+      - id: c
+        text: It is fine because tasks.md will catch all errors later
+      - id: d
+        text: It is correct; gates exist only for billing
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The gates are only valuable if a human actually reviews; rubber-stamping
+      removes the safety they provide.
+  - id: kiro-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: |
+      A security team must decide an MCP approval policy for agents acting on
+      production systems. Which policy is most defensible?
+    choices:
+      - id: a
+        text: Set autoApprove "*" everywhere to reduce friction
+      - id: b
+        text: |
+          Default to prompting; auto-approve only vetted read-only tools, and
+          keep write/destructive tools gated or disabled
+      - id: c
+        text: Disable all MCP so no tools are ever used
+      - id: d
+        text: Auto-approve all tools but log them after the fact
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Least-privilege: prompt by default, auto-approve only safe read-only tools,
+      gate or disable anything that can mutate production.
+  - id: kiro-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: |
+      Two teams compare placing project conventions in steering vs. re-stating
+      them in each spec's requirements. Which judgment is best?
+    choices:
+      - id: a
+        text: Conventions belong in every requirements.md for redundancy
+      - id: b
+        text: Conventions should live only in tasks.md
+      - id: c
+        text: Conventions should be auto-approved MCP tools
+      - id: d
+        text: |
+          Conventions belong in steering (reused across specs); duplicating them
+          per spec causes drift and maintenance burden
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Reusable conventions are exactly what steering is for; per-spec duplication
+      invites inconsistency.
+  - id: kiro-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: |
+      A lead argues "specs are pointless because the agent could just code from a
+      chat prompt." What is the strongest counter on a complex feature?
+    choices:
+      - id: a
+        text: |
+          Specs create reviewable, versioned artifacts and gated alignment on
+          intent and design before code, reducing costly rework
+      - id: b
+        text: Specs are faster to type than a chat prompt
+      - id: c
+        text: Chat prompts cannot produce code at all
+      - id: d
+        text: Specs are required to launch the IDE
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The value of specs on complex work is durable, reviewable alignment and
+      traceability, not speed of typing.
+  - id: kiro-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: |
+      Evaluate using a save-triggered hook to auto-format AND auto-commit code on
+      every keystroke-save. What is the most valid concern?
+    choices:
+      - id: a
+        text: Hooks cannot run formatters
+      - id: b
+        text: Save triggers are not allowed to run shell commands
+      - id: c
+        text: |
+          Auto-committing on every save couples a noisy, high-frequency editor
+          event to an irreversible VCS action, producing messy history and risk
+      - id: d
+        text: Formatting must be a spec, not a hook
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Auto-format on save is reasonable; auto-commit on save couples a frequent
+      event to a consequential VCS action and is a poor design.
+  - id: kiro-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: |
+      A team must decide whether to express a non-functional constraint
+      ("p95 latency < 200ms") as an EARS criterion or as design.md content.
+      Which judgment is soundest?
+    choices:
+      - id: a
+        text: Put it only in design.md; requirements cannot hold numbers
+      - id: b
+        text: Put it only in tasks.md as a checklist item
+      - id: c
+        text: Omit it; performance is not specifiable
+      - id: d
+        text: |
+          Capture the measurable target as a testable acceptance criterion in
+          requirements, and detail how to meet it in design.md
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The verifiable target belongs in requirements (it is testable); the
+      approach to achieving it belongs in design.
+  - id: kiro-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: |
+      Critique this setup: a single AGENTS.md at the repo root holds all
+      conventions for a polyglot monorepo. What is the strongest limitation?
+    choices:
+      - id: a
+        text: |
+          AGENTS.md cannot use inclusion modes, so it always loads everything and
+          cannot scope per-language guidance; fileMatch steering would be better
+      - id: b
+        text: AGENTS.md is never loaded by Kiro
+      - id: c
+        text: AGENTS.md can only hold MCP config
+      - id: d
+        text: AGENTS.md overrides the approval gates
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      AGENTS.md auto-loads with no inclusion modes; for per-language scoping you
+      want fileMatch steering files.
+  - id: kiro-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: |
+      When is it most defensible to choose a Bugfix Spec over a Feature Spec?
+    choices:
+      - id: a
+        text: Whenever any code is written, since all changes are bugs
+      - id: b
+        text: Only when adding a brand-new capability
+      - id: c
+        text: |
+          When fixing a defect in existing behavior where systematic diagnosis and
+          regression prevention matter more than greenfield design
+      - id: d
+        text: Only when no tests exist
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Bugfix specs are tailored to diagnosing existing defects and preventing
+      regressions, distinct from greenfield feature design.
+  - id: kiro-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: multiple_choice
+    prompt: |
+      A platform team weighs adopting Kiro partly because it is built on Code OSS.
+      Which is the most balanced assessment of that fact?
+    choices:
+      - id: a
+        text: The Code OSS base alone is the reason to adopt Kiro
+      - id: b
+        text: |
+          It lowers migration cost via VS Code settings/themes/Open VSX plugins,
+          but the differentiating value is in Specs/Steering/Hooks, not the editor base
+      - id: c
+        text: Being on Code OSS means no plugins work
+      - id: d
+        text: The editor base makes Specs and Steering unnecessary
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Code OSS lineage eases adoption, but Kiro's real differentiation is its
+      agentic spec/steering/hook layer.
+  - id: kiro-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: |
+      A team is deciding whether to encode their git pre-commit secret scan as an
+      agent hook or keep it as a traditional git hook. What is the best framing?
+    choices:
+      - id: a
+        text: |
+          They solve overlapping goals differently; an agent hook can run an
+          intelligent scan inside the IDE workflow, while a git hook enforces at
+          the VCS boundary for all clients - choose based on where enforcement must live
+      - id: b
+        text: Agent hooks fully replace git hooks in every case
+      - id: c
+        text: Git hooks and agent hooks are identical and interchangeable
+      - id: d
+        text: Neither can scan for secrets
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      They are not the same enforcement point; a git hook gates the VCS boundary
+      universally, an agent hook adds intelligent IDE-time automation.
+  - id: kiro-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: free_form
+    prompt: |
+      Recommend, with justification, when a team should use Kiro's gated
+      Requirements-First spec versus Quick Plan. Give the decision criteria.
+    guidance: |
+      Looking for: gate when ambiguity/risk/stakeholder alignment is high; Quick
+      Plan when well-understood/low-risk; match process weight to risk.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends gated flow for ambiguous/high-risk/alignment-heavy work.
+        - id: c2
+          text: Recommends Quick Plan for well-understood, low-risk work.
+        - id: c3
+          text: Frames it as matching process weight to risk/uncertainty.
+      referenceAnswer: |
+        Use the gated Requirements-First flow when intent is ambiguous, risk is
+        high, or stakeholders must align, because the per-phase approvals catch
+        misunderstandings cheaply. Use Quick Plan for small, well-understood,
+        low-risk changes where gates add overhead without much protection. The
+        governing principle is matching process weight to the uncertainty and
+        risk of the work.
+      passThreshold: 0.6
+  - id: kiro-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: free_form
+    prompt: |
+      Critique the anti-pattern of putting every steering file in Always mode.
+      Propose a healthier steering architecture and justify it.
+    guidance: |
+      Looking for: Always-everything wastes context/dilutes focus; use Always for
+      universal rules, fileMatch for area-specific, Manual for on-demand; justify
+      by context economy and relevance.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that Always-everything wastes context and dilutes relevance.
+        - id: c2
+          text: Proposes Always for universal, fileMatch for scoped, Manual for on-demand.
+        - id: c3
+          text: Justifies via context economy / loading only relevant guidance.
+      referenceAnswer: |
+        Putting everything in Always loads irrelevant guidance into every
+        interaction, wasting context budget and diluting the agent's focus. A
+        healthier architecture reserves Always for genuinely universal rules
+        (foundation files), uses fileMatch for area- or stack-specific guidance
+        that should load only when relevant files are active, and uses Manual for
+        occasional references pulled in by # mention. This keeps each interaction's
+        context relevant and economical.
+      passThreshold: 0.6
+  - id: kiro-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: |
+      Assess the risks and merits of granting an agent broad autoApprove on MCP
+      tools when those tools can modify infrastructure. Recommend a policy.
+    guidance: |
+      Looking for: merit = speed/less friction; risk = unreviewed destructive
+      actions; recommend least-privilege (prompt by default, auto-approve only
+      safe read-only).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the merit (reduced friction/speed).
+        - id: c2
+          text: Names the risk (unreviewed destructive/infra-modifying actions).
+        - id: c3
+          text: Recommends a least-privilege policy (prompt by default, scope auto-approve).
+      referenceAnswer: |
+        Broad autoApprove speeds the workflow by removing confirmation prompts,
+        but for infrastructure-modifying tools it removes the only human check
+        before potentially destructive, hard-to-reverse actions. The defensible
+        policy is least-privilege: prompt by default, restrict autoApprove to
+        vetted read-only tools, and keep any write/destructive tool gated or
+        disabled, especially against production.
+      passThreshold: 0.6
+  - id: kiro-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: |
+      A team treats Kiro's spec artifacts as throwaway scaffolding deleted after
+      coding. Evaluate this practice against keeping them as living documents.
+    guidance: |
+      Looking for: specs as living docs give traceability, onboarding, change
+      history; throwaway loses rationale/intent; recommend keeping them updated.
+    rubric:
+      criteria:
+        - id: c1
+          text: Argues specs as living docs preserve intent/traceability/onboarding value.
+        - id: c2
+          text: Notes deleting them loses rationale and the requirements-to-code link.
+        - id: c3
+          text: Gives a balanced recommendation (keep and maintain, with caveats).
+      referenceAnswer: |
+        Keeping spec artifacts as living documents preserves the intent,
+        acceptance criteria, and design rationale, aiding onboarding, audits, and
+        future change. Deleting them after coding discards the requirements-to-code
+        traceability and the reasoning behind decisions, so later changes start
+        blind. The balanced recommendation is to keep and update the specs as the
+        feature evolves, accepting some maintenance cost for the durable value;
+        truly trivial throwaway experiments are the only reasonable exception.
+      passThreshold: 0.6
+  - id: kiro-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: free_form
+    prompt: |
+      A skeptic says "EARS, steering, and hooks are just ceremony that Kiro could
+      do without." Make the strongest case for why these structures earn their
+      keep on a real team, and concede where the skeptic has a point.
+    guidance: |
+      Looking for: EARS=testable intent, steering=consistency without repetition,
+      hooks=automated guardrails; concede overhead on trivial/solo/low-risk work.
+    rubric:
+      criteria:
+        - id: c1
+          text: Defends at least two of EARS/steering/hooks with concrete value.
+        - id: c2
+          text: Ties the value to team-scale benefits (consistency, testability, automation).
+        - id: c3
+          text: Concedes a legitimate limit (overhead on trivial/solo/low-risk work).
+      referenceAnswer: |
+        On a real team these structures pay off: EARS turns intent into testable,
+        unambiguous criteria; steering keeps conventions consistent across people
+        and sessions without re-explaining; hooks automate guardrails like test
+        sync and secret scanning. Together they reduce miscommunication and
+        rework at scale. The skeptic is right that for a solo developer on a
+        trivial, low-risk change the ceremony can exceed its benefit, which is why
+        Kiro also offers lighter paths like Quick Plan and optional steering modes.
+      passThreshold: 0.6
+  - id: kiro-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: |
+      Evaluate where in a Kiro project a measurable security requirement, its
+      implementation approach, and its automated enforcement should each live.
+      Justify the placement of each.
+    guidance: |
+      Looking for: requirement (EARS) in requirements.md; approach in design.md;
+      enforcement as an agent hook (and/or MCP/tooling); each placed per its role.
+    rubric:
+      criteria:
+        - id: c1
+          text: Places the measurable requirement as an EARS criterion in requirements.md.
+        - id: c2
+          text: Places the implementation approach in design.md.
+        - id: c3
+          text: Places automated enforcement in an agent hook (and justifies each role).
+      referenceAnswer: |
+        The measurable security requirement (e.g., "secrets SHALL never be
+        committed") belongs as an EARS acceptance criterion in requirements.md,
+        because it is testable intent. The approach for meeting it (scanning
+        strategy, libraries, threat model) belongs in design.md. The automated
+        enforcement belongs in an agent hook (for example, a pre-commit secret
+        scan), because that is the executable guardrail. Each artifact holds the
+        content matching its role: intent, approach, and automation respectively.
+      passThreshold: 0.6
+  - id: kiro-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: free_form
+    prompt: |
+      A team wants to standardize how they decide between a global
+      (~/.kiro/steering/) and a workspace (.kiro/steering/) steering file. Propose
+      a decision rule and justify it using Kiro's precedence behavior.
+    guidance: |
+      Looking for: global for personal/cross-project preferences; workspace for
+      project-specific/shared rules; workspace wins on conflict; consider sharing
+      via VCS.
+    rubric:
+      criteria:
+        - id: c1
+          text: Puts personal/cross-project preferences in global (~/.kiro/steering/).
+        - id: c2
+          text: Puts project-specific/team-shared rules in workspace (.kiro/steering/).
+        - id: c3
+          text: Justifies using workspace-wins precedence (and/or VCS sharing).
+      referenceAnswer: |
+        The rule: put personal, cross-project preferences in global steering
+        (~/.kiro/steering/) so they follow you everywhere, and put project-specific,
+        team-shared conventions in workspace steering (.kiro/steering/) committed to
+        VCS so the whole team gets them. This works because workspace steering takes
+        precedence on conflict, letting a repo deliberately override a personal
+        default, and committing workspace files ensures consistency across the team
+        while global files stay individual.
+      passThreshold: 0.6

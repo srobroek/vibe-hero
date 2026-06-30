@@ -1,0 +1,10 @@
+# Build output
+dist/
+
+# src/catalog/bundled/**/*.yaml — build-generated copies of repo-root content/
+# The source of truth is content/<class>/*.yaml (repo root).
+# copy-assets populates both src/catalog/bundled/ (for dev/vitest) and
+# dist/catalog/bundled/ (for production) from that canonical source.
+# These files must not be committed; run `pnpm run copy-assets` or
+# `pnpm run build` after cloning / updating content.
+src/catalog/bundled/**/*.yaml

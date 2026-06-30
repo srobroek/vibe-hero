@@ -26,19 +26,13 @@ import { tmpdir } from "node:os";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { SETUP_REQUIRED_RESULT, withSetupGate } from "../../src/tools/gate.js";
+import { SETUP_REQUIRED_RESULT, withSetupGate, withGates } from "../../src/tools/gate.js";
 import { makeGetConfigTool, makeSaveConfigTool } from "../../src/tools/config.js";
-import { TOOL_REGISTRY } from "../../src/tools/placeholders.js";
+import { makeGetStatusTool } from "../../src/tools/status.js";
 import { loadProfile, updateProfile } from "../../src/profile/store.js";
+import { setDetectedTool, setRawClientName } from "../../src/detection.js";
 import type { AbilityEstimate } from "../../src/schemas/profile.js";
 import type { SaveConfigInput } from "../../src/schemas/tools.js";
-
-/** Look up a tool module from the registry by name (fails the test if absent). */
-const toolByName = (name: string) => {
-  const tool = TOOL_REGISTRY.find((t) => t.name === name);
-  expect(tool, `tool "${name}" should be registered`).toBeDefined();
-  return tool!;
-};
 
 /** A valid initial setup config (the quickstart "valid config"). */
 const initialConfig: SaveConfigInput = {
@@ -64,6 +58,11 @@ describe("US-0 first-run setup (T024 / quickstart V0)", () => {
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vibe-hero-us0-"));
+    // Reset detection state so tests are isolated from any module-level
+    // detection left by other tests. After save_config with toolsLearning set,
+    // the tool gate resolves via config rather than detection.
+    setDetectedTool(undefined);
+    setRawClientName(undefined);
   });
 
   afterEach(async () => {
@@ -82,8 +81,11 @@ describe("US-0 first-run setup (T024 / quickstart V0)", () => {
       makeGetConfigTool(home).handler,
       home,
     );
-    const gatedTool = toolByName("get_status");
-    const getStatus = withSetupGate("get_status", gatedTool.handler, home);
+    // Use a dir-scoped get_status instance so the handler reads the test's temp
+    // profile (not the global ~/.vibe-hero). withGates exercises both gates; after
+    // save_config sets toolsLearning: ["claude-code"], the tool gate resolves via
+    // config even with no MCP detection (test environment has no handshake).
+    const getStatus = withGates("get_status", makeGetStatusTool(home).handler, home);
 
     // 1. Empty home → the gated tool is blocked by the setup gate (FR-032).
     const beforeSetup = await getStatus({});

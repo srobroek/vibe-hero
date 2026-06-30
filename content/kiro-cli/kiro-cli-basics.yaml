@@ -1,0 +1,2485 @@
+# Topic: kiro-cli-basics (kiro-cli)
+# The Kiro CLI (successor to Amazon Q Developer CLI) — install, kiro-cli chat, sessions, and slash commands.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-cli-basics
+class:
+  kind: tool
+  tool: kiro-cli
+title: Kiro CLI Basics
+summary: >-
+  The Kiro CLI (successor to Amazon Q Developer CLI) — install, kiro-cli chat, sessions, and slash
+  commands.
+triggerSignals: []
+items:
+  - id: kcb-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: What command starts the Kiro CLI?
+    choices:
+      - id: a
+        text: kiro
+      - id: b
+        text: kiro start
+      - id: c
+        text: kiro-cli
+      - id: d
+        text: aws kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The binary and command is kiro-cli. Running kiro-cli with no arguments opens an interactive
+      chat session. The bare name kiro is a common misconception; there is no aws kiro subcommand.
+  - id: kcb-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which company makes Kiro and the Kiro CLI?
+    choices:
+      - id: a
+        text: Anthropic
+      - id: b
+        text: Amazon Web Services (AWS)
+      - id: c
+        text: GitHub
+      - id: d
+        text: OpenAI
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro is an agentic IDE and toolset built by AWS. It is not an Anthropic, GitHub, or OpenAI
+      product, even though it can use Claude models under the hood.
+  - id: kcb-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: What happens when you run kiro-cli with no arguments?
+    choices:
+      - id: a
+        text: It prints the version and exits
+      - id: b
+        text: It starts an interactive chat session
+      - id: c
+        text: It runs a one-shot headless prompt
+      - id: d
+        text: It opens the spec workflow wizard
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Running kiro-cli with no args starts an interactive chat session in the terminal. Headless
+      one-shot execution requires the --no-interactive flag plus a prompt argument.
+  - id: kcb-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Which command installs Kiro CLI on macOS or Linux?
+    choices:
+      - id: a
+        text: brew install kiro-cli
+      - id: b
+        text: npm install -g kiro-cli
+      - id: c
+        text: curl -fsSL https://cli.kiro.dev/install | bash
+      - id: d
+        text: pip install kiro-cli
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The official macOS/Linux install pipes the script from cli.kiro.dev into bash. On Windows 11
+      the equivalent is the PowerShell one-liner using irm with the install.ps1 URL piped to iex.
+  - id: kcb-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: >-
+      Name the three diagnostic/account commands Kiro CLI provides for resolving issues, reporting
+      problems, and re-authenticating.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names kiro-cli doctor for finding/resolving common issues
+        - id: c2
+          text: Names kiro-cli issue for reporting problems
+        - id: c3
+          text: Names kiro-cli login for re-authenticating
+      referenceAnswer: >-
+        kiro-cli doctor finds and resolves common issues, kiro-cli issue reports problems, and
+        kiro-cli login re-authenticates the user.
+      passThreshold: 0.6
+    guidance: >-
+      These three commands cover self-service troubleshooting. doctor diagnoses, issue files a
+      report, and login re-establishes credentials when authentication has expired or broken.
+  - id: kcb-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: How do you run a raw shell command inside a Kiro CLI chat session without AI processing?
+    choices:
+      - id: a
+        text: Prefix the input with an exclamation mark, e.g. !npm run build
+      - id: b
+        text: Prefix the input with a slash, e.g. /npm run build
+      - id: c
+        text: Prefix the input with an at sign, e.g. @npm run build
+      - id: d
+        text: Wrap the command in backticks
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Shell passthrough uses a leading ! so the line runs directly in the shell with no AI
+      processing. A leading / invokes slash commands and @/# mentions are for context and tools, not
+      passthrough.
+  - id: kcb-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: Where are Kiro specs stored in a repository?
+    choices:
+      - id: a
+        text: Under ~/.aws/kiro/specs/
+      - id: b
+        text: Under .kiro/specs/, one folder per feature
+      - id: c
+        text: In a single specs.md file at the repo root
+      - id: d
+        text: Under .config/kiro/specs/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Specs live in the repo under .kiro/specs/ with one folder per feature, and they are committed
+      to version control alongside code. They are not stored under ~/.aws/ or .config/, and they are
+      not a single monolithic file.
+  - id: kcb-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: free_form
+    prompt: List the three files that a Kiro spec generates for a feature.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names requirements.md
+        - id: c2
+          text: Names design.md
+        - id: c3
+          text: Names tasks.md
+      referenceAnswer: A Kiro spec generates requirements.md, design.md, and tasks.md.
+      passThreshold: 0.6
+    guidance: >-
+      A spec is three files, not one: requirements.md captures the what, design.md the how, and
+      tasks.md the discrete executable plan. Believing a spec is a single monolithic file is a
+      common misconception.
+  - id: kcb-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: multiple_choice
+    prompt: Which directory holds Kiro steering files for a workspace?
+    choices:
+      - id: a
+        text: .kiro/steering/
+      - id: b
+        text: .kiro/settings/
+      - id: c
+        text: .kiro/hooks/
+      - id: d
+        text: .kiro/specs/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Workspace steering files live in .kiro/steering/ (global ones in ~/.kiro/steering/). settings/
+      is for MCP config, hooks/ for agent hooks, and specs/ for feature specs.
+  - id: kcb-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: What are the three default/foundational steering files Kiro includes by default?
+    choices:
+      - id: a
+        text: requirements.md, design.md, tasks.md
+      - id: b
+        text: product.md, tech.md, structure.md
+      - id: c
+        text: README.md, CONTRIBUTING.md, AGENTS.md
+      - id: d
+        text: rules.md, context.md, prompt.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The three foundational steering files are product.md (purpose/users/features), tech.md
+      (frameworks/tools/constraints), and structure.md (file org/conventions). The
+      requirements/design/tasks trio is the spec files, not steering.
+  - id: kcb-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: multiple_choice
+    prompt: Where does Kiro CLI store MCP server configuration for a workspace?
+    choices:
+      - id: a
+        text: .kiro/mcp.json at the workspace root
+      - id: b
+        text: .kiro/steering/mcp.json
+      - id: c
+        text: .kiro/settings/mcp.json
+      - id: d
+        text: ~/.aws/mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Workspace MCP config is .kiro/settings/mcp.json (note the settings/ subdir), and user config
+      is ~/.kiro/settings/mcp.json. It is not at the .kiro root, not in steering/, and not under
+      ~/.aws/.
+  - id: kcb-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: free_form
+    prompt: What is the root JSON key under which MCP servers are declared in Kiro's mcp.json?
+    rubric:
+      criteria:
+        - id: c1
+          text: States the key is mcpServers
+      referenceAnswer: The root key is mcpServers; each server is an entry inside that object.
+      passThreshold: 0.6
+    guidance: >-
+      Both the workspace and user mcp.json files share the same schema rooted at mcpServers. Each
+      server is keyed by name inside that object.
+  - id: kcb-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: Where are Kiro agent hooks stored in a workspace?
+    choices:
+      - id: a
+        text: .kiro/hooks/ as JSON files
+      - id: b
+        text: .git/hooks/ as shell scripts
+      - id: c
+        text: .kiro/steering/ as markdown files
+      - id: d
+        text: ~/.aws/hooks/ as YAML files
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Agent hooks are JSON files in .kiro/hooks/ (workspace) or ~/.kiro/hooks/ (user). They are not
+      git hooks in .git/hooks/, not markdown steering, and not under ~/.aws/.
+  - id: kcb-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: Which environment variable supplies the API key for Kiro CLI headless authentication?
+    choices:
+      - id: a
+        text: KIRO_TOKEN
+      - id: b
+        text: AWS_KIRO_KEY
+      - id: c
+        text: KIRO_API_KEY
+      - id: d
+        text: KIRO_CLI_AUTH
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Headless auth reads KIRO_API_KEY from the environment. API-key auth is available to Pro, Pro+,
+      Pro Max, and Power subscribers. The other names are not used.
+  - id: kcb-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: Which flag puts Kiro CLI into non-interactive headless mode?
+    choices:
+      - id: a
+        text: '--headless'
+      - id: b
+        text: '--batch'
+      - id: c
+        text: '--no-interactive'
+      - id: d
+        text: '--ci'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      kiro-cli chat --no-interactive runs headless and requires an initial prompt argument. There is
+      no --headless, --batch, or --ci flag for this purpose.
+  - id: kcb-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      Name the requirements-syntax convention Kiro uses for spec acceptance criteria, written in the
+      WHEN/IF ... THEN the system SHALL ... form.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names EARS (Easy Approach to Requirements Syntax)
+        - id: c2
+          text: Notes the WHEN [condition] THEN the system SHALL [behavior] shape
+      referenceAnswer: >-
+        Kiro uses EARS (Easy Approach to Requirements Syntax), e.g. WHEN [condition] THEN the system
+        SHALL [behavior].
+      passThreshold: 0.6
+    guidance: >-
+      EARS is a pre-existing industry convention Kiro adopts, not a Kiro invention. Its keywords
+      (WHEN/IF/WHILE/WHERE ... the system SHALL ...) make requirements testable.
+  - id: kcb-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: Where do custom agent configuration files live for a Kiro workspace?
+    choices:
+      - id: a
+        text: .kiro/specs/agents/
+      - id: b
+        text: .kiro/steering/agents.md
+      - id: c
+        text: .kiro/agents/ as JSON files
+      - id: d
+        text: ~/.aws/agents/
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Custom agents are JSON files in .kiro/agents/ (workspace) or ~/.kiro/agents/ (global). They
+      are not markdown steering, not specs, and not under ~/.aws/.
+  - id: kcb-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: How does Kiro CLI handle updates to itself?
+    choices:
+      - id: a
+        text: You must re-run the install script manually for each release
+      - id: b
+        text: It updates only when you run kiro-cli update
+      - id: c
+        text: It auto-updates in the background and installs the new version when you exit
+      - id: d
+        text: It never updates; you reinstall to upgrade
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The CLI auto-updates: a new version downloads silently in the background and installs when you
+      exit the application, so no manual update command is required.
+  - id: kcb-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: >-
+      In Kiro chat, what slash command exports the current conversation to a JSON file, and what
+      command loads one back?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names /chat save (optionally with a path) for exporting
+        - id: c2
+          text: Names /chat load (optionally with a path) for loading
+      referenceAnswer: /chat save [path] exports the conversation to JSON and /chat load [path] loads it back.
+      passThreshold: 0.6
+    guidance: >-
+      /chat save writes the conversation as JSON (a path is optional) and /chat load restores it.
+      These sit alongside /chat new and /chat resume for managing conversations.
+  - id: kcb-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: Why is the command kiro-cli rather than kiro a frequent point of confusion for new users?
+    choices:
+      - id: a
+        text: >-
+          Because Kiro is also an IDE, people assume the terminal entry point shares the bare name
+          kiro, but the CLI binary is specifically kiro-cli
+      - id: b
+        text: Because kiro is a reserved word in bash that cannot be used as a command
+      - id: c
+        text: Because the CLI was renamed from kiro to kiro-cli for trademark reasons
+      - id: d
+        text: Because kiro only works inside the IDE and kiro-cli only works over SSH
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro is a product (IDE plus terminal toolset), so users naturally type kiro; the actual
+      terminal binary is kiro-cli. There is no bash reservation, no trademark rename, and no
+      SSH-only restriction.
+  - id: kcb-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: Why does shell passthrough with ! exist when you could just describe the command to the agent?
+    choices:
+      - id: a
+        text: It lets the agent run commands faster than you could type them
+      - id: b
+        text: It encrypts the command before sending it to the model
+      - id: c
+        text: It is the only way to run commands that need a TTY
+      - id: d
+        text: >-
+          It runs the command deterministically in your shell with no AI in the loop, so there is no
+          interpretation, cost, or risk of the model altering the command
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Passthrough bypasses the model entirely: the line runs verbatim in your shell. That gives
+      deterministic execution with no token cost and no chance of the model rewriting your command.
+  - id: kcb-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: multiple_choice
+    prompt: How does --resume differ from --resume-picker?
+    choices:
+      - id: a
+        text: '--resume always resumes the newest session globally; --resume-picker resumes the oldest'
+      - id: b
+        text: >-
+          --resume resumes the session for the current directory; --resume-picker shows an
+          interactive list to choose from
+      - id: c
+        text: '--resume needs a session ID; --resume-picker needs a file path'
+      - id: d
+        text: They are aliases for the same behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --resume picks up the session associated with the current directory, while --resume-picker
+      opens an interactive picker. To target a specific session by id you use --resume-id
+      <SESSION_ID>.
+  - id: kcb-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: multiple_choice
+    prompt: Why must a headless (--no-interactive) invocation include a prompt argument?
+    choices:
+      - id: a
+        text: Because headless mode disables the model unless a prompt unlocks it
+      - id: b
+        text: Because headless mode runs each word of the prompt as a separate command
+      - id: c
+        text: Because the prompt argument sets the API key
+      - id: d
+        text: >-
+          Because there is no interactive session to type into; the single prompt argument is the
+          only input the run will ever receive
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Headless mode has no interactive loop and no mid-session input, so the initial prompt argument
+      is the entire instruction for the run. Slash commands and TUI features are also unavailable.
+  - id: kcb-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: free_form
+    prompt: >-
+      Explain why a spec is split into three files (requirements.md, design.md, tasks.md) instead of
+      one document.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the separation of concerns (what vs how vs the executable plan)
+        - id: c2
+          text: Connects it to the staged workflow (requirements then design then tasks)
+        - id: c3
+          text: Notes a benefit such as reviewability, traceability, or independent iteration
+      referenceAnswer: >-
+        The three files separate concerns: requirements.md is the what (user stories, EARS
+        acceptance criteria), design.md is the how (architecture), and tasks.md is the executable
+        plan. This mirrors the staged workflow (requirements then design then tasks), lets each
+        phase be reviewed and approved before the next, and keeps changes traceable from a
+        requirement through design to the task that implements it.
+      passThreshold: 0.6
+    guidance: >-
+      Splitting forces an explicit gate between phases and keeps each artifact focused. A single
+      blob blurs requirements with design and makes it hard to see which task satisfies which
+      requirement.
+  - id: kcb-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: What does the inclusion mode inclusion fileMatch do for a steering file?
+    choices:
+      - id: a
+        text: Includes the file in every interaction unconditionally
+      - id: b
+        text: Includes the file only when you mention it by name with the hash-prefixed steering mention
+      - id: c
+        text: Excludes the file whenever the working files match a pattern
+      - id: d
+        text: Includes the file automatically only when the open/edited files match a configured pattern
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      fileMatch loads the steering file conditionally based on a fileMatchPattern. always loads
+      every time, and manual loads only when you invoke it with #steering-file-name. fileMatch never
+      excludes.
+  - id: kcb-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: >-
+      Why does Kiro resolve a workspace steering file over a global one when both define the same
+      rule?
+    choices:
+      - id: a
+        text: Global files are read-only and cannot define rules
+      - id: b
+        text: Global files only apply in headless mode
+      - id: c
+        text: Whichever file was edited most recently wins, regardless of scope
+      - id: d
+        text: >-
+          Workspace steering takes priority on conflict so project-specific guidance can override
+          the broader personal defaults
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      On conflict the more specific scope wins: workspace (.kiro/steering/) overrides global
+      (~/.kiro/steering/). This lets a project tailor or override your personal defaults. Recency
+      and mode do not decide it.
+  - id: kcb-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: free_form
+    prompt: Explain the difference between a Kiro agent hook and a traditional git hook.
+    rubric:
+      criteria:
+        - id: c1
+          text: Git hooks fire on git lifecycle events and run shell scripts
+        - id: c2
+          text: >-
+            Kiro agent hooks fire on editor/agent events (file save/create/delete, prompt submit,
+            tool calls, task execution)
+        - id: c3
+          text: A Kiro hook action can be an agent prompt, not only a shell command
+      referenceAnswer: >-
+        Git hooks are tied to git operations (commit, push) and run shell scripts. Kiro agent hooks
+        are event-driven within the agent workflow, firing on things like file save/create/delete,
+        prompt submission, tool invocations, and spec task execution. A Kiro hook's action can be a
+        shell command or an agent prompt, so it can ask the model to do something rather than just
+        run a script.
+      passThreshold: 0.6
+    guidance: >-
+      The key contrasts are the trigger source (git vs agent/editor events) and the action type
+      (shell only vs shell or agent prompt). Treating Kiro hooks as git hooks is a common
+      misconception.
+  - id: kcb-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      Why does a steering file use the file-reference syntax (the #[[file:...]] form) instead of
+      pasting the referenced file's contents inline?
+    choices:
+      - id: a
+        text: It pastes the file content into the steering file once at creation time
+      - id: b
+        text: It marks the referenced file as read-only
+      - id: c
+        text: >-
+          It points the steering file at a live file so the current contents are pulled in rather
+          than going stale
+      - id: d
+        text: It tells Kiro to ignore the referenced file
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The #[[file:...]] syntax links to a live file so steering reflects the current contents
+      instead of a frozen copy. It neither snapshots, locks, nor excludes the target.
+  - id: kcb-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: How does AGENTS.md differ from a normal Kiro steering file?
+    choices:
+      - id: a
+        text: AGENTS.md supports the same inclusion modes as steering files
+      - id: b
+        text: AGENTS.md is only read in headless mode
+      - id: c
+        text: AGENTS.md must live in .kiro/steering/ to be recognized
+      - id: d
+        text: AGENTS.md is always included and does not support inclusion modes, unlike steering files
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Kiro recognizes the cross-tool AGENTS.md convention (workspace root or global) and always
+      includes it; unlike steering files it has no always/fileMatch/manual inclusion modes.
+  - id: kcb-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: What is the practical benefit of Kiro running independent tasks in parallel waves?
+    choices:
+      - id: a
+        text: It guarantees tasks never have dependencies
+      - id: b
+        text: It runs every task twice for redundancy
+      - id: c
+        text: >-
+          By analyzing the dependency graph, Kiro executes tasks that do not depend on each other at
+          the same time, shortening overall completion time
+      - id: d
+        text: It forces all tasks to run strictly one at a time
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Kiro analyzes the task dependency graph and runs mutually independent tasks concurrently in
+      waves, reducing wall-clock time while still respecting real dependencies.
+  - id: kcb-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: Why does Kiro keep MCP config in both .kiro/settings/mcp.json and ~/.kiro/settings/mcp.json?
+    choices:
+      - id: a
+        text: One is a backup of the other
+      - id: b
+        text: The workspace file holds local servers and the user file holds remote servers only
+      - id: c
+        text: >-
+          To support user-level servers shared across projects and workspace-level servers specific
+          to one repo, with workspace taking precedence
+      - id: d
+        text: Only the user file is actually read; the workspace one is ignored
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The two scopes use an identical schema: user config applies everywhere, workspace config is
+      project-specific, and workspace wins on conflict. Neither is a backup nor split by transport.
+  - id: kcb-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      In a Kiro CLI chat, how does the agent come to call a tool from a configured MCP server, and
+      what controls whether that call runs without asking you first?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the agent itself decides to call an MCP server's tool as part of fulfilling the
+            request (tools from connected servers become available to the agent)
+        - id: c2
+          text: >-
+            Explains that approval is governed by per-server autoApprove (or a launch-time trust
+            flag), so a non-approved tool prompts for confirmation
+      referenceAnswer: >-
+        Tools exposed by connected MCP servers become available to the agent, and the agent invokes
+        them on its own when they help fulfill your request. Whether a given call runs silently is
+        controlled by approval settings: a server's autoApprove array (listing the tool name or "*")
+        or a launch-time trust flag (--trust-tools / --trust-all-tools) pre-approves it; otherwise
+        the call prompts for confirmation.
+      passThreshold: 0.6
+    guidance: >-
+      MCP tools are model-invoked, not typed by the user; the agent chooses them. The gating is
+      autoApprove per server (or --trust-tools/--trust-all-tools at launch). You can list loaded
+      servers with the /mcp slash command.
+  - id: kcb-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: Why might you start Kiro CLI with --trust-tools=read,grep instead of --trust-all-tools in CI?
+    choices:
+      - id: a
+        text: '--trust-all-tools is slower than naming categories'
+      - id: b
+        text: >-
+          To apply least privilege: auto-approve only safe read-only categories while still gating
+          write or destructive tools
+      - id: c
+        text: Because --trust-all-tools only works interactively
+      - id: d
+        text: Because read and grep are the only categories that exist
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --trust-tools=<categories> grants least-privilege auto-approval for chosen categories (e.g.
+      read, grep), keeping write and other risky tools gated; --trust-all-tools approves everything,
+      which is broader than usually needed.
+  - id: kcb-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: What does --require-mcp-startup add to a headless pipeline run?
+    choices:
+      - id: a
+        text: It retries failed MCP connections forever
+      - id: b
+        text: It prompts the user to approve each MCP server at startup
+      - id: c
+        text: It disables all MCP servers for the run
+      - id: d
+        text: >-
+          It makes the run fail immediately if any MCP server fails to connect, instead of silently
+          continuing
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      In CI you want fast, clear failure: --require-mcp-startup aborts immediately when an MCP
+      server cannot connect, rather than proceeding without the tools the pipeline expects.
+  - id: kcb-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: What distinguishes a Feature Spec from a Bugfix Spec in Kiro?
+    choices:
+      - id: a
+        text: Feature Specs skip the design phase entirely
+      - id: b
+        text: >-
+          Feature Specs capture new behavior (Requirements-First or Design-First) while Bugfix Specs
+          center on bug diagnosis and fix validation
+      - id: c
+        text: Bugfix Specs produce only one file and Feature Specs produce three
+      - id: d
+        text: Bugfix Specs cannot use EARS syntax
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Feature Specs build new behavior and can start Requirements-First or Design-First; Bugfix
+      Specs focus on diagnosing a bug and validating the fix, often using SHALL CONTINUE TO clauses
+      to preserve existing behavior.
+  - id: kcb-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Explain what the SHALL CONTINUE TO phrasing expresses in an EARS requirement for a bugfix
+      spec.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains it asserts existing/desired behavior must be preserved while the bug is fixed
+        - id: c2
+          text: Connects it to regression prevention or protecting working behavior
+      referenceAnswer: >-
+        SHALL CONTINUE TO states that some existing, correct behavior must be preserved after the
+        fix. It documents what should not change, guarding against regressions while the bug itself
+        is corrected.
+      passThreshold: 0.6
+    guidance: >-
+      Bugfix specs need to capture not only the new correct behavior but the behavior that must stay
+      intact. SHALL CONTINUE TO is the EARS-style way to pin down that preservation requirement.
+  - id: kcb-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: Why does /agent swap exist alongside the --agent startup flag?
+    choices:
+      - id: a
+        text: >-
+          --agent chooses the agent when the session starts, while /agent swap switches to a
+          different agent within an already-running session
+      - id: b
+        text: '--agent only works in headless mode'
+      - id: c
+        text: /agent swap creates a new agent from scratch
+      - id: d
+        text: They both restart the CLI to change agents
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --agent <name> selects the agent at launch; /agent swap changes the active agent mid-session
+      without restarting. Creating an agent is /agent create (or its alias /agent generate).
+  - id: kcb-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You are mid-chat and want to add every TypeScript file under src to the working context. Which
+      command does this?
+    choices:
+      - id: a
+        text: /context show src/**/*.ts
+      - id: b
+        text: /context add "src/**/*.ts"
+      - id: c
+        text: '!add src/**/*.ts'
+      - id: d
+        text: /chat load src/**/*.ts
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      /context add takes a glob (quoted) and adds matching files as a context rule. /context show
+      only displays context, ! is shell passthrough, and /chat load restores a saved conversation.
+  - id: kcb-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      A CI job must run Kiro CLI once, non-interactively, auto-approving only read and grep tools.
+      Which invocation is correct?
+    choices:
+      - id: a
+        text: kiro-cli chat "fix the build" --trust-all-tools
+      - id: b
+        text: kiro-cli chat --no-interactive --trust-tools=all
+      - id: c
+        text: kiro-cli --resume --trust-tools=read,grep
+      - id: d
+        text: kiro-cli chat --no-interactive "fix the build" --trust-tools=read,grep
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Headless needs --no-interactive plus a prompt argument, and least-privilege approval uses
+      --trust-tools=read,grep. The interactive variant over-approves with --trust-all-tools, the
+      --resume variant has no prompt, and --trust-tools=all misuses the flag (use --trust-all-tools
+      to approve everything).
+  - id: kcb-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      You want a steering file that is only loaded when working on files matching src/api/**. How do
+      you configure its front matter?
+    choices:
+      - id: a
+        text: 'inclusion: always'
+      - id: b
+        text: 'inclusion: manual'
+      - id: c
+        text: 'inclusion: fileMatch with fileMatchPattern: "src/api/**"'
+      - id: d
+        text: 'inclusion: auto with glob: "src/api/**"'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Conditional, file-scoped loading uses inclusion fileMatch together with fileMatchPattern.
+      always loads every time and manual loads only on a hash-mention. There is an auto mode, but it
+      activates on a request/description match (it takes a description, not a glob), so "auto with
+      glob" is the wrong pairing.
+  - id: kcb-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: free_form
+    prompt: >-
+      Write an EARS-style acceptance criterion for this rule: when a user submits a login form with
+      an empty password, the system rejects it and shows an error.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the WHEN [condition] THEN the system SHALL [behavior] structure
+        - id: c2
+          text: Condition captures the empty-password submission
+        - id: c3
+          text: Behavior captures rejection and showing an error
+      referenceAnswer: >-
+        WHEN a user submits the login form with an empty password THEN the system SHALL reject the
+        submission and SHALL display a validation error indicating the password is required.
+      passThreshold: 0.6
+    guidance: >-
+      A good EARS criterion names the trigger condition after WHEN and the required, testable system
+      behavior after the system SHALL. Both rejection and the error message should appear.
+  - id: kcb-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: >-
+      You want a hook that runs npm run lint automatically every time a .ts file is saved. Which
+      hook fields express this?
+    choices:
+      - id: a
+        text: 'trigger: UserPromptSubmit, matcher: "*.ts", action: agent prompt'
+      - id: b
+        text: 'trigger: PostFileSave, matcher: "\\.ts$", action: shell command npm run lint'
+      - id: c
+        text: 'trigger: PreToolUse, matcher: npm, action: npm run lint'
+      - id: d
+        text: 'trigger: AgentTurnComplete, matcher: "\\.ts$", action: npm run lint'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      File-save automation uses a file-save trigger (PostFileSave) with a regex matcher for .ts
+      files and a shell-command action. Prompt-submit, tool-use, and turn-complete triggers fire on
+      different events, not on saving a file.
+  - id: kcb-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      You need to declare a local MCP server that runs npx some-mcp-server and auto-approves all of
+      its tools. Which entry is correct?
+    choices:
+      - id: a
+        text: '{ "run": "npx some-mcp-server", "approve": "all" }'
+      - id: b
+        text: '{ "url": "npx some-mcp-server", "autoApprove": true }'
+      - id: c
+        text: '{ "command": "npx", "args": ["some-mcp-server"], "trustAll": true }'
+      - id: d
+        text: '{ "command": "npx", "args": ["some-mcp-server"], "autoApprove": ["*"] }'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Local servers use command (required) plus args, and autoApprove is an array where "*" approves
+      all tools. url is for remote servers, and there is no trustAll/run/approve key in the schema.
+  - id: kcb-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: free_form
+    prompt: >-
+      You started a chat in /repo/feature-x yesterday and want to continue exactly that session
+      today without picking from a list. Describe two valid commands to resume it and when each
+      applies.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes kiro-cli chat --resume resumes the session tied to the current directory
+        - id: c2
+          text: Notes kiro-cli chat --resume-id <SESSION_ID> resumes a specific session by id
+        - id: c3
+          text: Distinguishes the two (directory-based vs explicit id) and excludes the picker
+      referenceAnswer: >-
+        From inside /repo/feature-x run kiro-cli chat --resume to continue the session bound to that
+        directory. If you know the session id you can run kiro-cli chat --resume-id <SESSION_ID>
+        from anywhere. The --resume-picker variant would force a list, which the requirement rules
+        out.
+      passThreshold: 0.6
+    guidance: >-
+      --resume keys off the current directory; --resume-id targets a session explicitly. Both avoid
+      the interactive picker the scenario excludes.
+  - id: kcb-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: multiple_choice
+    prompt: >-
+      You want a manual steering file named coding-standards that you can pull into a chat only when
+      you ask. How is it configured and invoked?
+    choices:
+      - id: a
+        text: 'inclusion: always, then it loads on its own'
+      - id: b
+        text: 'inclusion: manual, then invoke it with #coding-standards in chat'
+      - id: c
+        text: 'inclusion: fileMatch, then it loads when any file matches'
+      - id: d
+        text: Put it in AGENTS.md so it loads only on request
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Manual steering uses inclusion manual and is invoked on demand with #steering-file-name (here
+      #coding-standards). always/fileMatch load automatically, and AGENTS.md is always included with
+      no on-demand mode.
+  - id: kcb-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      You want to launch Kiro CLI directly into a custom agent named reviewer for this session.
+      Which command is correct?
+    choices:
+      - id: a
+        text: kiro-cli reviewer
+      - id: b
+        text: kiro-cli /agent reviewer
+      - id: c
+        text: kiro-cli chat --use=reviewer
+      - id: d
+        text: kiro-cli --agent reviewer
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Starting with a specific agent uses kiro-cli --agent <name>. /agent ... commands work inside a
+      running session, not as launch arguments, and there is no --use flag or bare positional agent
+      name.
+  - id: kcb-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      You want a hook that, after every spec task finishes, asks the agent to run the project's test
+      suite and summarize failures. Describe the trigger and the kind of action you would set.
+    rubric:
+      criteria:
+        - id: c1
+          text: Chooses an after-spec-task-execution trigger (post task execution event)
+        - id: c2
+          text: Sets the action to an agent prompt (not just a raw shell command)
+        - id: c3
+          text: Action content asks to run tests and summarize failures
+      referenceAnswer: >-
+        Use a trigger for after spec task execution (the post-task-execution event). Set the action
+        to an agent prompt such as "Run the project's test suite and summarize any failures."
+        Because Kiro hook actions can be agent prompts, the model performs and reports on the run
+        rather than just executing a fixed script.
+      passThreshold: 0.6
+    guidance: >-
+      The durable point: Kiro hooks fire on spec-task execution events and their action may be an
+      agent prompt, enabling reasoning-driven follow-up like running and summarizing tests.
+  - id: kcb-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 324
+    type: multiple_choice
+    prompt: >-
+      Your prompt is long and you want to compose it in your editor rather than the inline input.
+      What do you do in a Kiro chat session?
+    choices:
+      - id: a
+        text: Run /editor to open your default editor for the prompt
+      - id: b
+        text: Run !editor to shell out
+      - id: c
+        text: Run /context add to attach a draft file
+      - id: d
+        text: Press Esc to switch to editor mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /editor opens your default editor for composing a longer prompt. Multi-line can also be typed
+      with Shift+Enter, Ctrl+J, or Alt+Enter, but the editor command is the explicit way to use your
+      editor.
+  - id: kcb-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You want to create a new custom agent that reuses an existing agent's configuration as a
+      starting point. Which approach matches Kiro's tooling?
+    choices:
+      - id: a
+        text: Copy the JSON file by hand; there is no built-in base option
+      - id: b
+        text: Use /agent swap --clone
+      - id: c
+        text: Use /agent create with --from to base the new agent on an existing one
+      - id: d
+        text: Use kiro-cli --agent new --extends
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      /agent create (AI-assisted; /agent generate is an alias) supports --from to base a new agent
+      on an existing one. /agent swap only switches the active agent, and there is no --extends
+      launch flag.
+  - id: kcb-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      A remote MCP server requires an Authorization header with a bearer token. In mcp.json, where
+      does that header go?
+    choices:
+      - id: a
+        text: In an env object on the server entry
+      - id: b
+        text: In a top-level auth block outside mcpServers
+      - id: c
+        text: In the args array
+      - id: d
+        text: In a headers object on the server entry alongside its url
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Remote servers are declared with url plus a headers object for things like Authorization. env
+      and args belong to local command-based servers, and headers are per-server, not a top-level
+      block.
+  - id: kcb-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      You want to temporarily disable one specific tool exposed by an MCP server without removing
+      the server. Which field do you use and how?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the disabledTools field on the server entry
+        - id: c2
+          text: Explains you list the tool name(s) there while keeping the server enabled
+      referenceAnswer: >-
+        Add the tool's name to the disabledTools array on that server's entry in mcp.json. The
+        server stays connected and its other tools remain available; only the listed tools are
+        turned off. Setting disabled: true would instead disable the whole server.
+      passThreshold: 0.6
+    guidance: >-
+      disabledTools lets you suppress individual tools while the server keeps running, distinct from
+      disabled which switches off the entire server.
+  - id: kcb-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You added a new server to .kiro/settings/mcp.json while a chat session is open. What do you
+      need to do for it to take effect?
+    choices:
+      - id: a
+        text: Nothing beyond saving; changes apply on save
+      - id: b
+        text: Reinstall Kiro CLI
+      - id: c
+        text: Run kiro-cli doctor to rebuild the config
+      - id: d
+        text: Move the file to ~/.aws/ first
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      MCP config changes apply on save, so simply saving the file is enough. No reinstall, doctor
+      run, or relocation to ~/.aws/ is required.
+  - id: kcb-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      Inside a chat you want to give a custom agent a fixed model and a system prompt. Which agent
+      config fields do you set?
+    choices:
+      - id: a
+        text: llm and system
+      - id: b
+        text: engine and instructions
+      - id: c
+        text: model and prompt
+      - id: d
+        text: provider and persona
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Agent config uses model (e.g. claude-sonnet-4) and prompt for the system prompt, plus name,
+      description, tools, allowedTools, and resources. The other field names are not part of the
+      schema.
+  - id: kcb-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      A custom agent needs to load a local design doc and a reusable skill. Which agent config field
+      holds these, and what URI schemes would you use for each?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the resources field on the agent config
+        - id: c2
+          text: Uses a file:// URI for the local design doc
+        - id: c3
+          text: Uses a skill:// URI for the reusable skill
+      referenceAnswer: >-
+        Put both in the agent's resources field. Reference the local design doc with a file:// URI
+        and the reusable skill with a skill:// URI. resources accepts both schemes so an agent can
+        pull in files and skills it should always have available.
+      passThreshold: 0.6
+    guidance: >-
+      The resources field accepts file:// (local files) and skill:// (reusable skills) URIs, letting
+      an agent declare the context and capabilities it should carry.
+  - id: kcb-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: multiple_choice
+    prompt: >-
+      A teammate's hook never fires on file saves even though it is in .kiro/hooks/ and the JSON
+      parses. The matcher is set to "*.ts". What is the most likely cause?
+    choices:
+      - id: a
+        text: Hooks cannot trigger on file saves at all
+      - id: b
+        text: >-
+          The matcher should be a regex like "\\.ts$"; "*.ts" is a glob and will not match as the
+          regex matcher expects
+      - id: c
+        text: The file must be in ~/.aws/hooks/ to be active
+      - id: d
+        text: JSON hooks are only read in headless mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The hook matcher field is a regex, so "*.ts" (a shell glob) is the wrong form; a regex such as
+      "\\.ts$" matches TypeScript files. File-save triggers do exist, .kiro/hooks/ is correct, and
+      hooks are not headless-only.
+  - id: kcb-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      A headless CI run exits with no work done and an error that it needs a prompt, even though
+      --trust-all-tools and KIRO_API_KEY are set. What is wrong?
+    choices:
+      - id: a
+        text: '--trust-all-tools is incompatible with headless mode'
+      - id: b
+        text: '--no-interactive requires an initial prompt argument, which is missing'
+      - id: c
+        text: KIRO_API_KEY must be passed as a flag, not an env var
+      - id: d
+        text: Headless mode cannot use MCP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Headless mode requires a prompt argument; without it there is nothing to do. Trust flags and
+      the KIRO_API_KEY env var are valid in headless mode, and headless can use MCP servers.
+  - id: kcb-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: multiple_choice
+    prompt: >-
+      Two steering files give conflicting formatting rules: one in ~/.kiro/steering/ and one in
+      .kiro/steering/. The project's rule is being ignored in favor of the personal one. What likely
+      happened?
+    choices:
+      - id: a
+        text: >-
+          Workspace steering should win, so the project file is probably not being loaded (wrong
+          inclusion mode or path) rather than losing a priority contest
+      - id: b
+        text: Global steering always wins over workspace steering
+      - id: c
+        text: Steering files cannot define formatting rules
+      - id: d
+        text: Only AGENTS.md can override the personal file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Workspace steering takes priority over global on conflict, so the symptom suggests the
+      workspace file is not actually being included (e.g. inclusion is manual and never invoked, or
+      it sits in the wrong path) rather than losing on precedence.
+  - id: kcb-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: free_form
+    prompt: >-
+      A spec's tasks.md keeps running tasks strictly one at a time even though several look
+      independent. Walk through how you would diagnose why the parallel waves are not happening.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recognizes waves come from dependency-graph analysis, so over-declared dependencies
+            serialize tasks
+        - id: c2
+          text: Proposes inspecting task definitions for unnecessary ordering/dependency links
+        - id: c3
+          text: >-
+            Notes a fix such as removing false dependencies so independent tasks can run
+            concurrently
+      referenceAnswer: >-
+        Parallel waves come from Kiro analyzing the task dependency graph and running mutually
+        independent tasks together. If everything serializes, the likely cause is that the tasks
+        declare dependencies (explicit or implied by ordering/shared artifacts) that make Kiro treat
+        them as a chain. I would inspect tasks.md for unnecessary dependency links or ordering
+        assumptions and remove the false ones so genuinely independent tasks land in the same wave.
+      passThreshold: 0.6
+    guidance: >-
+      The diagnosis hinges on understanding the mechanism: waves are derived from the dependency
+      graph, so false or overly conservative dependencies are the usual reason independent tasks
+      serialize.
+  - id: kcb-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A remote MCP server is configured with url and headers but tools never appear. The same token
+      works in curl. Which check is most relevant?
+    choices:
+      - id: a
+        text: >-
+          Confirm the entry uses url (not command) and that the server is not disabled, and that
+          OAuth/headers are correctly placed on the remote entry
+      - id: b
+        text: Confirm the server is declared with command and args
+      - id: c
+        text: Move the config to .kiro/steering/
+      - id: d
+        text: Confirm autoApprove is set to false
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Remote servers must use url with headers/OAuth fields on the remote entry and must not be
+      disabled. Using command/args is the local-server shape; steering is the wrong location; and
+      autoApprove governs approval, not whether tools load.
+  - id: kcb-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 454
+    type: multiple_choice
+    prompt: >-
+      A user insists Kiro stores its config under ~/.aws/ like other AWS tools and edits files there
+      expecting steering changes. Why does nothing change?
+    choices:
+      - id: a
+        text: The user lacks AWS credentials in that directory
+      - id: b
+        text: ~/.aws/ files need a restart to take effect
+      - id: c
+        text: Steering must be JSON, and ~/.aws/ files are markdown
+      - id: d
+        text: >-
+          Kiro reads config from the .kiro/ tree (.kiro/steering, .kiro/settings, .kiro/hooks,
+          etc.), not ~/.aws/, so edits there are ignored
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Kiro uses the .kiro/ directory tree for steering, specs, settings (MCP), hooks, and agents. It
+      does not read ~/.aws/, so configuration placed there has no effect regardless of restart or
+      format.
+  - id: kcb-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: >-
+      A manual steering file with good content seems to have no effect during normal work. Explain
+      the most likely reason and how to confirm it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that inclusion manual means the file loads only when it is explicitly
+            hash-mentioned by name in chat
+        - id: c2
+          text: Notes that during normal work it is simply never invoked, so it appears inert
+        - id: c3
+          text: >-
+            Suggests confirming by hash-mentioning it (or by switching its inclusion to
+            always/fileMatch if automatic loading was intended)
+      referenceAnswer: >-
+        A manual steering file (inclusion manual) is included only when you invoke it with its
+        #steering-file-name mention. During ordinary work nobody mentions it, so it never loads and
+        appears to have no effect. Confirm by #-mentioning it and seeing the behavior change; if it
+        should apply automatically, switch its inclusion to always (or fileMatch with a pattern).
+      passThreshold: 0.6
+    guidance: >-
+      Manual inclusion is opt-in per use; the file is not inert, it is just never invoked. The fix
+      is to mention it explicitly or change the inclusion mode if automatic loading was intended.
+  - id: kcb-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      During an autonomous run, an MCP tool runs without prompting even though you expected an
+      approval. Which configuration most plausibly explains it?
+    choices:
+      - id: a
+        text: The server uses url instead of command
+      - id: b
+        text: The tool is in disabledTools
+      - id: c
+        text: >-
+          The server's autoApprove array includes that tool (or "*"), or the session was launched
+          with --trust-all-tools
+      - id: d
+        text: The mcp.json is in the user scope rather than workspace scope
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Silent execution comes from approval settings: a per-server autoApprove listing the tool (or
+      "*"), or a blanket --trust-all-tools at launch. disabledTools would block the tool, and
+      transport/scope do not by themselves auto-approve.
+  - id: kcb-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >-
+      A requirement reads: "The login button shall be blue and the system should probably validate
+      input quickly." Why is this a weak EARS requirement?
+    choices:
+      - id: a
+        text: EARS requires every requirement to start with IF
+      - id: b
+        text: EARS forbids mentioning UI elements
+      - id: c
+        text: It is too short to be valid EARS
+      - id: d
+        text: >-
+          It mixes an untestable styling claim with vague, non-deterministic language ("should
+          probably", "quickly") instead of a clear WHEN/THEN trigger and testable SHALL behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      EARS requirements pair a clear trigger (WHEN/IF condition) with a testable system SHALL
+      behavior. "should probably" and "quickly" are vague and unverifiable; the problem is
+      testability and determinism, not UI mentions, length, or a mandatory IF keyword.
+  - id: kcb-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: >-
+      A hook with action set to an agent prompt occasionally seems to do nothing on long operations,
+      while a quick shell-command hook always runs. Break down what could differ and what to check.
+    rubric:
+      criteria:
+        - id: c1
+          text: Considers the hook timeout field cutting off longer actions
+        - id: c2
+          text: Considers whether the hook is enabled and the trigger/matcher actually fired
+        - id: c3
+          text: >-
+            Distinguishes action type (agent prompt vs shell) and that an agent prompt may take
+            longer and hit limits
+      referenceAnswer: >-
+        Compare the hook definitions field by field. An agent-prompt action can take longer than a
+        quick shell command, so a configured timeout may be cutting it off before it completes. Also
+        verify the hook is enabled and that its trigger and matcher actually fire for the event in
+        question. The shell hook likely finishes well under any timeout, masking the difference.
+      passThreshold: 0.6
+    guidance: >-
+      The contrast points to timeout interacting with action duration: agent-prompt actions are
+      slower and more likely to be truncated. enabled, trigger, and matcher are the other fields to
+      verify.
+  - id: kcb-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      A new hire claims they fixed a bug by editing the spec's requirements.md only. Why might the
+      bug persist?
+    choices:
+      - id: a
+        text: requirements.md only affects steering, not code
+      - id: b
+        text: requirements.md is ignored by Kiro
+      - id: c
+        text: Bugfix specs do not use requirements.md
+      - id: d
+        text: >-
+          Editing requirements describes intended behavior, but the actual fix lives in code driven
+          by design.md and tasks.md; requirements alone change nothing at runtime
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The spec captures intent across requirements, design, and tasks; the running behavior comes
+      from the implemented code that tasks.md drives. Updating requirements without doing the
+      design/tasks work and the code change leaves the bug in place.
+  - id: kcb-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A pipeline silently produces wrong results because an MCP server it depends on failed to
+      start, yet the run reported success. Which flag would have surfaced this earlier?
+    choices:
+      - id: a
+        text: '--trust-all-tools'
+      - id: b
+        text: '--require-mcp-startup, which fails immediately if any MCP server fails to connect'
+      - id: c
+        text: '--resume-picker'
+      - id: d
+        text: '--no-interactive'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --require-mcp-startup turns a missing MCP server into an immediate failure instead of a silent
+      continue. The other flags govern trust, resume, and headless mode, not MCP startup gating.
+  - id: kcb-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      You set inclusion fileMatch on a steering file but forgot fileMatchPattern. What behavior
+      should you expect to investigate?
+    choices:
+      - id: a
+        text: It silently becomes inclusion always
+      - id: b
+        text: >-
+          With no pattern to match, the file has no defined condition to load on, so it effectively
+          never gets conditionally included
+      - id: c
+        text: It loads on every file except matches
+      - id: d
+        text: It throws and disables all steering
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      fileMatch depends on fileMatchPattern to decide when to load. Without a pattern there is no
+      condition to satisfy, so the file does not get conditionally included; it does not silently
+      become always, invert, or disable other steering.
+  - id: kcb-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >-
+      Someone configured a remote MCP server with both command and url set, plus headers. Explain
+      why this is ambiguous and how to make the intent clear.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes command implies a local process server and url implies a remote server
+        - id: c2
+          text: Explains mixing them conflates two distinct server shapes/transports
+        - id: c3
+          text: >-
+            Recommends choosing one shape (url + headers/OAuth for remote, or command + args/env for
+            local)
+      referenceAnswer: >-
+        command + args/env describes a local process-based server, while url + headers/OAuth
+        describes a remote server. Setting both conflates two distinct server shapes, leaving it
+        unclear which transport Kiro should use. Make the intent explicit by keeping only one shape:
+        for a remote server use url with headers (and OAuth fields if needed) and drop command/args;
+        for a local server use command/args/env and drop url.
+      passThreshold: 0.6
+    guidance: >-
+      Local and remote servers are distinct shapes keyed by command vs url. Mixing them is
+      ambiguous; pick the shape that matches the actual server and remove the other key.
+  - id: kcb-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A team's CI runs Kiro headless with --trust-all-tools for every pipeline including ones that
+      write to production infra. Which critique is most justified?
+    choices:
+      - id: a
+        text: They should disable MCP entirely to be safe
+      - id: b
+        text: '--trust-all-tools is fine everywhere because headless mode is inherently safe'
+      - id: c
+        text: >-
+          Blanket trust violates least privilege; safer pipelines should use --trust-tools with only
+          the categories they need and reserve --trust-all-tools for sandboxed, low-risk jobs
+      - id: d
+        text: Trust flags do not affect production safety
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The least-privilege design exists precisely so high-impact pipelines do not auto-approve
+      everything. --trust-tools=<categories> scopes approval; --trust-all-tools belongs to
+      sandboxed, low-risk contexts, not production-writing jobs.
+  - id: kcb-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A team writes one giant always-on steering file containing every rule, API doc, and
+      convention. What is the strongest design objection?
+    choices:
+      - id: a
+        text: always inclusion is deprecated and must not be used
+      - id: b
+        text: Steering files are limited to one per project, so this is required
+      - id: c
+        text: >-
+          It wastes context on every interaction and ignores scoping; foundational rules belong in
+          product/tech/structure while situational guidance should use fileMatch or manual inclusion
+      - id: d
+        text: Steering files cannot contain API docs
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Loading everything always burns context regardless of relevance. Good design keeps durable
+      rules in the foundational files and scopes the rest with fileMatch (conditional) or manual (on
+      demand). Multiple steering files and API references are both fine.
+  - id: kcb-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      Evaluate this practice: a team uses live #[[file:...]] references for volatile generated files
+      (like a build manifest) inside an always-included steering file. Argue whether this is a good
+      idea.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recognizes
+        - id: c2
+          text: Weighs the always-inclusion cost against the value of the referenced content
+        - id: c3
+          text: >-
+            Reaches a defensible recommendation (e.g. reference stable contracts, not volatile
+            generated files; or scope via fileMatch/manual)
+      referenceAnswer: >-
+        Live #[[file:...]] references are valuable for stable contracts (like an OpenAPI spec)
+        because they stay current without copy-paste. Pointing one at a volatile generated build
+        manifest inside an always-included file is questionable: it injects frequently-changing,
+        often-irrelevant content into every interaction, wasting context and adding noise. Better to
+        reference durable source-of-truth files, and if the manifest is truly needed, scope it via
+        fileMatch or manual inclusion so it only loads when relevant.
+      passThreshold: 0.6
+    guidance: >-
+      The reference mechanism is sound; the judgment is about what to reference and at what scope.
+      Live references suit stable contracts; volatile files in always-on steering are an
+      anti-pattern.
+  - id: kcb-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: multiple_choice
+    prompt: >-
+      A developer wants to skip the requirements and design phases and let Kiro generate tasks.md
+      directly from a one-line ask for a complex feature. What is the best evaluation of this
+      shortcut?
+    choices:
+      - id: a
+        text: It is required because tasks.md must be written first
+      - id: b
+        text: It is strictly better because fewer files mean less overhead
+      - id: c
+        text: >-
+          It undermines the spec workflow's value; requirements and design exist to align on what
+          and how before tasks, and skipping them risks building the wrong thing with no
+          traceability
+      - id: d
+        text: Kiro forbids generating tasks without code already present
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The staged workflow (requirements then design then tasks) exists to surface ambiguity and
+      align on approach before execution. For a complex feature, jumping straight to tasks
+      sacrifices that alignment and traceability; it is not strictly better, mandatory, or forbidden
+      as the others claim.
+  - id: kcb-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: >-
+      A team encodes all of its automation as Kiro agent hooks with shell-command actions, including
+      a code-review summary that needs reasoning. Which critique is most apt?
+    choices:
+      - id: a
+        text: >-
+          Reasoning-heavy automation is a poor fit for a fixed shell command; an agent-prompt action
+          would let the model actually reason, which is one reason Kiro hooks support prompt actions
+      - id: b
+        text: Hooks should never run shell commands
+      - id: c
+        text: Hooks cannot summarize code under any configuration
+      - id: d
+        text: All hook actions must be agent prompts
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro hook actions can be a shell command or an agent prompt. Deterministic steps suit shell
+      commands; tasks needing judgment (like a review summary) suit agent-prompt actions. Neither
+      extreme (never shell, always prompt) is correct.
+  - id: kcb-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: free_form
+    prompt: >-
+      A security reviewer proposes committing .kiro/settings/mcp.json with API tokens hardcoded in
+      the headers so the whole team gets the same setup. Critique this and propose a safer pattern.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies committing secrets to version control as the core risk
+        - id: c2
+          text: Notes mcp.json is committed/shared, amplifying the exposure
+        - id: c3
+          text: >-
+            Proposes a safer pattern (env var interpolation/secret references, user-scoped config,
+            or CI secret stores)
+      referenceAnswer: >-
+        Hardcoding tokens in headers and committing mcp.json leaks secrets to everyone with repo
+        access and to git history; since the workspace config is shared and version-controlled, the
+        blast radius is large. A safer pattern keeps secrets out of the committed file: reference
+        environment variables or a secret store rather than literal tokens, put personal credentials
+        in the user-scoped ~/.kiro/settings/mcp.json, and in CI inject the token from the platform's
+        secret manager (e.g. via KIRO_API_KEY and env-based headers) instead of committing it.
+      passThreshold: 0.6
+    guidance: >-
+      The anti-pattern is committing secrets. The fix is indirection (env vars / secret stores),
+      user-scoped config for personal credentials, and CI secret managers for pipelines.
+  - id: kcb-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: >-
+      Someone argues Kiro CLI is "just q chat rebranded" and treats every undocumented Amazon Q
+      behavior as guaranteed in Kiro. How should you judge this for production decisions?
+    choices:
+      - id: a
+        text: It does not matter because documentation is never reliable
+      - id: b
+        text: Accept it fully; identical config keys prove they are the same product
+      - id: c
+        text: Reject any similarity; shared patterns are coincidental and meaningless
+      - id: d
+        text: >-
+          Treat the lineage as unconfirmed; rely only on documented Kiro behavior rather than
+          assuming undocumented parity, since acting on unverified equivalence risks wrong
+          assumptions
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The Amazon Q lineage is plausible (shared AWS roots, similar config) but not officially
+      confirmed. For production you depend on documented Kiro behavior, not assumed parity with
+      another tool; both blind acceptance and blanket rejection are unsound.
+  - id: kcb-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 526
+    type: free_form
+    prompt: >-
+      A team treats the auto-update behavior as a risk and wants reproducible CI. Evaluate the
+      tension between Kiro CLI's silent background auto-update and the need for pinned, reproducible
+      pipelines.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the auto-update mechanism (downloads in background, installs on exit) and why
+            it aids individual users
+        - id: c2
+          text: Identifies why silent updates conflict with reproducible CI (version drift between runs)
+        - id: c3
+          text: >-
+            Proposes a reasonable reconciliation (pin/control the version in CI, separate from
+            interactive use)
+      referenceAnswer: >-
+        Auto-update downloads a new version silently and installs it on exit, which keeps
+        interactive users current with little effort. For CI that is a liability: a pipeline could
+        run a different CLI version from one day to the next, undermining reproducibility and making
+        failures hard to attribute. The reconciliation is to control the version explicitly in CI
+        (pin a known version in the image or install step) so pipeline behavior is stable, while
+        letting interactive installations keep auto-updating. The convenience and reproducibility
+        goals are both valid; they just call for different configurations per context.
+      passThreshold: 0.6
+    guidance: >-
+      Auto-update is good for humans but bad for reproducibility. The mature judgment is
+      context-specific: pin versions for CI, keep auto-update for interactive use.
+  - id: kcb-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: multiple_choice
+    prompt: >-
+      A team gives a custom agent the full tools list plus a broad allowedTools and uses it for
+      routine read-only triage. What is the best critique of this configuration?
+    choices:
+      - id: a
+        text: Read-only work is impossible to configure with custom agents
+      - id: b
+        text: Agents must always be given every tool to function
+      - id: c
+        text: allowedTools has no effect on what an agent can do
+      - id: d
+        text: >-
+          It over-grants capability for the task; a read-only triage agent should expose only the
+          tools it needs, narrowing tools/allowedTools to reduce blast radius and accidental writes
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Custom agents support scoping via tools and allowedTools precisely so an agent only gets what
+      its job needs. A read-only triage agent with broad write access is over-privileged; narrowing
+      the tool surface follows least privilege.
+  - id: kcb-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: free_form
+    prompt: >-
+      Compare two adoption strategies for a new project: (A) put all guidance in one always-included
+      steering file, versus (B) split foundational rules into product/tech/structure and scope the
+      rest with fileMatch and manual inclusion plus live #[[file:...]] references. Judge which is
+      more maintainable and why.
+    rubric:
+      criteria:
+        - id: c1
+          text: Evaluates context efficiency (always-on bloat vs scoped loading)
+        - id: c2
+          text: Evaluates maintainability/clarity (separation into foundational files, targeted updates)
+        - id: c3
+          text: >-
+            Reaches a defensible verdict favoring the scoped approach (B) with reasoning,
+            acknowledging any tradeoffs
+      referenceAnswer: >-
+        Strategy B is generally more maintainable. Keeping durable rules in the foundational
+        product/tech/structure files makes ownership and updates clear, while fileMatch and manual
+        inclusion load situational guidance only when relevant, saving context on every interaction.
+        Live #[[file:...]] references keep linked contracts current without manual copying. Strategy
+        A is simpler to start but bloats every interaction with irrelevant rules, makes the file a
+        dumping ground that is hard to review, and forces full reloads for any change. The main
+        tradeoff is B's higher up-front structure, but for a project that will grow, the scoping and
+        separation pay off in clarity and efficiency.
+      passThreshold: 0.6
+    guidance: >-
+      The evaluation should weigh context cost and maintainability. Scoped, separated steering (B)
+      scales better; the monolith (A) is easy initially but degrades into bloat and poor
+      reviewability.
+  - id: kcb-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A reviewer claims that because headless mode can use --trust-all-tools, interactive per-tool
+      approval is pointless and should be removed from the product. Evaluate this claim.
+    choices:
+      - id: a
+        text: The claim is correct because headless mode is the only real use case
+      - id: b
+        text: The claim is correct; approval prompts only slow users down
+      - id: c
+        text: >-
+          The claim is unsound; interactive approval and granular trust flags serve least privilege
+          and human oversight, which matter most exactly when actions are risky or unattended
+      - id: d
+        text: Approval prompts and trust flags are the same feature, so one is redundant
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Interactive approval gives human oversight, and granular trust flags let you opt into
+      automation deliberately. Removing approval would force all-or-nothing trust, eliminating least
+      privilege and oversight precisely where they are valuable. The two are complementary, not
+      redundant.
+  - id: kcb-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: Kiro is described as an agentic toolset with three signature feature areas. Name them.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names specs
+        - id: c2
+          text: Names steering
+        - id: c3
+          text: Names hooks
+      referenceAnswer: Kiro's three signature feature areas are specs, steering, and hooks.
+      passThreshold: 0.6
+    guidance: >-
+      Specs (requirements/design/tasks), steering (persistent project context), and hooks
+      (event-driven automation) are the three pillars that show up across both the Kiro IDE and the
+      CLI.
+  - id: kcb-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: Why does Kiro offer multiple multi-line input methods (Shift+Enter, Ctrl+J, Alt+Enter)?
+    choices:
+      - id: a
+        text: Each one inserts a different character into the prompt
+      - id: b
+        text: >-
+          Terminal emulators differ in which key combinations they pass through, so several options
+          maximize compatibility
+      - id: c
+        text: They each submit the prompt to a different model
+      - id: d
+        text: Only one works at a time and the others are deprecated
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Terminals vary in which key chords they forward (e.g. Shift+Enter works in some emulators,
+      Ctrl+J works broadly including tmux). Offering several plus the /editor command maximizes
+      compatibility.
+  - id: kcb-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      Explain the relationship between Kiro CLI and the Kiro IDE, and roughly when the CLI was
+      introduced.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the CLI brings Kiro's agents/capabilities to the terminal
+        - id: c2
+          text: Notes it complements the IDE (same product, build in IDE and terminal)
+        - id: c3
+          text: Places its introduction around Kiro's general availability (late 2025)
+      referenceAnswer: >-
+        The Kiro CLI brings Kiro's agentic capabilities to the terminal, complementing the IDE so
+        you can build with your team in the IDE and the terminal. It was announced alongside Kiro's
+        general availability in late 2025 (around November 2025).
+      passThreshold: 0.6
+    guidance: >-
+      The durable point is that the CLI is the terminal surface of the same Kiro product (specs,
+      steering, hooks), introduced around Kiro's GA, not a separate or competing tool.
+  - id: kcb-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      You want to start a completely fresh conversation in the current session, discarding the
+      current context. Which command do you use?
+    choices:
+      - id: a
+        text: /context clear
+      - id: b
+        text: /chat resume
+      - id: c
+        text: '!reset'
+      - id: d
+        text: /chat new
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /chat new starts a fresh conversation. /context clear only removes context rules (not the
+      conversation), /chat resume returns to a prior session, and !reset is not a command.
+  - id: kcb-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      During a session you realize you accidentally added too many files to context and want to drop
+      a single one named src/legacy.js. Which command does that?
+    choices:
+      - id: a
+        text: /context clear
+      - id: b
+        text: '!rm src/legacy.js'
+      - id: c
+        text: /chat save src/legacy.js
+      - id: d
+        text: /context remove src/legacy.js
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /context remove <file> drops a single context rule. /context clear removes all of them, /chat
+      save exports the conversation, and !rm would delete the file from disk, not from context.
+  - id: kcb-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      You are starting a brand-new feature and want Kiro to drive it design-first. Which spec
+      workflow setup matches?
+    choices:
+      - id: a
+        text: >-
+          A Feature Spec in its Design-First variant, producing design.md before detailed
+          requirements
+      - id: b
+        text: A Bugfix Spec, since all new work starts as a bug
+      - id: c
+        text: A steering file with inclusion always
+      - id: d
+        text: A hook with a PostFileSave trigger
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Feature Specs support Requirements-First or Design-First. Design-First leads with design.md.
+      Bugfix Specs are for diagnosing bugs, and steering/hooks are different mechanisms entirely.
+  - id: kcb-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      A custom agent named reviewer launches with kiro-cli --agent reviewer but cannot use a tool
+      you expected. The tool exists and the MCP server is connected. What should you inspect first?
+    choices:
+      - id: a
+        text: Whether the agent's tools/allowedTools restrict it from that tool
+      - id: b
+        text: Whether the workspace is a git repo
+      - id: c
+        text: Whether the CLI needs reinstalling
+      - id: d
+        text: Whether KIRO_API_KEY is set
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Custom agents scope capability via tools and allowedTools. If a connected tool is unavailable
+      to a specific agent, the agent config likely excludes it. Reinstalling, git status, and the
+      API key are unrelated to per-agent tool scoping.
+  - id: kcb-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      Two developers disagree: one says the spec's tasks.md is just documentation, the other relies
+      on it to drive execution. Which framing is most accurate?
+    choices:
+      - id: a
+        text: >-
+          tasks.md holds discrete, status-tracked, executable tasks that Kiro can run, including in
+          parallel waves
+      - id: b
+        text: tasks.md only documents intent and is never executed
+      - id: c
+        text: tasks.md is generated after the code is written, purely as a record
+      - id: d
+        text: tasks.md is the same file as requirements.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      tasks.md is the executable plan: discrete, status-tracked tasks Kiro can run, scheduling
+      independent ones in parallel waves via dependency analysis. It is not mere documentation, a
+      post-hoc record, or the requirements file.
+  - id: kcb-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: free_form
+    prompt: >-
+      A hook is supposed to run before any write tool executes, to guard a protected directory, but
+      it only fires after writes. Break down what is likely misconfigured.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recognizes the trigger is probably a post/after tool event instead of a before/pre tool
+            invocation event
+        - id: c2
+          text: Notes that to gate a write you need a before-tool-invocation trigger
+        - id: c3
+          text: Suggests checking/correcting the trigger (and matcher targeting the write tool)
+      referenceAnswer: >-
+        To guard before a write happens you need a before-tool-invocation trigger, not an
+        after/post-tool event. The symptom (fires after writes) means the hook is almost certainly
+        bound to the post-tool event. Switch it to the before-tool-invocation trigger and ensure the
+        matcher targets the write tool so the hook can run ahead of the write.
+      passThreshold: 0.6
+    guidance: >-
+      Hook events include before and after tool invocations. Gating requires the before variant; a
+      hook that fires after the action cannot prevent it.
+  - id: kcb-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >-
+      A steering file references #[[file:api/openapi.yaml]] but reviewers complain the agent uses a
+      stale schema. The referenced file looks current on disk. What is the most likely explanation
+      to check?
+    choices:
+      - id: a
+        text: The schema must be copied into the steering file to work
+      - id: b
+        text: Live references always snapshot at creation time and never update
+      - id: c
+        text: Steering files cannot reference YAML
+      - id: d
+        text: >-
+          The relative path in the reference does not resolve to the file the reviewers are looking
+          at
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      #[[file:...]] pulls live content via a relative path, so a stale result usually means the path
+      points at a different (older) file than the reviewers expect. The mechanism does not snapshot,
+      and it works with YAML without copying content in.
+  - id: kcb-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >-
+      A pipeline using --trust-tools=read,grep fails when the agent tries to apply a code fix. The
+      team is surprised. Break down why this happens and the two reasonable responses.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that write-class tools are not in the approved categories, so the write is
+            gated/blocked
+        - id: c2
+          text: Notes this is least-privilege working as intended
+        - id: c3
+          text: >-
+            Gives reasonable responses (add write to the trusted categories deliberately, or keep it
+            gated for a read-only/triage pipeline)
+      referenceAnswer: >-
+        --trust-tools=read,grep only auto-approves read and grep; write-class tools are not
+        approved, so the attempted code fix is gated and the headless run cannot proceed. That is
+        least privilege working as designed. The two reasonable responses are: if this pipeline is
+        meant to make changes, deliberately add write to the trusted categories (or use a broader
+        trust setting); if it should stay read-only triage, keep write gated and have the run report
+        the proposed fix instead of applying it.
+      passThreshold: 0.6
+    guidance: >-
+      The failure is the trust model doing its job. The decision is whether the pipeline should be
+      allowed to write at all; if yes, expand the trusted categories explicitly rather than
+      defaulting to trust-all.
+  - id: kcb-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A team puts personal API tokens for remote MCP servers in the workspace
+      .kiro/settings/mcp.json and commits it so everyone shares config. Which judgment best balances
+      the concerns?
+    choices:
+      - id: a
+        text: >-
+          Commit shared, non-secret server definitions in the workspace file, but keep personal
+          tokens in the user-scoped ~/.kiro/settings/mcp.json or inject them from the environment
+      - id: b
+        text: Commit everything including tokens; convenience outweighs the risk
+      - id: c
+        text: Never use workspace MCP config; only user config is safe
+      - id: d
+        text: Tokens in committed files are fine as long as the repo is private
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The workspace file is shared and version-controlled, so secrets there leak broadly (private
+      repos still expose history and all collaborators). The balanced design commits shareable,
+      non-secret server definitions and keeps tokens user-scoped or env-injected.
+  - id: kcb-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      A team auto-approves all tools for a "code review" agent so it can run freely, then is
+      surprised it modified files during a review. What is the soundest takeaway?
+    choices:
+      - id: a
+        text: >-
+          Tool trust should match intent; a review agent should be scoped to read-only categories so
+          it cannot mutate the codebase it is reviewing
+      - id: b
+        text: Review agents inherently need write access
+      - id: c
+        text: Auto-approval has no effect on whether an agent writes
+      - id: d
+        text: The fix is to stop using custom agents entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Granting blanket trust to a review agent lets it write, which contradicts the read-only intent
+      of review. Scoping trust (and the agent's tools) to read-class categories aligns capability
+      with purpose; abandoning custom agents is an overcorrection.
+  - id: kcb-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      A team duplicates the same product/tech/structure guidance into AGENTS.md and into the
+      foundational steering files. What is the best critique?
+    choices:
+      - id: a
+        text: >-
+          Duplicated, always-included guidance is redundant context that can drift out of sync; pick
+          one source of truth and reference rather than copy
+      - id: b
+        text: AGENTS.md and steering must always contain identical content
+      - id: c
+        text: AGENTS.md overrides steering, so the steering copy is harmless
+      - id: d
+        text: Duplication improves reliability because the agent sees it twice
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Both AGENTS.md and foundational steering are always included, so duplicating guidance doubles
+      context cost and invites drift between the two copies. A single source of truth (with
+      references where needed) is cleaner; seeing it twice does not improve reliability.
+  - id: kcb-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A reviewer wants to forbid all shell-command hook actions company-wide, allowing only
+      agent-prompt actions, arguing agent prompts are "smarter." Evaluate this blanket policy.
+    choices:
+      - id: a
+        text: It is correct because agent prompts can do anything a shell command can, better
+      - id: b
+        text: >-
+          It is misguided; deterministic steps (linters, formatters, builds) are better as shell
+          commands, while only judgment tasks benefit from agent prompts, so action type should fit
+          the task
+      - id: c
+        text: It is correct because shell commands are a security risk in all cases
+      - id: d
+        text: It does not matter since both action types behave identically
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Shell-command actions are ideal for deterministic, repeatable steps; agent-prompt actions suit
+      tasks needing reasoning. A blanket ban on shell actions throws away determinism and cost
+      predictability where it is valuable; the right rule is to match action type to the task.
+  - id: kcb-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      Evaluate using --trust-all-tools in a long-lived interactive session "to avoid approval
+      fatigue." Weigh the benefit against the risks and recommend a better default.
+    rubric:
+      criteria:
+        - id: c1
+          text: Acknowledges the benefit (less interruption / fewer approval prompts)
+        - id: c2
+          text: >-
+            Identifies the risk (blanket auto-approval includes destructive/write tools with no
+            checkpoint)
+        - id: c3
+          text: >-
+            Recommends a better default (granular --trust-tools for safe categories, keep risky ones
+            gated)
+      referenceAnswer: >-
+        The benefit is real: --trust-all-tools removes repeated approval prompts and reduces
+        friction in a long session. The risk is that it auto-approves everything, including
+        destructive or write operations, with no human checkpoint, so a single bad action runs
+        unchecked. A better default is granular trust: --trust-tools for safe categories like read
+        and grep so routine work flows uninterrupted, while writes and other high-impact tools still
+        prompt. That keeps least privilege and oversight where they matter while cutting most of the
+        fatigue.
+      passThreshold: 0.6
+    guidance: >-
+      The mature stance trades a little friction for oversight: auto-approve safe categories, keep
+      risky tools gated, rather than blanket-trusting everything to avoid prompts.
+  - id: kcb-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >-
+      A team writes EARS requirements but fills them with implementation details ("the system SHALL
+      use a Redis cache with a 5-minute TTL"). What is the strongest critique?
+    choices:
+      - id: a
+        text: EARS forbids the word cache
+      - id: b
+        text: >-
+          Requirements should state observable behavior/outcomes; baking in a specific
+          implementation belongs in design.md, conflating the requirements and design phases
+      - id: c
+        text: The requirement is fine; requirements should always specify the technology
+      - id: d
+        text: This belongs in tasks.md, not requirements or design
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      EARS requirements capture what the system must do observably; the choice of Redis and a TTL is
+      a design decision that belongs in design.md. Putting it in requirements collapses the
+      requirements-then-design separation the spec workflow relies on.
+  - id: kcb-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: >-
+      A team builds critical CI on undocumented Kiro CLI behaviors observed in the V3 early-access
+      preview that runs alongside 2.x. What is the best risk judgment?
+    choices:
+      - id: a
+        text: Preview features are always more stable than the stable release
+      - id: b
+        text: >-
+          Preview/early-access surfaces change fast, so depending on undocumented preview behavior
+          for critical CI is fragile; pin to documented stable behavior and treat preview features
+          as experimental
+      - id: c
+        text: Undocumented behavior is safe to rely on if it works once
+      - id: d
+        text: CI should always use the newest preview to stay current
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An early-access preview running alongside the stable line is explicitly experimental; its
+      command surface shifts. Critical CI should depend on documented, stable behavior, treating
+      preview features as subject to change rather than as a foundation.
+  - id: kcb-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A developer types a bare hash-mention of a steering file name in chat expecting it to load
+      that manual steering file, but it has no effect. The file exists in .kiro/steering/ with
+      inclusion set to manual. What is most likely being confused?
+    choices:
+      - id: a
+        text: >-
+          The mentioned name does not exactly match the steering file's name, so nothing resolves;
+          manual steering loads only when the hash-mention matches the file name exactly
+      - id: b
+        text: Manual steering files can only be loaded by editing the inclusion mode to always
+      - id: c
+        text: Manual steering files must be referenced with the !-prefix shell passthrough instead
+      - id: d
+        text: Manual steering files cannot be invoked at all once created
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A manual steering file is pulled in on demand by hash-mentioning its name; the mention has to
+      match the file name exactly or nothing loads. The fix is to use the exact name. Shell
+      passthrough uses the !-prefix, not the hash, and manual files do not require switching to
+      always.
+  - id: kcb-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A team commits agent JSON to .kiro/agents/ with a hardcoded model: claude-sonnet-4 for every
+      agent, including a cheap routine-formatting agent. What is the best critique?
+    choices:
+      - id: a
+        text: >-
+          Model choice should fit the agent's job; a routine-formatting agent likely does not need a
+          top-tier model, so pinning every agent to one model can waste capability and budget
+      - id: b
+        text: All agents should use the most capable model for consistency
+      - id: c
+        text: The model field has no effect when committed to a workspace
+      - id: d
+        text: Agent JSON must never specify a model
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The model field lets each agent pick an appropriate model. Pinning every agent to one capable
+      model ignores that cheap, narrow tasks can use lighter models, trading cost/latency for
+      capability they do not need. The field is meaningful and committing it is fine.
+  - id: kcb-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      Critique relying on headless --no-interactive runs with no trust flags at all in CI, expecting
+      the agent to "just ask" when it needs approval. Explain the flaw and the correct approach.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that headless mode has no interactive channel, so there is nothing to ask
+        - id: c2
+          text: Explains the run will stall or fail when a tool needs approval that cannot be granted
+        - id: c3
+          text: >-
+            Recommends pre-granting the needed tool categories via --trust-tools (or
+            --trust-all-tools in a sandbox)
+      referenceAnswer: >-
+        Headless mode has no interactive session, so the agent cannot prompt for approval and no
+        human can grant it mid-run. Expecting it to "just ask" means any tool needing approval
+        blocks the run, which stalls or fails. The correct approach is to decide trust up front:
+        pass --trust-tools with exactly the categories the job needs (or --trust-all-tools only in a
+        sandboxed, low-risk context) so the run can proceed deterministically without an interactive
+        prompt.
+      passThreshold: 0.6
+    guidance: >-
+      The core insight is that headless removes the approval channel, so trust must be pre-declared
+      via flags. Least privilege still applies: grant only the categories the pipeline genuinely
+      needs.

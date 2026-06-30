@@ -16,10 +16,11 @@
  *     state seeded is `config` + abilities/graduations + the bundled content —
  *     no hook events, no offer ledger writes.
  *
- * The bundled catalog v1 ships a single general topic (`general|_placeholder`),
- * which is sufficient for these assertions; extra tool-scoped keys are seeded to
- * prove the profile store accepts them and that `get_status` enumeration stays
- * catalog-driven (it lists only topics that actually exist in the catalog).
+ * The assembled catalog ships 28 topics across general, claude-code, codex,
+ * kiro-cli, and kiro-ide. The general topic `task-decomposition` is used as the
+ * primary test fixture. Extra tool-scoped keys are seeded to prove the profile
+ * store accepts them and that `get_status` enumeration stays catalog-driven
+ * (it lists only topics that actually exist in the catalog).
  *
  * Each test uses its own `VIBE_HERO_HOME` under `os.tmpdir()`, injected via the
  * store's `dirOverride` seam (which every US-2 tool factory takes), so tests
@@ -46,10 +47,22 @@ import type {
   ListTopicsResult,
 } from "../../src/schemas/tools.js";
 
-/** The single bundled general topic key the v1 catalog ships. */
-const PLACEHOLDER_KEY = abilityKey({ kind: "general" }, "_placeholder");
-/** A tool-scoped key seeded into the profile but absent from the catalog. */
-const TOOL_KEY = abilityKey({ kind: "tool", tool: "claude-code" }, "subagents");
+/** A real bundled general topic key — task-decomposition ships in the assembled catalog. */
+const PLACEHOLDER_KEY = abilityKey({ kind: "general" }, "task-decomposition");
+/** The topic id string used for row lookups (matches the YAML `id:` field). */
+const PLACEHOLDER_TOPIC_ID = "task-decomposition";
+/**
+ * A tool-scoped key seeded into the profile but ABSENT from the assembled catalog.
+ * "non-existent-topic" is not a real topic id, so it exercises the "extra profile
+ * keys not in the catalog must not appear in get_status enumeration" contract.
+ */
+const TOOL_KEY = abilityKey({ kind: "tool", tool: "claude-code" }, "non-existent-topic");
+
+/**
+ * High-ability seed used to push other general topics above `task-decomposition`
+ * so the weakness ranking reliably surfaces `task-decomposition` as weakest.
+ */
+const HIGH_ABILITY = { value: 480, itemsSeen: 20, lastAssessedAt: "2026-05-25T00:00:00.000Z", lastItemIds: [] } as const;
 
 /** A valid config that clears the setup gate (the pull path's only precondition). */
 const seedConfig = () => {
@@ -76,23 +89,52 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
   });
 
   /**
-   * Seed config + MIXED abilities/graduations. The bundled `general|_placeholder`
-   * topic is marked `due_for_review` with a graduated tier; a tool-scoped key is
-   * seeded graduated `current` (it is NOT in the catalog, so it must not appear
-   * in get_status enumeration). Crucially: NO observation/offer state is written
-   * — only the profile + bundled content (SC-011).
+   * Seed config + MIXED abilities/graduations.
+   *
+   * `task-decomposition` (PLACEHOLDER_KEY) is marked `due_for_review` at ability 180
+   * (the topic under test). ALL other in-scope catalog topics (general + claude-code)
+   * are seeded with high ability so they rank as stronger than `task-decomposition`
+   * in the weakness ranking — ensuring `task-decomposition` is reliably the
+   * weakest/stale pick even with MAX_SUGGESTIONS=3.
+   * The non-existent TOOL_KEY is seeded graduated `current` and must NOT appear in
+   * `get_status` enumeration (it is absent from the assembled catalog).
+   * No observation/offer state is written (SC-011).
    */
   const seedMixedProfile = async (): Promise<void> => {
+    // All other in-scope general + claude-code topics — seeded high so task-decomposition
+    // is the clear weakest (ranked by due_for_review status, ability 180 < 480).
+    const otherKeys = [
+      // Other general topics
+      abilityKey({ kind: "general" }, "debugging"),
+      abilityKey({ kind: "general" }, "git-and-version-control"),
+      abilityKey({ kind: "general" }, "refactoring-and-code-review"),
+      abilityKey({ kind: "general" }, "testing-and-verification"),
+      // All claude-code tool topics
+      abilityKey({ kind: "tool", tool: "claude-code" }, "agentic-workflows"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "context-management"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "hooks"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "mcp-servers"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "permissions-and-settings"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "planning"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "slash-commands-and-skills"),
+      abilityKey({ kind: "tool", tool: "claude-code" }, "subagents"),
+    ] as const;
+    const otherAbilities = Object.fromEntries(otherKeys.map((k) => [k, HIGH_ABILITY]));
+    const otherGraduations = Object.fromEntries(
+      otherKeys.map((k) => [k, { currentTier: 400 as const, status: "current" as const, graduatedAt: "2026-05-25T00:00:00.000Z", lastChangeReason: "graduated" as const }]),
+    );
+
     await updateProfile(
       (current) => ({
         ...current,
         config: seedConfig(),
         abilities: {
+          ...otherAbilities,
           [PLACEHOLDER_KEY]: {
             value: 180,
             itemsSeen: 6,
             lastAssessedAt: "2026-05-01T00:00:00.000Z",
-            lastItemIds: ["placeholder-100-mc"],
+            lastItemIds: ["task-decomposition-100-mc-a"],
           },
           [TOOL_KEY]: {
             value: 420,
@@ -102,6 +144,7 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
           },
         },
         graduations: {
+          ...otherGraduations,
           [PLACEHOLDER_KEY]: {
             currentTier: 100,
             status: "due_for_review",
@@ -167,8 +210,14 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
     expect(placeholderRow?.tier).toBe(0);
     // No graduation anywhere ⇒ nothing due for review.
     expect(result.dueForReview).toEqual([]);
-    // A not-started topic is still a valid (and the weakest) suggestion.
-    expect(result.suggestions.map((s) => s.key)).toContain(PLACEHOLDER_KEY);
+    // Suggestions surface some not-started topics (capped at MAX_SUGGESTIONS=3).
+    // With 28 topics all not_started, task-decomposition may not land in the top 3
+    // alphabetically — just verify suggestions is non-empty and all keys are in scope.
+    expect(result.suggestions.length).toBeGreaterThan(0);
+    const topicKeys = result.topics.map((t) => t.key);
+    for (const s of result.suggestions) {
+      expect(topicKeys).toContain(s.key);
+    }
   });
 
   it("get_status resolves the default tool from config when none is requested", async () => {
@@ -194,13 +243,14 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
     // Matches the bundled catalog the loader returns.
     const { topics: bundled } = loadBundledCatalog();
     expect(result.topics).toHaveLength(bundled.length);
-    expect(result.topics.map((t) => t.id)).toContain("_placeholder");
+    expect(result.topics.map((t) => t.id)).toContain(PLACEHOLDER_TOPIC_ID);
 
-    const placeholder = result.topics.find((t) => t.id === "_placeholder");
+    const placeholder = result.topics.find((t) => t.id === PLACEHOLDER_TOPIC_ID);
     expect(placeholder?.key).toBe(PLACEHOLDER_KEY);
     expect(placeholder?.class).toBe("general");
-    expect(placeholder?.tiers).toEqual([100]);
-    expect(placeholder?.itemCount).toBe(1);
+    // task-decomposition ships tiers 100–500
+    expect(placeholder?.tiers).toEqual([100, 200, 300, 400, 500]);
+    expect(placeholder?.itemCount).toBeGreaterThanOrEqual(1);
 
     // A non-empty catalog version string is always reported (SC-007).
     expect(typeof result.catalogVersion).toBe("string");
@@ -215,11 +265,11 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
     const listTopics = makeListTopicsTool(home).handler;
 
     const general = (await listTopics({ class: "general" })) as ListTopicsResult;
-    expect(general.topics.map((t) => t.id)).toContain("_placeholder");
+    expect(general.topics.map((t) => t.id)).toContain(PLACEHOLDER_TOPIC_ID);
 
-    // No tool-scoped topics in the bundled v1 catalog.
+    // Tool-scoped topics exist in the assembled catalog (claude-code, codex, kiro-cli, kiro-ide).
     const toolOnly = (await listTopics({ class: "tool" })) as ListTopicsResult;
-    expect(toolOnly.topics).toHaveLength(0);
+    expect(toolOnly.topics.length).toBeGreaterThan(0);
   });
 
   it("get_guidance with a key returns guidance + a next step for that topic", async () => {
@@ -229,11 +279,12 @@ describe("US-2 status / guidance / list_topics (T029 / quickstart pull path)", (
     const result = (await getGuidance({ key: PLACEHOLDER_KEY })) as GetGuidanceResult;
 
     expect(result.key).toBe(PLACEHOLDER_KEY);
-    expect(result.title).toBe("Placeholder Topic");
+    expect(result.title).toBe("Task Decomposition & Planning");
     expect(result.currentTier).toBe(100);
     // Guidance text is pulled from the topic's authored item content.
     expect(result.guidance.length).toBeGreaterThan(0);
-    expect(result.guidance).toContain("Placeholder guidance");
+    // Tier-100 guidance for task-decomposition explains decomposition purpose.
+    expect(result.guidance.toLowerCase()).toContain("decomposition");
     // The topic has gradeable items ⇒ the next step is a quiz.
     expect(result.nextStep.action).toBe("quiz");
     expect(result.nextStep.detail.length).toBeGreaterThan(0);

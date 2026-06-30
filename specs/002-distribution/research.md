@@ -61,7 +61,7 @@ The current code is already close: `getOffer.ts` parses a `get-offer` subcommand
 **Decision**: One Claude Code plugin (APM `.apm/` convention) bundling:
 - **skills**: the four `skills/*/SKILL.md` surfaced via the plugin's `skills` path (referenced, not copied).
 - **MCP**: `apm.yml` `dependencies.mcp: [{name: vibe-hero, registry: false, transport: stdio, command: npx, args: ["-y","@vibe-hero/server"]}]` → generated top-level `.mcp.json` `{mcpServers:{vibe-hero:{command:"npx",args:["-y","@vibe-hero/server"]}}}` (FR-008, floating latest per FR-012).
-- **hook**: `.apm/hooks/vibe-hero-claude-hooks.json` declaring the **Stop** hook with a command using the **`${PLUGIN_ROOT}`** token (the variable Claude Code substitutes in hook commands; working plugins and the official docs use `${PLUGIN_ROOT}`), auto-registered on install (FR-007) — retires the manual README.
+- **hook**: `.apm/hooks/vibe-hero-claude-hooks.json` declaring the **Stop** hook with a command using the **`${CLAUDE_PLUGIN_ROOT}`** token (the variable Claude Code substitutes in hook commands; working plugins and the official docs use `${CLAUDE_PLUGIN_ROOT}`), auto-registered on install (FR-007) — retires the manual README.
 - **content**: bundled offline snapshot ships inside the npm package (above); the plugin itself doesn't need a content copy since the server (npx) carries it.
 
 **Rationale**: Matches the verified agentic-packages plugin conventions; install gives MCP + skills + hook with zero manual config (SC-001).
@@ -94,7 +94,7 @@ The current code is already close: `getOffer.ts` parses a `get-offer` subcommand
 - **Packaging**: npm scoped public package `@vibe-hero/server` with one `vibe-hero` bin; `files: ["dist"]`; build = `tsc` + extended `copy-assets` (bundled real content).
 - **Distribution**: root `.claude-plugin/marketplace.json` + APM plugin (`apm.yml` + `.apm/{skills,hooks}` + generated `.mcp.json`); cross-listed in agentic-packages by reference.
 - **CI**: GitHub Actions — release-please + OIDC publish + staleness gate. No long-lived secrets.
-- **Constraints**: no spec-001 behavior change (FR-018); all 144 tests stay green (FR-019); `${PLUGIN_ROOT}` hook token; floating-latest npx; one-time manual bootstrap publish (FR-014a).
+- **Constraints**: no spec-001 behavior change (FR-018); all 144 tests stay green (FR-019); `${CLAUDE_PLUGIN_ROOT}` hook token; floating-latest npx; one-time manual bootstrap publish (FR-014a).
 - **Bootstrap (out-of-band, maintainer)**: create `@vibe-hero` org → manual first `npm publish` → configure Trusted Publisher (repo + publish workflow) → CI thereafter.
 
 No `NEEDS CLARIFICATION` remain.

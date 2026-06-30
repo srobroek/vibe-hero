@@ -27,7 +27,7 @@ Installing the `vibe-hero` plugin from the marketplace MUST, with **zero manual 
 
 1. **The MCP server** — via the plugin's generated `.mcp.json` (`mcpServers.vibe-hero` → `npx -y @vibe-hero/server`). The host launches it on demand; no clone/build (SC-002).
 2. **The four skills** — `vibe-hero-setup`, `vibe-hero-quiz`, `vibe-hero-status`, `vibe-hero-learn` — discoverable/invocable in the host.
-3. **The Stop hook** — auto-registered from the plugin's `hooks/hooks.json` (`Stop` → `${PLUGIN_ROOT}/hooks/claude-code/stop-offer.sh`), no settings.json edit (FR-007). The script spawns nothing: it emits an `additionalContext` nudge and the agent calls `get_offer` on the running MCP server (FR-011, agent-mediated).
+3. **The Stop hook** — auto-registered from the plugin's `hooks/hooks.json` (`Stop` → `${CLAUDE_PLUGIN_ROOT}/hooks/claude-code/stop-offer.sh`), no settings.json edit (FR-007). The script spawns nothing: it emits an `additionalContext` nudge and the agent calls `get_offer` on the running MCP server (FR-011, agent-mediated).
 4. **Offline curriculum** — shipped inside the npm package (`dist/catalog/bundled/` with real topics), so quizzes work offline (SC-003); runtime fetch layers updates.
 
 **Gate flow (unchanged from 001)**: first action returns `SETUP_REQUIRED` → the `vibe-hero-setup` skill runs the Q&A → `save_config` clears the gate.

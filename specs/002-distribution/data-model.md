@@ -52,7 +52,7 @@ No stub, no APM/npm dependency, no source copy. **Blocker**: agentic-packages' l
 
 ## Plugin manifest — `.claude-plugin/plugin.json` (new, generated)
 
-Generated identity manifest (name/version/description/author/license + `skills` path). MUST NOT carry name-only `{name}` deps (the standalone plugin has no first-party APM deps, so this is naturally avoided). FR-010.
+Generated identity manifest (name/version/description/author/license + `skills` path). MUST NOT carry `mcpServers` (MCP is declared in `.mcp.json` only — a duplicate same-name registration in plugin.json conflicts with the `.mcp.json` entry and breaks the plugin). MUST NOT carry name-only `{name}` deps (the standalone plugin has no first-party APM deps, so this is naturally avoided). FR-008/010.
 
 ## MCP manifest — `.mcp.json` (new, generated at plugin root)
 
@@ -62,9 +62,9 @@ Generated identity manifest (name/version/description/author/license + `skills` 
 
 ```json
 { "hooks": { "Stop": [ { "hooks": [
-  { "type": "command", "command": "${PLUGIN_ROOT}/scripts/stop-offer.sh" } ] } ] } }
+  { "type": "command", "command": "${PLUGIN_ROOT}/hooks/claude-code/stop-offer.sh" } ] } ] } }
 ```
-Uses `${PLUGIN_ROOT}` (verified token). Auto-registers on install (FR-007), retiring the manual README. A byte-identical codex variant may be added so the generator emits a universal `hooks/hooks.json`.
+Uses `${PLUGIN_ROOT}` — the token APM rewrites to the plugin's install path inside hook `command` strings at install time (the convention every agentic-packages hook package uses). The hook manifest is the APM source; `apm compile` generates the Claude-discovered `hooks/hooks.json` from it, which must be committed so it ships via the marketplace `source`. Auto-registers on install (FR-007), retiring the manual README.
 
 ## Stop hook script — `hooks/claude-code/stop-offer.sh` (REWRITTEN, agent-mediated — FR-011)
 

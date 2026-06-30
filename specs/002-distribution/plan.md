@@ -22,7 +22,7 @@ Package and ship the spec-001 MVP. Two channels: (1) publish the MCP server to n
 
 **Performance Goals**: install is one gesture (SC-001); server launch via npx with no local build (SC-002); offline quizzes work from bundled content (SC-003). No throughput target.
 
-**Constraints**: no `NPM_TOKEN` secret — OIDC Trusted Publishers only (FR-014); floating-`latest` npx pin (FR-012); `${PLUGIN_ROOT}` hook token (verified); one-time manual bootstrap publish (FR-014a); publish-before-marketplace atomic ordering (FR-016); no spec-001 behavior change (FR-018) and 0 test regressions (FR-019).
+**Constraints**: no `NPM_TOKEN` secret — OIDC Trusted Publishers only (FR-014); floating-`latest` npx pin (FR-012); `${PLUGIN_ROOT}` hook token (the variable Claude Code substitutes in hook commands); one-time manual bootstrap publish (FR-014a); publish-before-marketplace atomic ordering (FR-016); no spec-001 behavior change (FR-018) and 0 test regressions (FR-019).
 
 **Scale/Scope**: ONE plugin + ONE npm package (not a monorepo of packages) — so plain `apm pack` suffices, no ported Python generator (OD-001).
 

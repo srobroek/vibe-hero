@@ -6,14 +6,5 @@
     "name": "Sjors Robroek"
   },
   "license": "Apache-2.0",
-  "skills": "./.apm/skills",
-  "mcpServers": {
-    "vibe-hero": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@vibe-hero/server"
-      ]
-    }
-  }
+  "skills": "./.apm/skills"
 }

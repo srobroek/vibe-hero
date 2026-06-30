@@ -177,7 +177,7 @@ Deferred to planning; do not block the spec.
 
 - **Spec 001 is merged/available**: this branch builds on the 001 implementation (server, skills, hook, content already exist).
 - **npm publish rights + bootstrap**: the maintainer can create the `@vibe-hero` scope (or chosen name) on npm, perform the one-time manual first publish (FR-014a), and then configure the npm Trusted Publisher (linking the package to this repo + the publish workflow). No automation token / `NPM_TOKEN` is created or stored — CI publishes via OIDC. All of this is done out-of-band by the maintainer (no credential ever enters code or chat).
-- **Claude Code plugin/marketplace mechanics** match the agentic-packages conventions verified during research: per-package `.claude-plugin/plugin.json` (generated), top-level `.mcp.json` for the server, `hooks/hooks.json` for auto-registered hooks using the `${PLUGIN_ROOT}` token, marketplace.json listing plugins by `source`.
+- **Claude Code plugin/marketplace mechanics**: per-package `.claude-plugin/plugin.json` (generated, carries identity + skills path, NO `mcpServers`), top-level `.mcp.json` as the sole MCP declaration for the server, `hooks/hooks.json` for auto-registered hooks using the `${PLUGIN_ROOT}` token (the variable Claude Code substitutes in hook commands), marketplace.json listing plugins by `source`.
 - **npx availability**: target users have Node/npx available in the environment Claude Code runs in (required to launch an npx MCP server).
 - **Public distribution**: the npm package and marketplace are public.
 

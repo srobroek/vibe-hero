@@ -6,8 +6,9 @@
  * manifests have the shape Claude Code / APM expect (FR-005/008/009/010):
  *   - root `.claude-plugin/marketplace.json` lists the plugin by `source`
  *   - the plugin `.mcp.json` launches the published server via npx (FR-008/012)
- *   - the plugin `plugin.json` carries identity + `skills` + `mcpServers` and
- *     NO name-only `{name}` dependency entries (the agentic-packages bug — FR-010)
+ *   - the plugin `plugin.json` carries identity + `skills` and NO `mcpServers`
+ *     (MCP is declared in `.mcp.json` only — FR-008) and NO name-only `{name}`
+ *     dependency entries (the agentic-packages bug — FR-010)
  *
  * These are static-file assertions (no build needed); they guard against drift
  * in the committed distribution artifacts.
@@ -50,13 +51,15 @@ describe("distribution manifests (spec 002)", () => {
     expect(pkgArg).not.toMatch(/@vibe-hero\/server@/);
   });
 
-  it("plugin.json carries identity + skills + mcpServers and NO name-only deps (FR-010)", () => {
+  it("plugin.json carries identity + skills, NO mcpServers, and NO name-only deps (FR-008/010)", () => {
     const plugin = readJson(
       "packages/vibe-hero-plugin/.claude-plugin/plugin.json",
     ) as Record<string, unknown>;
     expect(plugin.name).toBe("vibe-hero");
     expect(plugin.skills).toBe("./.apm/skills");
-    expect(plugin.mcpServers).toBeDefined();
+    // MCP must be declared in .mcp.json ONLY — a duplicate mcpServers block in
+    // plugin.json causes a conflicting same-name registration and breaks the plugin.
+    expect(plugin.mcpServers, "plugin.json must NOT carry mcpServers (use .mcp.json)").toBeUndefined();
     // The standalone plugin must not carry APM `dependencies` (the agentic-packages
     // name-only `{name:...}` bug only affects bundle packages with first-party deps).
     expect(plugin.dependencies).toBeUndefined();
@@ -75,6 +78,28 @@ describe("distribution manifests (spec 002)", () => {
         expect(hasSource, "dependency must declare a source").toBe(true);
       }
     }
+  });
+
+  it("ships a Claude-discoverable hooks/hooks.json that uses ${PLUGIN_ROOT} (FR-007)", () => {
+    // Claude Code discovers plugin hooks at `hooks/hooks.json` (NOT APM's
+    // `.apm/hooks/` source). Without this committed file the Stop hook never
+    // registers and the plugin fails to load. The command uses `${PLUGIN_ROOT}`
+    // — the token APM rewrites to the install path (NOT ${CLAUDE_PLUGIN_ROOT}).
+    const hooks = readJson("packages/vibe-hero-plugin/hooks/hooks.json") as {
+      hooks: { Stop?: Array<{ hooks: Array<{ type: string; command: string }> }> };
+    };
+    const stop = hooks.hooks?.Stop?.[0]?.hooks?.[0];
+    expect(stop, "hooks/hooks.json must register a Stop hook").toBeDefined();
+    expect(stop?.type).toBe("command");
+    expect(stop?.command).toContain("${PLUGIN_ROOT}");
+    expect(stop?.command).not.toContain("CLAUDE_PLUGIN_ROOT");
+    expect(stop?.command).toContain("hooks/claude-code/stop-offer.sh");
+    // the referenced script must actually ship + be executable
+    const script = resolve(
+      REPO_ROOT,
+      "packages/vibe-hero-plugin/hooks/claude-code/stop-offer.sh",
+    );
+    expect(readFileSync(script, "utf8").length).toBeGreaterThan(0);
   });
 
   it("the four skills are present under the plugin's .apm/skills", () => {

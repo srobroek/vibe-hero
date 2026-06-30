@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/srobroek/vibe-hero/compare/v0.2.1...v0.3.0) (2026-06-30)
+
+
+### Features
+
+* expand catalog to 2800 items + dashboard, auto-detect, hashed remote catalog ([#8](https://github.com/srobroek/vibe-hero/issues/8)) ([8f53c4b](https://github.com/srobroek/vibe-hero/commit/8f53c4bc199e7aa71316debd20123017f342adb8))
+
 ## [0.2.1](https://github.com/srobroek/vibe-hero/compare/v0.2.0...v0.2.1) (2026-06-29)
 
 

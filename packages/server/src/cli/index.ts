@@ -36,6 +36,7 @@
  */
 
 import { fileURLToPath } from "node:url";
+import { realpathSync } from "node:fs";
 import { argv, stderr } from "node:process";
 
 import { main as serverMain } from "../index.js";
@@ -87,7 +88,18 @@ export const dispatch = async (args: readonly string[]): Promise<void> => {
 const isEntrypoint = (): boolean => {
   const entry = argv[1];
   if (entry === undefined) return false;
-  return fileURLToPath(import.meta.url) === entry;
+  const self = fileURLToPath(import.meta.url);
+  // Direct comparison handles `node dist/cli/index.js`. But npx (and any
+  // node_modules/.bin install) launches this bin through a SYMLINK, so `argv[1]`
+  // is the symlink path while `import.meta.url` is the realpath — a naive
+  // string compare fails and the server silently does nothing. Resolve both
+  // sides through realpath so the guard holds under the standard npx launch.
+  if (self === entry) return true;
+  try {
+    return realpathSync(self) === realpathSync(entry);
+  } catch {
+    return false;
+  }
 };
 
 if (isEntrypoint()) {

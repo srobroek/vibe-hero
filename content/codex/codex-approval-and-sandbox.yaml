@@ -1,0 +1,2440 @@
+# Topic: codex-approval-and-sandbox (codex)
+# Codex approval modes and sandboxing — controlling autonomy, file/network access, and safe command execution.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: codex-approval-and-sandbox
+class:
+  kind: tool
+  tool: codex
+title: Codex Approval & Sandbox Modes
+summary: >-
+  Codex approval modes and sandboxing — controlling autonomy, file/network access, and safe command
+  execution.
+triggerSignals: []
+items:
+  - id: cas-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: How many sandbox modes does the Codex CLI provide?
+    choices:
+      - id: a
+        text: Three
+      - id: b
+        text: Two
+      - id: c
+        text: Four
+      - id: d
+        text: Five
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex has exactly three sandbox modes: read-only, workspace-write, and danger-full-access.
+      Three is also the count of the current named approval policies (untrusted, on-request, never),
+      a common mix-up.
+  - id: cas-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: Which value is one of Codex's three sandbox modes?
+    choices:
+      - id: a
+        text: on-request
+      - id: b
+        text: workspace-write
+      - id: c
+        text: untrusted
+      - id: d
+        text: full-auto
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The three sandbox modes are read-only, workspace-write, and danger-full-access. on-request and
+      untrusted are approval policies, and --full-auto is a deprecated flag, not a sandbox mode.
+  - id: cas-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: >-
+      How many named approval policies does the current Codex CLI expose (excluding the
+      granular/fine-grained option)?
+    choices:
+      - id: a
+        text: Two
+      - id: b
+        text: Three
+      - id: c
+        text: Four
+      - id: d
+        text: Six
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The current named approval policies are untrusted, on-request, and never (a separate granular
+      option allows fine-grained control). The older on-failure is now just a deprecated alias of
+      on-request.
+  - id: cas-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: Which of these is a valid Codex approval policy?
+    choices:
+      - id: a
+        text: danger-full-access
+      - id: b
+        text: workspace-write
+      - id: c
+        text: read-only
+      - id: d
+        text: on-request
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The current approval policies are untrusted, on-request, and never. The other three options
+      (danger-full-access, workspace-write, read-only) are sandbox modes, not approval policies.
+  - id: cas-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: What is the alias for the `--dangerously-bypass-approvals-and-sandbox` flag?
+    choices:
+      - id: a
+        text: '--yolo'
+      - id: b
+        text: '--full-auto'
+      - id: c
+        text: '--unsafe'
+      - id: d
+        text: '--no-sandbox'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The documented alias is --yolo. --full-auto is a separate, deprecated flag. --unsafe and
+      --no-sandbox are not real Codex flags.
+  - id: cas-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Which named preset maps to `--sandbox read-only`?
+    choices:
+      - id: a
+        text: Auto
+      - id: b
+        text: Read Only
+      - id: c
+        text: Full Access
+      - id: d
+        text: Safe Mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The Read Only preset uses --sandbox read-only. Auto maps to workspace-write with on-request
+      approval, and Full Access maps to --dangerously-bypass-approvals-and-sandbox. "Safe Mode" is
+      not a Codex preset.
+  - id: cas-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: What is the short flag for `--sandbox`?
+    choices:
+      - id: a
+        text: '-b'
+      - id: b
+        text: '-w'
+      - id: c
+        text: '-s'
+      - id: d
+        text: '-x'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --sandbox has the short form -s. The approval flag --ask-for-approval uses -a. -b, -w, and -x
+      are not Codex flags.
+  - id: cas-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: What is the short flag for `--ask-for-approval`?
+    choices:
+      - id: a
+        text: '-y'
+      - id: b
+        text: '-k'
+      - id: c
+        text: '-p'
+      - id: d
+        text: '-a'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      --ask-for-approval has the short form -a. -p is --profile. -k and -y are not Codex flags (note
+      --yolo is a long alias, not -y).
+  - id: cas-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: On macOS, which mechanism does Codex use to enforce its sandbox?
+    choices:
+      - id: a
+        text: Apple Seatbelt via `sandbox-exec`
+      - id: b
+        text: Landlock and seccomp
+      - id: c
+        text: A Docker container
+      - id: d
+        text: gVisor
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      macOS uses Apple Seatbelt policies executed via sandbox-exec. Landlock/seccomp is the Linux
+      mechanism. Codex does not require Docker or gVisor for its sandbox.
+  - id: cas-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: On Linux, which mechanisms does Codex use to enforce its sandbox?
+    choices:
+      - id: a
+        text: Apple Seatbelt
+      - id: b
+        text: Landlock and seccomp
+      - id: c
+        text: SELinux only
+      - id: d
+        text: chroot jails
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Linux uses Landlock plus seccomp (with bwrap in some configurations). Seatbelt is macOS-only.
+      Codex does not rely on SELinux or chroot for sandboxing.
+  - id: cas-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: In the workspace-write sandbox mode, what is the default state of network access?
+    choices:
+      - id: a
+        text: Enabled by default
+      - id: b
+        text: Enabled only for HTTPS
+      - id: c
+        text: Disabled by default
+      - id: d
+        text: Prompts the user on first request
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Network access is disabled by default in workspace-write; it must be explicitly enabled via
+      sandbox_workspace_write.network_access. A common misconception is that workspace-write allows
+      network.
+  - id: cas-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: Which sandbox mode means "no sandbox and no approvals"?
+    choices:
+      - id: a
+        text: read-only
+      - id: b
+        text: workspace-write
+      - id: c
+        text: untrusted
+      - id: d
+        text: danger-full-access
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      danger-full-access removes the sandbox entirely and runs without approvals (explicitly not
+      recommended). untrusted is an approval policy, not a sandbox mode.
+  - id: cas-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: multiple_choice
+    prompt: For native Windows, what does Codex recommend for running with a sandbox?
+    choices:
+      - id: a
+        text: Running via WSL2
+      - id: b
+        text: Running directly in PowerShell with no extra setup
+      - id: c
+        text: Disabling the sandbox entirely
+      - id: d
+        text: Installing Hyper-V isolation manually
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex recommends running via WSL2 on Windows so the Linux sandbox mechanisms
+      (Landlock/seccomp) apply. It does not advise disabling the sandbox.
+  - id: cas-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: List the three Codex sandbox modes by their exact names.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names read-only
+        - id: c2
+          text: Names workspace-write
+        - id: c3
+          text: Names danger-full-access
+      referenceAnswer: The three sandbox modes are read-only, workspace-write, and danger-full-access.
+      passThreshold: 0.6
+    guidance: >-
+      These three modes form one of the two orthogonal axes that govern Codex execution; the other
+      axis is the set of approval policies.
+  - id: cas-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: free_form
+    prompt: List the three current Codex approval policies by their exact names.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names untrusted
+        - id: c2
+          text: Names on-request
+        - id: c3
+          text: Names never
+      referenceAnswer: >-
+        The three current approval policies are untrusted, on-request, and never. (A separate
+        granular option allows fine-grained control, and the older on-failure is now a deprecated
+        alias of on-request.)
+      passThreshold: 0.6
+    guidance: >-
+      Approval policy is the axis that governs when Codex pauses to ask, independent of the sandbox
+      mode that governs what is allowed to run without asking.
+  - id: cas-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: Name the three named presets that combine a sandbox mode and an approval policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Read Only
+        - id: c2
+          text: Names Auto
+        - id: c3
+          text: Names Full Access
+      referenceAnswer: The three named presets are Read Only, Auto, and Full Access.
+      passThreshold: 0.6
+    guidance: >-
+      Presets are convenience bundles: Read Only = --sandbox read-only, Auto = workspace-write with
+      on-request approval, and Full Access = --dangerously-bypass-approvals-and-sandbox.
+  - id: cas-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: free_form
+    prompt: >-
+      What flag combination (or single flag) does the Full Access preset use, and what is its short
+      alias?
+    rubric:
+      criteria:
+        - id: c1
+          text: States the flag is --dangerously-bypass-approvals-and-sandbox
+        - id: c2
+          text: States the alias is --yolo
+      referenceAnswer: Full Access uses --dangerously-bypass-approvals-and-sandbox, whose alias is --yolo.
+      passThreshold: 0.6
+    guidance: >-
+      The long form deliberately spells out the danger. --yolo is the shorthand; both disable the
+      sandbox and approvals together.
+  - id: cas-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: free_form
+    prompt: Which `--full-auto` flag is deprecated, and what should you use instead?
+    rubric:
+      criteria:
+        - id: c1
+          text: States --full-auto is deprecated
+        - id: c2
+          text: States to use --sandbox workspace-write instead (optionally with an approval policy)
+      referenceAnswer: >-
+        The --full-auto flag is deprecated; use --sandbox workspace-write instead (typically paired
+        with an approval policy such as on-request).
+      passThreshold: 0.6
+    guidance: >-
+      --full-auto was the old way to run with limited autonomy; the workspace-write sandbox now
+      expresses the same intent more explicitly.
+  - id: cas-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: >-
+      Name the two config keys in config.toml that set the default sandbox mode and default approval
+      policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names sandbox_mode
+        - id: c2
+          text: Names approval_policy
+      referenceAnswer: The keys are sandbox_mode (default sandbox) and approval_policy (default approval behavior).
+      passThreshold: 0.6
+    guidance: >-
+      These keys persist defaults in ~/.codex/config.toml so you need not pass -s and -a on every
+      invocation.
+  - id: cas-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: >-
+      Which sandbox mode lets Codex read files and answer questions but requires approval to edit,
+      run commands, or access the network?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names read-only as the mode
+        - id: c2
+          text: States it can read/answer but needs approval to edit, run commands, or use the network
+      referenceAnswer: >-
+        The read-only mode: Codex can read files and answer questions, but it must request approval
+        to edit files, run commands, or access the network.
+      passThreshold: 0.6
+    guidance: read-only is the most restrictive mode and is the basis of the Read Only preset.
+  - id: cas-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: >-
+      Why are the sandbox mode and the approval policy described as two orthogonal (independent)
+      axes?
+    choices:
+      - id: a
+        text: >-
+          The sandbox limits what can run without asking, while the approval policy governs when
+          Codex pauses to request escalation; either can be set independently of the other
+      - id: b
+        text: They are actually the same setting with two different names
+      - id: c
+        text: The sandbox controls the model and the approval policy controls the network only
+      - id: d
+        text: Setting one automatically locks the other to a fixed value
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The two axes answer different questions: "what is allowed without asking" (sandbox) versus
+      "when do we pause to ask" (approval). Presets simply pair common combinations of the two.
+  - id: cas-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: How does the `on-request` approval policy behave?
+    choices:
+      - id: a
+        text: It blocks every command outright with no way to escalate
+      - id: b
+        text: >-
+          It lets the model request escalation (approval) when it wants to do something the sandbox
+          blocks
+      - id: c
+        text: It auto-runs only commands on a known-safe list and asks for everything else
+      - id: d
+        text: It never asks and silently performs all actions
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      on-request lets the model ask for escalation when it needs more than the sandbox allows.
+      untrusted gates on a known-safe list, and never disables prompts (failures just return to the
+      model).
+  - id: cas-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: What distinguishes the `untrusted` approval policy from `on-request`?
+    choices:
+      - id: a
+        text: untrusted never asks while on-request always asks
+      - id: b
+        text: untrusted disables the sandbox while on-request keeps it
+      - id: c
+        text: >-
+          untrusted auto-runs only known-safe commands and asks before anything else, rather than
+          waiting for the model to request escalation
+      - id: d
+        text: They are identical aliases
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      untrusted runs only commands it considers known-safe automatically and prompts for the rest;
+      on-request defers to the model to decide when to ask for an escalation.
+  - id: cas-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: Why does the Auto preset pair `workspace-write` with `on-request` rather than with `never`?
+    choices:
+      - id: a
+        text: Because on-request makes commands run faster
+      - id: b
+        text: Because workspace-write is incompatible with the never policy
+      - id: c
+        text: Because never would disable the sandbox
+      - id: d
+        text: >-
+          So Codex can work freely inside the workspace yet still pause to ask before stepping
+          outside it or using the network
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Auto balances autonomy and safety: the sandbox grants free rein in the workspace, and
+      on-request keeps a human in the loop for out-of-workspace writes or network access.
+  - id: cas-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: multiple_choice
+    prompt: Why is it inaccurate to say "Codex CLI is a Node.js/TypeScript tool"?
+    choices:
+      - id: a
+        text: >-
+          It is now a Rust binary (codex-rs); npm is just one install channel that wraps the
+          prebuilt binary
+      - id: b
+        text: It has always been written only in Python
+      - id: c
+        text: It cannot be installed through npm at all
+      - id: d
+        text: It runs only inside a browser
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The original TypeScript implementation was rewritten in Rust (codex-rs). The npm package wraps
+      the binary; that does not make the tool a Node application.
+  - id: cas-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: How does an approval escalation typically arise under the workspace-write sandbox?
+    choices:
+      - id: a
+        text: The sandbox randomly pauses to verify the model is still running
+      - id: b
+        text: >-
+          Codex attempts an action outside the sandbox boundary (e.g. writing outside the workspace
+          or using the network) and the approval policy makes it pause to ask
+      - id: c
+        text: Every file edit inside the workspace requires explicit approval
+      - id: d
+        text: Escalation happens only when the model finishes its task
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Escalation is triggered when the agent needs to cross the sandbox boundary. Inside
+      workspace-write, edits within the workspace proceed without asking; reaching outside or onto
+      the network prompts.
+  - id: cas-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: Why does `--yolo` carry a stronger warning than merely "skipping confirmation prompts"?
+    choices:
+      - id: a
+        text: It deletes the config file as a side effect
+      - id: b
+        text: It only skips prompts but keeps the sandbox fully active
+      - id: c
+        text: It disables both approvals and the sandbox, giving full unsandboxed system access
+      - id: d
+        text: It forces read-only mode for safety
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A common misconception is that --yolo just suppresses prompts. In fact it maps to
+      --dangerously-bypass-approvals-and-sandbox, removing the sandbox too.
+  - id: cas-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: Why does Codex use Seatbelt on macOS but Landlock/seccomp on Linux?
+    choices:
+      - id: a
+        text: Because macOS cannot restrict network access
+      - id: b
+        text: Because Seatbelt is faster than Landlock on all platforms
+      - id: c
+        text: Because Linux does not support file-system restrictions
+      - id: d
+        text: >-
+          It relies on each operating system's native kernel sandboxing primitives rather than a
+          single cross-platform mechanism
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Codex leans on OS-native mechanisms: Apple Seatbelt (via sandbox-exec) on macOS and
+      Landlock+seccomp on Linux. This is why Windows is steered toward WSL2 to reuse the Linux path.
+  - id: cas-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: How does the `on-request` approval policy differ from `never`?
+    choices:
+      - id: a
+        text: >-
+          on-request lets the model pause and ask for approval when it needs to exceed the sandbox,
+          whereas never disables prompts and returns failures straight to the model
+      - id: b
+        text: on-request always disables the sandbox; never always enables it
+      - id: c
+        text: They both disable the sandbox
+      - id: d
+        text: on-request only works in CI and never only works interactively
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      on-request keeps a human in the loop for escalations beyond the sandbox; never suppresses
+      prompts entirely, so a blocked action simply fails back to the model (typical for unattended
+      CI).
+  - id: cas-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: What does the `sandbox_workspace_write.network_access = true` setting accomplish?
+    choices:
+      - id: a
+        text: It switches Codex into danger-full-access mode
+      - id: b
+        text: >-
+          It enables outbound network access while in workspace-write mode, which is otherwise off
+          by default
+      - id: c
+        text: It disables the sandbox entirely
+      - id: d
+        text: It grants read-only mode network access only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Network is disabled by default in workspace-write; this key opts the workspace-write sandbox
+      into outbound network without dropping the rest of its restrictions.
+  - id: cas-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: Why might a team prefer the Read Only preset for a first pass on an unfamiliar repository?
+    choices:
+      - id: a
+        text: It automatically commits any suggested changes
+      - id: b
+        text: It runs commands faster because nothing is sandboxed
+      - id: c
+        text: >-
+          It lets Codex inspect and reason about code without being able to edit files, run
+          commands, or reach the network unless explicitly approved
+      - id: d
+        text: It is the only mode that can read AGENTS.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Read Only (sandbox read-only) is ideal for exploration and review: maximum safety, with any
+      mutation requiring an explicit escalation/approval.
+  - id: cas-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      How does the sandbox relate to the approval policy when deciding whether a command runs
+      automatically?
+    choices:
+      - id: a
+        text: The sandbox overrides the approval policy and disables it
+      - id: b
+        text: The approval policy defines the file system, and the sandbox only handles the network
+      - id: c
+        text: The two settings are merged into one value at runtime
+      - id: d
+        text: >-
+          The sandbox defines what may run without asking; if an action falls outside that, the
+          approval policy decides whether to pause and ask
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Think of the sandbox as the permitted envelope and the approval policy as the gatekeeper for
+      actions that try to leave that envelope.
+  - id: cas-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: Why is "danger" baked into the name `danger-full-access`?
+    choices:
+      - id: a
+        text: >-
+          It removes the sandbox and approvals so Codex has full system access, which is explicitly
+          not recommended
+      - id: b
+        text: It only sounds dangerous but is actually the default mode
+      - id: c
+        text: It blocks all file writes for safety
+      - id: d
+        text: It is reserved for read-only audits
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The name signals intent: full system access with no guardrails. It exists for
+      hardened/disposable environments, not everyday local use.
+  - id: cas-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: free_form
+    prompt: >-
+      Explain in your own words why the sandbox mode and approval policy are two separate settings
+      rather than one.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the sandbox governs what is allowed to run without asking (the permitted
+            envelope)
+        - id: c2
+          text: States the approval policy governs when Codex pauses to request escalation
+        - id: c3
+          text: Notes they are orthogonal and presets pair specific combinations
+      referenceAnswer: >-
+        The sandbox mode defines the boundary of what Codex may do without asking (read-only,
+        workspace-write, or full access), while the approval policy defines when Codex pauses to
+        request escalation (untrusted, on-request, never). They are orthogonal axes; presets such as
+        Auto simply bundle a specific sandbox with a specific approval policy.
+      passThreshold: 0.6
+    guidance: >-
+      Separating "what is allowed" from "when to ask" lets you, for example, give a wide sandbox but
+      still require approval for network use, or a narrow sandbox that never prompts in CI.
+  - id: cas-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: free_form
+    prompt: Compare the `untrusted` and `never` approval policies and when each is appropriate.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes untrusted as auto-running only known-safe commands and prompting for the rest
+        - id: c2
+          text: Describes never as disabling approval prompts entirely
+        - id: c3
+          text: Maps never to non-interactive/CI use and untrusted to cautious interactive use
+      referenceAnswer: >-
+        untrusted auto-runs only commands considered known-safe and prompts before anything else,
+        which suits cautious interactive work. never disables approval prompts altogether, which
+        suits non-interactive or CI runs where no human is present to answer prompts.
+      passThreshold: 0.6
+    guidance: >-
+      The trade-off is human-in-the-loop safety (untrusted) versus unattended throughput (never);
+      the sandbox still constrains what never can do.
+  - id: cas-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: free_form
+    prompt: >-
+      Explain why enabling network access does not require switching out of the workspace-write
+      sandbox.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes network is off by default in workspace-write but is a separate toggle
+        - id: c2
+          text: Identifies sandbox_workspace_write.network_access as the opt-in
+        - id: c3
+          text: Explains this keeps other workspace-write restrictions intact
+      referenceAnswer: >-
+        Network access is a separate sub-setting of workspace-write, off by default. You opt in with
+        sandbox_workspace_write.network_access = true, which grants outbound network while keeping
+        the rest of workspace-write's file-system restrictions in place, rather than jumping to
+        danger-full-access.
+      passThreshold: 0.6
+    guidance: >-
+      This granularity avoids the all-or-nothing trap of dropping to full access just to make a
+      network call.
+  - id: cas-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: Explain why running Codex on native Windows is steered toward WSL2.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes Codex's sandbox relies on OS-native kernel mechanisms
+        - id: c2
+          text: States WSL2 provides the Linux path (Landlock/seccomp) Codex can enforce
+      referenceAnswer: >-
+        Codex's sandbox depends on native kernel primitives (Seatbelt on macOS, Landlock/seccomp on
+        Linux). Native Windows lacks the same path, so Codex recommends WSL2 so the Linux sandboxing
+        mechanisms can be applied.
+      passThreshold: 0.6
+    guidance: WSL2 lets Windows users reuse the well-tested Linux sandbox rather than running unsandboxed.
+  - id: cas-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: free_form
+    prompt: Explain why the deprecated `--full-auto` flag is now expressed as `--sandbox workspace-write`.
+    rubric:
+      criteria:
+        - id: c1
+          text: States --full-auto is deprecated in favor of --sandbox workspace-write
+        - id: c2
+          text: >-
+            Explains the sandbox flag makes the intended boundary explicit (workspace edits without
+            full access)
+      referenceAnswer: >-
+        --full-auto used to express "work autonomously within limits." That intent is now captured
+        explicitly by --sandbox workspace-write (often with an approval policy), which clearly
+        states the boundary: Codex may edit and run within the workspace but not roam the whole
+        system.
+      passThreshold: 0.6
+    guidance: >-
+      Replacing an opaque flag name with the explicit sandbox makes the autonomy level legible and
+      composable with an approval policy.
+  - id: cas-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: free_form
+    prompt: >-
+      Describe how an approval escalation works under the Auto preset when Codex needs to write a
+      file outside the workspace.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes Auto = workspace-write + on-request
+        - id: c2
+          text: States in-workspace edits proceed without asking
+        - id: c3
+          text: States the out-of-workspace write triggers an approval request before proceeding
+      referenceAnswer: >-
+        Under Auto (workspace-write with on-request), Codex edits and runs inside the workspace
+        without prompting. When it needs to write outside the workspace, that action exceeds the
+        sandbox boundary, so the on-request policy makes Codex pause and ask for approval before
+        proceeding.
+      passThreshold: 0.6
+    guidance: This illustrates the sandbox-as-boundary, approval-as-gatekeeper model in a concrete flow.
+  - id: cas-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: free_form
+    prompt: >-
+      Why is the claim "the sandbox mode and approval policy are the same setting" a misconception?
+      Give a concrete example that shows they differ.
+    rubric:
+      criteria:
+        - id: c1
+          text: States they are independent axes
+        - id: c2
+          text: >-
+            Gives an example where the same sandbox is paired with different approval policies (or
+            vice versa)
+      referenceAnswer: >-
+        They are independent. For example, workspace-write can be paired with on-request (the Auto
+        preset, pausing for out-of-workspace actions) or with never (unattended CI, no prompts).
+        Same sandbox, different approval behavior, proving they are distinct settings.
+      passThreshold: 0.6
+    guidance: >-
+      Holding the sandbox fixed while varying the approval policy is the cleanest demonstration that
+      the two are orthogonal.
+  - id: cas-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You want Codex to edit and run commands within your project but to pause and ask before
+      touching anything outside it or using the network. Which preset or flag combination should you
+      use?
+    choices:
+      - id: a
+        text: '--sandbox workspace-write --ask-for-approval on-request (the Auto preset)'
+      - id: b
+        text: '--sandbox read-only'
+      - id: c
+        text: '--dangerously-bypass-approvals-and-sandbox'
+      - id: d
+        text: '--sandbox danger-full-access --ask-for-approval never'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Auto preset is exactly this: free rein in the workspace, with on-request escalation for
+      out-of-workspace writes and network. read-only is too restrictive; the other two remove
+      guardrails.
+  - id: cas-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      A CI job runs `codex exec` unattended and must never block on a prompt, but you still want the
+      workspace sandbox active. Which flags fit best?
+    choices:
+      - id: a
+        text: '--sandbox workspace-write --ask-for-approval on-request'
+      - id: b
+        text: '--sandbox workspace-write --ask-for-approval never'
+      - id: c
+        text: '--dangerously-bypass-approvals-and-sandbox'
+      - id: d
+        text: '--sandbox read-only --ask-for-approval untrusted'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      never suppresses prompts so the unattended job won't hang, while workspace-write keeps the
+      sandbox enforcing limits. on-request would block waiting for a human; --yolo drops the
+      sandbox.
+  - id: cas-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You are reviewing a stranger's repository and want Codex to analyze it with zero risk of
+      modification. Which single flag is the safest choice?
+    choices:
+      - id: a
+        text: '--ask-for-approval never'
+      - id: b
+        text: '--sandbox workspace-write'
+      - id: c
+        text: '--sandbox read-only'
+      - id: d
+        text: '--full-auto'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      read-only lets Codex read and reason but blocks edits, command execution, and network unless
+      you approve. workspace-write already allows in-workspace mutation; the others reduce safety.
+  - id: cas-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      Your workspace-write session needs to run `npm install`, which fetches packages over the
+      network, but the install keeps failing. What is the most likely fix?
+    choices:
+      - id: a
+        text: Add a writable_roots entry for node_modules
+      - id: b
+        text: Switch the approval policy to untrusted
+      - id: c
+        text: Delete config.toml so Codex picks safe defaults
+      - id: d
+        text: >-
+          Set sandbox_workspace_write.network_access = true (or enable network), since network is
+          off by default in workspace-write
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      workspace-write disables network by default, so npm install cannot reach the registry.
+      Enabling network_access is the targeted fix; writable_roots only affects file paths, not
+      network.
+  - id: cas-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You want a one-off run with the Auto behavior but your config.toml default is read-only. Which
+      command achieves Auto for just this run?
+    choices:
+      - id: a
+        text: codex --sandbox workspace-write --ask-for-approval on-request "..."
+      - id: b
+        text: Edit config.toml permanently to sandbox_mode = \"workspace-write\"
+      - id: c
+        text: codex --yolo "..."
+      - id: d
+        text: codex --full-auto "..."
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Passing -s/-a flags on the command line overrides the config default for that run only,
+      without a permanent edit. --yolo is Full Access, and --full-auto is deprecated.
+  - id: cas-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      A workspace-write run must also write generated output into a sibling directory
+      `../build-output`. What is the cleanest way to allow that without dropping to full access?
+    choices:
+      - id: a
+        text: Switch to danger-full-access
+      - id: b
+        text: Add the path to sandbox_workspace_write.writable_roots
+      - id: c
+        text: Set approval_policy = "never"
+      - id: d
+        text: Enable network_access
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      writable_roots extends the set of writable paths under workspace-write, granting exactly the
+      extra directory needed without removing the sandbox. network_access is unrelated to file
+      writes.
+  - id: cas-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You want Codex to automatically run only commands it judges known-safe and to prompt you
+      before running anything else. Which approval policy do you set?
+    choices:
+      - id: a
+        text: untrusted
+      - id: b
+        text: on-request
+      - id: c
+        text: never
+      - id: d
+        text: granular
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      untrusted auto-approves only known-safe commands and prompts before anything else. on-request
+      defers to the model to decide when to ask, never suppresses prompts, and granular is the
+      fine-grained option.
+  - id: cas-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      Inside the interactive TUI you started in read-only and now want to switch to a less
+      restrictive approval/sandbox setup without restarting. What do you use?
+    choices:
+      - id: a
+        text: The /mcp slash command
+      - id: b
+        text: Re-launch codex from scratch with new flags
+      - id: c
+        text: Edit config.toml and hope it hot-reloads
+      - id: d
+        text: The /permissions slash command
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /permissions lets you change the approval/sandbox preset mid-session in the TUI. /mcp lists
+      MCP servers and is unrelated; restarting is unnecessary.
+  - id: cas-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      On a Windows laptop you want Codex's sandbox to actually be enforced. What is the recommended
+      setup?
+    choices:
+      - id: a
+        text: Run Codex inside WSL2 so the Linux Landlock/seccomp sandbox applies
+      - id: b
+        text: Run in PowerShell with --sandbox read-only, which forces Seatbelt
+      - id: c
+        text: Use --yolo so Windows can run it safely
+      - id: d
+        text: Install Codex via Homebrew on Windows
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex recommends WSL2 on Windows so the Linux sandbox mechanisms apply. Seatbelt is
+      macOS-only, --yolo removes the sandbox, and Homebrew is not the Windows path.
+  - id: cas-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      You want every future Codex session in this project to default to Auto behavior. Where do you
+      put the settings?
+    choices:
+      - id: a
+        text: Pass --yolo each time you launch
+      - id: b
+        text: Set sandbox_mode = "workspace-write" and approval_policy = "on-request" in config.toml
+      - id: c
+        text: Add them to AGENTS.md
+      - id: d
+        text: Export them as shell environment variables only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      config.toml persists defaults via sandbox_mode and approval_policy. AGENTS.md is
+      instruction/memory, not the place for sandbox/approval config; --yolo would be Full Access,
+      not Auto.
+  - id: cas-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You are spinning up a throwaway, fully isolated container where speed matters more than
+      guardrails and there is no human to approve prompts. Which choice is defensible here?
+    choices:
+      - id: a
+        text: '--sandbox workspace-write --ask-for-approval on-request'
+      - id: b
+        text: '--sandbox read-only --ask-for-approval untrusted'
+      - id: c
+        text: >-
+          --dangerously-bypass-approvals-and-sandbox (--yolo), accepting that there is no sandbox or
+          approvals
+      - id: d
+        text: '--full-auto'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --yolo is only defensible in a disposable, already-isolated environment where the container
+      itself is the boundary. on-request would block with no human; --full-auto is deprecated.
+  - id: cas-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      A teammate's run keeps prompting for approval on harmless local commands and slowing them
+      down, but they still want a human gate for risky ones. Which approval policy best fits?
+    choices:
+      - id: a
+        text: danger-full-access, which removes the sandbox so nothing prompts
+      - id: b
+        text: untrusted, which prompts before anything not on the safe list
+      - id: c
+        text: never, which removes all gating
+      - id: d
+        text: on-request, so the model only asks when it actually needs to escalate beyond the sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      untrusted is what causes frequent prompts. on-request reduces noise by letting the model ask
+      only when escalation is genuinely needed, while keeping a human gate for those cases.
+  - id: cas-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      For a single experimental run you want to override only the sandbox mode to workspace-write
+      without changing your saved profile or other config. Which is the most surgical approach?
+    choices:
+      - id: a
+        text: Use the -s/--sandbox flag (or -c sandbox_mode=workspace-write) on that one command
+      - id: b
+        text: Edit the profile's sandbox_mode permanently
+      - id: c
+        text: Delete config.toml for the run
+      - id: d
+        text: Switch to a different OS
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A per-run -s flag or a -c key=value override changes only that invocation. Editing the profile
+      would persist beyond the experiment.
+  - id: cas-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: free_form
+    prompt: >-
+      Write the flags you would pass to `codex` to run a read-only review of a repository, and
+      explain what Codex can and cannot do under it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses --sandbox read-only (or -s read-only)
+        - id: c2
+          text: States Codex can read files and answer questions
+        - id: c3
+          text: States it cannot edit, run commands, or use the network without approval
+      referenceAnswer: >-
+        Run `codex --sandbox read-only "review this repo"`. Under read-only, Codex can read files
+        and answer questions about the code, but it cannot edit files, run commands, or access the
+        network unless you explicitly approve an escalation.
+      passThreshold: 0.6
+    guidance: This is the Read Only preset; it is the safest starting point for auditing unfamiliar code.
+  - id: cas-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: free_form
+    prompt: >-
+      Your workspace-write session needs to clone a dependency from GitHub during a build. Describe
+      the minimal config change to make this work and why a sandbox switch is unnecessary.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that network is off by default in workspace-write
+        - id: c2
+          text: States to set sandbox_workspace_write.network_access = true (or enable network)
+        - id: c3
+          text: Explains this avoids dropping to danger-full-access
+      referenceAnswer: >-
+        In workspace-write the network is off by default, so the clone fails. Set
+        sandbox_workspace_write.network_access = true to allow outbound network. This keeps all
+        other workspace-write file-system restrictions intact, so there is no need to switch to
+        danger-full-access just to reach GitHub.
+      passThreshold: 0.6
+    guidance: Enabling just the network sub-setting is the least-privilege fix.
+  - id: cas-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: free_form
+    prompt: >-
+      Show how to override the approval policy to `never` for a single `codex exec` CI run using a
+      `-c` config override, and say why this differs from editing config.toml.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses -c approval_policy=never (or --ask-for-approval never) on the command
+        - id: c2
+          text: Notes the override applies only to that invocation, not persistently
+      referenceAnswer: >-
+        Run `codex exec -c approval_policy=never "..."` (or `codex exec --ask-for-approval never
+        "..."`). The -c override applies only to that single invocation, whereas editing config.toml
+        would change the default for every future run.
+      passThreshold: 0.6
+    guidance: >-
+      Ad-hoc -c overrides are ideal for CI because they keep the saved config clean while
+      suppressing prompts only where needed.
+  - id: cas-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      A workspace-write run must write build artifacts to `/var/cache/myapp`, outside the project.
+      Describe the least-privilege way to permit this.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies sandbox_workspace_write.writable_roots as the mechanism
+        - id: c2
+          text: Adds the specific path rather than disabling the sandbox
+        - id: c3
+          text: Notes this avoids danger-full-access
+      referenceAnswer: >-
+        Add /var/cache/myapp to sandbox_workspace_write.writable_roots. This grants write access to
+        exactly that path while keeping the workspace-write sandbox in place, rather than escalating
+        to danger-full-access just to write one extra directory.
+      passThreshold: 0.6
+    guidance: >-
+      writable_roots is the targeted lever for out-of-workspace writes; it is the file-system analog
+      of the network_access opt-in.
+  - id: cas-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      Describe a complete local development setup (sandbox + approval) that lets you iterate quickly
+      but still keeps a human gate for risky actions, and name the preset it corresponds to.
+    rubric:
+      criteria:
+        - id: c1
+          text: Chooses --sandbox workspace-write
+        - id: c2
+          text: Chooses --ask-for-approval on-request
+        - id: c3
+          text: Identifies this as the Auto preset
+      referenceAnswer: >-
+        Use --sandbox workspace-write --ask-for-approval on-request. This is the Auto preset: Codex
+        edits and runs freely inside the workspace for fast iteration, yet on-request makes it pause
+        for approval before writing outside the workspace or using the network.
+      passThreshold: 0.6
+    guidance: Auto is the recommended everyday local balance between autonomy and safety.
+  - id: cas-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: >-
+      You started the TUI in the Read Only preset and now need to let Codex apply an edit. Describe
+      how to change the mode mid-session without losing your context.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the /permissions slash command (or equivalent in-TUI preset switch)
+        - id: c2
+          text: Notes you do not need to restart the session
+      referenceAnswer: >-
+        Use the /permissions slash command inside the TUI to switch from Read Only to a preset that
+        allows edits (such as Auto/workspace-write). You change the preset in place, so you keep the
+        current session and its context rather than restarting codex with new flags.
+      passThreshold: 0.6
+    guidance: /permissions is the runtime control for the approval/sandbox preset within a session.
+  - id: cas-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: >-
+      Write a `codex exec` command for an unattended nightly job that may edit the repo and run
+      tests but must never hang on a prompt, and justify each flag.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses codex exec (non-interactive entry point)
+        - id: c2
+          text: Uses --sandbox workspace-write to allow repo edits/commands
+        - id: c3
+          text: Uses --ask-for-approval never so it does not block waiting for a human
+      referenceAnswer: >-
+        Use `codex exec --sandbox workspace-write --ask-for-approval never "run the nightly
+        checks"`. codex exec is the non-interactive automation entry point; workspace-write lets it
+        edit the repo and run tests within the workspace; never ensures it never pauses for
+        approval, so the unattended job cannot hang.
+      passThreshold: 0.6
+    guidance: The sandbox still constrains what never can do, so the job is bounded even without prompts.
+  - id: cas-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A user reports that under workspace-write with on-request, Codex unexpectedly proceeded to
+      write a file outside the project without asking. What is the most likely real explanation?
+    choices:
+      - id: a
+        text: >-
+          The path was added to writable_roots, so it is inside the sandbox boundary and needs no
+          escalation
+      - id: b
+        text: on-request always disables prompts for file writes
+      - id: c
+        text: workspace-write implicitly allows full-disk writes
+      - id: d
+        text: The approval policy was secretly upgraded to untrusted
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      If a directory is listed in writable_roots it is part of the permitted envelope, so writing
+      there does not exceed the sandbox and triggers no escalation. The behavior is expected, not a
+      bug.
+  - id: cas-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      In a CI run with `--sandbox workspace-write --ask-for-approval on-request`, the job hangs
+      forever with no output. What is the root cause?
+    choices:
+      - id: a
+        text: workspace-write is incompatible with codex exec
+      - id: b
+        text: >-
+          on-request tried to prompt for an escalation, but no human is present in CI to answer, so
+          it blocks indefinitely
+      - id: c
+        text: The sandbox deadlocked the file system
+      - id: d
+        text: never was needed to enable the sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      on-request is an interactive policy; in unattended CI a prompt has no one to answer it. The
+      fix is never (or pre-granting the needed access), not changing the sandbox.
+  - id: cas-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      Two engineers disagree. One says `--yolo` is fine because "the sandbox still protects us." Why
+      is that reasoning flawed?
+    choices:
+      - id: a
+        text: '--yolo forces read-only, so it is over-protective'
+      - id: b
+        text: '--yolo keeps the sandbox but disables only approvals'
+      - id: c
+        text: >-
+          --yolo maps to --dangerously-bypass-approvals-and-sandbox, which disables the sandbox too,
+          so there is no sandbox protection
+      - id: d
+        text: '--yolo only affects the network, not the file system'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The flaw is assuming the sandbox survives. --yolo bypasses approvals AND the sandbox, leaving
+      full unsandboxed access; the "still protected" premise is false.
+  - id: cas-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A project-scoped `.codex/config.toml` sets sandbox_mode = "danger-full-access", but Codex
+      still behaves as read-only there. What best explains this?
+    choices:
+      - id: a
+        text: config.toml cannot set sandbox_mode
+      - id: b
+        text: danger-full-access is an alias for read-only
+      - id: c
+        text: Project config always loses to the global default
+      - id: d
+        text: >-
+          The project is not trusted, so the project-scoped config (and its danger setting) is not
+          honored
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A project-scoped .codex/config.toml is honored only when the project is trusted. Untrusted
+      projects fall back to safe behavior, which is why the danger setting is ignored.
+  - id: cas-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      Under read-only with on-request, every command Codex tries triggers an approval prompt,
+      frustrating the user who expected "automatic safe commands." What is the conceptual mistake?
+    choices:
+      - id: a
+        text: >-
+          read-only blocks command execution by design, so escalation is needed for any command;
+          "auto-run known-safe commands" is the untrusted policy's behavior, not a property of
+          read-only
+      - id: b
+        text: on-request should never prompt
+      - id: c
+        text: read-only secretly allows commands but logs them
+      - id: d
+        text: The user must enable network to run commands
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The user conflated the read-only sandbox with the untrusted approval policy. read-only forbids
+      command execution outright, so any command is an escalation under on-request.
+  - id: cas-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      A workspace-write job that calls an external API works on a developer's laptop but fails in a
+      hardened CI image. Both use the same config.toml. What is the most likely difference?
+    choices:
+      - id: a
+        text: CI uses a different sandbox mode that the developer cannot see
+      - id: b
+        text: >-
+          network_access is enabled on the laptop's environment/profile but not in the CI run, so
+          the API call is blocked there
+      - id: c
+        text: workspace-write always allows network, so this cannot be a network issue
+      - id: d
+        text: The API requires danger-full-access to function
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Since network is off by default in workspace-write, the API call only succeeds where
+      network_access was explicitly enabled. The discrepancy points to differing network settings,
+      not the sandbox mode.
+  - id: cas-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      An audit finds a CI pipeline using `--dangerously-bypass-approvals-and-sandbox` on a shared
+      build host with secrets mounted. Why is this the highest-risk configuration?
+    choices:
+      - id: a
+        text: It limits writes to the workspace, which is still bad
+      - id: b
+        text: It is risky only because approvals are slow
+      - id: c
+        text: >-
+          There is no sandbox and no approvals, so model-generated commands have full system access
+          to the host and its secrets
+      - id: d
+        text: It disables network but allows file writes
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --yolo removes both guardrails, so any command Codex generates can read mounted secrets or
+      alter the shared host. The blast radius is the whole machine, not just the workspace.
+  - id: cas-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      A user sets approval_policy = "never" expecting Codex to do anything autonomously, but it
+      still cannot write outside the project. Why?
+    choices:
+      - id: a
+        text: never is not a valid policy
+      - id: b
+        text: never silently switches the sandbox to read-only
+      - id: c
+        text: never requires danger-full-access to take effect
+      - id: d
+        text: >-
+          never only suppresses prompts; the sandbox (workspace-write) still bounds what is allowed,
+          so out-of-workspace writes are blocked rather than prompted
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Approval policy and sandbox are orthogonal. never removes prompts but the sandbox still
+      enforces limits, so disallowed actions are simply blocked (not prompted, not allowed).
+  - id: cas-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      On Linux, Codex commands that need to bind to a privileged port fail even in workspace-write
+      with network enabled. Which factor most likely explains the failure?
+    choices:
+      - id: a
+        text: >-
+          The Landlock/seccomp sandbox restricts the syscalls/capabilities available, so even with
+          network on, certain privileged operations remain blocked
+      - id: b
+        text: network_access only applies to outbound HTTP, never to sockets
+      - id: c
+        text: workspace-write disables all networking regardless of config
+      - id: d
+        text: The failure proves the sandbox is off
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Linux sandbox (Landlock/seccomp) constrains kernel-level operations beyond mere
+      file/network toggles. Enabling network_access does not grant privileged-port binding under the
+      sandbox.
+  - id: cas-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: >-
+      A team wants "autonomous but safe" and reaches for the deprecated `--full-auto`. Beyond
+      deprecation, what is the analytical risk of relying on it?
+    choices:
+      - id: a
+        text: It disables the sandbox like --yolo
+      - id: b
+        text: >-
+          Its behavior is opaque and may change or be removed; --sandbox workspace-write makes the
+          boundary explicit and composable with an approval policy
+      - id: c
+        text: It only works on macOS
+      - id: d
+        text: It forces network access on
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The risk is relying on a deprecated, opaque flag whose meaning may shift. The explicit
+      sandbox+approval pair documents intent and is the supported path.
+  - id: cas-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A developer claims "read-only is safe enough that I can run it with danger-full-access network
+      just to be fast." Why is this combination incoherent?
+    choices:
+      - id: a
+        text: danger-full-access is a sub-option of read-only
+      - id: b
+        text: read-only requires network to be on
+      - id: c
+        text: >-
+          read-only and danger-full-access are mutually exclusive sandbox modes; you cannot be in
+          both, so the statement conflates two distinct settings
+      - id: d
+        text: Both are approval policies that can be combined
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      sandbox_mode takes exactly one value. read-only and danger-full-access are alternatives, not
+      composable; the claim mixes incompatible modes.
+  - id: cas-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      After moving from a laptop (macOS) to a Linux server, a Codex run that previously prompted for
+      risky shell commands now silently blocks them instead. Most likely cause?
+    choices:
+      - id: a
+        text: The OS change reset config.toml to danger-full-access
+      - id: b
+        text: Linux sandboxes cannot prompt, so all approvals become denials by design
+      - id: c
+        text: macOS ignores the sandbox entirely
+      - id: d
+        text: >-
+          The approval policy or sandbox config differs between environments (e.g. never vs
+          on-request), so escalations that once prompted are now just denied by the sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Behavior differences usually trace to differing config (approval policy/sandbox) per
+      environment, not the OS sandbox mechanism itself. A never policy turns would-be prompts into
+      outright blocks.
+  - id: cas-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      A reviewer sees a config with sandbox_mode = "workspace-write", network_access = true, and
+      approval_policy = "never". Which statement most accurately characterizes the residual risk?
+    choices:
+      - id: a
+        text: >-
+          Codex can autonomously edit the workspace and reach the network with no prompts, so a bad
+          command can exfiltrate or fetch arbitrary data, though it remains bounded to the workspace
+          file system
+      - id: b
+        text: There is no risk because the sandbox is on
+      - id: c
+        text: The risk is identical to --yolo
+      - id: d
+        text: network_access has no security implications
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      This is autonomous (never) workspace-write with network. The file system is still bounded, but
+      unprompted network access is a real exfiltration/SSRF surface. It is riskier than no-network
+      Auto, yet still safer than --yolo, which also frees the file system.
+  - id: cas-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: free_form
+    prompt: >-
+      A user insists their workspace-write session "must be broken" because Codex won't fetch a URL.
+      Diagnose the issue and propose the fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that network is disabled by default in workspace-write (not a bug)
+        - id: c2
+          text: Proposes enabling sandbox_workspace_write.network_access (or equivalent)
+        - id: c3
+          text: Notes no change of sandbox mode is required
+      referenceAnswer: >-
+        It is not broken: workspace-write disables network by default, so the fetch is correctly
+        blocked. The fix is to enable network in workspace-write via
+        sandbox_workspace_write.network_access = true. There is no need to switch to
+        danger-full-access; only the network sub-setting needs enabling.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that workspace-write implies network; diagnosing it requires separating
+      file-system from network permissions.
+  - id: cas-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: >-
+      Explain why a CI pipeline that uses `--ask-for-approval on-request` can intermittently hang,
+      and how the orthogonality of sandbox and approval informs the fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains on-request can emit a prompt that has no human responder in CI, causing a hang
+        - id: c2
+          text: >-
+            Notes the sandbox still bounds behavior, so the fix is to change the approval policy (to
+            never), not loosen the sandbox
+        - id: c3
+          text: >-
+            Optionally notes pre-granting needed access (network_access/writable_roots) as an
+            alternative
+      referenceAnswer: >-
+        on-request is interactive: when Codex needs to escalate beyond the sandbox it emits a
+        prompt, but CI has no human to answer, so the job blocks. Because approval and sandbox are
+        independent, the fix is to set approval_policy to never (suppressing prompts) while keeping
+        the workspace-write sandbox as the safety boundary. Alternatively, pre-grant exactly the
+        access needed (network_access or writable_roots) so no escalation is requested at all.
+      passThreshold: 0.6
+    guidance: >-
+      The key insight is fixing the right axis: tighten or change approval behavior, not the
+      sandbox.
+  - id: cas-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 454
+    type: free_form
+    prompt: >-
+      A teammate believes a project-scoped `.codex/config.toml` always overrides everything.
+      Identify the precondition they are missing and the security reason for it.
+    rubric:
+      criteria:
+        - id: c1
+          text: States project-scoped config is honored only when the project is trusted
+        - id: c2
+          text: >-
+            Explains the security rationale (untrusted repos could otherwise set danger-full-access
+            or other unsafe defaults)
+      referenceAnswer: >-
+        Project-scoped .codex/config.toml is honored only when the project is trusted. The missing
+        precondition is trust: an untrusted repository's config (which could set danger-full-access
+        or enable network) is not applied, preventing a malicious or unknown repo from silently
+        widening Codex's permissions on checkout.
+      passThreshold: 0.6
+    guidance: This trust gate is what stops a hostile repo from configuring its own escape hatch.
+  - id: cas-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: free_form
+    prompt: >-
+      Contrast the blast radius of `--sandbox workspace-write --ask-for-approval never` versus
+      `--dangerously-bypass-approvals-and-sandbox` on a host with sensitive files outside the
+      project.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes workspace-write+never is autonomous but still bounded to the workspace file system
+        - id: c2
+          text: Notes --yolo removes the sandbox, exposing the whole host including sensitive files
+        - id: c3
+          text: Concludes --yolo has a far larger blast radius
+      referenceAnswer: >-
+        With workspace-write and never, Codex acts without prompts but the sandbox still confines
+        writes to the workspace (plus any writable_roots), so sensitive files elsewhere are
+        protected. With --yolo (--dangerously-bypass-approvals-and-sandbox) there is no sandbox at
+        all, so model-generated commands can read or modify anything on the host, including the
+        sensitive files. The blast radius of --yolo is the whole machine versus just the workspace.
+      passThreshold: 0.6
+    guidance: >-
+      Both are unprompted, but only --yolo removes the spatial boundary, which is the decisive
+      difference.
+  - id: cas-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: free_form
+    prompt: >-
+      A workspace-write run with network enabled still cannot perform a privileged system operation
+      on Linux. Explain why enabling network_access does not grant this, in terms of the sandbox
+      layers.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes network_access only toggles outbound network, not OS-level capabilities
+        - id: c2
+          text: >-
+            Explains Landlock/seccomp restricts syscalls/file/capabilities independently of the
+            network toggle
+        - id: c3
+          text: Concludes privileged operations remain blocked by the kernel sandbox
+      referenceAnswer: >-
+        network_access only opens outbound network in workspace-write; it does not lift the
+        kernel-level restrictions. On Linux, Landlock and seccomp constrain which syscalls and
+        capabilities are available and which paths are writable, independently of the network
+        toggle. A privileged system operation requires capabilities the sandbox withholds, so it
+        stays blocked even with the network on.
+      passThreshold: 0.6
+    guidance: >-
+      Distinguishing the network sub-setting from kernel-level syscall/capability filtering is the
+      crux.
+  - id: cas-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A user reports that Codex "ignored" their approval policy and ran a command without asking.
+      Walk through how you would determine whether this is a bug or expected sandbox behavior.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Checks whether the command stayed within the sandbox boundary (in which case no approval
+            is expected)
+        - id: c2
+          text: Checks the active sandbox mode and approval policy (and any preset/overrides)
+        - id: c3
+          text: >-
+            Concludes that in-sandbox actions run without prompts by design, so it is likely
+            expected
+      referenceAnswer: >-
+        First confirm the active sandbox mode and approval policy (including any preset or -c
+        overrides). Then check whether the command stayed inside the sandbox boundary: under
+        workspace-write, commands within the workspace run without prompting by design, and approval
+        is only requested for actions that exceed the boundary. If the command was in-bounds, the
+        behavior is expected, not a bug; only an out-of-boundary action that ran without a prompt
+        would indicate a real problem.
+      passThreshold: 0.6
+    guidance: >-
+      The diagnostic hinge is "did the action need escalation?" Approvals only fire on boundary
+      crossings.
+  - id: cas-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A security review flags that several repos in an org each ship a `.codex/config.toml` enabling
+      network_access and never approvals. Analyze the layered risks and which configuration choices
+      amplify them.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes the trust gate means these only apply once the project is trusted
+        - id: c2
+          text: >-
+            Identifies never + network_access as autonomous network access without prompts
+            (exfiltration/SSRF surface)
+        - id: c3
+          text: Notes the sandbox still bounds the file system, distinguishing it from --yolo
+      referenceAnswer: >-
+        Because project config is honored only for trusted projects, the immediate risk is gated by
+        who trusts these repos. Once trusted, the combination of approval_policy = never and
+        network_access = true gives Codex unprompted outbound network in those repos, creating an
+        exfiltration/SSRF surface where a bad command could send data out without a human gate. The
+        workspace-write sandbox still bounds file writes to the workspace, so the blast radius is
+        narrower than --yolo, but the unprompted network access is the chief amplifier and should be
+        justified per repo.
+      passThreshold: 0.6
+    guidance: >-
+      Layered analysis: trust gate, then the approval+network combination, then the residual
+      file-system bound that separates this from full access.
+  - id: cas-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A platform team proposes defaulting all developer machines to
+      `--dangerously-bypass-approvals-and-sandbox` "to avoid annoying prompts." Which critique is
+      most sound?
+    choices:
+      - id: a
+        text: >-
+          It trades away both guardrails org-wide; a better default is Auto (workspace-write +
+          on-request), reserving --yolo for disposable isolated environments
+      - id: b
+        text: It is fine because developers can be trusted not to run bad commands
+      - id: c
+        text: It is fine as long as network_access stays false
+      - id: d
+        text: It is the recommended default in the docs
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Defaulting to --yolo removes the sandbox and approvals everywhere, maximizing blast radius.
+      Auto is the recommended balanced default; --yolo belongs only in throwaway isolated contexts.
+  - id: cas-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      Which design best embodies least-privilege for a CI pipeline that must edit the repo, run
+      tests, and fetch dependencies, with no human present?
+    choices:
+      - id: a
+        text: '--dangerously-bypass-approvals-and-sandbox so nothing can block the pipeline'
+      - id: b
+        text: >-
+          workspace-write with approval_policy never and network_access enabled (plus writable_roots
+          only if needed), so it runs unattended yet stays bounded to the workspace
+      - id: c
+        text: read-only with never, then escalate manually
+      - id: d
+        text: danger-full-access with on-request
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Least-privilege grants exactly what is needed: workspace edits, network for deps, and never to
+      avoid hangs, while the sandbox still bounds everything. --yolo over-grants; read-only
+      under-grants.
+  - id: cas-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A reviewer argues "approvals are theater; the sandbox alone is sufficient, so always run with
+      never." What is the strongest counter-argument?
+    choices:
+      - id: a
+        text: never is an invalid policy
+      - id: b
+        text: Approvals are required for the sandbox to function at all
+      - id: c
+        text: >-
+          Approvals are the human gate for actions the sandbox intentionally permits to escalate
+          (e.g. out-of-workspace writes or network); removing them removes oversight of exactly
+          those higher-risk actions
+      - id: d
+        text: The sandbox cannot restrict the file system, so approvals must compensate
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The sandbox defines a boundary; approvals govern crossing it. never is fine where no
+      escalation should ever be granted, but as a blanket rule it removes human oversight of
+      boundary-crossing actions.
+  - id: cas-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      Two configurations both "work" for a build that needs one extra writable directory. Either (1)
+      add it to writable_roots under workspace-write, or (2) switch to danger-full-access. Which is
+      the better design and why?
+    choices:
+      - id: a
+        text: Option 2, because writable_roots is deprecated
+      - id: b
+        text: Option 2, because fewer settings means fewer bugs
+      - id: c
+        text: They are equivalent in risk
+      - id: d
+        text: >-
+          Option 1, because it grants only the one extra path while preserving every other sandbox
+          restriction (least privilege)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      writable_roots is a surgical grant; danger-full-access removes the entire sandbox for the sake
+      of one directory, a gross over-grant. Least privilege favors option 1.
+  - id: cas-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      An org wants a single global default in config.toml that is safe for unfamiliar repos yet not
+      so restrictive that trusted projects can't opt up. What is the soundest design?
+    choices:
+      - id: a
+        text: >-
+          Default to a conservative mode (e.g. read-only or Auto) globally and let trusted projects
+          raise privileges via their own project-scoped config, relying on the trust gate
+      - id: b
+        text: Default globally to danger-full-access and tighten per project
+      - id: c
+        text: Default to --yolo and document the risk
+      - id: d
+        text: Disable config.toml entirely and pass flags every time
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Safe-by-default globally, opt-up per trusted project leverages the trust gate so unfamiliar
+      repos cannot widen permissions. Defaulting wide and tightening later inverts the safety
+      posture.
+  - id: cas-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A workflow enables network_access in workspace-write with approval_policy never for an agent
+      that browses the web and edits code. Which residual-risk judgment is most accurate?
+    choices:
+      - id: a
+        text: There is no meaningful risk because the sandbox is on
+      - id: b
+        text: >-
+          The file system is bounded to the workspace, but unprompted network access is a genuine
+          exfiltration/SSRF surface that should be justified and ideally constrained or monitored
+      - id: c
+        text: It is exactly as dangerous as --yolo
+      - id: d
+        text: network_access cannot coexist with never
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Sound evaluation acknowledges the file-system bound while naming the real network risk; it is
+      neither risk-free nor equivalent to --yolo (which also frees the file system).
+  - id: cas-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on the deprecated `--full-auto` across scripts "because it still works."
+      From a maintainability and safety standpoint, what is the best recommendation?
+    choices:
+      - id: a
+        text: Replace it with --yolo for simplicity
+      - id: b
+        text: Keep --full-auto; deprecated flags never change behavior
+      - id: c
+        text: >-
+          Migrate to --sandbox workspace-write with an explicit approval policy, since the
+          deprecated flag is opaque and may change or be removed
+      - id: d
+        text: Wrap --full-auto in a shell alias and move on
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Relying on a deprecated, opaque flag is a maintenance and safety liability. The explicit
+      sandbox+approval pair documents intent and is the supported, durable path. --yolo is more
+      dangerous, not simpler.
+  - id: cas-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A Windows-only team runs Codex natively (no WSL) with the sandbox effectively unenforced,
+      arguing "approvals catch everything anyway." Why is this an anti-pattern?
+    choices:
+      - id: a
+        text: The argument is sound; the sandbox is redundant
+      - id: b
+        text: Approvals cannot run on Windows at all
+      - id: c
+        text: Native Windows always disables approvals too
+      - id: d
+        text: >-
+          Approvals and the sandbox are complementary layers; relying solely on prompts removes
+          defense-in-depth, and an approved-but-misjudged action then has no sandbox to contain it
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Defense-in-depth wants both layers. If the sandbox is unenforced, a single mis-approval has no
+      containment. WSL2 restores the sandbox layer on Windows.
+  - id: cas-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      Evaluate this claim. "Because presets exist, there is no reason to ever set the sandbox and
+      approval flags separately." What is the best assessment?
+    choices:
+      - id: a
+        text: >-
+          Presets cover common cases, but separate flags are needed for valid combinations presets
+          don't name (e.g. workspace-write + never for CI), so independent control still matters
+      - id: b
+        text: Correct, presets are exhaustive of all useful combinations
+      - id: c
+        text: Correct, because the flags cannot be combined outside presets
+      - id: d
+        text: Wrong, because presets do not change the sandbox at all
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Presets are convenient bundles, not a complete enumeration. Cases like unattended
+      workspace-write + never require composing the two axes directly, which is precisely why both
+      flags exist.
+  - id: cas-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: >-
+      An agent design fetches secrets-bearing config from a remote service during a workspace-write
+      task. Reviewers must choose between (a) enabling network_access in workspace-write, or (b)
+      running the fetch outside Codex and passing results in. Which critique is strongest?
+    choices:
+      - id: a
+        text: Option (a) is strictly safer because the sandbox handles all secrets
+      - id: b
+        text: >-
+          Option (b) keeps the secret-fetch outside the agent's autonomous, sandbox-bounded surface
+          and avoids broadening Codex's network permissions, which is generally the safer separation
+          of concerns
+      - id: c
+        text: The two are identical in risk
+      - id: d
+        text: Option (b) is impossible because Codex must do all I/O itself
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Keeping secret retrieval outside the autonomous agent minimizes Codex's network surface and
+      avoids coupling secret access to model-driven actions. Enabling network just for this widens
+      the attack surface unnecessarily.
+  - id: cas-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A reviewer must pick a default approval policy for an interactive local TUI used by
+      mixed-skill engineers. Which choice best balances safety and friction, and why?
+    choices:
+      - id: a
+        text: >-
+          untrusted, because prompting before every non-safe-listed command is always best for
+          everyone
+      - id: b
+        text: never, because prompts are friction
+      - id: c
+        text: >-
+          on-request, because the model only escalates when genuinely needed, keeping a human gate
+          for risky actions without prompting on every safe in-sandbox command
+      - id: d
+        text: danger-full-access, because removing the sandbox eliminates prompts entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      on-request is the recommended interactive default: low friction inside the sandbox, human gate
+      on escalation. untrusted can be noisy; never removes the gate; danger-full-access removes the
+      sandbox boundary altogether, which is unsafe as a default.
+  - id: cas-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      Critique this CI design. "Use danger-full-access with approval_policy on-request so a human
+      can approve anything risky." What is the core flaw?
+    choices:
+      - id: a
+        text: on-request is invalid with any sandbox
+      - id: b
+        text: It is well designed and safe
+      - id: c
+        text: danger-full-access forces network off, breaking dependency fetches
+      - id: d
+        text: >-
+          danger-full-access has no sandbox, so there is nothing to escalate against; on-request
+          also has no human in CI, making the approval layer both meaningless and blocking
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Two compounding errors: full access removes the boundary approvals exist to guard, and
+      on-request needs a human absent in CI. The design is both unsafe and prone to hang.
+  - id: cas-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      When is choosing `--dangerously-bypass-approvals-and-sandbox` actually the most defensible
+      design, rather than an anti-pattern?
+    choices:
+      - id: a
+        text: >-
+          In a disposable, already-isolated environment (e.g. an ephemeral container with no secrets
+          and no host access) where the environment itself is the security boundary and no human can
+          approve
+      - id: b
+        text: On any developer laptop, to save time
+      - id: c
+        text: On a shared CI host with mounted secrets, for speed
+      - id: d
+        text: Whenever network_access would otherwise be needed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --yolo is defensible only when an external boundary already contains the blast radius
+      (throwaway isolated container). On laptops or shared hosts with secrets it is an anti-pattern.
+  - id: cas-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: free_form
+    prompt: >-
+      Critique the policy "always run Codex with --yolo to avoid prompts" and recommend a better
+      organizational default with justification.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that --yolo removes both the sandbox and approvals, maximizing blast radius
+        - id: c2
+          text: Recommends Auto (workspace-write + on-request) as the balanced default
+        - id: c3
+          text: Notes --yolo should be reserved for disposable/isolated environments
+      referenceAnswer: >-
+        "--yolo everywhere" is an anti-pattern: --dangerously-bypass-approvals-and-sandbox removes
+        both the sandbox and approvals, so any model-generated command has full host access and
+        there is no human gate. A better default is Auto (workspace-write with on-request): Codex
+        iterates freely in the workspace while pausing for approval on out-of-workspace writes or
+        network. Reserve --yolo strictly for disposable, already-isolated environments where the
+        container itself is the boundary.
+      passThreshold: 0.6
+    guidance: >-
+      A strong answer names the removed protections, the recommended default, and the narrow
+      legitimate use of --yolo.
+  - id: cas-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 496
+    type: free_form
+    prompt: >-
+      Evaluate whether enabling network_access in workspace-write is an acceptable trade-off for an
+      agent that must install dependencies, and outline the conditions that would make it acceptable
+      versus not.
+    rubric:
+      criteria:
+        - id: c1
+          text: Acknowledges the file system stays bounded to the workspace under workspace-write
+        - id: c2
+          text: Identifies unprompted/broad network as an exfiltration or SSRF risk
+        - id: c3
+          text: >-
+            Outlines mitigating conditions (e.g. trusted deps, restricted/monitored network, paired
+            with on-request rather than never where feasible)
+      referenceAnswer: >-
+        Enabling network_access keeps the workspace-write file-system bound but opens an outbound
+        network surface. It is acceptable when the network is constrained or monitored, dependencies
+        come from trusted registries, and ideally the run uses on-request rather than never so a
+        human can gate unexpected destinations. It is not acceptable when the host holds secrets,
+        the network is unrestricted, and prompts are disabled, since that combination is a ready
+        exfiltration/SSRF path.
+      passThreshold: 0.6
+    guidance: >-
+      The evaluation should weigh the legitimate need (deps) against the network surface and the
+      approval/never choice.
+  - id: cas-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: free_form
+    prompt: >-
+      Two teams must agree on a Codex sandbox/approval standard. One prioritizes developer velocity,
+      the other security. Propose a single defensible standard for local development and justify the
+      trade-offs.
+    rubric:
+      criteria:
+        - id: c1
+          text: Proposes Auto (workspace-write + on-request) as the local standard
+        - id: c2
+          text: >-
+            Explains how it serves velocity (free in-workspace work) and security (human gate on
+            escalation)
+        - id: c3
+          text: Notes network stays off by default and is enabled only when needed
+      referenceAnswer: >-
+        Standardize local development on Auto: --sandbox workspace-write --ask-for-approval
+        on-request. This serves velocity because Codex edits and runs freely inside the workspace
+        without constant prompts, and serves security because on-request keeps a human gate for
+        out-of-workspace writes and network use, with network off by default and enabled only
+        per-task when genuinely required. It is a defensible midpoint that neither over-restricts
+        (read-only) nor over-grants (--yolo).
+      passThreshold: 0.6
+    guidance: The strongest answer ties each axis of the preset to one team's priority.
+  - id: cas-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: >-
+      A proposed design pins config.toml globally to danger-full-access "so nothing ever blocks" and
+      relies on each repo's project-scoped config to tighten it. Critique this inversion and propose
+      the correct ordering.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the inverted safety posture (wide-open default that repos must remember to
+            tighten)
+        - id: c2
+          text: Notes the trust gate is irrelevant here because the global default is already unsafe
+        - id: c3
+          text: Proposes a conservative global default with per-trusted-project opt-up instead
+      referenceAnswer: >-
+        The design inverts safe-by-default: a global danger-full-access means any repo that forgets
+        to tighten inherits full access, and the project-trust gate offers no protection because the
+        unsafe setting is global, not in a repo. The correct ordering is a conservative global
+        default (read-only or Auto) with trusted projects opting up via their own project-scoped
+        config, so the failure mode is "too restrictive" rather than "fully exposed."
+      passThreshold: 0.6
+    guidance: >-
+      The core critique is fail-safe versus fail-open defaults and where the trust gate actually
+      helps.
+  - id: cas-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: free_form
+    prompt: >-
+      Assess the claim that "the sandbox makes approvals redundant." Use the orthogonality of the
+      two axes to argue when each is and is not sufficient on its own.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the sandbox alone bounds actions but cannot judge whether a boundary-crossing
+            action should be allowed
+        - id: c2
+          text: >-
+            Explains approvals add human judgment exactly for escalations the sandbox permits to be
+            requested
+        - id: c3
+          text: >-
+            Concludes neither is universally sufficient; the right mix depends on whether
+            escalations should ever be granted and whether a human is present
+      referenceAnswer: >-
+        The sandbox enforces a boundary but is binary about it: in-bounds actions run, out-of-bounds
+        actions are blocked or escalated. It cannot judge whether a particular escalation (a network
+        call, an out-of-workspace write) is wise. Approvals add that human judgment for exactly
+        those boundary-crossing requests. So the sandbox alone is sufficient only when no escalation
+        should ever be granted (e.g. strict read-only or never in CI), and approvals matter whenever
+        escalations are legitimately possible and a human can adjudicate. Neither axis is
+        universally redundant; the right combination depends on the context.
+      passThreshold: 0.6
+    guidance: >-
+      A top answer ties sufficiency to whether escalations are possible and whether a human is
+      available to judge them.
+  - id: cas-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: free_form
+    prompt: >-
+      Recommend a defensible Codex configuration for an unattended autonomous agent running in an
+      ephemeral, network-isolated container with no secrets, and justify why you might even consider
+      --yolo here.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Considers --yolo (or danger-full-access + never) acceptable specifically because the
+            container is the security boundary
+        - id: c2
+          text: Conditions it on no secrets, ephemeral, and isolated network
+        - id: c3
+          text: Notes this would be unacceptable on a shared host or one with secrets
+      referenceAnswer: >-
+        In an ephemeral, network-isolated container with no secrets, the container itself is the
+        security boundary, so --yolo (or danger-full-access with never) can be acceptable: the blast
+        radius is the throwaway container, and there is no human to answer prompts. This is
+        defensible only because of the isolation and absence of secrets; the same configuration on a
+        shared host or any environment with mounted secrets or host access would be an anti-pattern.
+      passThreshold: 0.6
+    guidance: >-
+      The justification must rest on an external boundary substituting for the in-process sandbox,
+      plus the absence of secrets and a human.
+  - id: cas-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      A reviewer must choose between using on-request approvals versus pre-granting exact
+      permissions (network_access, writable_roots) with never for a semi-trusted automated workflow.
+      Weigh the two approaches and recommend one with conditions.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes on-request as keeping a human gate but unsuitable/hanging when unattended
+        - id: c2
+          text: >-
+            Describes pre-granting + never as deterministic and non-blocking but requiring careful
+            least-privilege scoping up front
+        - id: c3
+          text: >-
+            Recommends pre-granting + never for unattended runs (with tight scoping) and on-request
+            where a human is present, justifying by presence of a human and predictability
+      referenceAnswer: >-
+        on-request keeps a human in the loop for escalations, which is ideal when someone is present
+        but causes hangs in unattended runs. Pre-granting exactly the needed access (network_access
+        and specific writable_roots) with approval_policy never is deterministic and non-blocking,
+        but it front-loads the work of scoping permissions tightly so nothing more than necessary is
+        granted. For an unattended semi-trusted workflow, prefer the pre-granted least-privilege +
+        never approach so the run cannot hang, provided the grants are scoped narrowly and reviewed;
+        keep on-request for interactive sessions where a human can adjudicate escalations in real
+        time.
+      passThreshold: 0.6
+    guidance: >-
+      The decisive factors are human presence and predictability; the recommendation must be
+      conditioned on tight least-privilege scoping when choosing never.

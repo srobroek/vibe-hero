@@ -1,0 +1,3052 @@
+# Topic: permissions-and-settings (claude-code)
+# Configuring Claude Code via settings.json — permission modes, allow/deny tool rules, settings scopes, environment variables, and the risks of skipping prompts.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: permissions-and-settings
+class:
+  kind: tool
+  tool: claude-code
+title: Permissions & Settings
+summary: >-
+  Configuring Claude Code via settings.json — permission modes, allow/deny tool rules, settings
+  scopes, environment variables, and the risks of skipping prompts.
+triggerSignals: []
+items:
+  - id: pas-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: Which file holds personal, per-project settings that are meant to be gitignored?
+    choices:
+      - id: a
+        text: .claude/settings.local.json
+      - id: b
+        text: .claude/settings.json
+      - id: c
+        text: ~/.claude/settings.json
+      - id: d
+        text: managed-settings.json
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The local scope file is .claude/settings.local.json and is intended to be gitignored for
+      personal per-project overrides. .claude/settings.json is the team-shared project file
+      (committed), ~/.claude/settings.json is user scope, and managed-settings.json is the
+      enterprise policy file.
+  - id: pas-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 126
+    type: multiple_choice
+    prompt: >-
+      Which command lets you interactively manage permission rules and shows which settings file
+      each rule came from?
+    choices:
+      - id: a
+        text: /config
+      - id: b
+        text: /permissions
+      - id: c
+        text: /rules
+      - id: d
+        text: /settings
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The /permissions command lists every active rule along with the settings file it originated
+      from and lets you manage them interactively. There is no /rules or /settings command for this
+      purpose.
+  - id: pas-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: In what order are permission rules evaluated?
+    choices:
+      - id: a
+        text: allow, then ask, then deny
+      - id: b
+        text: most specific rule first, regardless of category
+      - id: c
+        text: deny, then ask, then allow
+      - id: d
+        text: allow first, and deny only if no allow matched
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Rules are evaluated by category in the order deny then ask then allow, and the first match
+      wins. Specificity does not change the order, so a broad deny beats a narrow allow.
+  - id: pas-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: Which permission mode restricts Claude to read-only exploration with no source edits?
+    choices:
+      - id: a
+        text: acceptEdits
+      - id: b
+        text: default
+      - id: c
+        text: bypassPermissions
+      - id: d
+        text: plan
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The plan mode is read-only exploration with no source edits. acceptEdits auto-accepts edits,
+      default prompts on first use of each tool, and bypassPermissions skips prompts.
+  - id: pas-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: >-
+      The flag --dangerously-skip-permissions is exactly equivalent to which value of
+      --permission-mode?
+    choices:
+      - id: a
+        text: bypassPermissions
+      - id: b
+        text: acceptEdits
+      - id: c
+        text: dontAsk
+      - id: d
+        text: auto
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --dangerously-skip-permissions is exactly equivalent to --permission-mode bypassPermissions.
+      It is not the same as acceptEdits (edits only), dontAsk (auto-deny unless allowed), or auto
+      (background safety checks).
+  - id: pas-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: Which keys make up the permissions object in settings?
+    choices:
+      - id: a
+        text: allowedTools, blockedTools, prompt, sandbox
+      - id: b
+        text: allow, deny, ask, additionalDirectories, defaultMode, disableBypassPermissionsMode
+      - id: c
+        text: read, write, execute, network
+      - id: d
+        text: rules, mode, scopes, env
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The permissions object holds allow, deny, and ask arrays plus additionalDirectories,
+      defaultMode, and disableBypassPermissionsMode. The other options are invented or belong to
+      unrelated settings.
+  - id: pas-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: In a WebFetch permission rule, what prefix is used to match a URL hostname?
+    choices:
+      - id: a
+        text: 'host:'
+      - id: b
+        text: 'url:'
+      - id: c
+        text: 'domain:'
+      - id: d
+        text: 'site:'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      WebFetch rules use the domain: prefix, for example WebFetch(domain:example.com), matched
+      case-insensitively against the hostname. There is no host:, url:, or site: prefix.
+  - id: pas-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: Which MCP permission rule matches every tool exposed by a server named github?
+    choices:
+      - id: a
+        text: mcp__github
+      - id: b
+        text: mcp::github::*
+      - id: c
+        text: github.*
+      - id: d
+        text: mcp/github
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      mcp__<server> matches every tool from that server; mcp__github matches all github tools. A
+      specific tool is mcp__<server>__<tool>. The double-colon, dotted, and slash forms are not
+      valid.
+  - id: pas-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: Which keyboard shortcut cycles through permission modes in the Claude Code TUI?
+    choices:
+      - id: a
+        text: Ctrl+P
+      - id: b
+        text: Esc Esc
+      - id: c
+        text: Ctrl+M
+      - id: d
+        text: Shift+Tab
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Permission modes are cycled in the TUI with Shift+Tab. The other shortcuts are not used for
+      mode switching.
+  - id: pas-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: Which CLI flag adds an extra working directory at startup, validating that each path exists?
+    choices:
+      - id: a
+        text: '--working-dir'
+      - id: b
+        text: '--add-dir'
+      - id: c
+        text: '--extra-path'
+      - id: d
+        text: '--include-dir'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --add-dir adds extra working directories at startup and validates each path exists as a
+      directory, accepting multiple paths. During a session the equivalent is the /add-dir command.
+  - id: pas-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: What is the highest-precedence settings scope, which no other level can override?
+    choices:
+      - id: a
+        text: Managed (enterprise) settings
+      - id: b
+        text: User settings
+      - id: c
+        text: Command-line arguments
+      - id: d
+        text: Local project settings
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Managed settings sit at the top of precedence and cannot be overridden by any other level,
+      including command-line arguments. The full order is Managed, then CLI args, then Local
+      project, then Shared project, then User.
+  - id: pas-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: >-
+      What string value disables bypass permissions mode via
+      permissions.disableBypassPermissionsMode?
+    choices:
+      - id: a
+        text: true (boolean)
+      - id: b
+        text: '"off"'
+      - id: c
+        text: '"disable"'
+      - id: d
+        text: '"none"'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      disableBypassPermissionsMode takes the string value "disable", not a boolean true. It is most
+      useful in managed settings where it cannot be overridden.
+  - id: pas-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: multiple_choice
+    prompt: What does the --tools flag do, in contrast to --allowedTools?
+    choices:
+      - id: a
+        text: It restricts which built-in tools are available at all (it does not affect MCP tools)
+      - id: b
+        text: It auto-approves the listed tools so they never prompt
+      - id: c
+        text: It denies the listed tools and removes them from context
+      - id: d
+        text: It lists every MCP server's tools for the session
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --tools restricts which built-in tools are available ("" = none, "default" = all, or a comma
+      list) and does not affect MCP tools. --allowedTools is different: it adds allow rules so
+      listed tools run without prompting.
+  - id: pas-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: free_form
+    prompt: >-
+      Name the four settings scopes in Claude Code and the file path (or location type) associated
+      with each.
+    rubric:
+      criteria:
+        - id: c1
+          text: User scope is ~/.claude/settings.json
+        - id: c2
+          text: Project (team-shared, committed) scope is .claude/settings.json
+        - id: c3
+          text: Local (personal, gitignored) scope is .claude/settings.local.json
+        - id: c4
+          text: Managed (enterprise) scope is a system-level / OS path
+      referenceAnswer: >-
+        User settings live at ~/.claude/settings.json; the shared project settings (committed) at
+        .claude/settings.json; the local personal settings (gitignored) at
+        .claude/settings.local.json; and managed enterprise settings at system-level OS paths such
+        as the platform managed-settings.json.
+      passThreshold: 0.6
+    guidance: >-
+      The four scopes are User, Project (shared), Local (personal), and Managed (enterprise). The
+      local file adds .local before .json and is gitignored; managed settings live at fixed OS paths
+      and carry the highest precedence.
+  - id: pas-100-ff-o
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: List the accepted values of the --permission-mode flag.
+    rubric:
+      criteria:
+        - id: c1
+          text: Includes default, acceptEdits, and plan
+        - id: c2
+          text: Includes bypassPermissions
+        - id: c3
+          text: Includes auto and dontAsk
+      referenceAnswer: The accepted values are default, acceptEdits, plan, auto, dontAsk, and bypassPermissions.
+      passThreshold: 0.6
+    guidance: >-
+      --permission-mode accepts default, acceptEdits, plan, auto, dontAsk, and bypassPermissions,
+      and it overrides the defaultMode set in settings for that session.
+  - id: pas-100-ff-p
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: What is the difference between the allow, deny, and ask arrays in the permissions object?
+    rubric:
+      criteria:
+        - id: c1
+          text: allow means the matching tool call is auto-approved (runs without prompting)
+        - id: c2
+          text: deny means the matching tool call is blocked
+        - id: c3
+          text: ask means the matching tool call always prompts for confirmation
+      referenceAnswer: >-
+        Rules in allow are auto-approved and run without a prompt; rules in deny are blocked
+        outright; and rules in ask always trigger a confirmation prompt before the call runs.
+      passThreshold: 0.6
+    guidance: >-
+      allow auto-approves, deny blocks, and ask forces a prompt. Because evaluation is deny then ask
+      then allow, a deny or ask match takes precedence over a matching allow.
+  - id: pas-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: free_form
+    prompt: In a Bash permission rule, what does the :* suffix mean, for example in Bash(ls:*)?
+    rubric:
+      criteria:
+        - id: c1
+          text: It is equivalent to a trailing space-star, so Bash(ls:*) equals Bash(ls *)
+        - id: c2
+          text: It matches the command plus any arguments (enforcing a word boundary after ls)
+      referenceAnswer: >-
+        The :* suffix is equivalent to a trailing " *", so Bash(ls:*) is the same as Bash(ls *) and
+        matches ls followed by any arguments. It is recognized only at the end of the pattern.
+      passThreshold: 0.6
+    guidance: >-
+      :* is just shorthand for a trailing " *" (word boundary plus wildcard). It only has that
+      meaning at the very end of the pattern; a colon elsewhere is treated as a literal character.
+  - id: pas-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: Name the three ways to extend Claude Code's file access to additional directories.
+    rubric:
+      criteria:
+        - id: c1
+          text: The --add-dir flag at startup
+        - id: c2
+          text: The /add-dir command during a session
+        - id: c3
+          text: The additionalDirectories key in settings (for persistence)
+      referenceAnswer: >-
+        You can use the --add-dir flag at startup, the /add-dir command mid-session, or the
+        permissions.additionalDirectories key in settings for persistence.
+      passThreshold: 0.6
+    guidance: >-
+      The three mechanisms are --add-dir, /add-dir, and additionalDirectories in settings. Note that
+      --add-dir and /add-dir also load a limited set of config, while additionalDirectories in
+      settings grants file access only.
+  - id: pas-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: free_form
+    prompt: What is the env key in settings.json used for?
+    rubric:
+      criteria:
+        - id: c1
+          text: It sets environment variables for Claude Code sessions
+        - id: c2
+          text: Its value is an object of string key-value pairs (applied to all sessions)
+      referenceAnswer: >-
+        The env key sets environment variables applied to every Claude Code session. Its value is an
+        object mapping variable names to string values.
+      passThreshold: 0.6
+    guidance: >-
+      The env block defines environment variables (string values) applied across all sessions, such
+      as ANTHROPIC_MODEL or CLAUDE_CODE_ENABLE_TELEMETRY. It is a top-level settings key.
+  - id: pas-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: free_form
+    prompt: Permission rules in Claude Code are enforced by what component, and not by what?
+    rubric:
+      criteria:
+        - id: c1
+          text: They are enforced by Claude Code (the harness/CLI), not by the model
+        - id: c2
+          text: >-
+            Prompt or CLAUDE.md instructions shape what Claude tries but cannot change what is
+            allowed
+      referenceAnswer: >-
+        Permission rules are enforced by Claude Code itself (the harness), not by the model.
+        Instructions in the prompt or CLAUDE.md influence what Claude attempts but cannot change
+        which tool calls the harness will actually permit.
+      passThreshold: 0.6
+    guidance: >-
+      Enforcement lives in the Claude Code harness, not the model. That is why rules cannot be
+      jailbroken through CLAUDE.md or prompt text: those only steer intent, while the harness gates
+      the actual call.
+  - id: pas-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 221
+    type: multiple_choice
+    prompt: >-
+      A tool call matches both a broad deny rule like Bash(aws *) and a more specific allow rule
+      like Bash(aws s3 ls). Why is the call still blocked?
+    choices:
+      - id: a
+        text: >-
+          Because the more specific rule wins only when it appears earlier in the file than the
+          broad one.
+      - id: b
+        text: >-
+          Because rules are evaluated by category in the order deny then ask then allow, and the
+          first matching category wins regardless of how specific a rule is.
+      - id: c
+        text: >-
+          Because allow rules require an exact full-command match, while deny rules use prefix
+          matching.
+      - id: d
+        text: Because aws is on a built-in denylist that overrides user allow rules.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Specificity does not change evaluation order. Claude Code checks deny first, then ask, then
+      allow, and the first category to match decides the outcome. A broad deny therefore beats a
+      narrow allow, which is why deny rules cannot carry allowlist exceptions.
+  - id: pas-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: >-
+      A deny rule Agent(model:opus) is added to gate subagent calls that request the Opus model
+      tier. Why is this "match by input parameter" form allowed for a deny/ask rule but NOT mirrored
+      as an allow rule on the same parameter?
+    choices:
+      - id: a
+        text: >-
+          Allow rules cannot contain a colon, so parameter syntax is rejected only on the allow
+          side.
+      - id: b
+        text: >-
+          Matching one parameter value can prove a call is worth blocking, but it does not prove the
+          whole call is safe; so deny/ask may gate a single top-level parameter while allow rules
+          keep using each tool's own specifier syntax.
+      - id: c
+        text: Allow rules only work on the Bash tool, so Agent parameters can never be allowed.
+      - id: d
+        text: Parameter matching is purely cosmetic and has no effect on either side.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Deny and ask rules can match a single top-level input parameter, e.g. Agent(model:opus) or
+      Bash(run_in_background:true), because spotting one risky value is enough to block or prompt.
+      An allow rule for one parameter would not establish the call is safe overall, so allow rules
+      keep each tool's own specifier syntax. The parameter must be a direct scalar field, and
+      canonicalized fields like Bash command or Read file_path are excluded.
+  - id: pas-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 231
+    type: multiple_choice
+    prompt: >-
+      Two engineers disagree about precedence. One claims "user settings beat project settings
+      because they are mine." What is the correct ordering, highest to lowest?
+    choices:
+      - id: a
+        text: User, then local project, then shared project, then command-line arguments, then managed.
+      - id: b
+        text: Command-line arguments, then managed, then user, then local project, then shared project.
+      - id: c
+        text: Shared project, then local project, then user, then managed, then command-line arguments.
+      - id: d
+        text: >-
+          Managed settings, then command-line arguments, then local project, then shared project,
+          then user.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The order is Managed > CLI args > Local project > Shared project > User. User settings are
+      actually the LOWEST precedence, the opposite of the intuition that "mine wins." Managed
+      settings sit on top and cannot be overridden even by command-line flags.
+  - id: pas-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: multiple_choice
+    prompt: >-
+      A user runs Claude Code with --dangerously-skip-permissions and asks it to run rm -rf ~. Why
+      does Claude Code still prompt for confirmation?
+    choices:
+      - id: a
+        text: >-
+          Because the home directory is always in the deny list and bypass mode cannot touch deny
+          rules.
+      - id: b
+        text: >-
+          Bypass mode keeps a small set of circuit-breaker prompts for root/home removals like rm
+          -rf / and rm -rf ~ to guard against catastrophic model error.
+      - id: c
+        text: >-
+          Because --dangerously-skip-permissions only suppresses prompts for the Edit tool, not
+          Bash.
+      - id: d
+        text: Because rm is one of the built-in read-only commands that always prompts.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      bypassPermissions (equivalent to --dangerously-skip-permissions) is NOT a literal "skip
+      everything." Explicit ask rules still prompt, and a circuit breaker still confirms
+      catastrophic removals such as rm -rf / and rm -rf ~ so an autonomous run cannot wipe a home or
+      root directory unprompted.
+  - id: pas-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 241
+    type: multiple_choice
+    prompt: How does the rule Bash(ls *) differ in behavior from Bash(ls*) (no space before the asterisk)?
+    choices:
+      - id: a
+        text: They are identical; whitespace inside a rule is always ignored.
+      - id: b
+        text: >-
+          Bash(ls *) matches only commands with at least one argument, while Bash(ls*) matches only
+          "ls" with no arguments.
+      - id: c
+        text: >-
+          The space enforces a word boundary, so Bash(ls *) matches "ls -la" but not "lsof";
+          Bash(ls*) matches both because there is no boundary.
+      - id: d
+        text: Bash(ls*) is invalid syntax and is rejected, so only Bash(ls *) is ever loaded.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The space before the wildcard creates a word boundary. Bash(ls *) requires a space after "ls",
+      so "lsof" does not match. Dropping the space (Bash(ls*)) lets the wildcard absorb the
+      following characters, accidentally matching "lsof", "lsblk", and similar commands.
+  - id: pas-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      An admin allows Bash(safe-cmd *) and expects Claude to be confined to safe-cmd. Why does this
+      NOT authorize the compound command "safe-cmd && rm -rf .demands"?
+    choices:
+      - id: a
+        text: >-
+          Because && is a forbidden character that causes the entire command to be rejected
+          outright.
+      - id: b
+        text: Because the wildcard in safe-cmd * only matches single-word arguments, never two commands.
+      - id: c
+        text: Because compound commands always require bypassPermissions mode regardless of rules.
+      - id: d
+        text: >-
+          Claude Code is shell-operator aware: it splits on separators like && and requires each
+          subcommand to match a rule independently, so the rm part is unauthorized.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Claude Code parses shell operators (&&, ||, ;, |, |&, &, newlines) and evaluates each
+      subcommand separately. Allowing safe-cmd * never blanket-approves a chain; the rm -rf part
+      must independently match an allow rule, otherwise it falls back to a prompt or deny.
+  - id: pas-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      What is the practical difference between denying the bare tool name Bash versus denying a
+      scoped pattern like Bash(rm *)?
+    choices:
+      - id: a
+        text: >-
+          A bare Bash deny removes the tool from Claude's context entirely so the model never sees
+          it; a scoped deny leaves Bash available and only blocks matching calls.
+      - id: b
+        text: A bare Bash deny only hides Bash from the /permissions list, but Claude can still call it.
+      - id: c
+        text: There is no difference; both simply prevent matching Bash commands from executing.
+      - id: d
+        text: A scoped deny removes the tool from context, while a bare deny just adds a prompt.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A bare tool-name deny (e.g. Bash) takes the tool out of the model's available toolset, so
+      Claude never even attempts it. A scoped deny (Bash(rm *)) keeps Bash usable for everything
+      else and only blocks calls that match the pattern, which is why the two forms behave very
+      differently.
+  - id: pas-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: >-
+      A team adds WebFetch(domain:internal.example.com) to its allow list and assumes this restricts
+      all of Claude's network access to that host. Why is that assumption wrong?
+    choices:
+      - id: a
+        text: Because domain rules are advisory hints the model may ignore.
+      - id: b
+        text: >-
+          WebFetch rules only govern the WebFetch tool; if Bash is allowed, Claude can still curl or
+          wget any URL, so network access is not actually constrained.
+      - id: c
+        text: Because WebFetch rules block only HTTPS, leaving HTTP open on every domain.
+      - id: d
+        text: Because adding any WebFetch allow rule automatically enables WebFetch(domain:*).
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A WebFetch domain allowlist scopes only the WebFetch tool. It does nothing to Bash, so an
+      allowed Bash can still fetch arbitrary URLs via curl/wget. To actually limit egress you need
+      to also deny network Bash tools (or rely on an OS-level sandbox), not just a WebFetch rule.
+  - id: pas-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: >-
+      Why can a permission rule reliably block a tool call even if CLAUDE.md or the prompt tries to
+      instruct Claude to ignore it?
+    choices:
+      - id: a
+        text: >-
+          Permission rules are enforced by the Claude Code harness, not the model; instructions only
+          shape what Claude attempts, not what the harness allows.
+      - id: b
+        text: Because the model is fine-tuned to always obey permission rules over user instructions.
+      - id: c
+        text: Because CLAUDE.md is loaded after permissions and therefore cannot reference them.
+      - id: d
+        text: Because permission rules are encrypted and unreadable by the model.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Permissions live in the harness layer, outside the model. Prompts and CLAUDE.md influence what
+      Claude tries to do, but the harness independently checks every tool call against the rules, so
+      no in-context instruction can loosen a deny. This separation is what makes the rules
+      enforceable.
+  - id: pas-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      Why is an MCP allow rule written as "mcp__*" skipped (with a warning), while the same string
+      works as a deny rule?
+    choices:
+      - id: a
+        text: Because allow rules cannot contain wildcards of any kind.
+      - id: b
+        text: Because mcp__* is reserved for built-in servers and cannot be user-defined.
+      - id: c
+        text: >-
+          Allow-side MCP globs are only accepted after a literal mcp__<server>__ prefix, so the
+          server segment must be glob-free; deny rules have no such anchoring requirement.
+      - id: d
+        text: Because allow rules require three underscores while deny rules require two.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      On the allow side, a glob is only honored after a concrete mcp__<server>__ prefix (the server
+      name must be literal), so unanchored globs like "*" or "mcp__*" are skipped with a warning to
+      avoid accidentally trusting every server. As a deny, mcp__* is valid and removes every MCP
+      tool.
+  - id: pas-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
+    prompt: >-
+      Both --add-dir <path> and permissions.additionalDirectories give Claude file access to an
+      extra directory. What behavioral difference distinguishes them?
+    choices:
+      - id: a
+        text: additionalDirectories grants read and write, while --add-dir grants read-only access.
+      - id: b
+        text: >-
+          --add-dir is persistent across sessions, while additionalDirectories applies to one
+          session.
+      - id: c
+        text: They are fully equivalent; the only difference is where you type them.
+      - id: d
+        text: >-
+          --add-dir also loads a limited set of config (skills, subagents) from the directory, while
+          additionalDirectories in settings grants file access only and loads no config.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      --add-dir (and /add-dir) treat a directory more like a working dir, loading a limited set of
+      config such as skills and subagents. The settings key additionalDirectories grants FILE ACCESS
+      ONLY and intentionally loads no config from those paths, which is the key distinction to
+      remember.
+  - id: pas-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: >-
+      When two settings files in the precedence chain both define a permissions.deny array, how does
+      Claude Code combine them?
+    choices:
+      - id: a
+        text: Only the higher-precedence file's deny array is used; the lower one is discarded entirely.
+      - id: b
+        text: >-
+          The arrays from every applicable scope are merged together, so a deny present in any of
+          them applies (rules accumulate rather than override).
+      - id: c
+        text: The two arrays must be identical or Claude Code refuses to start.
+      - id: d
+        text: Only the user-scope deny array is honored; project and managed deny arrays are advisory.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Permission rule arrays do not override one another by precedence the way scalar settings do;
+      they are merged across scopes, so a deny in any applicable file is part of the combined rule
+      set. This is exactly why a deny at any scope cannot be loosened by an allow somewhere else.
+      Scalar settings (like defaultMode) follow the precedence order instead.
+  - id: pas-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse hook is configured alongside permission rules. A tool call matches a deny rule,
+      but the hook returns an "allow" decision. What happens, and why?
+    choices:
+      - id: a
+        text: >-
+          The hook wins and the call runs, because hooks are evaluated after rules and override
+          them.
+      - id: b
+        text: The call is silently skipped with no error and no execution.
+      - id: c
+        text: >-
+          The call is still blocked, because hook decisions do not bypass deny/ask rules; deny-first
+          precedence holds even over a hook's allow.
+      - id: d
+        text: The deny rule is converted into an ask prompt because the hook disagreed.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      PreToolUse hooks run before the prompt and can deny, ask, or allow, but they cannot loosen an
+      existing deny or ask rule. Deny-first precedence still governs, so a hook's allow cannot
+      override a matching deny. (A hook exiting 2 CAN block over an allow, but it cannot un-deny.)
+  - id: pas-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: free_form
+    prompt: >-
+      Explain why the local settings file (.claude/settings.local.json) exists as a separate scope
+      from the shared project file (.claude/settings.json), and how each is meant to be treated by
+      version control.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that .claude/settings.json is the team-shared, committed project file.
+        - id: c2
+          text: >-
+            States that .claude/settings.local.json is personal/per-machine and is intended to be
+            gitignored (not committed).
+        - id: c3
+          text: >-
+            Explains the purpose, e.g. local file holds personal overrides or machine-specific or
+            secret-bearing settings without affecting teammates.
+      referenceAnswer: >-
+        The shared project file .claude/settings.json is committed to the repo so the whole team
+        gets the same baseline rules and config. The local file .claude/settings.local.json is meant
+        to be gitignored: it holds an individual developer's personal overrides, machine-specific
+        paths, or sensitive values that should not be shared. Separating them lets a developer tweak
+        their own setup without changing what teammates pull, and local takes precedence over shared
+        so personal tweaks win locally.
+      passThreshold: 0.6
+    guidance: >-
+      Two project-level files exist precisely so team-shared rules (committed) stay separate from
+      personal, gitignored overrides. The local file lets you adjust your own behavior without
+      polluting the shared, version-controlled settings everyone else relies on.
+  - id: pas-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Interpret what the deny-from-any-scope rule means for an organization. If a user adds a deny
+      rule in their personal user settings, can a project's allow rule or a --allowedTools flag
+      re-enable that tool? Explain why.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that a deny at any scope wins, so the tool stays blocked.
+        - id: c2
+          text: States that neither a project allow rule nor --allowedTools can override a deny.
+        - id: c3
+          text: >-
+            Explains the reasoning, e.g. permission rules merge across scopes and deny-first
+            evaluation means any deny cannot be loosened by an allow elsewhere.
+      referenceAnswer: >-
+        No. Permission rules merge across all scopes, and evaluation is deny-first, so a deny at any
+        level wins and cannot be loosened by an allow anywhere else, including a project allow rule
+        or a command-line --allowedTools. A user-level deny therefore acts as a personal guardrail
+        that no project setting or flag can re-enable. This is why a deny is a strong way to lock
+        something off.
+      passThreshold: 0.6
+    guidance: >-
+      Deny is absolute across the merged rule set: once any scope denies a tool, no allow rule or
+      flag at any level can re-enable it. This makes a deny in user (or managed) settings a reliable
+      guardrail, and explains why "just add --allowedTools" cannot undo it.
+  - id: pas-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: free_form
+    prompt: >-
+      A teammate sets disableBypassPermissionsMode to the boolean true and is surprised it has no
+      effect. Explain the correct way to disable bypass mode and where it is most effective.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the value must be the string "disable", not a boolean true.
+        - id: c2
+          text: >-
+            States it can live in any settings scope but is most useful/unoverridable in managed
+            settings.
+        - id: c3
+          text: Explains the effect, e.g. it blocks bypassPermissions / --dangerously-skip-permissions.
+      referenceAnswer: >-
+        The key permissions.disableBypassPermissionsMode takes the string value "disable", not a
+        boolean true, so true does nothing. Setting it to "disable" prevents bypassPermissions (and
+        --dangerously-skip-permissions) from being used. It works from any settings scope, including
+        a user locking themselves out, but it is most effective in managed/enterprise settings where
+        it cannot be overridden by a user, project, or command-line argument.
+      passThreshold: 0.6
+    guidance: >-
+      The shape trips people up: the value is the string "disable", not boolean true. Placing it in
+      managed settings makes it truly unoverridable, which is the point when an org wants to forbid
+      bypass mode entirely.
+  - id: pas-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: free_form
+    prompt: >-
+      Explain why the :* suffix in a Bash rule (e.g. Bash(npm run build:*)) is equivalent to a
+      trailing space-wildcard, and why a colon placed mid-pattern (e.g. Bash(git:* push)) does NOT
+      have the same meaning.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a trailing :* is equivalent to a trailing " *" (e.g. Bash(ls:*) == Bash(ls
+            *)).
+        - id: c2
+          text: States the :* special form is recognized ONLY at the end of the pattern.
+        - id: c3
+          text: States that a mid-pattern colon is treated as a literal colon character.
+      referenceAnswer: >-
+        The :* form is a special end-of-pattern shorthand: a trailing :* means the same thing as a
+        trailing space-wildcard, so Bash(ls:*) is identical to Bash(ls *). That special meaning is
+        only recognized at the very end of the rule. If a colon appears anywhere else, such as
+        Bash(git:* push), it is treated as a literal colon character rather than a wildcard
+        boundary, so the rule would only match a literal "git:*" segment.
+      passThreshold: 0.6
+    guidance: >-
+      :* is purely an end-anchored shorthand for " *". Only the trailing position is special; a
+      colon in the middle of a pattern is just a literal character, so do not expect Bash(git:*
+      push) to behave like a wildcard.
+  - id: pas-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Compare how a Read/Edit deny rule protects a file against (a) Claude using cat or sed and (b)
+      Claude running a Python script that opens the same file. Explain why the protection differs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States Read/Edit deny rules also cover the file-reading Bash commands Claude Code
+            recognizes (cat, head, tail, sed).
+        - id: c2
+          text: >-
+            States the rules do NOT cover an arbitrary subprocess such as a Python/Node script that
+            opens the file itself.
+        - id: c3
+          text: Explains that OS-level enforcement (a sandbox) is required to block the subprocess case.
+      referenceAnswer: >-
+        A Read/Edit deny rule is enforced by Claude Code, which recognizes a known set of
+        file-reading Bash commands (cat, head, tail, sed) and applies the rule to them, so cat-ing
+        the file is blocked. But the harness cannot inspect what arbitrary subprocesses do, so a
+        Python or Node script that opens the file itself bypasses the rule. Blocking that case
+        requires OS-level enforcement via the sandbox, not a permission rule, because the rule layer
+        only understands recognized tool calls and command shapes.
+      passThreshold: 0.6
+    guidance: >-
+      Path deny rules are pattern-aware over Claude's recognized tools and a handful of read
+      commands, not a filesystem lock. An arbitrary script reading the file slips past the rule
+      layer; only an OS-level sandbox enforces the boundary against any subprocess.
+  - id: pas-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: free_form
+    prompt: >-
+      Explain the conceptual difference between Claude Code's permission rules and OS-level
+      sandboxing, and why the docs describe using them together as defense-in-depth.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States permission rules are enforced at the Claude Code (harness) level and apply across
+            all tools.
+        - id: c2
+          text: States sandboxing is OS-level and applies to Bash and its child processes.
+        - id: c3
+          text: >-
+            Explains they are different layers that combine, e.g. rules govern Claude's decisions
+            while the sandbox enforces a hard OS boundary even under prompt injection.
+      referenceAnswer: >-
+        Permission rules operate inside the Claude Code harness and govern every tool the model can
+        call, deciding what Claude is allowed to attempt. Sandboxing is an OS-level boundary that
+        constrains Bash and the child processes it spawns, regardless of what the harness thinks.
+        They are different layers: rules shape Claude's decisions and can be defeated by anything
+        that does not go through a recognized tool, while the sandbox enforces a hard boundary even
+        if a prompt injection convinces Claude to try something dangerous. Using both gives
+        defense-in-depth.
+      passThreshold: 0.6
+    guidance: >-
+      Permissions are a harness-level decision layer over all tools; the sandbox is an OS-level
+      enforcement layer over Bash and its children. Because they protect at different levels,
+      combining them means a failure or bypass at one layer is still caught by the other.
+  - id: pas-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      Compare --tools and --allowedTools. Explain what each one actually controls and why they are
+      not interchangeable.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States --tools RESTRICTS which built-in tools are available (e.g. "" = none, "default" =
+            all, a comma list selects a subset).
+        - id: c2
+          text: >-
+            States --allowedTools adds allow rules so listed tools run without prompting (it does
+            not restrict the available toolset).
+        - id: c3
+          text: >-
+            Notes a distinguishing detail, e.g. --tools does not affect MCP tools, or that one
+            shapes availability while the other shapes prompting.
+      referenceAnswer: >-
+        --tools controls which built-in tools even exist for the session: "" disables all built-in
+        tools, "default" enables them all, and a comma-separated list like "Bash,Edit,Read" selects
+        a subset; it does not affect MCP tools. --allowedTools is different: it adds allow rules so
+        the named tools run without a permission prompt, but it does not remove any tool from
+        availability. So --tools shapes the available toolset while --allowedTools shapes which
+        calls auto-approve; you cannot use one to do the other's job.
+      passThreshold: 0.6
+    guidance: >-
+      --tools is an availability switch (what built-in tools exist, MCP excluded), while
+      --allowedTools is a prompting switch (which tools auto-approve). Confusing them leads to
+      expecting --allowedTools to lock down the toolset, or expecting --tools to silence prompts,
+      neither of which is true.
+  - id: pas-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      Your project's shared .claude/settings.json has Bash(git push *) in allow, but you keep
+      getting blocked. You discover your user settings (~/.claude/settings.json) contain Bash(git
+      push *) in deny. What happens when Claude tries git push origin main?
+    choices:
+      - id: a
+        text: It is allowed, because project settings outrank user settings
+      - id: b
+        text: It is blocked, because a deny at any scope wins over an allow at another scope
+      - id: c
+        text: It prompts you, because the conflicting rules cancel out into an ask
+      - id: d
+        text: It is allowed, because the project allow is more specific than the user deny
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A deny at any scope wins and cannot be overridden by an allow elsewhere. Project settings have
+      higher precedence for general (override) settings, but permission rules merge and
+      deny-from-any-scope always blocks. Specificity never changes this.
+  - id: pas-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You want a rule that lets Claude run any aws command EXCEPT it must always prompt before aws
+      s3 rm. You add Bash(aws *) to allow and Bash(aws s3 rm *) to ask. What actually happens for
+      aws s3 rm?
+    choices:
+      - id: a
+        text: It is denied outright, because conflicting allow and ask rules resolve to deny
+      - id: b
+        text: It runs without prompting, because the broad allow matched first
+      - id: c
+        text: It prompts, because ask is evaluated before allow and the first matching category wins
+      - id: d
+        text: It runs without prompting, because allow is more specific than the ask catch
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Evaluation is deny then ask then allow, and the first matching category wins regardless of
+      specificity. The ask rule matches first, so aws s3 rm always prompts even though a broader
+      allow also matches. This is the standard way to carve out a confirmation exception.
+  - id: pas-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      With no allow rules configured and the default mode, you notice Claude runs cat, ls, grep, and
+      pwd without ever prompting, but git push and rm still prompt. You want git status to also run
+      unprompted. What is the simplest accurate explanation, and the implied action?
+    choices:
+      - id: a
+        text: >-
+          Claude Code treats a fixed built-in set of read-only commands (ls, cat, echo, pwd, head,
+          tail, grep, find, wc, and read-only git forms) as running without a prompt in every mode;
+          git status is already a read-only git form, so it needs no rule at all
+      - id: b
+        text: Those commands only run because of a hidden allow rule you must replicate for git status
+      - id: c
+        text: Read-only behavior requires acceptEdits mode, so switch modes to silence git status
+      - id: d
+        text: >-
+          cat and ls are MCP tools that bypass permissions, so you must register git status as an
+          MCP tool
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Claude Code recognizes a built-in, non-configurable set of read-only Bash commands (ls, cat,
+      echo, pwd, head, tail, grep, find, wc, which, diff, stat, du, cd, and read-only git forms)
+      that run without a prompt in every mode. git status is a read-only git form, so it already
+      runs unprompted with no rule. To force a prompt on one of these you would add an ask or deny
+      rule.
+  - id: pas-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >-
+      You allow Bash(npm test *) and assume Claude can only run npm test variants. Which command
+      would Claude be able to run WITHOUT a fresh prompt under just this rule?
+    choices:
+      - id: a
+        text: timeout 30 npm test --watch
+      - id: b
+        text: npm test && rm -rf build
+      - id: c
+        text: npx npm test
+      - id: d
+        text: docker exec ci npm test
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Process wrappers like timeout, time, nice, nohup, and stdbuf are stripped before matching, so
+      "timeout 30 npm test --watch" matches Bash(npm test *). Compound commands require each
+      subcommand to match independently (rm is not allowed), and environment runners like npx and
+      docker exec are NOT stripped.
+  - id: pas-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You want to block Claude from reading the file at /Users/alice/secrets.env on disk, an
+      absolute filesystem path. Which Read rule actually does that?
+    choices:
+      - id: a
+        text: Read(/Users/alice/secrets.env)
+      - id: b
+        text: Read(//Users/alice/secrets.env)
+      - id: c
+        text: Read(~/Users/alice/secrets.env)
+      - id: d
+        text: Read(./Users/alice/secrets.env)
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In Read/Edit rules an absolute filesystem path requires a double slash, so
+      Read(//Users/alice/secrets.env) anchors at the filesystem root. A single leading slash is
+      project-root-relative, ~/ is home-relative, and ./ is current-directory-relative.
+  - id: pas-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      Your repo has WebFetch(domain:docs.example.com) in allow, and you ask Claude to fetch
+      https://docs.example.com/guide#install. Claude reads the page but a colleague asks how the URL
+      fragment and query string affect matching. What is true about how WebFetch domain rules match?
+    choices:
+      - id: a
+        text: >-
+          The rule matches on the hostname only (case-insensitively); the path, query string, and
+          #fragment are not part of domain: matching
+      - id: b
+        text: The rule must list the full URL including the path, or it will not match
+      - id: c
+        text: 'A #fragment causes the match to fail, so you must strip fragments before fetching'
+      - id: d
+        text: 'domain: rules match the query string too, so docs.example.com?x=1 needs a separate rule'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      WebFetch(domain:docs.example.com) matches against the request hostname only and is
+      case-insensitive; the path, query string, and #fragment play no part in domain matching. You
+      do not (and cannot) pin a path inside a domain: rule, which is a separate concern from
+      restricting which host Claude may fetch.
+  - id: pas-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      You list ~/.config/shared-lib in permissions.additionalDirectories and expect Claude to also
+      load a CLAUDE.md and skills from there. It does not. Explain what additionalDirectories
+      actually grants, and which mechanism you would use instead to load config from that directory.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            permissions.additionalDirectories grants file access only and loads no config (no
+            skills, subagents, or CLAUDE.md)
+        - id: c2
+          text: To load a limited set of config you must use --add-dir (or /add-dir) instead
+      referenceAnswer: >-
+        permissions.additionalDirectories grants FILE ACCESS ONLY to the listed directory; it loads
+        no config such as skills, subagents, or CLAUDE.md. To load a limited set of config (skills,
+        subagents, a couple of settings keys) from a directory you must use --add-dir at startup or
+        /add-dir during the session.
+      passThreshold: 0.6
+    guidance: >-
+      The settings key additionalDirectories only extends file access; it deliberately loads no
+      config. The --add-dir flag and /add-dir command are the ones that additionally load a limited
+      set of config, so use those when you need skills or subagents from that directory.
+  - id: pas-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      Your org wants curl and wget genuinely unable to reach the network even if a prompt injection
+      tricks Claude into trying. What is the correct mechanism?
+    choices:
+      - id: a
+        text: Setting --permission-mode dontAsk so unapproved network commands are refused
+      - id: b
+        text: Bash(curl *) and Bash(wget *) in deny, which physically blocks the network calls
+      - id: c
+        text: A WebFetch(domain:*) deny rule, which closes all network egress
+      - id: d
+        text: >-
+          An OS-level sandbox (sandbox.network); permission deny rules only gate Claude's decision,
+          not actual egress
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Permission rules are enforced by Claude Code and only gate the decision to run a command; they
+      do not block egress at the OS level. Only an OS sandbox (sandbox.network) actually prevents
+      network access even under prompt injection. Deny rules and modes are defense-in-depth, not
+      egress control.
+  - id: pas-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 336
+    type: multiple_choice
+    prompt: >-
+      You are reviewing untrusted code and want Claude to explore freely but never edit source or
+      run write commands. Which startup invocation best fits?
+    choices:
+      - id: a
+        text: claude --permission-mode acceptEdits
+      - id: b
+        text: claude --permission-mode plan
+      - id: c
+        text: claude --dangerously-skip-permissions
+      - id: d
+        text: claude --permission-mode bypassPermissions
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      plan mode is read-only exploration with no source edits, exactly right for safely reviewing
+      untrusted code. acceptEdits auto-accepts edits, and bypassPermissions (same as
+      --dangerously-skip-permissions) skips prompts entirely, which is the opposite of what you want
+      here.
+  - id: pas-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      You want to allow most of an MCP server's tools but you wrote "mcp__*" in the allow array to
+      be broad. The rule is ignored with a warning. What is the correct fix to allow all tools of a
+      server named jira?
+    choices:
+      - id: a
+        text: Use mcp::jira::* with double colons for the wildcard form
+      - id: b
+        text: Keep mcp__* but move it to the project scope where wildcards are honored
+      - id: c
+        text: >-
+          Use mcp__jira (or mcp__jira__*); allow-side globs are only accepted after a literal
+          mcp__<server>__ prefix
+      - id: d
+        text: Wildcards are never allowed in MCP rules; you must list each tool by name
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Unanchored allow globs like mcp__* are skipped with a warning because allow-side globs must
+      follow a literal mcp__<server>__ prefix (the server segment must be glob-free). Use mcp__jira
+      to match every tool of that server, or mcp__jira__* . (mcp__* is valid only as a deny rule.)
+  - id: pas-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You add WebFetch(domain:*.example.com) to allow, then ask Claude to fetch
+      https://example.com/docs. It still prompts. Why?
+    choices:
+      - id: a
+        text: You must also allow Bash for WebFetch rules to take effect
+      - id: b
+        text: WebFetch rules cannot use wildcards, so the rule was ignored
+      - id: c
+        text: The match is case-sensitive and the URL used lowercase
+      - id: d
+        text: '*.example.com matches subdomains like api.example.com but NOT the bare example.com'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      WebFetch(domain:*.example.com) matches subdomains such as api.example.com but does not match
+      example.com itself. To cover both, add WebFetch(domain:example.com) as well. Hostname matching
+      is case-insensitive.
+  - id: pas-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: multiple_choice
+    prompt: >-
+      You manage a fleet and need a guardrail against curl that a developer cannot loosen with
+      --allowedTools, project settings, or by switching modes. Where do you put Bash(curl *) deny?
+    choices:
+      - id: a
+        text: >-
+          In the managed-settings.json (managed scope), which no other level including CLI args can
+          override
+      - id: b
+        text: In the shared project .claude/settings.json so it ships with the repo
+      - id: c
+        text: In the developer's ~/.claude/settings.json user scope
+      - id: d
+        text: In .claude/settings.local.json so it stays gitignored and tamper-proof
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Only managed settings cannot be overridden by any other level, including command-line
+      arguments. A deny there is unloosenable. Project, user, and local scopes are all editable by
+      the developer, so a determined user could change or remove the rule.
+  - id: pas-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      You want Claude to allow almost any Bash command without prompting, but you must reliably
+      block a short list of dangerous commands. Argument-constraining allow rules feel brittle. What
+      is the recommended pattern?
+    choices:
+      - id: a
+        text: List every safe command individually in allow and omit the dangerous ones
+      - id: b
+        text: >-
+          Allow bare Bash and add a PreToolUse hook that exits 2 to reject the specific dangerous
+          commands
+      - id: c
+        text: Use --dangerously-skip-permissions and rely on the circuit breakers to catch the bad ones
+      - id: d
+        text: Put the dangerous commands in ask and everything else in a single Bash(*) allow
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For allow-most-block-a-few, the recommended pattern is a bare Bash allow plus a PreToolUse
+      hook that exits code 2 to reject specific commands; a hook exiting 2 blocks the call even over
+      an allow rule. Argument-constraining allow rules are fragile and circuit breakers only catch
+      rm -rf / and ~.
+  - id: pas-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: free_form
+    prompt: >-
+      A PreToolUse hook for Bash prints a JSON object on stdout and exits. Explain how the exit code
+      and the JSON decision interact: what does exit code 2 do, what does exit code 0 do, and how
+      can the JSON force a confirmation prompt or auto-approve a call?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Exit code 2 blocks the tool call (a hard deny that beats an allow rule); stderr is fed
+            back to the model
+        - id: c2
+          text: Exit code 0 lets evaluation continue; the JSON on stdout carries the actual decision
+        - id: c3
+          text: >-
+            The JSON permissionDecision (allow / deny / ask) drives the outcome, e.g. "ask" forces a
+            confirmation prompt and "allow" auto-approves the matching call
+      referenceAnswer: >-
+        A PreToolUse hook communicates two ways. The exit code is the blunt channel: exiting 2
+        blocks the tool call outright (a hard deny that overrides even a matching allow rule), and
+        its stderr is returned to the model so it can react; exiting 0 lets permission evaluation
+        continue. The structured channel is JSON on stdout: a permissionDecision of "allow"
+        auto-approves the call, "deny" blocks it, and "ask" forces a confirmation prompt even when a
+        broad allow would otherwise have matched. So the hook can both tighten (deny/ask) and
+        pre-approve (allow) without editing settings.
+      passThreshold: 0.6
+    guidance: >-
+      Hooks speak through exit codes and stdout JSON: exit 2 is a hard block (beats allow), exit 0
+      continues, and the JSON permissionDecision (allow/deny/ask) sets the real outcome. This is how
+      a hook can centralize policy, force a prompt, or auto-approve specific commands.
+  - id: pas-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      For an overnight autonomous run inside a throwaway container, you want maximum speed while
+      accepting the safety tradeoff. Which choice fits the docs' guidance, and what still prompts?
+    choices:
+      - id: a
+        text: acceptEdits; it is the fastest mode and skips all Bash prompts
+      - id: b
+        text: bypassPermissions; literally nothing prompts, including ask rules
+      - id: c
+        text: >-
+          bypassPermissions; explicit ask rules and the rm -rf / and rm -rf ~ circuit breakers still
+          prompt
+      - id: d
+        text: plan; it runs autonomously while preventing accidental damage
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      bypassPermissions is the fastest mode and the docs restrict it to isolated containers/VMs.
+      Even so, explicit ask rules still force a prompt and the rm -rf / and rm -rf ~ circuit
+      breakers still prompt as protection against model error. acceptEdits still prompts for
+      dangerous Bash; plan blocks edits.
+  - id: pas-300-ff-p
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: >-
+      You have two settings you want to place correctly: (1) a personal ANTHROPIC API key you must
+      inject as an env var for a specific project only, and (2) an additionalDirectories entry
+      pointing at a sibling repo you want available in every project on your machine. Which settings
+      file does each belong in, and why?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            The secret-bearing env var goes in the gitignored local scope
+            (.claude/settings.local.json) so it is per-project and never committed
+        - id: c2
+          text: >-
+            The cross-project additionalDirectories entry goes in user scope
+            (~/.claude/settings.json) so it applies to every project on the machine
+        - id: c3
+          text: >-
+            Reasoning ties placement to the file's purpose: local = per-project + gitignored for
+            secrets/machine specifics; user = personal defaults that should apply everywhere
+      referenceAnswer: >-
+        Put the secret env var in .claude/settings.local.json: it is project-scoped (it only applies
+        to that project), it is gitignored, so the key is never committed or shared with teammates.
+        Put the cross-project additionalDirectories entry in ~/.claude/settings.json (user scope)
+        because user settings apply to every project you open on that machine, so the sibling repo
+        is reachable everywhere without editing each project. The distinction is purpose-driven: the
+        local file holds per-project, gitignored, secret or machine-specific values; the user file
+        holds personal defaults that should be global to you.
+      passThreshold: 0.6
+    guidance: >-
+      Secrets and per-project machine specifics belong in the gitignored local file; personal
+      defaults that should follow you across every project belong in user scope. Match the file to
+      the setting's intended reach and whether it must stay out of version control.
+  - id: pas-300-ff-q
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      You want a single Read rule that blocks every .env file anywhere in the project tree, not just
+      one at the root. Write a rule that works and explain the gitignore semantics that make it
+      work.
+    rubric:
+      criteria:
+        - id: c1
+          text: Gives a working rule such as Read(.env) (equivalently Read(**/.env))
+        - id: c2
+          text: >-
+            Explains that a bare filename matches at any depth under the current directory
+            (gitignore semantics)
+      referenceAnswer: >-
+        Read(.env) works (it is equivalent to Read(**/.env)). Under gitignore semantics a bare
+        filename matches at any depth, so Read(.env) blocks any .env at or below the current
+        directory, not just one at the root.
+      passThreshold: 0.6
+    guidance: >-
+      Read/Edit rules follow gitignore spec, where a bare filename matches at every depth. So
+      Read(.env) and Read(**/.env) are equivalent and both cover nested .env files. You do not need
+      to enumerate each subdirectory.
+  - id: pas-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      A user said "yes, don't ask again" after Claude proposed the compound command npm run build &&
+      git add -A && git commit -m wip. Describe what gets saved to the permission rules and any
+      limit involved.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            A SEPARATE allow rule is saved per subcommand, not one rule for the whole compound
+            string
+        - id: c2
+          text: Notes there are three subcommands here and the saved-rule count is capped (up to 5)
+      referenceAnswer: >-
+        Claude Code saves a separate allow rule for each subcommand rather than one rule for the
+        whole string. For npm run build && git add -A && git commit -m wip that means three distinct
+        rules (for the npm, git add, and git commit subcommands), and the save is capped at up to 5
+        rules per compound command.
+      passThreshold: 0.6
+    guidance: >-
+      Because each subcommand of a compound command must match a rule independently, "don't ask
+      again" saves one rule per subcommand (up to 5), not a single rule for the full chain. This is
+      why allowing a compound command does not blanket-authorize the whole string.
+  - id: pas-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: free_form
+    prompt: >-
+      You start a session in plan mode but want the OPTION to switch into bypassPermissions later
+      via Shift+Tab, without starting in it. Which startup flag do you use, and how does it differ
+      from --dangerously-skip-permissions?
+    rubric:
+      criteria:
+        - id: c1
+          text: Use --allow-dangerously-skip-permissions to ADD bypassPermissions to the Shift+Tab cycle
+        - id: c2
+          text: >-
+            It does NOT start in bypass mode, unlike --dangerously-skip-permissions which starts
+            directly in bypassPermissions
+      referenceAnswer: >-
+        Use --allow-dangerously-skip-permissions. It only adds bypassPermissions to the Shift+Tab
+        mode cycle without starting in it, so you can begin in plan and switch later. By contrast
+        --dangerously-skip-permissions starts the session directly in bypassPermissions.
+      passThreshold: 0.6
+    guidance: >-
+      --allow-dangerously-skip-permissions merely makes bypass mode reachable via Shift+Tab, leaving
+      you in your starting mode. --dangerously-skip-permissions (equivalent to --permission-mode
+      bypassPermissions) drops you straight into bypass from the start.
+  - id: pas-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: free_form
+    prompt: >-
+      You denied Read on a secrets file and confirmed Claude refuses cat secrets.txt. But a teammate
+      notes Claude could still read it by running a small Python script (python -c
+      "open('secrets.txt').read()"). Explain why the deny rule misses this and what actually closes
+      the gap.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Read/Edit deny rules cover recognized file-reading Bash commands (cat, head, tail, sed)
+            but NOT arbitrary subprocesses
+        - id: c2
+          text: A Python/Node script that opens the file itself is not intercepted by the rule
+        - id: c3
+          text: >-
+            OS-level enforcement (the sandbox) is what actually blocks the subprocess from reading
+            the file
+      referenceAnswer: >-
+        Read/Edit deny rules are applied to file-reading Bash commands Claude Code recognizes (cat,
+        head, tail, sed) but not to arbitrary subprocesses. A Python or Node script that opens the
+        file itself is not pattern-matched, so the rule misses it. Only OS-level enforcement via the
+        sandbox actually prevents the subprocess from reading the file.
+      passThreshold: 0.6
+    guidance: >-
+      Permission rules are matched against recognized tool calls and a known set of file-reading
+      commands, not against what a spawned interpreter does internally. Closing the gap requires the
+      OS sandbox, which enforces at the system level rather than by command pattern.
+  - id: pas-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A developer adds Bash(docker compose up *) to allow so spinning up the stack stops prompting,
+      but it still prompts every time. Their managed settings already contain Bash(docker *) in the
+      deny array. What is the cause, and what is the only real fix?
+    choices:
+      - id: a
+        text: >-
+          The allow rule needs a trailing wildcard, Bash(docker compose up *), to be recognized at
+          all.
+      - id: b
+        text: >-
+          Rules are evaluated deny then ask then allow with no specificity weighting, so the broad
+          Bash(docker *) deny matches first; because it sits in managed settings the developer
+          cannot add an overriding allow, and the fix is for an admin to narrow the managed deny.
+      - id: c
+        text: >-
+          allow rules in user settings are ignored when a managed deny exists; only project settings
+          allow rules run.
+      - id: d
+        text: >-
+          A deny rule can carry exceptions, but only when the allow rule sits in a higher-precedence
+          scope than the deny.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Evaluation is by category (deny then ask then allow) and the first match wins; specificity
+      never reorders it, so the broad deny beats the narrow allow and deny rules cannot carry
+      allowlist exceptions. Because the deny is in managed settings, no developer-side allow can
+      loosen it; only an admin narrowing or removing the managed deny fixes it.
+  - id: pas-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      A team wants Claude to freely run npm test but blocks the lsof command. They write Bash(ls *)
+      in deny expecting it to be safe and Bash(npm test*) in allow. After deploying, lsof is NOT
+      blocked and npm testing-utils run unprompted. Which two facts explain this together?
+    choices:
+      - id: a
+        text: >-
+          Bash(ls *) matches lsof but deny rules silently fail on three-letter commands, and the npm
+          rule needs a colon suffix to work.
+      - id: b
+        text: >-
+          The space in Bash(ls *) is ignored entirely, and Bash(npm test*) only ever matches the
+          exact string "npm test".
+      - id: c
+        text: >-
+          Bash(ls *) only matches commands literally starting with "ls " word boundary so it never
+          matched lsof, and Bash(npm test*) without the space matches "npm testing-utils" too.
+      - id: d
+        text: >-
+          Deny rules are word-boundary insensitive while allow rules are sensitive, so both behaved
+          as designed.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The space before * enforces a word boundary: Bash(ls *) matches "ls -la" but not "lsof".
+      Removing the space (Bash(ls*)) would match both. Conversely Bash(npm test*) has no boundary,
+      so it greedily matches "npm testing-utils". They wanted Bash(lsof) in deny and Bash(npm test
+      *) in allow.
+  - id: pas-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      A team enables MCP servers two ways and gets confused. They set enableAllProjectMcpServers to
+      true in one project but list only specific servers in enabledMcpjsonServers in another. A
+      reviewer asks them to explain what each setting actually controls for servers declared in a
+      project's .mcp.json. Which is correct?
+    choices:
+      - id: a
+        text: >-
+          enableAllProjectMcpServers automatically approves every MCP server defined in the
+          project's .mcp.json, while enabledMcpjsonServers is a list naming which specific .mcp.json
+          servers to approve.
+      - id: b
+        text: >-
+          Both keys do the same thing; enabledMcpjsonServers is just the deprecated spelling of
+          enableAllProjectMcpServers.
+      - id: c
+        text: >-
+          enableAllProjectMcpServers grants the servers file access, while enabledMcpjsonServers
+          sets their permission mode.
+      - id: d
+        text: >-
+          enabledMcpjsonServers approves all servers and enableAllProjectMcpServers disables them,
+          so the two settings conflict and cancel out.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      enableAllProjectMcpServers is a boolean that auto-approves every MCP server declared in the
+      project's .mcp.json, whereas enabledMcpjsonServers takes an explicit list of server names to
+      approve (with enabledMcpjsonServers/disabledMcpjsonServers letting you opt specific ones in or
+      out). They are distinct knobs for project-scoped MCP servers, not aliases.
+  - id: pas-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A non-interactive run is launched with claude -p "fix the failing test" and no other
+      permission configuration. The job hangs and then errors instead of running anything. A
+      teammate says "just add --dangerously-skip-permissions"; another says that is unsafe. What is
+      the accurate diagnosis and the safer fix?
+    choices:
+      - id: a
+        text: >-
+          In -p (print/non-interactive) mode there is no human to answer prompts, so any call that
+          would normally prompt stalls; the safe fix is to pre-authorize with allow rules (or
+          --allowedTools), or wire up a --permission-prompt-tool, rather than blanket-skipping all
+          permissions.
+      - id: b
+        text: >-
+          The -p flag disables permissions entirely, so the error means the prompt itself is
+          malformed, not a permission issue.
+      - id: c
+        text: >-
+          Non-interactive runs always require bypassPermissions; there is no other supported way to
+          run -p, so --dangerously-skip-permissions is the only fix.
+      - id: d
+        text: >-
+          The hang is unrelated to permissions; -p runs cannot use the Bash tool at all, so the test
+          can never be run.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      In non-interactive -p mode nobody can answer a permission prompt, so a call that would prompt
+      blocks and the run fails. The safe approach is to pre-authorize the specific tools the job
+      needs with allow rules or --allowedTools, or to provide a --permission-prompt-tool that
+      answers prompts programmatically. --dangerously-skip-permissions works but removes all
+      guardrails, which is far broader than needed.
+  - id: pas-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A team allows Bash(rg *) and observes that timeout 30 rg foo runs unprompted, but both watch
+      rg foo and find . -exec rg foo {} ; still prompt every time. Which analysis correctly
+      distinguishes the two outcomes?
+    choices:
+      - id: a
+        text: >-
+          timeout is a process wrapper Claude Code strips before matching, so the inner rg foo
+          matches Bash(rg *); but watch, setsid, ionice, and flock (and find with -exec or -delete)
+          always prompt and cannot be auto-approved by a prefix rule, so the rg rule never covers
+          those forms.
+      - id: b
+        text: watch and find are MCP tools, so they ignore Bash allow rules entirely.
+      - id: c
+        text: >-
+          All wrappers are stripped identically; the prompts on watch and find indicate corrupted
+          settings.
+      - id: d
+        text: timeout prompts and watch is stripped; the user simply mixed up which is which.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Claude Code strips a fixed set of process wrappers (timeout, time, nice, nohup, stdbuf, and
+      bare xargs) before matching, so timeout 30 rg foo matches Bash(rg *). Exec wrappers such as
+      watch, setsid, ionice, and flock always prompt and cannot be auto-approved by a prefix rule,
+      and the same applies to find with -exec or -delete; to approve those you must write an
+      exact-match rule for the full command string.
+  - id: pas-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: free_form
+    prompt: >-
+      An org mandates that no developer can ever use bypass mode and that only the org's own
+      permission rules apply, even if a developer edits their user settings or passes
+      --allowedTools. A junior admin puts disableBypassPermissionsMode and
+      allowManagedPermissionRulesOnly into the shared project settings.json. Explain why this does
+      not actually enforce the policy and what the correct fix is.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that shared project settings can be overridden (CLI args and managed sit above
+            it; a determined user can change or ignore project-scope rules), so policy there is not
+            unbypassable.
+        - id: c2
+          text: >-
+            Notes allowManagedPermissionRulesOnly is a managed-only key and is ignored when placed
+            in user/project settings.
+        - id: c3
+          text: >-
+            Correct fix is to put these in the managed settings file, which no other scope
+            (including CLI args) can override.
+      referenceAnswer: >-
+        Only managed settings are truly unoverridable. allowManagedPermissionRulesOnly is a
+        managed-only key that is ignored in user/project settings, and rules in shared project
+        settings can be loosened by higher-precedence scopes and are not protected against a
+        determined user. The fix is to put disableBypassPermissionsMode ("disable") plus
+        allowManagedPermissionRulesOnly (and allowManagedMcpServersOnly / allowManagedHooksOnly as
+        needed) in the managed-settings.json policy file, which sits above CLI args.
+      passThreshold: 0.6
+    guidance: >-
+      Precedence is Managed > CLI > Local > Shared > User. Managed-only keys like
+      allowManagedPermissionRulesOnly are silently ignored outside managed settings. Enterprise
+      lock-down therefore must live in the managed file; anything in project/user scope can be
+      edited away or outranked.
+  - id: pas-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: free_form
+    prompt: >-
+      A repo's shared settings.json allows Bash(npm test *). A user observes that timeout 60 npm
+      test src runs WITHOUT a prompt, yet npx jest DOES prompt. Diagnose why these two invocations
+      behave differently against the same allow rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains timeout is one of the process wrappers Claude Code strips before matching, so
+            "timeout 60 npm test src" is matched as the inner "npm test src" and satisfies Bash(npm
+            test *).
+        - id: c2
+          text: >-
+            Explains npx is an environment runner that is NOT stripped, so "npx jest" is treated as
+            its own command that does not match the npm rule and therefore prompts.
+        - id: c3
+          text: >-
+            Names at least one other stripped wrapper (time, nice, nohup, stdbuf, bare xargs) or
+            unstripped runner (docker exec, devbox run, mise exec).
+      referenceAnswer: >-
+        Claude Code strips a small set of process wrappers (timeout, time, nice, nohup, stdbuf, and
+        bare flagless xargs) before matching, so "timeout 60 npm test src" is evaluated as its inner
+        command "npm test src" and matches Bash(npm test *), running without a prompt. Environment
+        runners such as npx, docker exec, devbox run, and mise exec are deliberately NOT stripped,
+        so "npx jest" is treated as its own distinct command, never matches the npm rule, and
+        prompts.
+      passThreshold: 0.6
+    guidance: >-
+      Claude Code strips a small set of process wrappers (timeout, time, nice, nohup, stdbuf, bare
+      xargs) before matching, so "timeout 60 npm test src" matches Bash(npm test *). Environment
+      runners like npx, docker exec, devbox run, and mise exec are NOT stripped, so "npx jest" is
+      treated as its own command.
+  - id: pas-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      A user has Bash(git status) in their allow array. Claude proposes "git status && rm -rf build"
+      and the user is surprised to get a permission prompt rather than auto-approval. Why does the
+      compound command prompt?
+    choices:
+      - id: a
+        text: >-
+          Claude Code is shell-operator aware: each subcommand of a compound command must match a
+          rule independently, and "rm -rf build" has no allow rule, so the whole command prompts.
+      - id: b
+        text: The && operator is on a deny list, so any command containing it is blocked.
+      - id: c
+        text: >-
+          The allow rule only applies to the first command, and the second command is always
+          silently dropped.
+      - id: d
+        text: git status must be written Bash(git status:*) for compound commands to be approved.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Recognized separators (&&, ||, ;, |, |&, &, newlines) split a compound command, and every
+      subcommand must independently match an allow rule. "git status" matches but "rm -rf build"
+      does not, so the call prompts. This is why Bash(safe-cmd *) cannot be chained into "safe-cmd
+      && something-dangerous".
+  - id: pas-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      An infra owner declares an MCP server in the project .mcp.json and wants its read tools
+      auto-approved so the print-mode CI run does not stall. They put mcp__db__query in allow but a
+      teammate's run still prompts on the very first MCP call before any tool name is even checked.
+      What additional gate explains this?
+    choices:
+      - id: a
+        text: >-
+          The mcp__db__query allow rule is malformed; allow rules cannot name a specific MCP tool,
+          only a whole server.
+      - id: b
+        text: >-
+          Project-scoped .mcp.json servers must themselves be approved (e.g. via
+          enableAllProjectMcpServers or enabledMcpjsonServers) before per-tool allow rules even
+          apply; the server-approval gate is separate from the tool-permission rules.
+      - id: c
+        text: >-
+          MCP tools always prompt on the first call of every session regardless of any
+          configuration.
+      - id: d
+        text: >-
+          The teammate must pass --dangerously-skip-permissions because MCP tools ignore allow rules
+          entirely.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      There are two distinct gates for project .mcp.json servers: first the server itself must be
+      approved (enableAllProjectMcpServers, or naming it in enabledMcpjsonServers), and only then do
+      per-tool permission rules like mcp__db__query take effect. A precise tool allow does not help
+      if the server has not been approved, which is exactly what stalls an unattended run.
+  - id: pas-400-ff-j
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: >-
+      A developer adds WebFetch(domain:*.internal.corp) to allow so Claude can fetch internal docs,
+      and also has Bash allowed broadly. A reviewer says this does NOT prevent Claude from reaching
+      external sites and also won't even match https://internal.corp itself. Explain both problems.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains a WebFetch domain allowlist does not restrict network egress when Bash is
+            allowed, because Claude can curl/wget any URL via Bash, bypassing WebFetch entirely.
+        - id: c2
+          text: >-
+            Explains *.internal.corp matches subdomains (api.internal.corp) but NOT the bare apex
+            internal.corp, which must be listed separately.
+        - id: c3
+          text: >-
+            Notes that truly blocking egress requires OS-level sandboxing (and/or a Bash curl/wget
+            deny), not just a WebFetch rule.
+      referenceAnswer: >-
+        A WebFetch domain rule only governs the WebFetch tool; with Bash allowed, Claude can curl or
+        wget any URL, so external egress is not blocked. Separately, *.internal.corp matches
+        subdomains like api.internal.corp but not the apex internal.corp, which has to be added on
+        its own line. Real egress control needs the OS sandbox (sandbox.network) plus denying
+        curl/wget, not a WebFetch allowlist alone.
+      passThreshold: 0.6
+    guidance: >-
+      Two distinct issues: scope (WebFetch rules do not constrain Bash-driven network access) and
+      wildcard semantics (*.example.com excludes example.com itself). Defense-in-depth for egress is
+      the sandbox; a WebFetch allowlist only shapes what the WebFetch tool will do.
+  - id: pas-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      A team puts Read(**/.env) and Edit(**/.env) in deny, confident no secret file can ever be
+      read. Claude then runs a small python script, python dump.py, that reads .env and prints it,
+      with no prompt. Why did the deny rule not stop this?
+    choices:
+      - id: a
+        text: The ** glob is invalid in Read rules, so the deny never registered.
+      - id: b
+        text: Read deny rules only apply to the @file mention syntax, never to the Read tool.
+      - id: c
+        text: >-
+          Read/Edit deny rules cover Claude Code's recognized file-reading commands (cat, head,
+          tail, sed) but NOT arbitrary subprocesses that open files themselves; OS-level enforcement
+          needs the sandbox.
+      - id: d
+        text: The python script ran in acceptEdits mode, which ignores all deny rules.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Read/Edit deny rules extend to the file-reading Bash commands Claude Code understands (cat,
+      head, tail, sed) but cannot see inside an arbitrary subprocess like a python or node script
+      that opens the file with its own code. Stopping that requires OS-level sandboxing, not just
+      permission rules.
+  - id: pas-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      A developer's allow array has an allow rule for editing files under an additional directory
+      that is actually a symlink pointing into a denied path. Editing through that symlink
+      unexpectedly prompts instead of auto-approving. Which rule explains this?
+    choices:
+      - id: a
+        text: Symlinks are always denied regardless of any rule.
+      - id: b
+        text: >-
+          For symlinks, an allow rule requires BOTH the symlink path and its target to match; since
+          the target lands in a denied location it does not satisfy the allow, so the call prompts
+          (and a deny matching either path would block it).
+      - id: c
+        text: >-
+          Allow rules ignore the target entirely and only check the symlink path, so it should have
+          been allowed.
+      - id: d
+        text: >-
+          additionalDirectories never permits edits, only reads, so the prompt is unrelated to
+          symlinks.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Symlink handling is deliberately conservative: an allow only fires when both the link path AND
+      the target match, while a deny fires if EITHER matches. A symlink whose target is denied
+      therefore cannot satisfy an allow, so the edit prompts (or is blocked if a deny matches the
+      target).
+  - id: pas-400-ff-m
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A platform team wants Claude to run "almost any" Bash command in CI but must hard-block a
+      short list of dangerous commands. They are torn between (a) listing dozens of specific
+      Bash(...) allow rules plus a few deny rules, and (b) a single broad Bash allow plus a
+      PreToolUse hook that rejects the dangerous commands. Compare the tradeoffs and state which is
+      the documented recommendation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that argument-constraining Bash allow rules are fragile/hard to maintain
+            (word boundaries, wrappers, compound commands, shell tricks).
+        - id: c2
+          text: >-
+            States the recommended pattern for "allow most, block a few" is a broad/bare Bash allow
+            plus a PreToolUse hook that rejects specific commands (a hook exiting 2 beats an allow
+            rule).
+        - id: c3
+          text: >-
+            Notes the tradeoff: the hook centralizes/maintains the denylist but you lose some
+            per-command auditability that explicit rules give.
+      referenceAnswer: >-
+        Enumerating Bash allow rules with argument constraints is brittle: word-boundary spacing,
+        stripped vs unstripped wrappers, compound-command splitting, and shell variable tricks all
+        make precise allow rules hard to get right and to maintain. For "allow most, block a few,"
+        the documented pattern is a broad/bare Bash allow plus a PreToolUse hook that inspects the
+        command and exits 2 to reject the dangerous ones (a hook block beats an allow rule). The
+        tradeoff is that the hook centralizes the denylist and is easier to maintain, but you give
+        up some of the per-command auditability that an explicit allow list provides.
+      passThreshold: 0.6
+    guidance: >-
+      Argument-level Bash rules are a known fragility; the centralized PreToolUse hook (exit 2 to
+      deny) is the recommended approach when you want to allow broadly and block a small set. Choose
+      based on whether centralized maintainability or explicit per-rule auditability matters more
+      for your team.
+  - id: pas-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: multiple_choice
+    prompt: >-
+      A user runs claude --permission-mode acceptEdits expecting it to also auto-run their build and
+      deploy Bash commands. Edits and a few filesystem helpers work silently, but every git push and
+      curl still prompts. What did the user misunderstand about acceptEdits?
+    choices:
+      - id: a
+        text: acceptEdits auto-approves all Bash; the prompts mean their settings were corrupted.
+      - id: b
+        text: acceptEdits only works in plan mode, so it silently did nothing.
+      - id: c
+        text: acceptEdits requires --dangerously-skip-permissions to also cover Bash commands.
+      - id: d
+        text: >-
+          acceptEdits auto-accepts file edits plus a small set of filesystem commands (such as
+          mkdir, touch, rm, rmdir, mv, cp, sed) within working/additional dirs; it does NOT
+          auto-approve arbitrary Bash like git push or curl.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      acceptEdits is the conservative middle ground: it auto-accepts file edits and a small set of
+      filesystem commands (such as mkdir, touch, rm, rmdir, mv, cp, and sed) inside the working and
+      additional directories, but dangerous or arbitrary Bash (git push, curl, etc.) still prompts.
+      Auto-running everything would need bypass/auto modes.
+  - id: pas-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      For an unattended autonomous loop in a throwaway VM, a team debates bypassPermissions vs auto
+      vs acceptEdits. They want maximum throughput but worry about a model mistake deleting the VM's
+      home directory. Which analysis is correct?
+    choices:
+      - id: a
+        text: >-
+          bypassPermissions is fastest and acceptable in an isolated VM, and even it still prompts
+          on the rm -rf / and rm -rf ~ circuit breakers and any explicit ask rules; auto adds
+          background safety checks but is a research preview that may misclassify.
+      - id: b
+        text: >-
+          bypassPermissions disables the rm -rf ~ circuit breaker, so it is unsafe even in a VM;
+          auto is the only mode that keeps that guard.
+      - id: c
+        text: >-
+          acceptEdits is the fastest of the three and auto-runs all Bash, making it the obvious
+          choice.
+      - id: d
+        text: All three modes are identical in throughput; only the prompt text differs.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Even bypassPermissions retains the rm -rf / and rm -rf ~ circuit breakers and still honors
+      explicit ask rules, so the home-deletion fear is partly mitigated; in an isolated VM it is the
+      documented use case and the fastest. auto adds background safety checks but is a research
+      preview; acceptEdits does not auto-run arbitrary Bash.
+  - id: pas-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      A developer reports: "Claude keeps auto-committing with a Co-Authored-By trailer and adding
+      its own footer to commit messages, and our team wants that off. We also want to set a default
+      model and a statusLine for everyone." Explain which settings keys control these behaviors and
+      which scope to use so the change applies team-wide but stays editable per developer.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies includeCoAuthoredBy (set to false) as the key that turns off the
+            Co-Authored-By / commit footer attribution.
+        - id: c2
+          text: >-
+            Identifies that model and statusLine are top-level settings keys (model sets the default
+            model; statusLine configures the custom status line).
+        - id: c3
+          text: >-
+            Recommends placing team-wide defaults in the committed project .claude/settings.json so
+            the whole team gets them, noting a developer can still override locally via
+            .claude/settings.local.json (which outranks shared project settings).
+      referenceAnswer: >-
+        Set includeCoAuthoredBy to false to stop the Co-Authored-By trailer and Claude's commit/PR
+        footer. model is the top-level key that sets the default model for sessions, and statusLine
+        configures the custom status-line command/format. Put these team-wide defaults in the
+        committed project file .claude/settings.json so everyone on the repo inherits them; because
+        local settings (.claude/settings.local.json) outrank shared project settings, an individual
+        developer can still override any of them locally without changing what the team gets.
+      passThreshold: 0.6
+    guidance: >-
+      includeCoAuthoredBy:false disables the commit/PR attribution footer; model and statusLine are
+      top-level settings keys for the default model and the status line. Team-wide defaults belong
+      in the committed project settings.json, with local settings available as a per-developer
+      override since local outranks shared project scope.
+  - id: pas-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      An admin wants every session to start in plan mode by default but allow developers to switch
+      modes during a session, and a teammate to pass --permission-mode acceptEdits on the CLI for
+      one run. They set permissions.defaultMode to "plan" in the shared project settings. A
+      developer who launches with --permission-mode acceptEdits still ends up in acceptEdits. Which
+      analysis is correct?
+    choices:
+      - id: a
+        text: >-
+          defaultMode only sets the STARTING mode when no --permission-mode flag is given; the CLI
+          flag is higher precedence, so it overrides defaultMode for that run, and Shift+Tab can
+          still cycle modes mid-session.
+      - id: b
+        text: >-
+          defaultMode is ignored entirely whenever it appears in project settings; it only works in
+          managed settings.
+      - id: c
+        text: >-
+          defaultMode locks the mode for the whole session, so the --permission-mode flag should
+          have errored out instead of taking effect.
+      - id: d
+        text: >-
+          defaultMode and --permission-mode are the same setting, so the developer's session is
+          misconfigured and undefined.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      permissions.defaultMode sets the mode a session STARTS in when nothing else is specified, but
+      a --permission-mode CLI flag is higher precedence and overrides it for that launch. Either way
+      the user can still cycle modes mid-session with Shift+Tab. defaultMode works from any scope (b
+      wrong) and does not lock the session (c wrong); it is distinct from the per-run flag (d
+      wrong).
+  - id: pas-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: free_form
+    prompt: >-
+      A team wants a project-wide hook that injects a short reminder ("run the linter before
+      finishing") every time Claude tries to end its turn, plus a hook that records every Bash
+      command after it runs. For each goal, name the hook EVENT to use and how each communicates
+      back to Claude or the transcript. Be specific about how the Stop hook surfaces its reminder.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            For the end-of-turn reminder, names the Stop hook and notes it can return
+            additionalContext (JSON on stdout) to feed text back into the conversation / continue
+            the turn.
+        - id: c2
+          text: >-
+            For recording each Bash command, names the PostToolUse hook (runs after the tool call
+            completes).
+        - id: c3
+          text: >-
+            Notes hooks generally communicate via JSON on stdout and exit-code semantics, and that
+            the two events fire at different points (Stop = turn ending; PostToolUse = after a tool
+            runs).
+      referenceAnswer: >-
+        Use a Stop hook for the end-of-turn reminder: a Stop hook fires when Claude is about to
+        finish its turn and can emit JSON on stdout with additionalContext to inject the "run the
+        linter" reminder back into the conversation (and can prevent the stop so the turn
+        continues). Use a PostToolUse hook for the command record: it fires after a tool call
+        completes, so it can log each Bash command and its result. Both hooks follow the standard
+        contract of JSON on stdout plus exit-code semantics; they differ in WHEN they fire (Stop at
+        turn end, PostToolUse right after a tool runs), which is why each goal maps to a different
+        event.
+      passThreshold: 0.6
+    guidance: >-
+      Stop hooks fire at turn end and can return additionalContext to feed text back into the
+      conversation; PostToolUse hooks fire after a tool call completes and are the place to
+      record/inspect what ran. Hooks communicate via JSON on stdout and exit codes; matching the
+      goal to the right event is the key.
+  - id: pas-400-ff-s
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      A teammate insists a permission deny on curl/wget plus a WebFetch domain allowlist makes
+      Claude unable to exfiltrate data even under a prompt-injection attack. Diagnose the gap in
+      this reasoning and explain what layer actually closes it, distinguishing the permissions layer
+      from the sandbox layer.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that permission deny rules constrain Claude's DECISION about which recognized
+            commands to run, but do not stop a process Claude already launched from making network
+            calls itself.
+        - id: c2
+          text: >-
+            Notes permissions are a Claude-Code-level layer covering all tools, while sandboxing is
+            an OS-level layer applying to Bash and its child processes.
+        - id: c3
+          text: >-
+            States that only the OS sandbox (e.g. sandbox.network) actually blocks egress even under
+            prompt injection; the two layers merge for defense-in-depth.
+      referenceAnswer: >-
+        Permission deny rules on curl/wget and a WebFetch allowlist only shape which recognized
+        commands Claude decides to invoke; they do not prevent an already-running subprocess (a
+        script, a different binary, or an obfuscated command) from opening a socket. Permissions are
+        enforced at the Claude Code layer across all tools; sandboxing is an OS-level boundary
+        applied to Bash and its child processes. Only the OS sandbox (sandbox.network) actually
+        blocks network egress even under prompt injection. The two layers are complementary and
+        merge for defense-in-depth, but the permissions layer alone is not an egress guarantee.
+      passThreshold: 0.6
+    guidance: >-
+      The key distinction: permissions gate Claude's choices (all tools, Claude-Code-level); the
+      sandbox gates the OS (Bash and child processes). Against prompt injection or arbitrary
+      subprocesses you need the sandbox; deny rules and WebFetch allowlists are necessary but not
+      sufficient on their own.
+  - id: pas-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A PreToolUse hook is configured to allow a specific Bash command, but a higher-scope settings
+      file contains an ask rule that matches the same command. The developer expects the hook's
+      allow to skip the prompt; instead it still prompts. Which statement correctly analyzes the
+      interaction?
+    choices:
+      - id: a
+        text: Hooks always win over rules, so the prompt indicates the hook failed to execute.
+      - id: b
+        text: >-
+          PreToolUse hooks run before the prompt and can deny/ask/skip, but hook decisions do not
+          bypass the deny/ask rules; the deny-first (and ask-before-allow) precedence still holds,
+          so the matching ask rule forces the prompt.
+      - id: c
+        text: An allow hook converts a matching ask rule into an allow, so the prompt is a bug.
+      - id: d
+        text: ask rules are only evaluated when no PreToolUse hook is configured.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      PreToolUse hooks extend permission evaluation (they can deny, ask, or skip) and run before the
+      prompt, but they cannot override deny/ask rules: the deny-then-ask-then-allow precedence still
+      applies. A matching ask rule therefore still forces a prompt. Conversely a hook exiting code 2
+      can block even over an allow rule, which is the asymmetry: hooks tighten, they do not loosen
+      past deny/ask.
+  - id: pas-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team wants Claude to run "most" Bash freely but reliably block a handful of dangerous
+      commands (e.g. anything touching production credentials). One engineer proposes enumerating
+      every safe command as Bash(...) allow rules; another proposes a bare Bash allow plus a
+      PreToolUse hook that exits 2 on the forbidden patterns. Which critique of the
+      allow-enumeration approach is the strongest?
+    choices:
+      - id: a
+        text: >-
+          Argument-level Bash allow rules are fragile and high-maintenance, and an "allow-list
+          everything safe" set inevitably leaves gaps that silently let the dangerous commands
+          through; centralizing the block in a hook (which beats the allow) is more robust for a
+          deny-the-few goal.
+      - id: b
+        text: >-
+          The allow-enumeration approach is fine and strictly safer, because a long allow list can
+          never match a command it does not list, so dangerous commands are denied by default.
+      - id: c
+        text: >-
+          The hook approach is invalid because PreToolUse hooks cannot block a call once a matching
+          allow rule exists, so the allow-enumeration approach is the only one that works.
+      - id: d
+        text: >-
+          Both are equivalent, because Bash allow rules and PreToolUse hooks are evaluated at the
+          same stage with identical matching semantics.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      For "allow most, block a few," argument-constraining allow rules are brittle (flag ordering,
+      wrappers, compound commands) and an enumerated allow list grows stale and leaks. A PreToolUse
+      hook exiting 2 blocks a call even over an allow rule, centralizing the deny logic. Choice b
+      ignores that an unmatched command just prompts (default mode) rather than being denied, and c
+      is the reverse of how hooks interact with allow.
+  - id: pas-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      A security lead claims: "We deny Bash(curl *) and Bash(wget *) and we only allow
+      WebFetch(domain:internal.example.com), so Claude physically cannot exfiltrate data to the open
+      internet, even under prompt injection." Evaluate this claim.
+    choices:
+      - id: a
+        text: >-
+          The claim is correct, because denying curl/wget plus a single WebFetch domain rule removes
+          every code path that can reach the network.
+      - id: b
+        text: >-
+          It conflates permission decisions with egress enforcement: the rules constrain what Claude
+          chooses to invoke, but any still-allowed Bash command (or a script Claude writes) can open
+          a socket; only an OS-level sandbox blocking network actually stops egress under injection.
+      - id: c
+        text: >-
+          The claim is correct, because WebFetch domain allowlists are enforced by the operating
+          system kernel and therefore cover all network traffic from the process.
+      - id: d
+        text: >-
+          The claim fails only because WebFetch(domain:...) rules are advisory hints to the model
+          and are not enforced at all, so even WebFetch is uncontrolled.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Permission rules govern Claude's tool-invocation decisions, not the OS. Denying curl/wget and
+      narrowing WebFetch blocks the obvious paths Claude would choose, but a permitted interpreter
+      (python, node) or any other allowed Bash can still open a socket; only sandbox network
+      controls enforce egress. WebFetch rules ARE enforced by Claude Code (so d is wrong), but at
+      the harness layer, not the kernel (so c is wrong).
+  - id: pas-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      An org must enforce a permission policy that a determined developer cannot loosen, even with
+      shell access and CLI flags. A proposal puts the deny rules and disableBypassPermissionsMode in
+      the committed project .claude/settings.json. What is the most accurate evaluation?
+    choices:
+      - id: a
+        text: >-
+          It fully enforces the policy, because rules in the committed project file have the highest
+          precedence and cannot be overridden by anything.
+      - id: b
+        text: >-
+          It enforces the policy because disableBypassPermissionsMode only functions when placed in
+          project settings, making that the canonical lock-down location.
+      - id: c
+        text: >-
+          It does not survive a determined user: project settings can be edited or out-precedenced
+          by CLI flags and local settings for non-deny behavior, and only managed settings (plus
+          allowManagedPermissionRulesOnly and disableBypassPermissionsMode:"disable") are truly
+          unoverridable.
+      - id: d
+        text: >-
+          It is pointless, because no settings layer can prevent a user with shell access from
+          running any command.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Managed settings sit above CLI args and all other scopes and cannot be overridden; that plus
+      the managed-only allowManagedPermissionRulesOnly and disableBypassPermissionsMode:"disable" is
+      the only configuration a user cannot loosen. Project files are user-editable.
+      disableBypassPermissionsMode works from any scope but is only unoverridable in managed
+      settings (so b is wrong). d overstates: managed policy does constrain Claude Code's tools.
+  - id: pas-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A developer writes Bash(curl https://github.com/ *) into allow, reasoning "now Claude can only
+      curl GitHub URLs." Which assessment best captures why this is an anti-pattern?
+    choices:
+      - id: a
+        text: >-
+          It is a solid restriction, because Claude Code parses the URL and verifies the hostname is
+          github.com before running curl.
+      - id: b
+        text: >-
+          It is safe but redundant, because WebFetch already blocks curl entirely whenever any
+          WebFetch domain rule exists.
+      - id: c
+        text: >-
+          The only flaw is performance: prefix matching on long URLs is slow, so the rule should use
+          the :* suffix form instead.
+      - id: d
+        text: >-
+          The constraint is trivially defeated: flags before the URL, http vs https, redirects, a
+          $URL variable, or extra spaces all dodge the pattern; restricting a network tool by
+          argument prefix is fundamentally fragile, so a WebFetch domain allowlist (plus deny
+          curl/wget) or a hook is the right tool.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Bash matching is textual prefix/wildcard matching, not URL parsing, so curl -L, http://, a
+      redirect, $URL, or a different argument order all evade Bash(curl https://github.com/ *).
+      Network tools should be governed by WebFetch domain allowlists with curl/wget denied, or a
+      PreToolUse hook. WebFetch rules do not constrain Bash curl (b is wrong), and the issue is
+      correctness, not speed (c is wrong).
+  - id: pas-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      A teammate adds Read(/Users/alice/secrets/*) to deny, expecting it to block Claude from
+      reading the absolute path /Users/alice/secrets on their Mac. They report Claude still read a
+      file there. Critique the rule and explain what they almost certainly intended versus what they
+      wrote.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a single leading slash in a Read/Edit rule is interpreted as
+            PROJECT-root-relative, not filesystem-absolute, so /Users/alice/secrets matched a path
+            under the project root (which likely does not exist), not the real home-directory
+            location.
+        - id: c2
+          text: >-
+            States that a true absolute path requires the double-slash anchor
+            //Users/alice/secrets/* (or that ~/secrets/* would target the home directory).
+        - id: c3
+          text: >-
+            Notes the practical consequence: the deny silently matched nothing, giving a false sense
+            of protection.
+      referenceAnswer: >-
+        Read/Edit rules use gitignore-style anchors: a single leading slash is relative to the
+        PROJECT root, not the filesystem root. So Read(/Users/alice/secrets/*) tried to match
+        <project-root>/Users/alice/secrets/*, which almost certainly does not exist, so the deny
+        matched nothing and protected nothing. To block the real absolute location they needed the
+        double-slash anchor Read(//Users/alice/secrets/*), or Read(~/secrets/*) for the home
+        directory. The dangerous part is that the wrong rule fails silently rather than erroring.
+      passThreshold: 0.6
+    guidance: >-
+      The classic anchor gotcha: in Read/Edit rules, //path is filesystem-absolute, ~/path is home,
+      /path is project-root-relative, and a bare path is cwd-relative. /Users/alice/... looks
+      absolute but is treated as project-relative, so the deny matches nothing and offers a false
+      sense of security.
+  - id: pas-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A user reports: "I added Bash(npm run build) to allow but Claude still asks every time it runs
+      npm run build with a flag like --silent." Two reviewers disagree on the fix. Which evaluation
+      is correct?
+    choices:
+      - id: a
+        text: >-
+          The rule has no trailing wildcard, so it matches only the exact command "npm run build"
+          with no extra arguments; Bash(npm run build *) (or the :* form) is needed so trailing
+          flags are covered, while keeping the word boundary.
+      - id: b
+        text: >-
+          The rule is correct and the prompts are a bug, because allow rules match any command that
+          starts with the listed string.
+      - id: c
+        text: >-
+          The fix is to add Bash(npm*) which is preferable because dropping the space makes matching
+          stricter and more secure.
+      - id: d
+        text: >-
+          Nothing can fix it: flagged invocations always prompt regardless of the allow rule because
+          flags are treated as separate subcommands.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Without a trailing wildcard, Bash(npm run build) matches only that exact string; arguments
+      fall through to a prompt. Bash(npm run build *) (equivalently npm run build:*) covers trailing
+      args while the space preserves the word boundary. Bash(npm*) (no space) is broader and less
+      safe (it would also match npmfoo), so c is wrong; flags are not separate subcommands, so d is
+      wrong.
+  - id: pas-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: free_form
+    prompt: >-
+      For a long-running autonomous coding loop, a colleague wants to launch with
+      --dangerously-skip-permissions on their laptop "so it never stops to ask." Evaluate this
+      choice against acceptEdits and auto modes, and state the safer recommendation and why.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that --dangerously-skip-permissions equals bypassPermissions, which skips
+            prompts even for writes to sensitive dirs and is documented as only appropriate inside
+            isolated containers/VMs, not a normal laptop.
+        - id: c2
+          text: >-
+            Contrasts the alternatives: acceptEdits auto-accepts edits and a small set of fs
+            commands but still prompts on dangerous Bash (conservative middle); auto adds background
+            safety checks but is a research preview that can misclassify.
+        - id: c3
+          text: >-
+            Recommends acceptEdits (or running bypass only inside an isolated container) for a
+            laptop, weighing speed against blast radius.
+      referenceAnswer: >-
+        --dangerously-skip-permissions is exactly bypassPermissions: it skips prompts even for
+        writes to sensitive directories (.git, .claude, .ssh-style config) and the docs restrict it
+        to isolated containers/VMs, so running it on a normal laptop is an anti-pattern. acceptEdits
+        is the conservative middle ground: edits and a few fs commands flow without prompts while
+        dangerous Bash still prompts. auto adds background safety checks but is a research preview
+        that may misclassify. For an unattended loop on a laptop, prefer acceptEdits (or run
+        bypassPermissions only inside a throwaway container) to keep the blast radius bounded while
+        still avoiding most interruptions.
+      passThreshold: 0.6
+    guidance: >-
+      The tradeoff is speed vs. blast radius. bypassPermissions is fastest but unsafe outside
+      isolated VMs; acceptEdits keeps dangerous Bash gated; auto is a research-preview compromise.
+      On an un-isolated laptop, acceptEdits or a container is the responsible choice.
+  - id: pas-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A precise allow rule Bash(terraform plan *) was added, yet Claude still prompts for terraform
+      plan. A reviewer insists "more specific rules win, so this allow must take effect." What is
+      the most likely real explanation, and why is the reviewer's mental model wrong?
+    choices:
+      - id: a
+        text: >-
+          The allow rule is malformed because terraform commands must be written as mcp__terraform
+          rules, so it never matches.
+      - id: b
+        text: >-
+          A broader deny or ask rule (e.g. Bash(terraform *) in ask, possibly merged from another
+          scope) is masking the allow, because evaluation is deny then ask then allow by category
+          and specificity never reorders it.
+      - id: c
+        text: >-
+          Specificity does win, so the only explanation is that the allow rule was typed into the
+          wrong file and is not loaded at all.
+      - id: d
+        text: >-
+          Claude Code always prompts the first time per session regardless of allow rules, so the
+          behavior is expected and no rule change matters.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Rule categories are evaluated deny then ask then allow, first match wins, and specificity is
+      irrelevant. A forgotten broad deny or ask (often merged from user or managed scope) silently
+      masks a precise allow, a real debugging trap. The reviewer's "specificity wins" model is
+      exactly the misconception. terraform is plain Bash, not MCP (a wrong), and allow rules do
+      suppress first-use prompts (d wrong).
+  - id: pas-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >-
+      Where should each of these three settings live, and why: (1) a team-wide rule allowing
+      Bash(npm run test:*); (2) an apiKeyHelper script you use to mint short-lived credentials on
+      your own machine for every project; (3) an enterprise mandate that bypassPermissions can never
+      be used by anyone in the org. Justify each placement, and note for each whether anyone OTHER
+      than the owner can loosen it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Places the team-wide test allow in the committed project file .claude/settings.json so
+            it is shared and version-controlled (and notes a user/local scope could still override
+            it for that developer).
+        - id: c2
+          text: >-
+            Places the personal apiKeyHelper in user settings ~/.claude/settings.json so it applies
+            to every project on that machine (and is personal/machine-specific, not committed).
+        - id: c3
+          text: >-
+            Places the org-wide bypass ban (disableBypassPermissionsMode:"disable") in managed
+            settings, explaining managed is the only scope no developer can override (CLI args and
+            user/project edits cannot loosen it).
+      referenceAnswer: >-
+        (1) The team-wide Bash(npm run test:*) allow belongs in the committed .claude/settings.json
+        so the whole team shares it and it is reviewed in version control; an individual could still
+        override it in their own user or local scope, since those are personal. (2) The apiKeyHelper
+        script is personal and machine-specific, so it goes in user settings ~/.claude/settings.json
+        where it applies across every project you open on that machine and is never committed. (3)
+        An org-wide ban on bypassPermissions must go in managed settings as
+        disableBypassPermissionsMode:"disable"; managed is the only scope that no developer can
+        loosen, because it sits above CLI args and cannot be overridden by user/project edits. So
+        only the team allow (1) and personal helper (2) are owner-editable; the managed ban (3) is
+        the one no one but an admin can change.
+      passThreshold: 0.6
+    guidance: >-
+      Shared team rules go in committed project settings; personal/machine-specific config (like
+      apiKeyHelper) goes in user settings; org mandates that must bind everyone go in managed
+      settings. The differentiator is who can loosen each: project/user/local are editable by the
+      developer, while managed is the only truly unoverridable scope.
+  - id: pas-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: >-
+      An infra owner exposes a sensitive MCP server and wants to allow only its read-only tools
+      whose names start with "get". They try permissions.allow = ["mcp__infra__get*"] and also a
+      fallback ["mcp__*"]. Evaluate the configuration.
+    choices:
+      - id: a
+        text: >-
+          Both rules work as written, because MCP allow rules accept wildcards at any position
+          including the server segment.
+      - id: b
+        text: >-
+          Neither works, because MCP allow rules cannot contain any wildcard; only fully literal
+          mcp__server__tool names are accepted.
+      - id: c
+        text: >-
+          mcp__infra__get* is valid because the glob sits after a glob-free server segment, but
+          mcp__* as an ALLOW rule is skipped with a warning (unanchored allow globs are rejected);
+          mcp__* is only meaningful as a DENY, where it removes every MCP tool.
+      - id: d
+        text: >-
+          mcp__infra__get* is invalid because tool-name globs require a trailing __ before the
+          wildcard, but mcp__* is a valid catch-all allow.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Allow-side MCP globs are accepted only AFTER a literal mcp__<server>__ prefix with a glob-free
+      server segment, so mcp__infra__get* is valid. An unanchored allow glob like mcp__* is skipped
+      with a warning; it is meaningful only as a deny, where it strips every MCP tool. So a
+      (wildcard anywhere) and b (no wildcards at all) are both wrong, and d inverts which rule is
+      valid.
+  - id: pas-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: free_form
+    prompt: >-
+      A developer adds Edit(.claude/**) to permissions.allow in their user settings, expecting
+      Claude to then edit files under .claude without prompting in acceptEdits mode. It still
+      prompts. Adjudicate why an allow rule does not silence this prompt, what category of paths is
+      involved, and which mode is the only one that skips it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that .claude (along with .git, .vscode, .ssh-style config files, etc.) is a
+            PROTECTED path whose writes are never auto-approved in default, acceptEdits, or plan
+            mode.
+        - id: c2
+          text: >-
+            Explains that the protected-path safety check runs BEFORE settings allow rules are
+            evaluated, so a permissions.allow entry like Edit(.claude/**) cannot pre-approve the
+            write.
+        - id: c3
+          text: >-
+            Notes that only bypassPermissions skips protected-path prompts (dontAsk denies them,
+            auto routes them to the classifier), or that the in-session prompt offers a "allow
+            Claude to edit its own settings for this session" choice.
+      referenceAnswer: >-
+        Writes to a small set of protected paths (such as .git, .config/git, .vscode, .idea, and
+        .claude) are never auto-approved in default, acceptEdits, or plan mode, precisely to guard
+        repository state and Claude's own configuration. The safety check runs before Claude Code
+        evaluates settings allow rules, so an Edit(.claude/**) allow rule cannot pre-approve the
+        write and the prompt still appears. dontAsk denies these writes outright and auto routes
+        them to the classifier; only bypassPermissions skips the protected-path prompt entirely. In
+        a prompting mode the dialog offers a one-time "allow Claude to edit its own settings for
+        this session" option instead of honoring the allow rule.
+      passThreshold: 0.6
+    guidance: >-
+      Protected paths (.git, .claude, .vscode, .ssh-style config, etc.) are never auto-approved in
+      default, acceptEdits, or plan mode. The check precedes settings allow rules, so an
+      Edit(.claude/**) allow has no effect; only bypassPermissions skips the prompt, dontAsk denies,
+      and auto routes to the classifier.
+  - id: pas-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >-
+      A team writes in CLAUDE.md "Never run destructive database commands" and considers the data
+      safe, leaving Bash broadly allowed with no deny rules. Evaluate the reliance on CLAUDE.md as
+      the safety boundary.
+    choices:
+      - id: a
+        text: >-
+          It is sound, because CLAUDE.md instructions are compiled into the permission engine and
+          enforced identically to deny rules.
+      - id: b
+        text: >-
+          It is sound as long as the instruction is in the project (not user) CLAUDE.md, since
+          project-scope instructions are enforced while user-scope ones are advisory.
+      - id: c
+        text: >-
+          It is unsound only because CLAUDE.md is not loaded unless referenced with @, so the fix is
+          to @-mention it.
+      - id: d
+        text: >-
+          It is an unsound boundary: CLAUDE.md and prompts only steer what Claude tries; permission
+          rules are enforced by the Claude Code harness, so destructive commands should be blocked
+          with deny rules or a hook, not prose instructions.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Permission enforcement lives in the Claude Code harness, not the model. CLAUDE.md shapes
+      intent but cannot guarantee a tool is blocked, and a model can deviate or be injected. Real
+      guardrails are deny rules or PreToolUse hooks. CLAUDE.md is never compiled into the permission
+      engine and project vs user scope does not make prose enforceable (a, b wrong), and the loading
+      mechanism is not the core flaw (c wrong).
+  - id: pas-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      For a fully unattended CI pipeline, an engineer wants a mode that NEVER prompts and runs ONLY
+      a pre-defined set of tools, failing closed on anything else rather than waiting for a human.
+      They debate dontAsk versus bypassPermissions. Which evaluation is most accurate?
+    choices:
+      - id: a
+        text: >-
+          dontAsk is the right fit: it auto-denies any tool call that would otherwise prompt and
+          only runs actions matching permissions.allow rules (plus read-only Bash), making it fully
+          non-interactive and fail-closed; bypassPermissions instead runs almost everything, which
+          is fail-open and unsafe for CI.
+      - id: b
+        text: They are equivalent because both skip prompts; pick either one.
+      - id: c
+        text: >-
+          bypassPermissions is the only non-interactive mode; dontAsk still falls back to prompting
+          when a tool is not pre-approved.
+      - id: d
+        text: >-
+          dontAsk auto-approves everything not explicitly denied, so it is the fail-open choice and
+          bypassPermissions is the fail-closed one.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      dontAsk auto-DENIES every tool call that would otherwise prompt, allowing only actions that
+      match permissions.allow rules (and read-only Bash); explicit ask rules are denied rather than
+      prompting. That makes it fully non-interactive and fail-closed, ideal for locked-down CI.
+      bypassPermissions runs almost everything (fail-open) and is meant only for isolated
+      containers/VMs. So b, c, and d invert the modes.
+  - id: pas-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: free_form
+    prompt: >-
+      Two teammates argue about defense-in-depth for file secrets. One says "Read(.env) in deny is
+      enough to stop Claude from ever reading .env." The other says "only the sandbox can guarantee
+      it." Adjudicate: what does the deny rule actually cover, where does it fall short, and what
+      closes the gap?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a Read deny covers Claude's built-in read tools AND the file-reading Bash
+            commands Claude Code recognizes (cat, head, tail, sed), and that Read(.env) matches .env
+            at any depth (gitignore semantics).
+        - id: c2
+          text: >-
+            States the gap: it does NOT stop an arbitrary subprocess that opens the file itself
+            (e.g. a python/node script Claude writes and runs), because that read is invisible to
+            the rule.
+        - id: c3
+          text: >-
+            Concludes that closing the gap requires OS-level sandbox enforcement (filesystem
+            restrictions), making both partly right: the deny is necessary defense-in-depth but not
+            sufficient alone.
+      referenceAnswer: >-
+        A Read deny rule blocks Claude's built-in read tools and the file-reading Bash commands
+        Claude Code recognizes (cat, head, tail, sed), and Read(.env) matches any .env at or below
+        the current dir per gitignore semantics. But it cannot stop an arbitrary subprocess that
+        opens the file directly, e.g. a python or node script Claude writes that calls open('.env');
+        that read never passes through the rule. Only OS-level sandbox filesystem enforcement
+        guarantees the file cannot be read regardless of how the process gets there. So both are
+        partly right: the deny is valuable defense-in-depth but the sandbox is what makes the
+        guarantee.
+      passThreshold: 0.6
+    guidance: >-
+      Read deny rules reach built-in tools and recognized file-reading Bash commands, but not
+      arbitrary interpreters that open files themselves. The OS sandbox is the only layer that
+      enforces regardless of code path. Layer both for defense-in-depth.
+  - id: pas-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      To restrict an automated -p (non-interactive) run, an engineer sets --tools "Read,Edit,Bash"
+      expecting it to act like --allowedTools and run those without prompts while also limiting MCP
+      tools. Evaluate this design choice.
+    choices:
+      - id: a
+        text: >-
+          It is correct: --tools and --allowedTools are aliases, and listing tools there both
+          restricts availability and auto-approves them, including MCP tools.
+      - id: b
+        text: >-
+          It conflates two different flags: --tools RESTRICTS which built-in tools EXIST (and does
+          not affect MCP tools), whereas --allowedTools controls which calls run WITHOUT a prompt;
+          for unattended -p runs they likely also need a --permission-prompt-tool or allow rules to
+          avoid blocking on prompts.
+      - id: c
+        text: >-
+          It is correct except that --tools also governs MCP tools, so MCP servers are disabled by
+          this setting.
+      - id: d
+        text: >-
+          It is wrong because --tools accepts only "" or "default"; you cannot pass a custom
+          comma-separated list, so the run errors out.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --tools restricts which built-in tools are available ("" none, "default" all, or a comma list)
+      and does NOT touch MCP tools; it is distinct from --allowedTools, which suppresses prompts for
+      matching calls. For non-interactive -p runs you also need allow rules or a
+      --permission-prompt-tool, or the run blocks. a (aliases) and c (governs MCP) are wrong, and a
+      custom list IS accepted (d wrong).
+  - id: pas-500-ff-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      A reviewer is uneasy that an allowed working directory contains a symlink pointing into a
+      denied path, and separately that a symlink in a denied directory points at an allowed file.
+      Evaluate Claude Code's symlink rule and explain why it is deliberately asymmetric between
+      allow and deny.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that for ALLOW rules, BOTH the symlink path AND its target must match an allow
+            rule, otherwise Claude prompts (allow is conservative across symlinks).
+        - id: c2
+          text: >-
+            States that for DENY rules, the call is blocked if EITHER the symlink path OR the target
+            matches a deny.
+        - id: c3
+          text: >-
+            Explains the asymmetry as fail-safe: it prevents a symlink from being used to escape a
+            deny (target denied blocks even via an allowed link) and prevents an allowed link from
+            silently granting access to an unvetted target.
+      referenceAnswer: >-
+        The rule is intentionally asymmetric. For allow, both the symlink path and its target must
+        match an allow rule; if either does not, Claude prompts rather than auto-approving. For
+        deny, the access is blocked if either the link or the target matches a deny. This asymmetry
+        is fail-safe: a symlink cannot be used to tunnel out of a deny (because matching the denied
+        target is enough to block, even through an allowed link), and an allowed-looking symlink
+        cannot silently grant access to an unvetted target (because the target must independently be
+        allowed). So both of the reviewer's cases resolve safely: the link into a denied path is
+        blocked, and the link from a denied dir to an allowed file is also blocked because the link
+        path is denied.
+      passThreshold: 0.6
+    guidance: >-
+      Allow requires BOTH link and target to match; deny fires if EITHER matches. The asymmetry is
+      deliberate fail-safe design so symlinks cannot be used to escape denies or smuggle access to
+      unvetted targets.
+  - id: pas-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: >-
+      A team adds Bash(deploy.sh *) to allow, trusting that script. A reviewer warns the rule is
+      broader than it looks once you consider how Claude Code parses commands. Which warning is the
+      most accurate?
+    choices:
+      - id: a
+        text: >-
+          The rule authorizes deploy.sh && anything, because once the first subcommand matches an
+          allow rule the entire compound command is approved.
+      - id: b
+        text: >-
+          The rule is narrower than it looks because timeout deploy.sh would NOT match, since
+          wrappers are treated as distinct commands that need their own allow rules.
+      - id: c
+        text: >-
+          Process wrappers like timeout, time, nice, nohup, stdbuf are stripped before matching, so
+          "timeout 600 deploy.sh ..." also matches; but compound commands are NOT one rule, so
+          deploy.sh && rm -rf . still requires rm to match its own rule, and runners like npx/docker
+          exec are NOT stripped.
+      - id: d
+        text: >-
+          The rule silently also allows docker exec deploy.sh, because container runners are
+          stripped just like timeout before matching.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Claude Code strips a fixed set of process wrappers (timeout, time, nice, nohup, stdbuf, bare
+      xargs) before matching, so timeout 600 deploy.sh matches Bash(deploy.sh *). Compound commands
+      are split on operators and each subcommand must match its own rule, so deploy.sh && rm -rf .
+      is not authorized (a wrong). Wrappers ARE stripped, so the "timeout would NOT match" claim (b)
+      is wrong, but environment runners like npx/docker exec/mise exec are NOT stripped (d wrong).
+  - id: pas-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      A platform team writes a PreToolUse hook to centralize Bash policy and assumes "a hook is the
+      ultimate authority: if it returns allow, the command runs, and if it returns deny, it is
+      blocked, overriding everything." Evaluate this assumption about hook-vs-rule precedence.
+    choices:
+      - id: a
+        text: >-
+          It is fully correct: PreToolUse hooks run last and their decision overrides all allow,
+          ask, and deny rules in every direction.
+      - id: b
+        text: >-
+          It is fully wrong: PreToolUse hooks run AFTER the permission prompt and can only log,
+          never change, the outcome.
+      - id: c
+        text: >-
+          It is wrong because hooks cannot block an allowed command; only deny rules can block, so
+          the hook's deny is ignored when an allow rule matches.
+      - id: d
+        text: >-
+          It is half right: a hook (exit 2) CAN block a call even over an allow rule, but a hook
+          decision does NOT bypass the rule engine's deny/ask precedence, so an existing deny still
+          blocks and an ask still prompts regardless of what the hook "allows."
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      PreToolUse hooks run before the prompt and can deny/ask/skip; a hook exiting 2 blocks even
+      over an allow rule. But hooks do not override the deny-first precedence: an existing deny
+      still blocks and an ask still prompts no matter what the hook returns. So the hook is a
+      one-directional tightening tool, not an absolute override (a wrong), it runs before not after
+      the prompt (b wrong), and it CAN block over an allow (c wrong).
+  - id: pas-500-ff-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      An admin wants to "remove the Bash tool entirely from a locked-down profile" and debates
+      between putting "Bash" in deny versus Bash(*) in deny. Evaluate the difference in effect and
+      which to choose for fully hiding the tool, and note one consequence of each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a bare tool-name deny (Bash) removes the tool from Claude's context entirely
+            so the model never sees it and cannot attempt any Bash call.
+        - id: c2
+          text: >-
+            States that a scoped deny (Bash(*) or any Bash(...) pattern) leaves the tool available
+            to the model and only blocks matching calls, so Claude can still try Bash and hit
+            denials/prompts.
+        - id: c3
+          text: >-
+            Recommends the bare-name Bash deny for fully hiding the tool, noting the tradeoff that
+            the model loses the capability entirely (no partial use, and it cannot reason about why
+            a command was refused).
+      referenceAnswer: >-
+        A bare tool-name deny ("Bash") removes the tool from Claude's context entirely: the model
+        never sees Bash and cannot attempt any command. A scoped deny like Bash(*) leaves the tool
+        present and only blocks matching invocations, so Claude still has Bash available and will
+        try (and be denied). To fully hide and disable the tool, use the bare-name deny. The
+        consequence: the model loses the capability completely (it cannot run even read-only
+        commands and cannot reason about a specific refusal), whereas the scoped deny keeps Bash
+        usable for non-matching commands at the cost of the tool still being present and
+        attemptable.
+      passThreshold: 0.6
+    guidance: >-
+      Bare-name deny strips the tool from context (model never sees it); scoped deny leaves the tool
+      present and blocks only matching calls. For full removal choose the bare name, accepting that
+      the capability is gone entirely.
+  - id: pas-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A team relies on Claude Code's automatic conversation compaction to keep long sessions within
+      the model's context window, and a lead asks how to reason about context limits and leanness
+      when choosing a model and managing a session. Which evaluation is most accurate?
+    choices:
+      - id: a
+        text: >-
+          The context window is finite and model-dependent (some models offer far larger windows,
+          e.g. 1M-token variants), so the right approach is to pick a model whose window fits the
+          workload and keep the session lean using /clear to start fresh and /compact to summarize
+          the current conversation.
+      - id: b
+        text: >-
+          Every model has exactly the same fixed context window, so model choice is irrelevant and
+          only /compact matters.
+      - id: c
+        text: >-
+          Context size is unlimited as long as compaction is enabled, so leanness and model choice
+          do not matter.
+      - id: d
+        text: >-
+          /clear and /compact are identical; both summarize the current conversation, so it makes no
+          difference which you use to manage context.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The context window is finite but model-dependent: different models offer different sizes, and
+      some provide 1M-token variants, so you choose a model whose window fits the work rather than
+      assuming one fixed number. Manage the session with /clear (start a brand-new conversation,
+      dropping prior context) and /compact (summarize the current conversation to reclaim room).
+      They are distinct (d wrong), the window is not the same across models (b wrong), and
+      compaction does not make context unlimited (c wrong).

@@ -1,8 +1,6 @@
 # Topic: planning (claude-code)
-#
-# Covers Claude Code's planning mode (ExitPlanMode), the TodoWrite/TodoRead
-# task list as a planning primitive, when to plan vs. act, and how to
-# structure multi-step work. Tiers 100–500.
+# Using plan mode and the TodoWrite task list to structure complex work — when to plan, how to decompose, and maintaining progress across a session.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
 
 id: planning
 class:
@@ -10,304 +8,2997 @@ class:
   tool: claude-code
 title: Planning Mode & Task Management
 summary: >-
-  Using Claude Code's plan mode and the TodoWrite task list to structure complex
-  work — when to plan before acting, how to break tasks down, and how to
-  maintain progress across a long session.
-
-triggerSignals:
-  - tool: claude-code
-    match:
-      toolName: ExitPlanMode
-    weight: 1
-  - tool: claude-code
-    match:
-      toolName: TodoWrite
-    weight: 0.9
-  - tool: claude-code
-    match:
-      toolName: TodoRead
-    weight: 0.7
-  - tool: claude-code
-    match:
-      toolNamePattern: "^ExitPlanMode$"
-    weight: 1
-
+  Using plan mode and the TodoWrite task list to structure complex work — when to plan, how to
+  decompose, and maintaining progress across a session.
+triggerSignals: []
 items:
-  # ── Tier 100 — Remember ──────────────────────────────────────────────────
-  - id: planning-100-mc-a
+  - id: p-100-mc-a
     tier: 100
     bloom: remember
-    difficulty: 150
+    difficulty: 120
     type: multiple_choice
-    prompt: >-
-      What does Claude Code's "plan mode" mean in practice?
+    prompt: In Claude Code, what does "plan mode" let Claude do?
     choices:
       - id: a
-        text: >-
-          The model runs a special subprocess that generates a plan file
+        text: Edit source files automatically but skip running any tests
       - id: b
-        text: >-
-          Claude Code reads files and reasons about a task without executing
-          any changes, then awaits approval before acting
+        text: Research and propose changes by reading files and exploring, without editing source
       - id: c
-        text: >-
-          A scheduled background job that plans the next day's work
+        text: Commit and push changes without asking for approval
       - id: d
-        text: >-
-          A restricted mode where only Bash commands are allowed
+        text: Disable all permission prompts for the rest of the session
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      In plan mode, Claude Code explores the problem space (reading files,
-      thinking through the approach) without making any edits or running
-      commands. It presents the plan for user review. Calling ExitPlanMode
-      signals that planning is complete and implementation can begin.
-
-  - id: planning-100-mc-b
+      Plan mode is the permission mode in which Claude researches and proposes changes without
+      making them. It reads files and runs commands to explore, then writes a plan, but does not
+      edit source. The other options describe acceptEdits-style editing, auto-commit behavior, or
+      bypassPermissions, none of which is plan mode.
+  - id: p-100-mc-b
     tier: 100
     bloom: remember
-    difficulty: 160
+    difficulty: 168
     type: multiple_choice
-    prompt: >-
-      Which tool call signals that Claude Code is done planning and ready to
-      begin implementing?
+    prompt: Which built-in tool's description is "Presents a plan for approval and exits plan mode"?
     choices:
       - id: a
-        text: TodoWrite with status "in_progress"
+        text: EnterPlanMode
       - id: b
-        text: Bash with "start"
+        text: TaskCreate
       - id: c
         text: ExitPlanMode
       - id: d
-        text: Read with the implementation file path
+        text: ExitPlanMode and EnterPlanMode are the same tool
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      ExitPlanMode is the explicit tool call that ends the planning phase and
-      transitions Claude Code into implementation. Observing this call in the
-      transcript is a strong signal that the agent has finished scoping the
-      work and is about to start making changes.
-
-  # ── Tier 200 — Understand ───────────────────────────────────────────────
-  - id: planning-200-mc-a
-    tier: 200
-    bloom: understand
-    difficulty: 250
+      ExitPlanMode is the tool that presents a finished plan for approval and exits plan mode; it
+      requires permission. EnterPlanMode is a separate tool that switches into plan mode and does
+      not require permission. TaskCreate is for task tracking, not plan-mode transitions.
+  - id: p-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 132
     type: multiple_choice
     prompt: >-
-      Why should you mark a TodoWrite task as "in_progress" before starting it,
-      rather than marking it "completed" only when you finish?
+      Which keyboard shortcut cycles between Claude Code permission modes such as default,
+      acceptEdits, and plan?
     choices:
       - id: a
-        text: >-
-          The MCP server requires it to track billing
+        text: Ctrl+G
       - id: b
-        text: >-
-          Marking in_progress signals to the user that work is happening and
-          creates a recovery checkpoint if the session is interrupted
+        text: Ctrl+C
       - id: c
-        text: >-
-          It prevents other agents from picking up the same task
+        text: Shift+Enter
       - id: d
-        text: >-
-          TodoWrite ignores status unless you use in_progress first
+        text: Shift+Tab
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Shift+Tab cycles through the permission modes. Ctrl+G opens the proposed plan in your text
+      editor to edit it, which is a different action. The other shortcuts do not change permission
+      mode.
+  - id: p-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: Name the four phases of the recommended Claude Code planning workflow, in order.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists Explore as the first phase
+        - id: c2
+          text: Lists Plan as the second phase
+        - id: c3
+          text: Lists Code as the third phase
+        - id: c4
+          text: Lists Commit as the fourth phase
+      referenceAnswer: >-
+        The four phases are Explore, then Plan, then Code, then Commit. Exploration happens in plan
+        mode (reading files and answering questions with no changes), then a detailed plan is
+        created, then Claude switches out of plan mode to implement and verify, then commits and
+        opens a PR.
+      passThreshold: 0.6
+    guidance: >-
+      The documented workflow is Explore then Plan then Code then Commit. Each phase has a purpose:
+      explore to understand, plan to propose, code to implement and verify, commit to ship. Getting
+      the order right matters because exploration and planning precede any source edits.
+  - id: p-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: Which of these is the complete set of Claude Code permission modes?
+    choices:
+      - id: a
+        text: read, write, plan, execute, admin
+      - id: b
+        text: default, acceptEdits, plan, auto, dontAsk, bypassPermissions
+      - id: c
+        text: safe, unsafe, plan, review
+      - id: d
+        text: default, plan, yolo, sandbox
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      The in_progress status serves two purposes: it shows the user that the
-      agent is actively working on something (not silently idle), and it leaves
-      a clear recovery marker if context is compacted or the session is
-      interrupted mid-task. If you only mark completed at the end, a
-      compaction event could erase all progress signals.
-
-  - id: planning-200-sa-a
-    tier: 200
-    bloom: understand
-    difficulty: 260
-    type: short_answer
-    prompt: >-
-      What are the three valid status values for a task in the Claude Code
-      Todo list (TodoWrite)?
-    answerKey:
-      kind: keyword
-      anyOf:
-        - "pending, in_progress, completed"
-        - "pending in_progress completed"
-        - "pending"
-        - "in_progress"
-        - "completed"
-      normalize: lower
-    guidance: >-
-      The three Todo task statuses are: `pending` (not yet started),
-      `in_progress` (currently being worked on), and `completed` (done).
-      Transitioning through these statuses as you work lets both the user and
-      future context reconstruction understand what has been accomplished.
-
-  # ── Tier 300 — Apply ────────────────────────────────────────────────────
-  - id: planning-300-mc-a
-    tier: 300
-    bloom: apply
-    difficulty: 350
+      The full set of permission modes is default, acceptEdits, plan, auto, dontAsk, and
+      bypassPermissions. The other lists invent mode names that do not exist in Claude Code.
+  - id: p-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 128
     type: multiple_choice
-    prompt: >-
-      A user asks you to implement a new API endpoint. This requires: (1) adding
-      a route, (2) writing a handler, (3) adding a test, and (4) updating docs.
-      In what order should you use TodoWrite?
+    prompt: Which command-line flag starts a Claude Code session directly in plan mode?
     choices:
       - id: a
-        text: >-
-          Write all four tasks at once before starting any of them; then mark
-          each in_progress → completed as you go
+        text: claude --plan-only
       - id: b
-        text: >-
-          Write one task, complete it, then write the next task
+        text: claude --mode=readonly
       - id: c
-        text: >-
-          Write all tasks and immediately mark them all completed to show the
-          full plan
+        text: claude --permission-mode plan
       - id: d
-        text: >-
-          Skip TodoWrite — four steps is small enough to hold in context
+        text: claude --no-edit
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      You start in plan mode with claude --permission-mode plan. You can also enter it by pressing
+      Shift+Tab to cycle in, or by prefixing a single prompt with /plan. The other flags are not
+      real.
+  - id: p-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: List the three ways to enter plan mode in Claude Code.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions pressing Shift+Tab to cycle into plan mode
+        - id: c2
+          text: Mentions prefixing a single prompt with /plan
+        - id: c3
+          text: Mentions starting with the flag --permission-mode plan
+      referenceAnswer: >-
+        You enter plan mode three ways: press Shift+Tab to cycle into it, prefix a single prompt
+        with /plan, or start the session with the flag claude --permission-mode plan.
+      passThreshold: 0.6
+    guidance: >-
+      The three documented entry points are the Shift+Tab cycle, the /plan prompt prefix, and the
+      --permission-mode plan startup flag. All three land you in the same plan mode; they differ
+      only in whether you switch mid-session, scope a single prompt, or start there.
+  - id: p-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: What does pressing Ctrl+G do when Claude has presented a proposed plan?
+    choices:
+      - id: a
+        text: Approves the plan and starts implementation
+      - id: b
+        text: Discards the plan and exits plan mode
+      - id: c
+        text: Sends the plan to Ultraplan for cloud review
+      - id: d
+        text: Opens the proposed plan in your default text editor so you can edit it directly
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Ctrl+G opens the plan in your default text editor for direct editing before Claude proceeds. A
+      common misconception is that Ctrl+G approves the plan; approval is a separate choice from the
+      approve options menu.
+  - id: p-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: >-
+      Which built-in tool manages the session task checklist but is disabled by default in current
+      Claude Code in favor of the Task tools?
+    choices:
+      - id: a
+        text: TodoWrite
+      - id: b
+        text: TaskCreate
+      - id: c
+        text: ExitPlanMode
+      - id: d
+        text: AskUserQuestion
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      The right pattern is to write all tasks upfront (creating the full
-      checklist), then work through them one at a time: mark each in_progress
-      before starting, completed when done. Writing tasks one at a time loses
-      the upfront clarity; marking all completed immediately is dishonest.
-      Even four tasks benefits from explicit tracking — sessions can be
-      interrupted.
-
-  - id: planning-300-mc-b
+      TodoWrite "Manages the session task checklist" but is now disabled by default in favor of
+      TaskCreate, TaskGet, TaskList, and TaskUpdate. The Task tools are the current primary
+      mechanism; TodoWrite can be re-enabled with an environment variable.
+  - id: p-100-ff-j
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: free_form
+    prompt: Name the four current Claude Code task-tracking tools and, in one phrase each, what each does.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies TaskCreate as creating a task
+        - id: c2
+          text: Identifies TaskList as listing all tasks and their status
+        - id: c3
+          text: Identifies TaskGet as getting the full details of one task
+        - id: c4
+          text: Identifies TaskUpdate as updating status, dependencies, details, or deleting
+      referenceAnswer: >-
+        TaskCreate creates a task, TaskGet returns the full details of one task, TaskList lists all
+        tasks and their status, and TaskUpdate updates a task's status, dependencies, or details
+        (and can delete). None of these require permission.
+      passThreshold: 0.6
+    guidance: >-
+      The current task tools are TaskCreate, TaskGet, TaskList, and TaskUpdate. They replaced the
+      default-disabled TodoWrite. Knowing their split (create, read one, list all, update/delete) is
+      the recall target here.
+  - id: p-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: What is the documented "one-sentence diff" heuristic about?
+    choices:
+      - id: a
+        text: Every plan must be summarizable in exactly one sentence
+      - id: b
+        text: If you could describe the diff in one sentence, skip the plan and make the change directly
+      - id: c
+        text: Commit messages should never exceed one sentence
+      - id: d
+        text: A subagent should return only a one-sentence summary
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The rule is: if you could describe the diff in one sentence (a typo, a log line, a rename),
+      skip the plan and act directly. It is a heuristic for when planning overhead is not worth it,
+      not a rule about plan length, commit messages, or subagent output.
+  - id: p-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: According to the docs, when is planning most useful?
+    choices:
+      - id: a
+        text: Only when changing a single line in a familiar file
+      - id: b
+        text: Whenever you are about to write a commit message
+      - id: c
+        text: >-
+          When you are uncertain about the approach, the change spans multiple files, or you are
+          unfamiliar with the code
+      - id: d
+        text: Only when working without internet access
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Planning is most useful when the approach is uncertain, the change modifies multiple files, or
+      the code is unfamiliar. Single-line familiar changes are exactly the case where you skip
+      planning, since the docs note plan mode is useful but adds overhead.
+  - id: p-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: What is the documented "interview me" pattern for larger features?
+    choices:
+      - id: a
+        text: >-
+          Start with a minimal prompt and ask Claude to interview you with AskUserQuestion before
+          writing a spec
+      - id: b
+        text: Ask Claude to read every file in the repo before answering
+      - id: c
+        text: Have two subagents debate the design without your input
+      - id: d
+        text: Let Claude commit a draft and ask for review after the fact
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The interview-me pattern starts from a minimal prompt and has Claude interview you using
+      AskUserQuestion (covering implementation, UX, edge cases, and tradeoffs), then you write a
+      complete spec and start a fresh session to execute it. The other options describe different
+      anti-patterns or workflows.
+  - id: p-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: multiple_choice
+    prompt: What kind of questions does the AskUserQuestion tool ask?
+    choices:
+      - id: a
+        text: Open-ended free-text questions
+      - id: b
+        text: Yes/no questions only
+      - id: c
+        text: Multiple-choice questions
+      - id: d
+        text: Questions answered by reading the codebase
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      AskUserQuestion asks multiple-choice questions to gather requirements and clarify ambiguity,
+      and it does not require permission. A common misconception is that it is for free-text Q&A; it
+      presents choices instead.
+  - id: p-100-ff-o
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: free_form
+    prompt: >-
+      What happens when you approve a proposed plan in plan mode? State the immediate effect on the
+      permission mode.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that approving exits plan mode
+        - id: c2
+          text: >-
+            States that the session switches to the implementation permission mode chosen in the
+            approve option
+        - id: c3
+          text: Notes that Claude then begins editing/implementing
+      referenceAnswer: >-
+        Approving a plan exits plan mode and switches the session to the permission mode described
+        by the approve option you chose (for example auto, accept edits, or manual review of each
+        edit). Claude then starts editing. To plan again you cycle back with Shift+Tab or prefix the
+        next prompt with /plan.
+      passThreshold: 0.6
+    guidance: >-
+      Approval is a mode transition: it exits plan mode and enters whatever implementation mode the
+      chosen approve option names, then implementation begins. A misconception is that approving
+      keeps you in plan mode; it does not.
+  - id: p-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: What is the correct order of the Shift+Tab permission-mode cycle in Claude Code (core modes)?
+    choices:
+      - id: a
+        text: default to acceptEdits to plan, then back to default
+      - id: b
+        text: default to plan to acceptEdits, then back to default
+      - id: c
+        text: plan to default to acceptEdits, then back to plan
+      - id: d
+        text: acceptEdits to plan to default, then back to acceptEdits
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Shift+Tab cycle order is default to acceptEdits to plan, then back to default. A common
+      error is to swap the middle two and say default to plan to acceptEdits; acceptEdits comes
+      before plan.
+  - id: p-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: What is Ultraplan in Claude Code?
+    choices:
+      - id: a
+        text: A local-only plan mode that reads twice as many files
+      - id: b
+        text: >-
+          A feature that hands a planning task to a Claude Code on the web session running in plan
+          mode, so the plan is drafted in the cloud
+      - id: c
+        text: A setting that disables all permission prompts during planning
+      - id: d
+        text: A tool that auto-commits the plan to git
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Ultraplan hands the planning task to a Claude Code on the web session running in plan mode,
+      drafting the plan in the cloud while your terminal stays free. It is not a local mode; it
+      needs a web account and a GitHub repo and is not available on Bedrock, Vertex, or Foundry.
+  - id: p-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: >-
+      A plan or task should be coupled to a verifiable check. Give two examples of checks the docs
+      say Claude can read and iterate against.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names at least one valid check (tests, build exit code, linter, fixture-diff script, or
+            screenshot comparison)
+        - id: c2
+          text: Names a second distinct valid check from that set
+      referenceAnswer: >-
+        The guidance "Give Claude a way to verify its work" lists tests, a build exit code, a
+        linter, a fixture-diff script, and a screenshot comparison as checks Claude can read and
+        iterate against. Any two of these are valid.
+      passThreshold: 0.6
+    guidance: >-
+      A good plan ends in a verifiable check. The documented examples are tests, a build exit code,
+      a linter, a fixture-diff script, and a screenshot comparison. Coupling the plan to one of
+      these lets Claude iterate against objective signal rather than guessing.
+  - id: p-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: How is the permission mode set or changed in Claude Code?
+    choices:
+      - id: a
+        text: By asking Claude in chat to change the mode
+      - id: b
+        text: Only by restarting the terminal
+      - id: c
+        text: By editing a file inside the .git directory
+      - id: d
+        text: Through controls like Shift+Tab, the --permission-mode flag, settings, or UI selectors
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Permission modes are set through controls: Shift+Tab, --permission-mode, settings, or UI
+      selectors, not by asking Claude in chat. This is a deliberate boundary so the model cannot
+      escalate its own permissions conversationally.
+  - id: p-100-mc-t
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: Which setting in .claude/settings.json makes plan mode the project default permission mode?
+    choices:
+      - id: a
+        text: '{"permissions": {"defaultMode": "plan"}}'
+      - id: b
+        text: '{"planMode": true}'
+      - id: c
+        text: '{"permissions": {"startInPlan": "yes"}}'
+      - id: d
+        text: '{"mode": "plan-default"}'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Set defaultMode to "plan" inside the permissions object in .claude/settings.json to make plan
+      mode the project default. The other shapes use invented keys that Claude Code does not
+      recognize.
+  - id: p-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      A teammate says "plan mode is a read-only sandbox, so Claude can't run any shell commands
+      while it's active." Why is this description inaccurate?
+    choices:
+      - id: a
+        text: >-
+          Plan mode lets Claude run shell commands to explore (reads run without prompting); it just
+          doesn't make source edits — it is not a no-command sandbox.
+      - id: b
+        text: >-
+          Plan mode actually does edit source files, it just reverts them when you exit, so calling
+          it read-only is wrong.
+      - id: c
+        text: Plan mode blocks all tools including Read, so the description overstates what it can do.
+      - id: d
+        text: Plan mode is identical to bypassPermissions, which is why no commands are blocked.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Plan mode is "propose-only": Claude reads files and runs shell commands to explore but makes
+      no source edits. "Reads only" in the permission table means reads run without prompting, not
+      that commands are forbidden. It is not a security sandbox and never edits-then-reverts.
+  - id: p-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: >-
+      The permission modes form a spectrum. What is the underlying tradeoff axis that distinguishes
+      default, acceptEdits, plan, auto, and bypassPermissions from one another?
+    choices:
+      - id: a
+        text: read speed versus write speed of the underlying filesystem
+      - id: b
+        text: how much of the codebase Claude is allowed to see at once
+      - id: c
+        text: convenience (fewer prompts / more autonomy) versus oversight (more human gating)
+      - id: d
+        text: whether the session runs locally or in the cloud
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The modes trade convenience against oversight. default prompts often; plan proposes without
+      editing; acceptEdits auto-accepts edits; auto reduces prompts via a classifier;
+      bypassPermissions removes prompts entirely. None of them change read/write speed, visible
+      context size, or local-vs-cloud execution.
+  - id: p-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      Pressing Shift+Tab cycles through permission modes. In what order does the base cycle move,
+      and why does that ordering make sense as an escalation?
+    choices:
+      - id: a
+        text: >-
+          default → plan → acceptEdits, because planning is always the first step before any editing
+          decision.
+      - id: b
+        text: >-
+          default → acceptEdits → plan, escalating from "ask about everything" toward modes that
+          change how editing/exploration is gated.
+      - id: c
+        text: plan → default → acceptEdits, because plan mode is the safest starting point.
+      - id: d
+        text: acceptEdits → default → plan, moving from most to least autonomous.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The base Shift+Tab cycle is default → acceptEdits → plan. A common misconception flips the
+      last two into default → plan → acceptEdits. Optional modes slot in after plan when enabled,
+      and dontAsk never appears in the cycle.
+  - id: p-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: >-
+      Explain what happens to the session when you approve a plan, and how that differs from
+      pressing Shift+Tab a second time while in plan mode.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that approving a plan exits plan mode and switches the session to the
+            implementation permission mode described by the chosen approve option (e.g. auto,
+            acceptEdits, or manual review).
+        - id: c2
+          text: >-
+            States that after approval Claude begins editing/implementing rather than staying in
+            plan mode.
+        - id: c3
+          text: >-
+            States that pressing Shift+Tab again leaves plan mode WITHOUT approving a plan (no plan
+            is executed).
+      referenceAnswer: >-
+        Approving a plan exits plan mode and switches the session into the permission mode the
+        chosen approve option names (auto, accept-edits, or manual per-edit review), then Claude
+        starts implementing. Pressing Shift+Tab a second time also leaves plan mode, but it does so
+        without approving any plan — it just cycles you out, so no implementation begins. To plan
+        again you cycle back with Shift+Tab or prefix the next prompt with /plan.
+      passThreshold: 0.6
+    guidance: >-
+      Approval and exiting are different: approval is a deliberate hand-off into an implementation
+      mode and starts edits; Shift+Tab is a mode toggle that abandons plan mode without executing
+      anything. Believing "approving keeps you in plan mode" is the core misconception here.
+  - id: p-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      While reviewing a proposed plan you press Ctrl+G. What does this do, and why is it not the
+      same as approving the plan?
+    choices:
+      - id: a
+        text: >-
+          It opens the plan in your default text editor so you can edit it directly; approval is a
+          separate, later choice.
+      - id: b
+        text: It approves the plan and immediately starts implementation in auto mode.
+      - id: c
+        text: It discards the plan and returns Claude to default mode.
+      - id: d
+        text: It sends the plan to Ultraplan for cloud review.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Ctrl+G opens the proposed plan in your editor for direct edits before Claude proceeds — it
+      changes the plan, it does not approve it. Approval is a separate selection (e.g. approve+auto,
+      approve+accept-edits, approve+manual review).
+  - id: p-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      The recommended workflow is Explore → Plan → Code → Commit. Why does the "Explore" phase
+      happen inside plan mode specifically?
+    choices:
+      - id: a
+        text: Because plan mode is the only mode in which the Read tool is available.
+      - id: b
+        text: Because plan mode runs exploration on a faster cloud machine.
+      - id: c
+        text: Because plan mode automatically commits each file it reads so nothing is lost.
+      - id: d
+        text: >-
+          So Claude can read files and answer questions to understand the problem without making
+          changes, keeping exploration cleanly separated from edits.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Plan mode is the natural home for exploration because it lets Claude investigate (read, run
+      commands, ask) and then write a plan without touching source. That separation means you review
+      an approach before any edit lands. Reads aren't exclusive to plan mode, and plan mode doesn't
+      commit or run in the cloud.
+  - id: p-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      The docs give a "one-sentence diff" heuristic for skipping planning, and a separate heuristic
+      for when planning is most useful. Explain both, and why planning is framed as a cost rather
+      than always-on.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the skip rule: if you could describe the diff in one sentence (e.g. a typo, log
+            line, or rename), do it directly without a plan.
+        - id: c2
+          text: >-
+            States planning is most useful when the approach is uncertain, the change touches
+            multiple files, or the code is unfamiliar.
+        - id: c3
+          text: >-
+            Explains that plan mode "adds overhead," so planning is a cost to be spent when it pays
+            off, not a free default.
+      referenceAnswer: >-
+        Skip planning when you could describe the diff in one sentence — small, clear-scope changes
+        like a typo fix, a log line, or a variable rename should be done directly. Reach for
+        planning when you're uncertain about the approach, when the change spans multiple files, or
+        when you're unfamiliar with the code. Planning is framed as a cost because the docs say plan
+        mode "is useful, but also adds overhead"; spending that overhead is justified only when
+        uncertainty or blast radius is high enough to repay it.
+      passThreshold: 0.6
+    guidance: >-
+      The two heuristics together define a judgment, not a single switch: trivial, well-understood
+      changes don't need a plan, while uncertain/multi-file/unfamiliar work does. "Always plan" is
+      an anti-pattern because planning has real overhead.
+  - id: p-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: >-
+      A user wants their project to start every session in plan mode by default. Which mechanism
+      achieves this, and what category of mechanism is it?
+    choices:
+      - id: a
+        text: >-
+          Ask Claude in chat to "always stay in plan mode" — a conversational instruction Claude
+          honors.
+      - id: b
+        text: >-
+          Set defaultMode to "plan" under permissions in .claude/settings.json — a settings-based
+          control.
+      - id: c
+        text: Add a TodoWrite entry that pins the mode for the session.
+      - id: d
+        text: Rename the session with /rename plan so the mode follows the name.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Permission modes are set through controls — settings, flags, key cycles, UI selectors — not by
+      asking Claude in chat. The project default is configured via permissions.defaultMode in
+      .claude/settings.json. TodoWrite/Task tools and /rename have nothing to do with the permission
+      mode.
+  - id: p-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Why does delegating exploration to a subagent (the Agent tool) keep the main session's context
+      clean? Address what the parent actually receives back.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the subagent runs in its own separate context window.
+        - id: c2
+          text: >-
+            States the parent receives only the subagent's final text result, not the intermediate
+            tool calls/outputs or the files it read.
+        - id: c3
+          text: >-
+            Connects this to keeping the main context from filling up (avoiding the "infinite
+            exploration" problem).
+      referenceAnswer: >-
+        A subagent runs in its own context window. It can read hundreds of files and run many tool
+        calls, but the parent session never sees those intermediate reads or outputs — it receives
+        only the subagent's final text summary. Because the bulky exploration is confined to the
+        subagent's context, the main session stays lean. That is the documented fix for "infinite
+        exploration," where Claude otherwise reads so many files that it fills its own context.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that a subagent's reads pollute your context. The opposite is true and is
+      the entire point: the subagent absorbs the exploration cost and returns only a summary, so
+      delegation protects the main context window.
+  - id: p-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: >-
+      As of recent versions, TodoWrite is disabled by default in favor of the Task tools. What is
+      the practical consequence for someone interpreting an agent's task-tracking behavior?
+    choices:
+      - id: a
+        text: Task tracking is no longer possible at all unless you re-enable TodoWrite.
+      - id: b
+        text: TodoWrite and the Task tools must both be used together for tracking to work.
+      - id: c
+        text: >-
+          Task tracking now flows through TaskCreate/TaskGet/TaskList/TaskUpdate; relying on
+          TodoWrite being present is a portability hazard.
+      - id: d
+        text: The Task tools require permission for every call, unlike TodoWrite.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      TodoWrite is disabled by default now; the primary tools are TaskCreate, TaskGet, TaskList, and
+      TaskUpdate (none require permission). Tracking still works fine — just through the Task tools
+      — so assuming TodoWrite is the current/primary tool is outdated, and depending on it is
+      fragile.
+  - id: p-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      The "one in-progress task at a time" discipline is recommended for the task list. What is the
+      main reason this matters for how work is interpreted?
+    choices:
+      - id: a
+        text: The Task tools physically reject a second in-progress task.
+      - id: b
+        text: It makes the session run faster by reducing token count.
+      - id: c
+        text: It is required for the session to be auto-named.
+      - id: d
+        text: >-
+          It keeps a single clear focus and a verifiable checkpoint, so progress is legible instead
+          of many half-done items obscuring state.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      One-in-progress is a discipline, not an enforced limit. Keeping a single active task makes the
+      current focus and the next verifiable step legible, rather than leaving many tasks ambiguously
+      "in progress." It is unrelated to token count or session naming.
+  - id: p-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      When requirements are ambiguous, the docs suggest interviewing the human with AskUserQuestion
+      rather than exhaustively surveying the codebase. Explain why surveying code does not resolve
+      that kind of ambiguity, and what kind of ambiguity exploration IS the right tool for.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that no amount of code reading resolves an unstated product/requirements
+            decision — that information lives with the human, not in the code.
+        - id: c2
+          text: >-
+            States that AskUserQuestion surfaces tradeoffs/options (multiple-choice) to get those
+            decisions from the user.
+        - id: c3
+          text: >-
+            States that exploration/plan mode is the right tool when requirements are fixed but the
+            technical approach/implementation is unclear.
+      referenceAnswer: >-
+        Ambiguity about what to build (product decisions, UX choices, edge-case policy) cannot be
+        answered by reading code — that information simply isn't in the repository; it's in the
+        user's head. So the higher-leverage move is to interview them with AskUserQuestion, which
+        surfaces tradeoffs as multiple-choice questions and pulls out the missing decisions.
+        Exploration and plan mode are the right tool for the other kind of ambiguity: when the
+        requirements are fixed but you don't yet know how to implement them in this codebase.
+        Picking the wrong tool wastes context.
+      passThreshold: 0.6
+    guidance: >-
+      Two different ambiguities need two different tools. Unstated requirements need a human
+      interview (AskUserQuestion); an unclear technical approach with fixed requirements needs code
+      exploration. Surveying code to resolve a product question burns context without ever answering
+      it.
+  - id: p-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: >-
+      AskUserQuestion is recommended for the "interview me" pattern. How does it gather input, and
+      does it require permission to run?
+    choices:
+      - id: a
+        text: >-
+          It asks multiple-choice questions to clarify requirements, and it does not require
+          permission.
+      - id: b
+        text: It collects free-text answers, and each question requires a permission prompt.
+      - id: c
+        text: It opens a browser form, and requires a Claude Code on the web account.
+      - id: d
+        text: It reads the codebase to infer answers automatically, no user input needed.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      AskUserQuestion presents multiple-choice questions to resolve ambiguity and surface tradeoffs,
+      and it does not require permission. Treating it as a free-text Q&A tool, or confusing it with
+      a browser/web feature, are the common errors.
+  - id: p-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      The docs say "Give Claude a way to verify its work" and that a plan should end in a verifiable
+      check. Explain why coupling a plan to a verification step improves outcomes, and give two
+      concrete examples of such a check.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a verifiable check gives Claude an objective signal it can read and
+            iterate against, instead of guessing whether the work is done/correct.
+        - id: c2
+          text: >-
+            Names at least two concrete checks from the documented set, e.g. tests, a build exit
+            code, a linter, a fixture-diff script, or a screenshot comparison.
+        - id: c3
+          text: >-
+            Connects this to plans/tasks ending in something checkable rather than an unverifiable
+            claim of completion.
+      referenceAnswer: >-
+        A verification step turns "I think it works" into an objective signal Claude can read and
+        loop against: it runs the check, sees pass/fail, and iterates until the check is green.
+        Without it, the agent has no ground truth and may claim success on broken work. Documented
+        examples include running tests, checking a build's exit code, running a linter, comparing
+        against a fixture-diff script, or a screenshot comparison. A good plan or task therefore
+        ends in one of these checks rather than an unverifiable "done."
+      passThreshold: 0.6
+    guidance: >-
+      Verification coupling is what makes a plan actionable: the closing check is the objective the
+      agent optimizes against. A plan that ends in "looks good" gives no iteration signal; one that
+      ends in "tests pass / build exits 0 / screenshot matches" does.
+  - id: p-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: How does Ultraplan differ from local plan mode in where the work runs and what it requires?
+    choices:
+      - id: a
+        text: >-
+          Ultraplan is just a more detailed local plan mode that runs entirely on your machine with
+          no extra requirements.
+      - id: b
+        text: >-
+          Ultraplan drafts the plan in a Claude Code on the web session (Anthropic cloud) and needs
+          a web account plus a GitHub repo, freeing your terminal while it works.
+      - id: c
+        text: Ultraplan runs locally but disables the Read tool to force pure reasoning.
+      - id: d
+        text: Ultraplan is the same as bypassPermissions but only for the planning phase.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Ultraplan hands planning to a Claude Code on the web session running in plan mode in
+      Anthropic's cloud, so your terminal stays free. It requires a web account and a GitHub repo
+      and is not available on Bedrock/Vertex/Foundry — so "it just runs locally" is wrong.
+  - id: p-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      From an Ultraplan browser review you can "teleport back to terminal," which offers Implement
+      here, Start new session, and Cancel. Explain what each option does to your local conversation
+      context.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Implement here injects the plan into the CURRENT conversation (keeping existing context)
+            and proceeds.
+        - id: c2
+          text: >-
+            Start new session clears the conversation and begins fresh with only the plan as
+            context.
+        - id: c3
+          text: Cancel saves the plan to a file without executing it.
+      referenceAnswer: >-
+        Implement here injects the plan into your current conversation and continues, so all the
+        existing context is preserved. Start new session clears the conversation and begins fresh
+        with only the plan as context — useful when the plan is self-contained and you want a clean
+        implementation window. Cancel saves the plan to a file without executing it, so you can
+        implement later or hand it to another session. The three options trade off how much prior
+        context you carry into implementation.
+      passThreshold: 0.6
+    guidance: >-
+      The three teleport options are really a context-management choice: keep context (Implement
+      here), drop context for a clean slate (Start new session), or defer with a saved artifact
+      (Cancel). This mirrors the broader clear-context-on-accept tradeoff.
+  - id: p-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      A self-contained spec (e.g. SPEC.md) is recommended over a one-line feature description.
+      Beyond the feature description, what does a good self-contained spec include?
+    choices:
+      - id: a
+        text: Only the feature description, since Claude can infer everything else.
+      - id: b
+        text: A full copy of the codebase pasted inline so nothing needs to be read.
+      - id: c
+        text: >-
+          The files/interfaces involved, what is explicitly out of scope, and an end-to-end
+          verification step.
+      - id: d
+        text: The permission mode to use and the exact Shift+Tab sequence to press.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A self-contained spec names the files and interfaces involved, states what is out of scope,
+      and ends with an end-to-end verification step — so a fresh session can execute it without
+      prior context. A bare feature description is incomplete; pasting the whole codebase or mode
+      keystrokes is neither necessary nor the point.
+  - id: p-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      Why are subagents recommended as an adversarial review step on a finished plan or diff, and
+      what does the reviewer see?
+    choices:
+      - id: a
+        text: >-
+          The reviewer subagent shares the author's full context so it can defend the original
+          reasoning.
+      - id: b
+        text: The reviewer automatically applies any fixes it finds without reporting them.
+      - id: c
+        text: Adversarial review is only possible under bypassPermissions mode.
+      - id: d
+        text: >-
+          A fresh subagent reviews only the diff/plan and the criteria — not the author's reasoning
+          — so it judges the artifact on its own merits against something like PLAN.md.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The value of an adversarial subagent review is independence: in a fresh context it sees only
+      the diff/plan plus the criteria, not the reasoning that produced it, so it can check the
+      artifact against PLAN.md without being anchored. The bundled /code-review skill works this
+      way. It reports findings; it doesn't silently apply fixes, and it isn't gated on
+      bypassPermissions.
+  - id: p-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      The docs warn that a reviewer prompted to "find gaps" will usually report some even when the
+      work is sound. Explain why this happens and how to scope the reviewer to avoid
+      over-engineering.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a gap-finding reviewer over-reports by design — asked to find problems, it
+            will surface some even when the work is correct.
+        - id: c2
+          text: >-
+            States that chasing every finding leads to over-engineering (needless abstractions,
+            tests for impossible cases).
+        - id: c3
+          text: >-
+            States the fix: scope the reviewer to flag only gaps affecting correctness or stated
+            requirements, treating the rest as optional.
+      referenceAnswer: >-
+        A reviewer instructed to find gaps is biased to produce them — given the goal of finding
+        problems, it will report something even when the implementation is sound. If you act on
+        every finding you drift into over-engineering: extra abstractions and tests for cases that
+        can't happen. The fix is to scope the reviewer to flag only gaps that affect correctness or
+        stated requirements, and to treat everything else as optional rather than mandatory work.
+      passThreshold: 0.6
+    guidance: >-
+      Adversarial review needs calibration. A gap-hunter over-reports by construction, so blindly
+      fixing all findings inflates scope. Constraining it to "correctness or stated requirements
+      only" keeps the review useful without inviting over-engineering.
+  - id: p-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: multiple_choice
+    prompt: >-
+      Why is it accurate to say plan mode protects against accidental source edits but NOT against
+      prompt injection or arbitrary command execution?
+    choices:
+      - id: a
+        text: Plan mode runs a dedicated injection classifier, so it is in fact a security boundary.
+      - id: b
+        text: >-
+          Plan mode's guarantee is "no source edits + same prompts as default"; commands still run
+          (gated like default), so real isolation needs sandboxing, deny rules, or the auto
+          classifier — not plan mode.
+      - id: c
+        text: Plan mode blocks all command execution, so injection is impossible by design.
+      - id: d
+        text: Plan mode and bypassPermissions provide identical injection protection.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Plan mode is about not editing yet, not about security. It still runs commands and prompts the
+      same way default does, so it offers no protection against prompt injection or arbitrary
+      execution. The classifier belongs to auto mode; isolation comes from sandboxing/deny rules,
+      not plan mode.
+  - id: p-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      A teammate asks you to change a log message from "starting" to "started" in one file. You know
+      exactly which line. Following the documented heuristics, what is the right move?
+    choices:
+      - id: a
+        text: >-
+          Make the change directly without planning, because the diff fits in one sentence and the
+          scope is clear.
+      - id: b
+        text: Enter plan mode first so Claude can research the change before touching the file.
+      - id: c
+        text: Launch an Ultraplan session so a reviewer can comment on the wording.
+      - id: d
+        text: Ask Claude to interview you with AskUserQuestion before editing.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The "one-sentence diff" heuristic says to skip planning for small, clear-scope changes (typo,
+      log line, rename). Planning adds overhead that is not justified here; Ultraplan and an
+      interview are even heavier and inappropriate for a trivial, unambiguous edit.
+  - id: p-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You need to migrate authentication across roughly a dozen files in a codebase you have never
+      worked in, and you are unsure which approach the team prefers. Which action best matches the
+      documented guidance on when to plan?
+    choices:
+      - id: a
+        text: Skip planning and start editing files; you can course-correct as you go.
+      - id: b
+        text: >-
+          Use plan mode to explore and propose an approach first, because the change is multi-file,
+          the code is unfamiliar, and the approach is uncertain.
+      - id: c
+        text: Turn on bypassPermissions so the edits proceed without interruption.
+      - id: d
+        text: Switch to acceptEdits mode so Claude can move quickly through the dozen files.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Planning is most useful exactly when the change spans multiple files, the code is unfamiliar,
+      and the approach is uncertain -- all three apply here. acceptEdits and bypassPermissions only
+      change how edits are approved; they do nothing to resolve the unknown approach.
+  - id: p-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You started a session in default mode and now realize you want Claude to research before
+      making any edits. You do not want to restart the CLI. What is the simplest way to get into
+      plan mode right now?
+    choices:
+      - id: a
+        text: Tell Claude in chat to switch itself to plan mode.
+      - id: b
+        text: Restart the CLI with claude --permission-mode plan.
+      - id: c
+        text: Press Shift+Tab to cycle into plan mode, or prefix your next prompt with /plan.
+      - id: d
+        text: Run /compact to clear room and Claude will enter plan mode automatically.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Permission modes are set through controls, not by asking Claude in chat. Shift+Tab cycles into
+      plan mode in-session, and prefixing a single prompt with /plan also works. The
+      --permission-mode flag requires a restart, which the scenario rules out, and /compact has
+      nothing to do with mode switching.
+  - id: p-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      Claude has just presented a plan for a sensitive change to billing code. You want the work
+      done, but you do not trust it to run unattended on this part of the system. Which approve
+      option should you choose from the plan-approval dialog, and what will it do?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Chooses the option to approve and review/accept each edit manually (review each edit),
+            rather than approve-and-start-in-auto or approve-and-accept-edits.
+        - id: c2
+          text: >-
+            States that approving exits plan mode and switches the session into the chosen
+            implementation permission mode (manual per-edit review).
+      referenceAnswer: >-
+        Pick "approve and review each edit manually." Approving the plan exits plan mode and
+        switches the session into a mode where Claude pauses for your approval on every edit, so you
+        keep oversight on the sensitive billing code rather than letting it run hands-off in auto
+        mode or auto-accept all edits.
+      passThreshold: 0.6
+    guidance: >-
+      The approve options range from hands-off (start in auto) through accept-edits to manual
+      per-edit review. For sensitive code the manual-review option preserves oversight. Approving
+      always exits plan mode and switches to whichever implementation mode the chosen option
+      describes.
+  - id: p-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      Claude presents a plan that is 90% right, but one step targets the wrong module and you would
+      rather fix the wording yourself than explain it in chat. What should you do?
+    choices:
+      - id: a
+        text: Press Ctrl+G to open the plan in your text editor and correct the step directly.
+      - id: b
+        text: Press Shift+Tab to approve the plan as-is and fix the module afterward.
+      - id: c
+        text: Press Ctrl+G to approve the plan and begin implementation.
+      - id: d
+        text: Choose "keep planning" and hope Claude guesses the right module on its own.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Ctrl+G opens the proposed plan in your default text editor so you can edit it directly before
+      Claude proceeds -- ideal for a small correction you would rather make yourself. Ctrl+G does
+      not approve (that is a separate choice), and Shift+Tab in plan mode leaves plan mode without
+      approving.
+  - id: p-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      During exploration, Claude keeps reading more and more files and your context window is
+      filling rapidly with code you may not need. What is the documented fix for this "infinite
+      exploration" pattern?
+    choices:
+      - id: a
+        text: Switch to bypassPermissions so the reads stop prompting and go faster.
+      - id: b
+        text: Run /compact repeatedly to keep summarizing the files as they are read.
+      - id: c
+        text: >-
+          Scope the investigation narrowly, or delegate the exploration to a subagent so it reads in
+          its own context instead of the main one.
+      - id: d
+        text: Approve a plan immediately to force Claude to stop reading.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The documented remedy for infinite exploration is to scope investigations narrowly or use a
+      subagent, which reads in its own context window and returns only a summary -- keeping the main
+      context clean. Permission speed and repeated compaction do not address the root cause of
+      context bloat.
+  - id: p-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      A stakeholder hands you a vague request: "add notifications to the app." The codebase is
+      well-understood, but the product decisions (which events, which channels, opt-out behavior)
+      are unstated. What should you do before writing a plan, and why is surveying the code not the
+      right first move here?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Says to interview the human / gather requirements first, ideally using AskUserQuestion
+            (the "interview me" pattern) to surface tradeoffs and decisions.
+        - id: c2
+          text: >-
+            Explains that exhaustive code reading cannot resolve unstated product decisions, so
+            surveying the codebase would waste context on an unanswerable question.
+      referenceAnswer: >-
+        Have Claude interview you first using AskUserQuestion to surface the product decisions
+        (which events fire notifications, which channels, opt-out behavior, edge cases). No amount
+        of code reading resolves an unstated product decision, so surveying the codebase would burn
+        context without answering the real ambiguity. Once requirements are settled, capture them in
+        a spec and then plan/explore the implementation.
+      passThreshold: 0.6
+    guidance: >-
+      When requirements (not the approach) are the ambiguity, interviewing the human is the
+      higher-leverage move; AskUserQuestion asks multiple-choice questions to pin down decisions.
+      Exploration/plan mode is the right tool only when the approach is unclear but requirements are
+      fixed.
+  - id: p-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You have showClearContextOnPlanAccept enabled. The plan you are about to approve is fully
+      self-contained -- it names every file and interface and ends with a verification step. The
+      long exploration history contains nothing the plan omitted. What is the sensible choice?
+    choices:
+      - id: a
+        text: >-
+          Approve and clear the planning context first, since the plan captures everything needed
+          and a clean implementation context avoids carrying clutter.
+      - id: b
+        text: Approve but keep all the exploration context, because clearing it is always risky.
+      - id: c
+        text: Decline to approve, because clearing context loses the audit trail of the plan.
+      - id: d
+        text: Approve and then immediately run /rewind to restore the exploration history.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Clearing context on accept trades away exploration reasoning for a clean implementation
+      window. That trade is right precisely when the plan is self-contained (nothing useful left
+      behind), which is the case here. Keeping context matters when implementation depends on subtle
+      findings that did not make it into the written plan.
+  - id: p-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You are setting up task tracking for a multi-step feature with TaskCreate. You are unsure how
+      granular each task should be. Which decomposition best fits the documented discipline?
+    choices:
+      - id: a
+        text: One giant task ("build the feature") so the list stays short.
+      - id: b
+        text: A task per individual line of code so progress is maximally visible.
+      - id: c
+        text: No tasks at all; rely on the conversation to remember what is left.
+      - id: d
+        text: >-
+          Break work into tasks where each one ends in a check Claude can run, working one task
+          in-progress at a time.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The right grain is "each task ends in a verifiable check," combined with the one-in-progress
+      discipline. Too-coarse tasks lose the verifiable-step benefit; too-fine tasks become checklist
+      theater that clutters context. Tracking is what TaskCreate/TaskUpdate exist for.
+  - id: p-300-ff-j
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: free_form
+    prompt: >-
+      You are about to write SPEC.md so a fresh session can implement a feature without your live
+      context. List the three things the docs say a self-contained spec should include beyond the
+      feature description itself.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the files and interfaces involved.
+        - id: c2
+          text: States what is out of scope.
+        - id: c3
+          text: Ends with an end-to-end verification step.
+      referenceAnswer: >-
+        Beyond the feature description, the spec should name the specific files and interfaces
+        involved, state what is explicitly out of scope, and end with an end-to-end verification
+        step the implementer can run. Those three make the spec self-contained so a fresh session
+        can execute it without your conversation history.
+      passThreshold: 0.6
+    guidance: >-
+      A feature description alone is incomplete. The most useful specs name files/interfaces, bound
+      the scope explicitly, and end with a verification step -- so a brand-new session has
+      everything it needs and a way to confirm it succeeded.
+  - id: p-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      You are drafting a large, multi-stakeholder migration plan and want reviewers to leave inline
+      comments on each section while your terminal stays free for other work. Your repo is on GitHub
+      and you have a Claude Code on the web account. Which tool fits best?
+    choices:
+      - id: a
+        text: >-
+          Ultraplan, which drafts the plan in a Claude Code on the web session and gives a richer
+          browser review surface while the terminal stays free.
+      - id: b
+        text: Local plan mode, because it offers the same inline per-section review surface.
+      - id: c
+        text: bypassPermissions mode, so the plan is generated without any review prompts.
+      - id: d
+        text: TodoWrite, to capture each reviewer's comment as a checklist item.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Ultraplan's value is a richer review surface (inline comments per section, hands-off cloud
+      drafting) -- worth it for large multi-stakeholder plans, and the prerequisites (web account +
+      GitHub repo) are met here. Local plan mode lacks that browser review surface; the other
+      options are unrelated to plan review.
+  - id: p-300-mc-l
     tier: 300
     bloom: apply
     difficulty: 360
     type: multiple_choice
     prompt: >-
-      You are in plan mode researching a complex feature request. You have read
-      three files. The user has NOT yet approved your plan. Should you call
-      ExitPlanMode and start editing?
+      After reviewing an Ultraplan in the browser, you decide to implement locally. You want a clean
+      implementation context that contains only the finished plan, not the cloud drafting
+      discussion. Which teleport-back option do you choose?
     choices:
       - id: a
-        text: >-
-          Yes — you have enough information to proceed
+        text: '''Implement here'' -- inject the plan into the current conversation.'
       - id: b
         text: >-
-          Yes — plan mode is just a suggestion, not a gate
+          'Start new session' -- clear the conversation and begin fresh with only the plan as
+          context.
       - id: c
-        text: >-
-          No — ExitPlanMode should only be called after presenting the plan
-          and receiving user confirmation to proceed
+        text: '''Cancel'' -- save the plan to a file without executing.'
       - id: d
-        text: >-
-          No — you must read every file in the repo before exiting plan mode
-    answerKey:
-      kind: choice
-      correctChoiceId: c
-    guidance: >-
-      Plan mode is a human-in-the-loop gate. Its purpose is to surface the
-      proposed approach for review before any changes are made. Calling
-      ExitPlanMode without user confirmation undermines that gate. The correct
-      flow is: explore → present plan → wait for approval → ExitPlanMode →
-      implement.
-
-  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
-  - id: planning-400-mc-a
-    tier: 400
-    bloom: analyze
-    difficulty: 430
-    type: multiple_choice
-    prompt: >-
-      Mid-way through a large implementation, context is compacted. You had five
-      Todo tasks; two were completed. What should you do immediately after
-      compaction to recover correctly?
-    choices:
-      - id: a
-        text: >-
-          Restart the entire task from scratch — compaction invalidates all
-          previous work
-      - id: b
-        text: >-
-          Call TodoRead to inspect the current task list, confirm which tasks
-          are completed, then resume from the first pending/in_progress task
-      - id: c
-        text: >-
-          Trust that the summary captured everything and continue from where
-          you think you left off
-      - id: d
-        text: >-
-          Ask the user to list what was done
+        text: Execute on the web and open a PR instead of teleporting back.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      The Todo list is the canonical state that survives compaction — it is
-      persisted separately from the conversation history. After compaction,
-      call TodoRead first to see what is completed vs. pending, then continue
-      from the first incomplete task. "Trusting the summary" risks duplicating
-      completed work or skipping tasks the summary glossed over.
-
-  - id: planning-400-sa-a
-    tier: 400
-    bloom: analyze
-    difficulty: 440
-    type: short_answer
+      "Start new session" clears the conversation and begins fresh with only the plan as context --
+      exactly the clean implementation window requested. "Implement here" keeps the current
+      conversation, "Cancel" saves to a file without running, and executing on the web does not
+      bring the work local.
+  - id: p-300-ff-m
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
     prompt: >-
-      A task is straightforward and can be completed in a single tool call.
-      Should you use TodoWrite for it? Give the principle behind your answer.
-    answerKey:
-      kind: keyword
-      anyOf:
-        - "no"
-        - "not necessary"
-        - "unnecessary"
-        - "simple tasks"
-        - "single step"
-        - "overhead"
-      normalize: lower
+      You are finishing a plan to refactor a parser and want to "give Claude a way to verify its
+      work." Name two concrete checks (from the documented examples) you could end the plan with,
+      and explain in one sentence why coupling the plan to such a check matters.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names two concrete checks from the documented set (e.g. running tests, a build exit
+            code, a linter, a fixture-diff script, a screenshot comparison).
+        - id: c2
+          text: >-
+            Explains that a verifiable check lets Claude read the result and iterate, so the plan
+            ends in evidence rather than an assumption of success.
+      referenceAnswer: >-
+        End the plan by running the parser test suite and checking the build exit code (a linter
+        pass or a fixture-diff script would also work). Coupling the plan to a check that Claude can
+        read and iterate against means the work ends in verifiable evidence it succeeded, not just
+        an assumption.
+      passThreshold: 0.6
     guidance: >-
-      TodoWrite adds value for multi-step or interruptible work. For a single,
-      simple, instantly-completable task it is unnecessary overhead — the tool
-      call costs context without providing a meaningful recovery checkpoint or
-      progress signal. Apply TodoWrite when the work has meaningful sub-steps,
-      spans multiple files, or could be interrupted.
-
-  # ── Tier 500 — Evaluate ─────────────────────────────────────────────────
-  - id: planning-500-mc-a
-    tier: 500
-    bloom: evaluate
-    difficulty: 480
+      The docs list tests, a build exit code, a linter, a fixture-diff script, and a screenshot
+      comparison as checks Claude can read and iterate against. A plan should end in such a check so
+      success is demonstrated, not assumed.
+  - id: p-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 372
     type: multiple_choice
     prompt: >-
-      A teammate's workflow always enters plan mode for every task, even trivial
-      one-liner fixes. Evaluate this approach and identify the main cost.
+      You want to let Claude run a batch of untrusted shell commands with strong protection against
+      a prompt-injection that might try to read secrets. A colleague suggests "just use plan mode,
+      it is read-only and safe." What is the right correction and action?
     choices:
       - id: a
         text: >-
-          Good discipline — plan mode prevents all implementation mistakes
+          Agree -- plan mode is a security boundary, so running the commands in plan mode is
+          sufficient isolation.
       - id: b
-        text: >-
-          Acceptable — the overhead is negligible because plan mode is free
+        text: Disagree -- use bypassPermissions, which adds injection protection during execution.
       - id: c
-        text: >-
-          Over-engineering: for trivial changes plan mode adds a round-trip
-          latency and a user-confirmation burden with no commensurate reduction
-          in risk
+        text: Agree, but also enable acceptEdits so the commands run without prompts.
       - id: d
         text: >-
-          Dangerous — plan mode can modify files if not used carefully
+          Disagree -- plan mode only prevents source edits and still runs commands under the same
+          prompts as default; for real isolation use sandboxing, deny rules, or the auto-mode
+          classifier.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Plan mode prevents source edits but is not a security boundary: commands still run, gated by
+      the same prompts as default, with no prompt-injection protection. Real isolation comes from
+      sandboxing, deny rules, or the auto-mode classifier. bypassPermissions offers no injection
+      protection at all.
+  - id: p-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      You are writing a workflow that other people will run on the current Claude Code release, and
+      it relies on task tracking. To keep it portable, which tools should the workflow use for
+      managing tasks?
+    choices:
+      - id: a
+        text: >-
+          TaskCreate, TaskUpdate, TaskList, and TaskGet, since TodoWrite is disabled by default in
+          current versions.
+      - id: b
+        text: TodoWrite, since it is the long-standing default task tool.
+      - id: c
+        text: Set CLAUDE_CODE_ENABLE_TASKS=0 in the workflow so TodoWrite is available everywhere.
+      - id: d
+        text: AskUserQuestion, asking the user to track tasks themselves.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      TodoWrite is disabled by default in current Claude Code in favor of the Task* tools, so
+      relying on TodoWrite is a portability hazard. Forcing it on with CLAUDE_CODE_ENABLE_TASKS=0
+      makes the workflow depend on a non-default setting; using the Task tools is the portable
+      choice.
+  - id: p-300-ff-p
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: free_form
+    prompt: >-
+      You spin up a subagent to adversarially review a finished diff against PLAN.md. Knowing how
+      such reviewers behave, how should you scope the reviewer's instructions, and why?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Says to tell the reviewer to flag only gaps that affect correctness or stated
+            requirements (not every possible improvement).
+        - id: c2
+          text: >-
+            Explains that a gap-finding reviewer over-reports by design, so an unscoped review
+            drives over-engineering (needless abstractions, tests for impossible cases).
+      referenceAnswer: >-
+        Scope the reviewer to flag only gaps that affect correctness or the stated requirements,
+        treating anything else as optional. A reviewer prompted to find gaps will report some even
+        when the work is sound, so chasing every finding leads to over-engineering; constraining it
+        to correctness and requirements keeps the review useful without inflating scope.
+      passThreshold: 0.6
+    guidance: >-
+      Adversarial reviewers over-report by design. The expert calibration is to scope them to
+      "correctness or stated requirements only," so you avoid review-driven over-engineering like
+      extra abstractions or tests for impossible cases.
+  - id: p-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      Your team wants every session in this repo to start in plan mode without anyone remembering a
+      flag. What is the correct way to make that happen?
+    choices:
+      - id: a
+        text: Add a note in CLAUDE.md asking Claude to start in plan mode each session.
+      - id: b
+        text: 'Set {"permissions": {"defaultMode": "plan"}} in .claude/settings.json.'
+      - id: c
+        text: Press Shift+Tab at the start of every session.
+      - id: d
+        text: Run claude --permission-mode plan once and it will be remembered forever.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The defaultMode setting in .claude/settings.json makes plan mode the project default for
+      everyone, persistently. Modes are not set by asking Claude in chat/CLAUDE.md; Shift+Tab is a
+      per-session manual action, and the --permission-mode flag only affects the session it is
+      passed to.
+  - id: p-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      Claude has tried twice to fix a failing test and both attempts were wrong; the conversation is
+      now cluttered with the failed approaches. What does the documented guidance recommend?
+    choices:
+      - id: a
+        text: Keep correcting in the same session until it works; momentum matters.
+      - id: b
+        text: Switch to bypassPermissions so Claude can try more fixes faster.
+      - id: c
+        text: >-
+          Run /clear and write a better initial prompt, since the cluttered failed-approach context
+          is now hurting more than helping.
+      - id: d
+        text: Spawn a subagent to keep retrying the same fix in parallel.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      Plan mode is most valuable for non-trivial changes where the approach
-      is not obvious and mistakes are costly. Applying it to trivial fixes
-      (renaming a variable, fixing a typo) imposes a confirmation round-trip
-      and interrupts flow without meaningful risk reduction. The judgment call
-      is: does the complexity/risk of this change warrant a planning gate? If
-      not, proceed directly. Good tooling use requires calibrating tool
-      overhead against the value it delivers.
+      After two failed corrections, the guidance is to /clear and write a better initial prompt -- a
+      context full of failed approaches biases further attempts and degrades performance. More
+      permissions or parallel retries do not address the polluted context that is causing the
+      failures.
+  - id: p-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      You have a solid plan and two goals: (1) implement it in a brand-new session with no
+      exploration baggage, and (2) later have an independent reviewer check the diff against the
+      plan. Why does writing the plan to a file (e.g. PLAN.md) serve both goals better than keeping
+      it only in the current conversation?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Says a written plan lets a fresh session implement from only the plan (clean context),
+            serving goal 1.
+        - id: c2
+          text: >-
+            Says a written plan lets an adversarial subagent review the diff against it in a fresh
+            context, serving goal 2.
+        - id: c3
+          text: >-
+            Notes the tradeoff that an in-conversation plan is fragile to compaction / loses on a
+            new session, while a file persists (acceptably; a file can also go stale).
+      referenceAnswer: >-
+        Writing the plan to PLAN.md makes it a durable artifact: a fresh session can implement using
+        only the file as context (goal 1), and an adversarial reviewer subagent can read the diff
+        and check it against the file in its own clean context (goal 2). An in-conversation plan
+        cannot survive a /clear or a new session and is fragile to compaction, so it serves neither
+        goal -- though a written plan does risk going stale and must be kept current.
+      passThreshold: 0.6
+    guidance: >-
+      A plan as artifact lets a fresh session implement it and lets a subagent review the diff
+      against it -- both impossible if the plan lives only in a conversation that gets cleared or
+      compacted. The cost is that a written plan can go stale or omit tacit context.
+  - id: p-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: multiple_choice
+    prompt: >-
+      Your session is running in auto mode. You wrote a subagent whose frontmatter declares
+      permissionMode so it would skip prompts, and you launch it to do edits. What actually happens
+      to that subagent's permissionMode, and what is the right expectation?
+    choices:
+      - id: a
+        text: >-
+          Under auto mode the subagent's declared permissionMode is ignored; its actions go through
+          the classifier under the parent session's rules, so you cannot use it to bypass planning
+          or permissions.
+      - id: b
+        text: >-
+          The subagent's permissionMode is honored, so it edits without prompts independently of the
+          parent.
+      - id: c
+        text: The subagent fails to launch because permissionMode conflicts with auto mode.
+      - id: d
+        text: Launching the subagent prompts you to confirm its permissionMode before it runs.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Under auto mode, a subagent's frontmatter permissionMode is ignored -- its actions are checked
+      by the classifier using the parent session's rules. So you cannot craft a subagent to skip
+      planning or permissions under auto. Launching a subagent also does not itself prompt for
+      permission.
+  - id: p-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A developer enables plan mode specifically to keep an untrusted prompt from doing damage,
+      reasoning "in plan mode nothing can edit my files, so a malicious instruction is harmless."
+      During the session Claude runs a shell command that exfiltrates a secret. What is the flaw in
+      the developer's reasoning?
+    choices:
+      - id: a
+        text: >-
+          Plan mode only guarantees no source edits and prompts like default; it still runs shell
+          commands, so it is not an isolation boundary against injection or arbitrary execution.
+      - id: b
+        text: Plan mode should have blocked the command, so this is a bug rather than a reasoning error.
+      - id: c
+        text: Plan mode silently upgraded itself to bypassPermissions once a command was requested.
+      - id: d
+        text: The developer forgot to also set acceptEdits, which is what actually blocks injection.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Plan mode's guarantee is "no source edits + same prompts as default" — it is about not editing
+      yet, not security. Commands still run (gated like default), so it is no defense against prompt
+      injection or exfiltration. Real isolation comes from sandboxing, deny rules, or the auto
+      classifier, not from plan mode.
+  - id: p-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 431
+    type: multiple_choice
+    prompt: >-
+      Two changes land on an engineer's desk. Change A renames one variable across five files (a
+      pure mechanical rename). Change B fixes a single function in an unfamiliar auth module where
+      the correct approach is unclear. The engineer plans A (because it is "multi-file") and skips
+      planning for B (because it is "just one file"). Why is this exactly backwards?
+    choices:
+      - id: a
+        text: >-
+          File count is the only documented signal, so the engineer applied the rule correctly and
+          nothing is backwards.
+      - id: b
+        text: Planning is always required for renames because renames can silently break references.
+      - id: c
+        text: >-
+          The break-even is uncertainty times blast radius, not file count alone; A is describable
+          in one sentence so skip it, while B is uncertain and risky so it warrants a plan.
+      - id: d
+        text: Single-file changes can never be planned, so B could not be planned even if desired.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The "one-sentence diff" rule and the "uncertain/multi-file/unfamiliar" rule together define a
+      two-axis decision, not a single file-count threshold. A mechanical rename is one sentence even
+      across many files, so skip the plan; an uncertain change in unfamiliar code earns a plan even
+      at one file. The engineer optimized on the wrong axis.
+  - id: p-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A user is stuck deciding between an offline-first and a server-authoritative sync model for a
+      new feature. They put Claude in plan mode and ask it to read the entire codebase to "figure
+      out the right approach." After reading 200 files Claude still cannot recommend one. What is
+      the real diagnosis?
+    choices:
+      - id: a
+        text: >-
+          This is an unstated product decision, not a code question; surveying code cannot resolve
+          it, so the leverage move is to interview the user (AskUserQuestion) to surface the
+          tradeoff.
+      - id: b
+        text: Claude needed acceptEdits mode to evaluate the approaches by prototyping them.
+      - id: c
+        text: >-
+          The codebase is simply too large for plan mode and should be split into subagents per
+          file.
+      - id: d
+        text: Plan mode disables recommendations, so Claude could never answer while in it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      No amount of code reading resolves an unstated product decision — that information lives with
+      the human, not in the repository. Exploration/plan mode is the right tool when requirements
+      are fixed but the technical approach is unclear; here the requirement itself is undecided, so
+      interviewing with AskUserQuestion is the higher-leverage move. Surveying code just burns
+      context.
+  - id: p-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      A finished plan, drafted after deep exploration of a subtle race condition, is approved with
+      the "Start new session" / clear-context option. The fresh implementation session then
+      reintroduces the very ordering bug the exploration had diagnosed. What most likely went wrong?
+    choices:
+      - id: a
+        text: Clearing context is always wrong; you should never start a fresh session after planning.
+      - id: b
+        text: >-
+          Clearing context discarded the exploration reasoning, and the subtle finding never made it
+          into the written plan, so the clean session lacked the nuance it needed.
+      - id: c
+        text: Approving a plan keeps you in plan mode, so no implementation should have happened at all.
+      - id: d
+        text: The Task tools were disabled, which is what caused the race condition to return.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Clearing context on accept trades away the exploration reasoning for a clean implementation
+      window. That is usually right when the plan is fully self-contained, but wrong when
+      implementation depends on subtle findings that never got written down. The cure is to capture
+      the nuance in the plan itself before clearing, not to forbid clearing outright.
+  - id: p-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: free_form
+    prompt: >-
+      A team adopts a strict "always plan before any change" rule. Within a week, developers
+      complain that trivial fixes now take twice as long. Diagnose why the blanket rule misfires,
+      and describe the two-part heuristic that should replace it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that plan mode "is useful but adds overhead," so planning is a cost, and
+            applying it to trivial changes spends that cost with no payoff.
+        - id: c2
+          text: >-
+            States the skip rule — if you could describe the diff in one sentence (typo, log line,
+            rename), do it directly.
+        - id: c3
+          text: >-
+            States the use rule — plan when the approach is uncertain, the change spans multiple
+            files, or the code is unfamiliar.
+      referenceAnswer: >-
+        The blanket rule misfires because planning is not free: the docs note plan mode is useful
+        but adds overhead, so forcing it onto one-sentence changes (a typo, a log line, a rename)
+        spends real effort for no benefit. The replacement is a two-part judgment: skip the plan
+        when you could describe the diff in one sentence, and reach for planning when you are
+        uncertain about the approach, the change touches multiple files, or you are unfamiliar with
+        the code. Together those weigh uncertainty and blast radius rather than mandating a plan
+        every time.
+      passThreshold: 0.6
+    guidance: >-
+      "Always plan" is an anti-pattern precisely because planning carries overhead. The documented
+      heuristics form a cost-benefit decision: act directly on trivial, well-understood diffs, and
+      spend the planning cost only when uncertainty or blast radius justifies it.
+  - id: p-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      A developer keeps a long-lived session under auto mode. They write a subagent whose
+      frontmatter sets permissionMode plan, expecting it to research without making edits. Under
+      auto, the subagent nonetheless edits files. What explains this?
+    choices:
+      - id: a
+        text: The frontmatter key must be planMode, not permissionMode, so it was silently dropped.
+      - id: b
+        text: Subagents cannot enter plan mode at all under any configuration.
+      - id: c
+        text: Auto mode forces every subagent into bypassPermissions, which overrides plan.
+      - id: d
+        text: >-
+          Under auto mode a subagent's declared permissionMode is ignored; its actions go through
+          the classifier with the parent session's rules instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Under auto mode, any permissionMode declared in a subagent's frontmatter is ignored — the
+      subagent's actions are routed through the classifier under the parent session's rules. So you
+      cannot make a subagent unilaterally skip editing by declaring plan in its frontmatter while
+      the parent runs auto. This is a specific auto-mode interaction, not a typo or a blanket ban.
+  - id: p-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 463
+    type: multiple_choice
+    prompt: >-
+      An engineer routes a hard refactor through Ultraplan "to be safe," but the project deploys on
+      Amazon Bedrock and the engineer also relies on Remote Control during the session. Ultraplan
+      never starts. Beyond the obvious convenience cost, which combination of constraints explains
+      the failure and the misjudged tradeoff?
+    choices:
+      - id: a
+        text: >-
+          Ultraplan runs locally, so the Bedrock backend is irrelevant; the failure must be a
+          network glitch.
+      - id: b
+        text: Ultraplan requires acceptEdits mode, which the engineer forgot to enable.
+      - id: c
+        text: >-
+          Ultraplan runs on Claude Code on the web (cloud) and is unavailable on
+          Bedrock/Vertex/Foundry, and it disconnects Remote Control — so for a Bedrock user it was
+          the wrong tool, not just a heavier one.
+      - id: d
+        text: Ultraplan only fails because the refactor was describable in one sentence.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Ultraplan hands planning to a Claude Code on the web session in Anthropic's cloud; it needs a
+      web account and GitHub repo, disconnects Remote Control, and is not available on Bedrock,
+      Vertex, or Foundry. For a Bedrock user it is not merely heavier than local plan mode — it is
+      unavailable, so the value-vs-cost analysis never even applies.
+  - id: p-400-ff-h
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      A team writes their plans into PLAN.md so a fresh session can implement them and an
+      adversarial subagent can review the diff against the file. A reviewer later complains the plan
+      "didn't match what was actually needed." Analyze the central tradeoff between a
+      plan-as-artifact (written file) and a plan-as-conversation (kept in context), and when each
+      fails.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the artifact benefit — a written plan lets a fresh session implement it and an
+            adversarial subagent review the diff against it.
+        - id: c2
+          text: >-
+            Explains the artifact risk — a written plan can go stale or omit tacit context that
+            lived only in the exploration.
+        - id: c3
+          text: >-
+            Explains the conversation tradeoff — keeping the plan in context preserves full nuance
+            but is fragile to compaction (it can be lost or summarized away).
+      referenceAnswer: >-
+        Writing the plan to PLAN.md (or SPEC.md, or Ultraplan's Cancel-to-save) makes it portable: a
+        fresh session can execute it and an adversarial subagent can check the diff against it
+        without seeing the author's reasoning. The cost is that a written plan can go stale or
+        quietly omit the tacit context discovered during exploration, which is likely what bit this
+        team. Keeping the plan in-conversation preserves the full nuance but is fragile to
+        compaction — the very details you relied on can be summarized away as context fills. The
+        judgment is whether the plan is self-contained enough to survive being externalized.
+      passThreshold: 0.6
+    guidance: >-
+      Plan-as-artifact buys portability and independent review at the risk of staleness and lost
+      tacit context; plan-as-conversation buys full nuance at the risk of compaction. The reviewer's
+      complaint is the classic artifact failure: the written plan omitted something the exploration
+      knew.
+  - id: p-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: multiple_choice
+    prompt: >-
+      A lead instructs an adversarial reviewer subagent to "find every gap in this diff." It returns
+      eleven findings; the author dutifully implements all eleven, adding new abstractions and tests
+      for inputs that can never occur. The diff doubles in size. What is the root cause and the
+      documented correction?
+    choices:
+      - id: a
+        text: >-
+          The reviewer should have applied its own fixes instead of reporting them, which would have
+          prevented the bloat.
+      - id: b
+        text: >-
+          A gap-finding reviewer over-reports by design; scope it to flag only gaps affecting
+          correctness or stated requirements and treat the rest as optional.
+      - id: c
+        text: Adversarial review must run under bypassPermissions or it returns false positives.
+      - id: d
+        text: The author should never run a reviewer subagent on a diff, only on a plan.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A reviewer told to find gaps is biased to produce them and will report some even when work is
+      sound; acting on every finding drifts into over-engineering — extra abstractions and tests for
+      impossible cases. The fix is calibration: scope the reviewer to correctness or stated
+      requirements only and treat everything else as optional, rather than mandatory work.
+  - id: p-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: >-
+      A developer presses Shift+Tab once after Claude finishes presenting a plan, expecting that to
+      "accept and run it." Nothing gets implemented and the session is now back in default mode.
+      Why?
+    choices:
+      - id: a
+        text: >-
+          Shift+Tab cycles modes and pressing it in plan mode leaves plan mode without approving any
+          plan; approval is a separate selection from the approve-options menu.
+      - id: b
+        text: Shift+Tab approves the plan but only after a second confirmation press.
+      - id: c
+        text: The plan was auto-rejected because the session had not been named yet.
+      - id: d
+        text: Default mode cannot execute approved plans, so the implementation was discarded.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Pressing Shift+Tab again while in plan mode leaves plan mode without approving a plan — it is
+      a mode toggle, not an approval. Approving is a distinct choice (approve and start in auto,
+      accept edits, review each edit, keep planning, or refine with Ultraplan). The developer cycled
+      out instead of selecting an approve option, so no plan executed.
+  - id: p-400-ff-k
+    tier: 400
+    bloom: analyze
+    difficulty: 477
+    type: free_form
+    prompt: >-
+      A task list contains either one giant task ("Build the feature") or forty micro-tasks ("add
+      import", "rename var"). Both teams report the list is useless. Diagnose the failure at each
+      extreme and state the grain that the "one in-progress, verifiable steps" discipline implies.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains too-coarse tasks lose the one-in-progress / verifiable-step benefit — a single
+            giant task gives no legible checkpoints or progress.
+        - id: c2
+          text: >-
+            Explains too-fine tasks become checklist theater that clutters context without adding
+            signal.
+        - id: c3
+          text: >-
+            States the right grain — each task should end in a check Claude can run (a verifiable
+            step).
+      referenceAnswer: >-
+        The coarse list fails because one giant task offers no legible checkpoint: there is never
+        more than one thing in progress and no verifiable step until the very end, so progress is
+        invisible. The fine-grained list fails the opposite way — forty trivial items are checklist
+        theater that clutter context and add no real signal about whether the work is correct. The
+        discipline implies a middle grain: decompose so each task ends in a check Claude can
+        actually run (a test, a build exit code, a screenshot), keeping one task in progress at a
+        time with a real verification at its boundary.
+      passThreshold: 0.6
+    guidance: >-
+      Decomposition grain is a judgment between two failure modes. Too coarse and you lose
+      verifiable checkpoints and the one-in-progress focus; too fine and the list becomes noise. The
+      right grain ties each task to a check Claude can run, which is also what makes "one
+      in-progress at a time" meaningful.
+  - id: p-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      During a focused plan-mode investigation Claude opens hundreds of files, and the main session
+      starts giving worse, slower answers. A developer concludes "plan mode is broken." What is the
+      actual cause and the documented fix?
+    choices:
+      - id: a
+        text: Plan mode leaks memory and must be restarted with --permission-mode default.
+      - id: b
+        text: >-
+          Reading files in plan mode is what triggers compaction errors, so reads should be
+          disabled.
+      - id: c
+        text: The Task tools were left enabled, which slows every read.
+      - id: d
+        text: >-
+          Unscoped exploration filled the context window (performance degrades as context fills);
+          scope the investigation narrowly or delegate it to a subagent so it does not consume the
+          main context.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      This is the "infinite exploration" anti-pattern: context fills fast and performance degrades
+      as it does. The documented fix is to scope investigations narrowly, or to delegate exploration
+      to a subagent that reads in its own context and returns only a summary — keeping the main
+      context lean. Plan mode itself is not malfunctioning.
+  - id: p-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 441
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on relying on TodoWrite's exact behavior in their workflow scripts and
+      shared prompts. After upgrading Claude Code, task tracking silently stops behaving as their
+      docs describe. What is the underlying portability hazard?
+    choices:
+      - id: a
+        text: TodoWrite was renamed to TaskWrite, so only the name changed.
+      - id: b
+        text: Task tracking was removed entirely and must now be done manually in comments.
+      - id: c
+        text: >-
+          TodoWrite is disabled by default in current versions in favor of the Task tools, so
+          depending on TodoWrite being the active mechanism is fragile across versions.
+      - id: d
+        text: The Task tools require permission, which broke the team's non-interactive scripts.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      TodoWrite still exists but is disabled by default now; the primary tools are TaskCreate,
+      TaskGet, TaskList, and TaskUpdate (none require permission). Building a workflow on TodoWrite
+      being the active tool is a portability hazard because a version change flips the default.
+      Tracking still works — through the Task tools — so the fix is to target those, not to assume
+      TodoWrite.
+  - id: p-400-ff-n
+    tier: 400
+    bloom: analyze
+    difficulty: 449
+    type: free_form
+    prompt: >-
+      A developer keeps one session open all day: they plan a refactor, then break off to debug an
+      unrelated flaky test, then draft release notes, then return to the refactor — never running
+      /clear, reasoning that "one focused session is more efficient because nothing is lost between
+      tasks." By the afternoon Claude's answers on the refactor are noticeably worse. Diagnose why
+      the kitchen-sink session degrades, explain why "staying focused" does not prevent it, and
+      state the documented fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that mixing unrelated tasks accumulates irrelevant material in the single
+            context window, and that a context filled with off-task content degrades the model's
+            performance.
+        - id: c2
+          text: >-
+            Explains that human "focus" does not help — the prior tasks' tokens (flaky-test
+            debugging, release notes) still sit in context regardless of the developer's attention,
+            so the contamination is structural, not a discipline problem.
+        - id: c3
+          text: >-
+            States the documented fix is to /clear between unrelated tasks so each starts from a
+            clean, relevant context (and notes permission modes are orthogonal to this
+            contamination).
+      referenceAnswer: >-
+        The kitchen-sink session degrades because a single context window now holds three unrelated
+        bodies of work — the refactor, the flaky-test debugging, and the release notes. None of that
+        off-task material is removed just because the developer mentally moves on, so by the
+        afternoon the refactor reasoning is competing with a window full of irrelevant tokens, and
+        performance drops as context fills with material that does not pertain to the current task.
+        "Staying focused" cannot fix this: focus is a property of the human, not of the context
+        window, so the earlier tasks' tokens remain and keep diluting relevance. The documented fix
+        is to /clear between unrelated tasks so each one starts from a clean, relevant context.
+        Permission modes are orthogonal — switching modes does nothing about the contamination.
+      passThreshold: 0.6
+    guidance: >-
+      The kitchen-sink session is a contamination anti-pattern: unrelated tasks pile irrelevant
+      material into one context window and degrade performance, and human focus does not unload
+      those tokens. The fix is /clear between unrelated tasks for a clean, relevant context each
+      time; permission modes are unrelated to this problem.
+  - id: p-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A reviewer is handed a plan that reads, end to end, as a clear description of the desired
+      behavior but never names a way to confirm the result. Per the planning guidance, what is the
+      most important structural weakness, and why does it matter most for an agent?
+    choices:
+      - id: a
+        text: The plan is too short; plans must always exceed a minimum length to be valid.
+      - id: b
+        text: >-
+          The plan does not end in a verifiable check, so the agent has no objective signal to
+          iterate against and may claim success on broken work.
+      - id: c
+        text: The plan was not drafted in Ultraplan, so it cannot be trusted.
+      - id: d
+        text: The plan lacks a session name, which is what blocks implementation.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The guidance "give Claude a way to verify its work" means a plan should end in a check —
+      tests, a build exit code, a linter, a fixture-diff script, or a screenshot comparison. Without
+      a closing check, the agent optimizes against nothing and can declare "done" on broken work. A
+      clear description of behavior is necessary but not sufficient; the verifiable endpoint is what
+      makes it actionable.
+  - id: p-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 461
+    type: multiple_choice
+    prompt: >-
+      An engineer wants "fewer prompts" during a long implementation phase and reaches for
+      bypassPermissions, citing planning convenience. A colleague pushes back. What is the strongest
+      reason bypassPermissions is the wrong lever here, given the documented options?
+    choices:
+      - id: a
+        text: bypassPermissions still prompts on every edit, so it would not reduce prompts at all.
+      - id: b
+        text: bypassPermissions can only be set inside plan mode, which the engineer is not in.
+      - id: c
+        text: >-
+          The docs steer toward auto mode (classifier-checked) for fewer prompts with safety;
+          bypassPermissions removes all prompts and is meant for isolated containers/VMs, offering
+          no injection protection.
+      - id: d
+        text: bypassPermissions disables the Task tools, breaking the implementation phase.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      To reduce prompts while keeping a safety net, the documented choice is auto mode, whose
+      classifier checks actions. bypassPermissions removes prompts entirely and is intended for
+      isolated containers/VMs; it provides no injection protection, so using it for everyday
+      convenience trades away exactly the oversight you want during implementation.
+  - id: p-400-ff-q
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A developer cycles into plan mode, gets a plan, and selects "approve and accept edits." They
+      are surprised that later edits stop prompting and that they are no longer in plan mode for the
+      next unrelated task. Explain the two state transitions that approval triggered and how to get
+      back to planning.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that approving the plan exits plan mode (it does not keep you in plan mode).
+        - id: c2
+          text: >-
+            States that the session switched to the implementation permission mode named by the
+            chosen approve option — here accept-edits — which is why later edits stop prompting.
+        - id: c3
+          text: >-
+            States that to plan again you must cycle back with Shift+Tab or prefix the next prompt
+            with /plan.
+      referenceAnswer: >-
+        Approving the plan did two things at once. First, it exited plan mode — approval is a
+        hand-off out of planning, not a way to stay in it. Second, it switched the session into the
+        permission mode the chosen approve option named; "approve and accept edits" puts the session
+        in accept-edits, which is why subsequent edits no longer prompt. That mode persists into the
+        next task, so to plan again the developer must deliberately cycle back into plan mode with
+        Shift+Tab or prefix the next prompt with /plan.
+      passThreshold: 0.6
+    guidance: >-
+      Approval is a deliberate mode transition: it exits plan mode and enters the implementation
+      mode the approve option describes, then editing begins. The misconception that approving keeps
+      you in plan mode (or only affects the current task) is the trap here; you must re-enter plan
+      mode explicitly.
+  - id: p-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A developer plans locally, then refines the plan in Ultraplan, and from the browser review
+      picks "teleport back to terminal" then "Start new session." They are confused that their
+      earlier local exploration discussion is gone but the plan is present. Why is this the expected
+      behavior, and how does it differ from "Implement here"?
+    choices:
+      - id: a
+        text: Start new session and Implement here are identical; the difference is cosmetic.
+      - id: b
+        text: Start new session keeps all context and Implement here is what clears it.
+      - id: c
+        text: Both options save the plan to a file without executing, so nothing should run either way.
+      - id: d
+        text: >-
+          Start new session clears the conversation and begins fresh with only the plan as context,
+          while Implement here injects the plan into the current conversation and keeps the existing
+          context.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The teleport options are a context-management choice. "Start new session" clears the
+      conversation and begins fresh with only the plan as context — so the prior local discussion is
+      intentionally gone. "Implement here" instead injects the plan into the current conversation,
+      preserving existing context. "Cancel" is the third option, which saves the plan to a file
+      without executing.
+  - id: p-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      A user wrote a one-line feature description as their "spec," handed it to a fresh session, and
+      the implementation drifted: it touched modules that were supposed to be untouched and there
+      was no agreed way to confirm it worked. Per the guidance on self-contained specs, which three
+      things were missing?
+    choices:
+      - id: a
+        text: The permission mode to use, the Shift+Tab sequence, and the session name.
+      - id: b
+        text: >-
+          The files/interfaces involved, an explicit out-of-scope statement, and an end-to-end
+          verification step.
+      - id: c
+        text: A full inline copy of the codebase, the git history, and the CI config.
+      - id: d
+        text: A list of every file in the repo, the model id, and the token budget.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A self-contained spec names the files and interfaces involved, states what is out of scope,
+      and ends with an end-to-end verification step — exactly the three things missing here, which
+      is why the implementation drifted out of scope with no way to confirm it. A bare feature
+      description is incomplete; pasting the whole codebase or mode keystrokes is neither necessary
+      nor the point.
+  - id: p-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A team treats plan mode as their security control for running model-suggested commands against
+      a production-adjacent box, reasoning "plan mode is read-only, so it's safe." Diagnose every
+      false assumption in this setup and state what would actually provide the isolation they think
+      they have.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that plan mode prevents source edits but is not a security boundary — it still
+            runs shell commands, gated by the same prompts as default.
+        - id: c2
+          text: >-
+            States that "read-only" refers to reads running without prompting, not to a guarantee
+            that no commands execute or that injection is blocked.
+        - id: c3
+          text: >-
+            States that real isolation requires sandboxing, deny rules, or the auto classifier (not
+            plan mode), and that confusing plan mode with auto's classifier or bypassPermissions is
+            the error.
+      referenceAnswer: >-
+        The setup rests on several false assumptions. First, plan mode only guarantees no source
+        edits; it is not a security boundary, and it still runs shell commands, gated by the same
+        prompts as default mode. Second, "read-only" in the permission table means reads run without
+        prompting, not that command execution is impossible or that prompt injection is blocked — a
+        malicious instruction can still get a destructive command proposed and approved. Third, the
+        safety classifier belongs to auto mode, not plan mode, so plan mode provides none of that
+        screening. Real isolation against arbitrary execution comes from sandboxing or
+        VMs/containers, deny rules, or running under the auto classifier — not from being in plan
+        mode. On a production-adjacent box, plan mode is the wrong tool for the safety they want.
+      passThreshold: 0.6
+    guidance: >-
+      Plan mode is about not editing yet, not security. It runs commands and prompts like default,
+      "read only" just means reads don't prompt, and the classifier is an auto-mode feature. Genuine
+      isolation needs sandboxing, deny rules, or auto — conflating any of these with plan mode is
+      the core mistake.
+  - id: p-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team mandates that every code change, including one-line typo fixes, must go through plan
+      mode with an approved plan before any edit. They justify it as "planning is always safer."
+      Which critique best evaluates this policy against the documented guidance?
+    choices:
+      - id: a
+        text: >-
+          The policy misapplies a real heuristic: the docs say plan mode is useful but adds
+          overhead, and "if you could describe the diff in one sentence, skip the plan" — mandating
+          it for trivial, one-sentence diffs spends overhead with no payoff.
+      - id: b
+        text: >-
+          The policy is sound because plan mode has zero overhead, so there is no cost to planning
+          trivial changes.
+      - id: c
+        text: >-
+          The policy is correct because plan mode is the only mode in which Claude is allowed to
+          read files, so skipping it would block exploration.
+      - id: d
+        text: >-
+          The policy should instead mandate bypassPermissions for trivial changes to remove the
+          approval step entirely.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Planning is a cost, not free: the docs explicitly call plan mode "useful, but also adds
+      overhead" and give the one-sentence-diff rule for skipping it. A blanket "always plan" mandate
+      burns overhead on changes whose blast radius and uncertainty do not justify it. Reading is not
+      exclusive to plan mode, and bypassPermissions is not the remedy for over-mandated planning.
+  - id: p-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 537
+    type: multiple_choice
+    prompt: >-
+      Two changes are on the table: (1) a mechanical five-file rename of a well-understood symbol,
+      and (2) a single-file edit deep in an unfamiliar subsystem whose behavior the developer does
+      not understand. A reviewer argues "always plan the bigger change," meaning change (1). Which
+      judgment best weighs the plan-vs-act decision?
+    choices:
+      - id: a
+        text: >-
+          Plan (1) and skip (2), because the number of files touched is the only signal that matters
+          for planning.
+      - id: b
+        text: Skip planning for both, since neither is a brand-new feature.
+      - id: c
+        text: >-
+          The decision is uncertainty times blast radius, not file count alone: the five-file rename
+          is a one-sentence diff so it can be done directly, while the single-file edit in
+          unfamiliar code is exactly where planning pays off.
+      - id: d
+        text: >-
+          Plan both equally, because once any change touches code the developer has not written,
+          file count becomes irrelevant and planning is mandatory.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The break-even for planning is uncertainty multiplied by blast radius, not task size alone. A
+      mechanical multi-file rename is describable in one sentence and low-uncertainty, so act
+      directly; a single edit in unfamiliar code is high-uncertainty even at low file count, so
+      planning is the higher-leverage move. Treating file count as the sole axis inverts the actual
+      call here.
+  - id: p-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 489
+    type: multiple_choice
+    prompt: >-
+      A developer building a new multi-stakeholder feature opens plan mode and immediately tells
+      Claude to "read the whole codebase and figure out the best design." Two hours later Claude has
+      read hundreds of files, the requirements are still ambiguous, and the proposed design
+      contradicts an unstated product constraint. Which critique most accurately diagnoses the
+      failure?
+    choices:
+      - id: a
+        text: >-
+          Exploration was the wrong first move for ambiguous requirements; no amount of code reading
+          resolves an unstated product decision, so the higher-leverage step was to interview the
+          human with AskUserQuestion to surface tradeoffs, and the unscoped read triggered the
+          infinite-exploration anti-pattern.
+      - id: b
+        text: >-
+          Plan mode should never be used for new features; the developer should have started in auto
+          mode.
+      - id: c
+        text: >-
+          The problem is that plan mode cannot read more than a few files, so it produced a shallow
+          design.
+      - id: d
+        text: >-
+          The design contradicted a constraint only because Claude lacked bypassPermissions to fully
+          inspect the repository.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      This conflates two distinct ambiguities. Unstated requirements live in the human's head, not
+      the code, so exhaustive surveying cannot resolve them; the documented move is the interview
+      pattern with AskUserQuestion to surface tradeoffs. The unscoped "read everything" prompt is
+      also the infinite-exploration anti-pattern, whose fix is narrow scoping or subagent
+      delegation, not more permissions.
+  - id: p-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 531
+    type: free_form
+    prompt: >-
+      A teammate proposes a security policy: "Run all untrusted, possibly prompt-injected tasks in
+      plan mode, because plan mode is read-only and therefore safe." Critique this design. Identify
+      what plan mode does and does not guarantee, and state what an actual isolation boundary would
+      require.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that plan mode's guarantee is only "no source edits," not a security boundary —
+            Claude still runs shell commands while exploring, gated by the same prompts as default
+            mode.
+        - id: c2
+          text: >-
+            States that plan mode offers no protection against prompt injection or arbitrary command
+            execution.
+        - id: c3
+          text: >-
+            States that real isolation requires sandboxing, deny rules, or the auto-mode classifier
+            — not plan mode.
+      referenceAnswer: >-
+        The policy mistakes "no source edits" for "safe." Plan mode prevents Claude from editing
+        source, but it still runs shell commands to explore, gated by the same permission prompts as
+        default mode, so a prompt-injected task could still execute commands. Plan mode is not a
+        security boundary and offers no protection against injection or arbitrary execution. Real
+        isolation against untrusted input requires sandboxing, explicit deny rules, or the auto-mode
+        classifier — plan mode alone is the wrong tool for that job.
+      passThreshold: 0.6
+    guidance: >-
+      Plan mode is about not editing yet, not about security. Commands still run and prompt the same
+      way default does, so injection and arbitrary execution remain possible. The injection
+      classifier belongs to auto mode; durable isolation comes from sandboxes and deny rules.
+      Treating "read-only" as a safety guarantee is the core error.
+  - id: p-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: >-
+      After Claude's implementation goes wrong twice, a developer keeps correcting it in the same
+      long-running session, appending each failed attempt to the conversation. Progress stalls.
+      Which evaluation of this approach is most accurate?
+    choices:
+      - id: a
+        text: >-
+          This is correct discipline: keeping every failed attempt in context gives Claude maximum
+          information to converge.
+      - id: b
+        text: >-
+          The cluttered context full of failed approaches is itself the problem; after roughly two
+          failed corrections the documented move is to /clear and write a better initial prompt, not
+          to keep layering corrections.
+      - id: c
+        text: The fix is to switch to bypassPermissions so corrections apply without prompts.
+      - id: d
+        text: >-
+          The fix is to add more in-progress tasks to the task list so Claude tracks each failed
+          attempt.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A context polluted with failed approaches actively hurts: the model keeps re-anchoring on the
+      bad paths. The documented remedy after about two failed corrections is to /clear and start
+      over with a sharper initial prompt, ideally informed by what you learned. Removing prompts or
+      padding the task list does nothing about the underlying context contamination.
+  - id: p-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      When approving a plan, Claude Code (with showClearContextOnPlanAccept enabled) can offer to
+      clear the planning context before implementation. Evaluate when clearing the context is the
+      right call and when keeping it is better. Give the deciding factor.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that clearing trades away the exploration reasoning for a clean implementation
+            context.
+        - id: c2
+          text: >-
+            States that clearing is usually right when the plan is self-contained (the written plan
+            captures everything implementation needs).
+        - id: c3
+          text: >-
+            States that keeping context is better when implementation depends on subtle findings
+            from exploration that did not make it into the written plan.
+      referenceAnswer: >-
+        Clearing the planning context trades away all the exploration reasoning in exchange for a
+        clean, uncluttered implementation window. That trade is usually right when the plan is
+        self-contained — when the written plan already names the files, interfaces, scope, and
+        verification so nothing tacit is lost. Keeping the context is better when implementation
+        depends on subtle findings surfaced during exploration that never made it into the written
+        plan; clearing would discard information the implementation actually needs. The deciding
+        factor is whether the plan fully captures what implementation requires.
+      passThreshold: 0.6
+    guidance: >-
+      The clear-on-accept choice is a context-management tradeoff. A self-contained plan makes
+      clearing safe and beneficial (clean slate, no clutter). But if crucial nuance lives only in
+      the exploration reasoning and not the plan text, clearing throws it away. Judge by the
+      completeness of the written plan, not by habit.
+  - id: p-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 501
+    type: multiple_choice
+    prompt: >-
+      A developer needs a quick plan for a small, well-scoped local refactor and reaches for
+      Ultraplan "to be thorough." A colleague argues this is overkill. Which evaluation of local
+      plan mode vs Ultraplan for this case is correct?
+    choices:
+      - id: a
+        text: >-
+          Ultraplan is always preferable since cloud drafting is strictly more capable than local
+          plan mode.
+      - id: b
+        text: >-
+          Ultraplan's value is a richer review surface and hands-off cloud drafting, worth it for
+          large or multi-stakeholder plans; for a small local refactor it adds a cloud round-trip
+          and requires a web account plus a GitHub repo, so local plan mode is the better fit.
+      - id: c
+        text: >-
+          The colleague is wrong because Ultraplan runs entirely on the local machine, so there is
+          no overhead difference.
+      - id: d
+        text: Ultraplan should be used because local plan mode cannot produce an approvable plan.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Ultraplan earns its cost on large or multi-stakeholder plans through inline per-section review
+      and hands-off cloud drafting. For a small, well-scoped local refactor that value does not
+      materialize, while the costs do: a cloud round-trip and the requirement of a web account plus
+      a GitHub repo (and it is unavailable on Bedrock/Vertex/Foundry). Local plan mode is the
+      proportionate choice.
+  - id: p-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 507
+    type: multiple_choice
+    prompt: >-
+      A team wants a finished plan reviewed for gaps before implementation. They spin up a fresh
+      subagent told to "find every possible gap, missing test, and edge case in this plan." The
+      reviewer returns 19 findings; the team dutifully implements all 19, adding several
+      abstractions and tests for cases that cannot occur. Which critique best evaluates this review
+      process?
+    choices:
+      - id: a
+        text: The process is ideal; implementing every reviewer finding maximizes correctness.
+      - id: b
+        text: >-
+          The problem is that the reviewer shared the author's reasoning, so it could not be
+          objective.
+      - id: c
+        text: >-
+          Adversarial review is invalid unless run under bypassPermissions, which is why the
+          findings were wrong.
+      - id: d
+        text: >-
+          A reviewer prompted to find gaps over-reports by design and will surface findings even
+          when work is sound; chasing all of them causes over-engineering. The reviewer should be
+          scoped to flag only gaps affecting correctness or stated requirements, with the rest
+          treated as optional.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A gap-hunting reviewer is biased to produce gaps by construction, so it reports some even when
+      the implementation is sound. Treating all findings as mandatory drives over-engineering:
+      needless abstractions and tests for impossible cases. The documented calibration is to scope
+      the reviewer to correctness or stated requirements only and treat everything else as optional.
+      A fresh reviewer seeing only the diff is the strength here, not the flaw.
+  - id: p-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
+    type: free_form
+    prompt: >-
+      Compare writing a plan to a file (SPEC.md / PLAN.md) against keeping the plan only in the live
+      conversation. Evaluate the tradeoff: what does the written artifact enable, and what is its
+      risk versus the in-conversation plan?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a written plan lets a fresh session implement it and lets an adversarial
+            subagent review the diff against it (the artifact is reusable and independently
+            checkable).
+        - id: c2
+          text: >-
+            States that a written plan can go stale or omit tacit context that lived in the
+            conversation.
+        - id: c3
+          text: >-
+            States that an in-conversation plan keeps full context but is more fragile to
+            compaction/loss.
+      referenceAnswer: >-
+        A written plan as an artifact (SPEC.md, PLAN.md, or an Ultraplan plan saved via Cancel) is
+        reusable and independently checkable: a fresh session can implement it with no prior
+        context, and an adversarial subagent can review the resulting diff against it. The risk is
+        that a written plan can go stale as understanding evolves and can omit tacit context that
+        only existed in the live conversation. Keeping the plan in-conversation preserves that full
+        context but is fragile — it can be lost to compaction or a /clear. The right choice depends
+        on whether you need portability and independent review (write it) or rich tacit context for
+        immediate execution (keep it live).
+      passThreshold: 0.6
+    guidance: >-
+      Plan-as-artifact buys portability and independent, anchored-free review, at the cost of
+      staleness and lost tacit context. Plan-as-conversation keeps everything in context but is
+      vulnerable to compaction. This is a genuine tradeoff, not a one-size-fits-all rule.
+  - id: p-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A developer decomposes a feature into 47 micro-tasks in the task list, several of which are
+      things like "open the file" and "read the import block," and none of which end in a runnable
+      check. Which evaluation of this decomposition granularity is most accurate?
+    choices:
+      - id: a
+        text: This is ideal granularity; more, smaller tasks always make progress more legible.
+      - id: b
+        text: The tasks are too coarse and should be split further until each is a single keystroke.
+      - id: c
+        text: >-
+          Granularity does not matter because the Task tools enforce one in-progress task at a time
+          regardless.
+      - id: d
+        text: >-
+          The tasks are too fine and become checklist theater that clutters context; the right grain
+          is coarser, where each task ends in a check Claude can actually run.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Decomposition has a sweet spot. Too-coarse tasks lose the one-in-progress, verifiable-step
+      benefit; too-fine tasks (like "open the file") become checklist theater that clutters context
+      without adding signal. The right grain is tasks that each end in a check Claude can run.
+      One-in-progress is a discipline, not an enforced limit that fixes bad granularity.
+  - id: p-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 513
+    type: multiple_choice
+    prompt: >-
+      A developer writes "Add dark mode" as a one-line spec, then starts a fresh session to
+      implement it. The fresh session, lacking context, makes inconsistent choices and touches files
+      the developer did not intend. Which critique best identifies why the spec was inadequate for
+      fresh-session execution?
+    choices:
+      - id: a
+        text: >-
+          The spec failed because fresh sessions cannot read files; it should have pasted the entire
+          codebase inline.
+      - id: b
+        text: >-
+          A self-contained spec for fresh-session execution must name the files and interfaces
+          involved, state what is explicitly out of scope, and end with an end-to-end verification
+          step; a bare feature description leaves all of that to be guessed.
+      - id: c
+        text: >-
+          The spec was fine; the real fix is to never start a fresh session and always implement in
+          the planning conversation.
+      - id: d
+        text: The spec should have specified the permission mode and exact Shift+Tab sequence to press.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The whole point of a self-contained spec is that a context-free session can execute it
+      correctly. A bare feature description forces the fresh session to guess scope and structure.
+      The documented minimum is naming the files/interfaces, stating what is out of scope, and
+      ending in an end-to-end verification step. Pasting the codebase or specifying keystrokes
+      misses the actual gap.
+  - id: p-500-ff-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      A plan ends with the step "make sure the feature works correctly." Critique this as a
+      plan-closing step, and rewrite the principle it should follow. Reference what the docs say a
+      verifiable check looks like.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Critiques the step as unverifiable — "works correctly" is not a check Claude can read
+            and iterate against, so it gives no objective pass/fail signal.
+        - id: c2
+          text: >-
+            States the principle: a plan should end in a verifiable check Claude can run and loop
+            against.
+        - id: c3
+          text: >-
+            Names at least one concrete documented check (tests, a build exit code, a linter, a
+            fixture-diff script, or a screenshot comparison) as the rewrite.
+      referenceAnswer: >-
+        "Make sure the feature works correctly" is a non-check: there is no objective signal Claude
+        can read, so it cannot tell pass from fail and may declare success on broken work. The
+        principle a plan should follow is to end in a verifiable check Claude can run and iterate
+        against. Rewritten, the closing step should be something concrete like "the new test suite
+        passes," "the build exits 0," "the linter reports no errors," "the fixture-diff script shows
+        no diff," or "the screenshot matches the baseline" — any of which gives the agent ground
+        truth to loop on.
+      passThreshold: 0.6
+    guidance: >-
+      Verification coupling is what makes a plan actionable. A closing step phrased as a subjective
+      claim ("works correctly") gives no iteration signal; a concrete check (tests pass, build exits
+      0, screenshot matches) gives the agent an objective target. The fix is to replace the claim
+      with a runnable check.
+  - id: p-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A developer authors a subagent with permissionMode set to acceptEdits in its frontmatter,
+      intending the subagent to skip planning and edit freely. They run the parent session in auto
+      mode. The subagent's edits still go through the parent's permission handling. Which evaluation
+      explains this correctly?
+    choices:
+      - id: a
+        text: >-
+          Under auto mode a subagent's declared permissionMode is ignored; its actions go through
+          the classifier with the parent session's rules, so you cannot make a subagent skip
+          planning or permissions this way under auto.
+      - id: b
+        text: The subagent frontmatter is correct, but acceptEdits is not a real permissionMode value.
+      - id: c
+        text: >-
+          The subagent always inherits exactly the parent's permissionMode verbatim in every mode,
+          so the frontmatter never has any effect anywhere.
+      - id: d
+        text: >-
+          The fix is to set the subagent's permissionMode to bypassPermissions, which auto mode
+          honors for subagents.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Under auto mode, a subagent's frontmatter permissionMode is ignored — its actions are routed
+      through the auto classifier under the parent session's rules. So you cannot use subagent
+      frontmatter to make a subagent skip planning or escalate permissions while the parent runs in
+      auto. This is specific to auto-mode interaction, and bypassPermissions in frontmatter does not
+      override it.
+  - id: p-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A developer keeps one long session open all day, planning a refactor, then debugging an
+      unrelated flaky test, then drafting release notes, then returning to the refactor — all
+      without clearing. They reason "as long as I stay focused, one session is more efficient."
+      Which critique is most accurate?
+    choices:
+      - id: a
+        text: >-
+          The reasoning is sound; a single session is always more efficient because nothing is lost
+          between tasks.
+      - id: b
+        text: >-
+          The only problem is that they should have used bypassPermissions to speed up the unrelated
+          debugging.
+      - id: c
+        text: >-
+          The kitchen-sink session is an anti-pattern: mixing unrelated tasks pollutes context with
+          irrelevant material that degrades performance; the fix is to /clear between unrelated
+          tasks.
+      - id: d
+        text: >-
+          The fix is to disable plan mode so the refactor and release notes share one permission
+          mode.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      "Staying focused" does not save a context window from being polluted by unrelated work; the
+      refactor context, the flaky-test debugging, and the release notes all accumulate and degrade
+      performance. The documented fix is to /clear between unrelated tasks so each starts with a
+      clean, relevant context. Permission modes are orthogonal to this contamination problem.
+  - id: p-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      A developer is deciding how to handle requirement ambiguity for a new feature. They can either
+      (a) interview the human with AskUserQuestion to surface tradeoffs, or (b) spend plan mode
+      exhaustively surveying the codebase. Explain the decision rule for choosing between these, and
+      why picking the wrong one wastes context.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that when requirements are ambiguous (unstated product/UX/edge-case decisions),
+            the right move is to interview the human with AskUserQuestion, because no amount of code
+            reading resolves an unstated decision.
+        - id: c2
+          text: >-
+            States that when requirements are fixed but the technical approach is unclear,
+            exploration / plan mode is the right tool.
+        - id: c3
+          text: >-
+            Explains that picking the wrong tool wastes context — surveying code to answer a product
+            question burns the context window without ever resolving the ambiguity.
+      referenceAnswer: >-
+        The decision rule turns on which kind of ambiguity you face. If the ambiguity is about what
+        to build — unstated product decisions, UX choices, edge-case policy — interview the human
+        with AskUserQuestion, because that information lives in their head and no amount of code
+        surveying will surface it. If the requirements are fixed but the technical approach is
+        unclear, exploration in plan mode is the right tool, because the answer is in the codebase.
+        Picking the wrong one wastes context: surveying the codebase to resolve a product question
+        reads file after file and fills the context window without ever answering the question,
+        leaving you ambiguous and contextually poorer.
+      passThreshold: 0.6
+    guidance: >-
+      Two ambiguities, two tools. Unstated requirements need a human interview (AskUserQuestion
+      surfaces tradeoffs as multiple-choice); an unclear technical approach with fixed requirements
+      needs code exploration. The cost of misrouting is wasted context: code reading cannot answer a
+      product question.
+  - id: p-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: multiple_choice
+    prompt: >-
+      During exploration in plan mode for a large feature, the developer notices the context window
+      is filling fast as Claude reads file after file, and performance is starting to degrade. A
+      teammate says "that's fine, plan mode reads don't count against context." Which evaluation and
+      remedy is correct?
+    choices:
+      - id: a
+        text: The teammate is right; reads performed in plan mode are free and do not consume context.
+      - id: b
+        text: >-
+          Reads in plan mode do consume the main context like any reads, and unscoped exploration
+          that fills it is the infinite-exploration anti-pattern; the fix is to scope the
+          investigation narrowly or delegate it to a subagent so the reads land in the subagent's
+          context, not the main one.
+      - id: c
+        text: The remedy is to approve a plan immediately to reset the context window.
+      - id: d
+        text: The remedy is to switch to acceptEdits, which compresses reads automatically.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Plan-mode reads consume the main context exactly like any other reads; nothing about plan mode
+      makes them free. Letting them pile up is the infinite-exploration anti-pattern, and the
+      documented fixes are narrow scoping or delegating exploration to a subagent (which reads in
+      its own context and returns only a summary). Approving a plan or switching modes does not
+      address the cause.
+  - id: p-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A team wants fewer permission prompts during a long implementation while keeping some safety.
+      One member proposes running in bypassPermissions "since it removes all the prompts." Which
+      evaluation best weighs this against the documented guidance?
+    choices:
+      - id: a
+        text: >-
+          bypassPermissions is the recommended way to reduce prompts during implementation because
+          it is the fastest.
+      - id: b
+        text: Both modes are identical in safety, so the choice is purely stylistic.
+      - id: c
+        text: >-
+          The docs steer toward auto mode for fewer prompts with retained safety, because auto
+          routes actions through a classifier; bypassPermissions removes all prompts but provides no
+          safety check and is intended for isolated containers or VMs, so it is the wrong choice for
+          a normal workstation.
+      - id: d
+        text: >-
+          Plan mode is the right way to reduce implementation prompts, since it never prompts at
+          all.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For fewer prompts with safety retained, the documented direction is auto mode, whose
+      classifier still checks actions. bypassPermissions removes every prompt and every check and is
+      intended for isolated containers or VMs, not a normal workstation. Plan mode does not solve
+      implementation prompting because it does not implement, and it prompts like default for
+      non-read actions.
+  - id: p-500-ff-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      Evaluate this teammate's claim: "Approving a plan keeps you in plan mode, so it's a safe
+      checkpoint you can keep refining from." Identify what is wrong, describe what approval
+      actually does, and explain how to get back into planning afterward.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the claim is wrong: approving a plan EXITS plan mode (it does not keep you in
+            it).
+        - id: c2
+          text: >-
+            States that approval switches the session to the implementation permission mode named by
+            the chosen approve option (e.g. auto, accept edits, or manual per-edit review) and
+            Claude then starts editing.
+        - id: c3
+          text: >-
+            States that to plan again you cycle back with Shift+Tab or prefix the next prompt with
+            /plan.
+      referenceAnswer: >-
+        The claim is wrong: approving a plan exits plan mode rather than keeping you in it, so it is
+        not a "stay and keep refining" checkpoint. Approval switches the session into the
+        implementation permission mode described by the approve option you chose — for example auto,
+        accept edits, or review each edit manually — and Claude then begins editing. If you want to
+        keep planning instead, you choose "keep planning with feedback" rather than approving; and
+        to re-enter planning after an approval you cycle back with Shift+Tab or prefix your next
+        prompt with /plan.
+      passThreshold: 0.6
+    guidance: >-
+      Approval is a deliberate hand-off, not a hold: it exits plan mode and enters the chosen
+      implementation mode, then editing starts. Believing approval keeps you in plan mode is a
+      common misconception. Re-entering planning is a separate action via Shift+Tab or the /plan
+      prefix.
+  - id: p-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: >-
+      From an Ultraplan browser review, a developer must choose between "execute on the web" (open a
+      PR from the cloud session) and "teleport back to terminal." They are mid-feature locally with
+      significant uncommitted context that the implementation depends on, and they need Remote
+      Control connected. Which judgment best weighs the options?
+    choices:
+      - id: a
+        text: >-
+          Execute on the web, because cloud execution is always preferable and Remote Control is
+          unaffected.
+      - id: b
+        text: >-
+          Teleport back and choose "Start new session," since a clean context is always best after
+          planning.
+      - id: c
+        text: >-
+          Teleport back and choose "Implement here," because their local uncommitted context is
+          needed for implementation; executing on the web would disconnect from that local state,
+          and Ultraplan disconnects Remote Control, so the web path is the wrong fit here.
+      - id: d
+        text: >-
+          Cancel and save the plan to a file, because that is the only option that preserves local
+          context.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Because the implementation depends on significant local uncommitted context, the right
+      teleport option is "Implement here," which injects the plan into the current conversation and
+      preserves that context. Executing on the web runs in the cloud away from local state, and
+      Ultraplan disconnects Remote Control. "Start new session" would discard the needed local
+      context, and Cancel defers execution unnecessarily when they want to proceed now.
+  - id: p-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 483
+    type: multiple_choice
+    prompt: >-
+      A team's automation relies on parsing TodoWrite calls to track an agent's progress, assuming
+      TodoWrite is always emitted. After upgrading Claude Code, their tracking silently breaks.
+      Which critique best evaluates the original design decision?
+    choices:
+      - id: a
+        text: >-
+          The design was robust; TodoWrite is the primary, always-present task tool, so the breakage
+          must be a bug.
+      - id: b
+        text: >-
+          Depending on TodoWrite being emitted is a portability hazard: it is now disabled by
+          default in favor of the Task tools (TaskCreate/TaskGet/TaskList/TaskUpdate), so tracking
+          should key off the Task tools, with TodoWrite only re-enabled deliberately via the
+          documented environment variable.
+      - id: c
+        text: The fix is to require permission on TodoWrite so the automation can intercept it.
+      - id: d
+        text: The breakage proves task tracking no longer exists in Claude Code at all.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Building automation on TodoWrite's presence is fragile because it is now disabled by default
+      in favor of the Task tools. Tracking should key off TaskCreate/TaskGet/TaskList/TaskUpdate,
+      which are the current primary mechanism; TodoWrite can be re-enabled only deliberately via its
+      documented environment variable. Task tracking still exists — it just flows through different
+      tools now.

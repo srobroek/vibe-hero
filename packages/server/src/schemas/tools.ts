@@ -33,12 +33,29 @@ export const SetupRequiredSchema = z.object({
 export type SetupRequired = z.infer<typeof SetupRequiredSchema>;
 
 /**
- * Wrap a tool result schema so it can also be the gate sentinel. Discriminated
- * on `status` is not possible for arbitrary object results, so this is a plain
- * union; callers narrow on the `status === "SETUP_REQUIRED"` field.
+ * The unsupported-tool gate sentinel. Returned by any gated tool when the host's
+ * MCP `clientInfo.name` does not map to a supported {@link ToolId} AND no valid
+ * `toolsLearning` is configured. vibe-hero only supports Claude Code, Codex,
+ * Kiro CLI, and Kiro IDE; unknown hosts must fail explicitly rather than silently
+ * defaulting to claude-code.
+ */
+export const UnsupportedToolSchema = z.object({
+  status: z.literal("UNSUPPORTED_TOOL"),
+  /** Raw `clientInfo.name` from the MCP handshake (or empty string if absent). */
+  detectedName: z.string(),
+  message: z.string().min(1),
+  /** The ToolIds vibe-hero currently supports. */
+  supported: z.array(z.string()),
+});
+/** The UNSUPPORTED_TOOL gate sentinel. */
+export type UnsupportedTool = z.infer<typeof UnsupportedToolSchema>;
+
+/**
+ * Wrap a tool result schema so it can also be either gate sentinel.
+ * Callers narrow on the `status` discriminant field.
  */
 const gated = <T extends z.ZodTypeAny>(result: T) =>
-  z.union([SetupRequiredSchema, result]);
+  z.union([SetupRequiredSchema, UnsupportedToolSchema, result]);
 
 // ---------------------------------------------------------------------------
 // get_status
@@ -266,7 +283,7 @@ export type SubmitAnswerOutput = z.infer<typeof SubmitAnswerOutputSchema>;
 
 /** Input for `save_config`. */
 export const SaveConfigInputSchema = z.object({
-  toolsLearning: z.array(ToolIdSchema),
+  toolsLearning: z.array(ToolIdSchema).optional(),
   offerCadence: z.enum(["off", "per_session", "per_topic"]),
   proactiveOffers: z.boolean(),
   quizLength: z.union([z.literal(3), z.literal(4), z.literal(5)]).optional(),
@@ -305,7 +322,7 @@ export type GetConfigOutput = z.infer<typeof GetConfigOutputSchema>;
 
 /** Input for `record_observation`. */
 export const RecordObservationInputSchema = z.object({
-  tool: ToolIdSchema,
+  tool: ToolIdSchema.optional(),
   signals: z.array(
     z.object({
       toolName: z.string().optional(),
@@ -351,7 +368,7 @@ export type RecordObservationOutput = z.infer<
 /** Input for `get_offer`. */
 export const GetOfferInputSchema = z.object({
   sessionId: z.string(),
-  tool: ToolIdSchema,
+  tool: ToolIdSchema.optional(),
 });
 export type GetOfferInput = z.infer<typeof GetOfferInputSchema>;
 
@@ -403,3 +420,73 @@ export const RecordOfferResponseOutputSchema = gated(
 export type RecordOfferResponseOutput = z.infer<
   typeof RecordOfferResponseOutputSchema
 >;
+
+// ---------------------------------------------------------------------------
+// get_dashboard
+// ---------------------------------------------------------------------------
+
+/** Input for `get_dashboard`. `tool` narrows the matrix to one tool scope. */
+export const GetDashboardInputSchema = z.object({
+  tool: ToolIdSchema.optional(),
+});
+export type GetDashboardInput = z.infer<typeof GetDashboardInputSchema>;
+
+/**
+ * One cell in the dashboard matrix.  `scope` is either `"general"` or a
+ * {@link ToolId}.  `status` mirrors the graduation status.  `markers` collects
+ * any combination of `"graduated"` | `"due"` | `"in_review"`.
+ * A `null` cell (topic not offered by that scope) is represented by absence of
+ * the cell in the array OR by a cell with `status: "not_in_scope"`.
+ */
+export const DashboardCellSchema = z.object({
+  scope: z.string(),
+  tier: z.union([TierSchema, z.literal(0)]),
+  ability: z.number(),
+  status: z.enum(["current", "due_for_review", "not_started", "not_in_scope"]),
+  markers: z.array(z.enum(["graduated", "due", "in_review"])),
+});
+export type DashboardCell = z.infer<typeof DashboardCellSchema>;
+
+/** One row in the dashboard matrix — one per catalog topic. */
+export const DashboardRowSchema = z.object({
+  topic: z.string(),
+  title: z.string(),
+  class: z.enum(["general", "tool"]),
+  cells: z.array(DashboardCellSchema),
+});
+export type DashboardRow = z.infer<typeof DashboardRowSchema>;
+
+/** Aggregated summary over the whole profile (or filtered tool). */
+export const DashboardSummarySchema = z.object({
+  itemsAnswered: z.number().int().nonnegative(),
+  graduated: z.number().int().nonnegative(),
+  dueForReview: z.number().int().nonnegative(),
+  streak: z.number().int().nonnegative(),
+  strongest: AbilityKeySchema.optional(),
+  weakest: AbilityKeySchema.optional(),
+  next: AbilityKeySchema.optional(),
+});
+export type DashboardSummary = z.infer<typeof DashboardSummarySchema>;
+
+/**
+ * One entry in the history series — per-scope mean ability over time.
+ * `points` is sorted ascending by `ts`.  Only scopes that have ≥1
+ * abilitySnapshot are included.
+ */
+export const DashboardHistoryEntrySchema = z.object({
+  scope: z.string(),
+  points: z.array(z.object({ ts: z.string(), meanAbility: z.number() })),
+});
+export type DashboardHistoryEntry = z.infer<typeof DashboardHistoryEntrySchema>;
+
+/** Result for `get_dashboard`. */
+export const GetDashboardResultSchema = z.object({
+  matrix: z.array(DashboardRowSchema),
+  summary: DashboardSummarySchema,
+  history: z.array(DashboardHistoryEntrySchema),
+});
+export type GetDashboardResult = z.infer<typeof GetDashboardResultSchema>;
+
+/** Output for `get_dashboard` (may be gated). */
+export const GetDashboardOutputSchema = gated(GetDashboardResultSchema);
+export type GetDashboardOutput = z.infer<typeof GetDashboardOutputSchema>;

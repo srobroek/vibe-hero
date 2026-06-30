@@ -1,0 +1,3148 @@
+# Topic: agentic-workflows (claude-code)
+# Orchestrating multiple agents — pipeline vs parallel/barrier patterns, fan-out, adversarial verification, judge panels, background tasks.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: agentic-workflows
+class:
+  kind: tool
+  tool: claude-code
+title: Agentic Workflows & Orchestration
+summary: >-
+  Orchestrating multiple agents — pipeline vs parallel/barrier patterns, fan-out, adversarial
+  verification, judge panels, background tasks.
+triggerSignals: []
+items:
+  - id: aw-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 121
+    type: multiple_choice
+    prompt: >-
+      In Anthropic's guidance on agentic systems, what is a "workflow" as distinguished from an
+      "agent"?
+    choices:
+      - id: a
+        text: A system where code controls the logic and orchestrates the loop
+      - id: b
+        text: A system where the model decides its own trajectory at each step
+      - id: c
+        text: Any system that uses more than three tools
+      - id: d
+        text: A multi-agent system with a coordinator and sub-agents
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A workflow has code-controlled logic: you orchestrate the loop. An agent lets the model decide
+      its own trajectory. The dividing line is who controls control-flow, not how many tools are
+      involved (c) or whether there is a coordinator (d).
+  - id: aw-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 126
+    type: multiple_choice
+    prompt: >-
+      A Claude Code subagent runs in its own separate context window. When it finishes, what returns
+      to the parent agent?
+    choices:
+      - id: a
+        text: All of the subagent's file reads and tool output
+      - id: b
+        text: Only the subagent's final summary
+      - id: c
+        text: The subagent's full reasoning trace
+      - id: d
+        text: Nothing; the parent must re-run the work itself
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A subagent's intermediate tokens (file reads, tool output, reasoning) stay in its own context
+      window and do not pollute the parent's. Only the final summary returns. This context isolation
+      is the central reason to fan out.
+  - id: aw-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: >-
+      In a sequential "pipeline" orchestration, how does total latency relate to the individual
+      stages?
+    choices:
+      - id: a
+        text: It equals the slowest single stage
+      - id: b
+        text: It is the sum of the stages
+      - id: c
+        text: It is constant regardless of stage count
+      - id: d
+        text: It is the average of the stage latencies
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A pipeline passes each stage's output to the next, so total latency is the sum of stages and a
+      failure in one stage blocks everything downstream. "Slowest single stage" describes a parallel
+      fan-out, not a pipeline.
+  - id: aw-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: In Managed Agents, on which agent does the multi-agent (coordinator) configuration live?
+    choices:
+      - id: a
+        text: On the top-level coordinator agent
+      - id: b
+        text: On each sub-agent so it can find its coordinator
+      - id: c
+        text: On the session object, not on any agent
+      - id: d
+        text: On whichever agent receives the request at runtime
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Multi-agent is configured on the top-level coordinator agent: the coordinator carries the
+      roster of agents it can delegate to. It is not set on the sub-agents, not on the session, and
+      not chosen per request. (The concept of "configured on the coordinator" is durable even if the
+      literal field name changes across API versions.)
+  - id: aw-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 139
+    type: multiple_choice
+    prompt: How does a Claude Code agent dispatch multiple subagents to run in parallel?
+    choices:
+      - id: a
+        text: 'By setting a `parallel: true` flag in settings.json'
+      - id: b
+        text: By issuing multiple Task-tool calls in a single turn
+      - id: c
+        text: By chaining subagents with the Bash `&` operator
+      - id: d
+        text: By opening separate terminal sessions for each subagent
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Independent reads/searches fan out concurrently when the agent issues multiple Task-tool calls
+      in one turn. There is no settings flag for this and it is not done through bash backgrounding.
+  - id: aw-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 143
+    type: free_form
+    prompt: >-
+      When deciding whether to trust an agent with an action, why does "cost of error" really come
+      down to recoverability (reversibility)?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that cost of error is about whether a wrong result can be caught and undone
+            (reversibility/recoverability).
+        - id: c2
+          text: >-
+            States agents are more defensible for recoverable actions (tests, review, version
+            control catch and roll back mistakes).
+        - id: c3
+          text: >-
+            States irreversible actions (sending money, deleting data) carry a high cost of error
+            and warrant more caution or human gating.
+      referenceAnswer: >-
+        Cost of error is fundamentally about recoverability: whether a wrong result can be detected
+        and rolled back. An agent is far more defensible when its mistakes are catchable and
+        reversible -- a failed test can be re-run, a bad commit reverted -- because the blast radius
+        of an error is bounded. When the action is irreversible (sending money, deleting data,
+        emailing a customer), the cost of error is high and you should add guardrails or a
+        human-in-the-loop gate before trusting the agent. So reversibility, not the raw difficulty
+        of the task, is what dominates the trust decision.
+      passThreshold: 0.6
+    guidance: >-
+      Reversibility dominates because it bounds the damage of a mistake. Recoverable errors (caught
+      by tests, review, version control) make an agent defensible; irreversible actions raise the
+      cost of error and call for guardrails or human confirmation. Escalate orchestration complexity
+      only when the value and viability justify it.
+  - id: aw-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 147
+    type: multiple_choice
+    prompt: >-
+      What is the recommended escalation order when choosing how much orchestration a task needs,
+      from simplest to most capable?
+    choices:
+      - id: a
+        text: Single LLM call, then code-orchestrated workflow, then agent, then multi-agent
+      - id: b
+        text: Multi-agent, then agent, then workflow, then single call
+      - id: c
+        text: Agent, then multi-agent, then single call, then workflow
+      - id: d
+        text: Workflow, then single call, then multi-agent, then agent
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Start with the simplest tier that works: single LLM call, then code-orchestrated workflow,
+      then agent, then multi-agent. You only escalate when the task genuinely requires open-ended,
+      model-driven exploration.
+  - id: aw-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 151
+    type: multiple_choice
+    prompt: In Managed Agents, how deep can delegation go from a coordinator to its sub-agents?
+    choices:
+      - id: a
+        text: Unlimited depth; any agent can delegate further
+      - id: b
+        text: One level deep only; a sub-agent's own roster is ignored
+      - id: c
+        text: Exactly three levels deep
+      - id: d
+        text: As deep as the number of agents in the roster
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Delegation is one level deep only. A sub-agent's own roster does not cascade, so depth greater
+      than 1 is ignored. This prevents runaway nesting of delegated agents.
+  - id: aw-100-ff-i
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: free_form
+    prompt: What does the Bash tool's `run_in_background` flag do in Claude Code?
+    rubric:
+      criteria:
+        - id: c1
+          text: States it runs the command without blocking the conversation
+        - id: c2
+          text: States it keeps running across turns / detaches
+        - id: c3
+          text: States the agent is notified or re-invoked when the command exits
+      referenceAnswer: >-
+        `run_in_background` runs a long-running command detached so it does not block the
+        conversation. It keeps running across turns and the agent is notified (re-invoked) when the
+        command exits, rather than waiting on it.
+      passThreshold: 0.6
+    guidance: >-
+      The whole point of `run_in_background` is non-blocking execution: the command detaches, keeps
+      running across turns, and the agent is re-invoked on exit. It is a misconception that
+      background tasks block the conversation.
+  - id: aw-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: What is a "fan-out" (scatter) step in orchestration?
+    choices:
+      - id: a
+        text: Passing one stage's output to the next stage in order
+      - id: b
+        text: Retrying a single failed subtask until it succeeds
+      - id: c
+        text: Dispatching independent subtasks concurrently
+      - id: d
+        text: Waiting for all branches before aggregating results
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Fan-out (scatter) dispatches independent subtasks concurrently. Passing output stage-to-stage
+      is a pipeline (a); waiting for all branches before aggregating is the barrier/join step (d).
+  - id: aw-100-ff-k
+    tier: 100
+    bloom: remember
+    difficulty: 161
+    type: free_form
+    prompt: In the context of orchestration topologies, what is a "barrier" (or "join") step?
+    rubric:
+      criteria:
+        - id: c1
+          text: States it waits for all fan-out branches to complete
+        - id: c2
+          text: States it then aggregates or combines the branch results
+        - id: c3
+          text: States wall-clock time is gated by the slowest branch
+      referenceAnswer: >-
+        A barrier/join (gather) step waits for all fan-out branches to complete before aggregating
+        their results. Because it must wait for every branch, its wall-clock time is gated by the
+        slowest branch.
+      passThreshold: 0.6
+    guidance: >-
+      A barrier/join is the gather half of scatter-gather: it blocks until all parallel branches
+      finish, then aggregates. Its latency is bounded by the slowest branch, not the sum.
+  - id: aw-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: >-
+      Anthropic describes multi-agent orchestration as which cost tier among single calls,
+      workflows, agents, and multi-agent?
+    choices:
+      - id: a
+        text: The cheapest tier
+      - id: b
+        text: The most expensive tier
+      - id: c
+        text: Identical in cost to a single agent
+      - id: d
+        text: Free, because subagents share the parent's tokens
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Multi-agent is the most expensive tier because a coordinator plus N subagents each process
+      their own context, so token cost scales with the number of agents. It is only justified when
+      isolation or parallelism benefits exceed that cost.
+  - id: aw-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 167
+    type: multiple_choice
+    prompt: >-
+      The `effort` parameter is described as a primary cost-quality lever. Which set lists its valid
+      levels?
+    choices:
+      - id: a
+        text: fast, balanced, thorough
+      - id: b
+        text: minimal, standard, deep
+      - id: c
+        text: draft, review, final
+      - id: d
+        text: low, medium, high, xhigh, max
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The `effort` parameter accepts low, medium, high, xhigh, and max. Low effort means fewer,
+      more-consolidated tool calls and terser output, which is recommended for cheap subagents and
+      simple tasks.
+  - id: aw-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: free_form
+    prompt: What is a "generator-verifier split" in adversarial verification?
+    rubric:
+      criteria:
+        - id: c1
+          text: States one agent or pass produces the work
+        - id: c2
+          text: States a separate agent or pass critiques or grades it
+        - id: c3
+          text: Notes the verifier uses fresh context / has no memory of how the answer was produced
+      referenceAnswer: >-
+        A generator-verifier split uses one agent (or pass) to produce the work and a separate one
+        to critique or grade it. A fresh-context verifier, which has no memory of how the answer was
+        produced, catches errors that a self-critiquing single agent would share blind spots with
+        and miss.
+      passThreshold: 0.6
+    guidance: >-
+      The split separates producing from checking. A fresh-context verifier does not share the
+      generator's blind spots, so it catches more errors than the same agent reviewing its own work.
+  - id: aw-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 173
+    type: multiple_choice
+    prompt: In the Managed Agents Outcomes feature, what is the default value of `max_iterations`?
+    choices:
+      - id: a
+        text: One
+      - id: b
+        text: Three
+      - id: c
+        text: Ten
+      - id: d
+        text: Twenty
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The default `max_iterations` for an Outcome is 3, and the maximum allowed is 20. Outcomes run
+      an iterate, grade, and revise loop scored by a grader with its own context window.
+  - id: aw-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 177
+    type: multiple_choice
+    prompt: >-
+      What cost reduction does the Batch API offer for large fan-out of independent,
+      non-latency-sensitive requests?
+    choices:
+      - id: a
+        text: About a 10% cost reduction
+      - id: b
+        text: About a 25% cost reduction
+      - id: c
+        text: About a 50% cost reduction
+      - id: d
+        text: About a 90% cost reduction
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The Batch API provides a 50% cost reduction and runs asynchronously with results returned in
+      any order. It is the right tool for large fan-out of independent requests that are not
+      latency-sensitive.
+  - id: aw-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: What is "model tiering" as an orchestration cost strategy?
+    rubric:
+      criteria:
+        - id: c1
+          text: States the orchestrator or hard reasoning runs on a top tier (e.g. Opus-class)
+        - id: c2
+          text: >-
+            States cheap or parallel-safe work is fanned out to a faster or cheaper tier (e.g.
+            Haiku-class)
+      referenceAnswer: >-
+        Model tiering runs the orchestrator and hard reasoning on the top tier (Opus-class) while
+        fanning cheap, parallel-safe work out to a faster, cheaper tier (Haiku-class). This
+        minimizes spend on mechanical subtasks while keeping high-stakes reasoning on the strongest
+        model.
+      passThreshold: 0.6
+    guidance: >-
+      Model tiering matches model strength to subtask stakes: top tier for the orchestrator and hard
+      reasoning, cheaper tier for mechanical parallel work. Claude Code's Explore subagents using a
+      Haiku-tier model is a documented example.
+  - id: aw-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: >-
+      When a harness uses parallel tool calls, the model returns multiple `tool_use` blocks in one
+      assistant message. How must the corresponding `tool_result` blocks be returned?
+    choices:
+      - id: a
+        text: All in a single user message
+      - id: b
+        text: One per separate user message, in order
+      - id: c
+        text: As a single combined string
+      - id: d
+        text: In a follow-up assistant message
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      All `tool_result` blocks for a parallel batch must be returned in a single user message.
+      Splitting them across multiple user messages silently trains the model to stop making parallel
+      calls.
+  - id: aw-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: free_form
+    prompt: >-
+      What does an `always_ask` permission policy do to a server-executed tool call in an agent
+      loop?
+    rubric:
+      criteria:
+        - id: c1
+          text: States it pauses or idles the session before the tool runs
+        - id: c2
+          text: States it waits for a human confirmation (allow/deny) such as a `user.tool_confirmation`
+      referenceAnswer: >-
+        An `always_ask` policy pauses the server-executed tool and idles the session until a human
+        sends a tool confirmation (allow or deny), such as a `user.tool_confirmation` event. This is
+        the human-in-the-loop gate inside an orchestrated loop; a deny can carry a message
+        explaining why.
+      passThreshold: 0.6
+    guidance: >-
+      `always_ask` inserts a human-in-the-loop gate: the tool is held and the session idles until an
+      allow/deny confirmation arrives. A deny can include a message so the agent adapts rather than
+      retrying blindly.
+  - id: aw-100-mc-t
+    tier: 100
+    bloom: remember
+    difficulty: 163
+    type: multiple_choice
+    prompt: In Managed Agents, how is each delegated agent isolated from the others?
+    choices:
+      - id: a
+        text: Each runs in its own thread with its own conversation history
+      - id: b
+        text: All agents share one conversation history but separate files
+      - id: c
+        text: Each runs in its own container but shares conversation context
+      - id: d
+        text: They share everything, including history, model, and tools
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Each delegated agent runs in its own thread: a context-isolated event stream with its own
+      history, model, system prompt, tools, MCP servers, and skills. Threads share the container and
+      filesystem but not conversation context, so the coordinator must pass needed information
+      explicitly.
+  - id: aw-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      A common way to decide whether to trust an agent with an action weighs whether a wrong result
+      can be caught and rolled back. Why does reversibility dominate that decision?
+    choices:
+      - id: a
+        text: >-
+          Because orchestration is more defensible when a wrong result can be caught and rolled back
+          (tests, review, version control), and riskier when the action is irreversible.
+      - id: b
+        text: Because errors always cost the same number of tokens regardless of the task.
+      - id: c
+        text: Because an agent that errs must be deleted and recreated, which is expensive.
+      - id: d
+        text: Because recoverable errors are the only kind the model can detect during generation.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Cost of error is about whether a mistake can be undone. Agents fit well when errors are
+      catchable and reversible (re-run tests, revert a commit); they are riskier for irreversible
+      actions like sending money or deleting data. The other options misframe it as a token,
+      lifecycle, or detection issue.
+  - id: aw-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: >-
+      A teammate says "fan-out reduces total cost because the work is split across several agents."
+      Why is this wrong?
+    choices:
+      - id: a
+        text: Fan-out reduces both latency and total cost because branches share one context window.
+      - id: b
+        text: Fan-out increases latency because branches must run strictly one after another.
+      - id: c
+        text: >-
+          Fan-out reduces wall-clock latency for independent work but increases total token cost,
+          because each branch processes its own context and you pay for the sum of branches.
+      - id: d
+        text: Fan-out has no effect on cost because subagent tokens are billed at zero.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Parallel fan-out trades token cost for speed: wall-clock approaches the slowest branch, but
+      total tokens are the sum across all branches (each runs its own context). It does not share
+      one context window, does not serialize, and subagent tokens are billed normally.
+  - id: aw-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      A Claude Code subagent runs in its own separate context window and returns only a final
+      summary to the parent. Beyond speed, what is the main reason this design is valuable for
+      fan-out?
+    choices:
+      - id: a
+        text: It lets the parent and subagent share the same conversation history automatically.
+      - id: b
+        text: >-
+          Context isolation: the subagent's intermediate tokens (file reads, tool output, reasoning)
+          never pollute the parent's context window, containing the token blast radius.
+      - id: c
+        text: It guarantees the subagent and parent always use the identical model and effort setting.
+      - id: d
+        text: It removes the need for the parent to ever summarize or aggregate results.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The central "why" of subagents is context isolation, not just parallelism: a subagent's noisy
+      intermediate work stays in its own window and only its summary returns, so the parent's
+      context (and cache) is preserved. They do not share history, need not share a model, and the
+      parent still aggregates.
+  - id: aw-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: >-
+      In a pipeline (sequential) orchestration, each stage's output feeds the next. Explain how
+      total latency and failure propagation differ from a parallel fan-out.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that pipeline latency is the sum of the stages (they run one after another),
+            whereas fan-out wall-clock is gated by the slowest branch.
+        - id: c2
+          text: >-
+            States that a failure in pipeline stage k blocks all downstream stages because they have
+            no input to run on.
+        - id: c3
+          text: >-
+            Notes that the stages are dependent (each consumes the previous stage's output), which
+            is why failures propagate and latency adds up.
+      referenceAnswer: >-
+        A pipeline runs its stages strictly in order, so total latency is the sum of the stages, not
+        the slowest one as in fan-out. Because each stage consumes the previous stage's output, a
+        failure in stage k starves every downstream stage (no input arrives), so the failure
+        propagates forward and blocks the rest of the chain. Fan-out, by contrast, dispatches
+        independent branches concurrently, so its wall-clock approaches the slowest branch and one
+        branch failing does not by itself block the others.
+      passThreshold: 0.6
+    guidance: >-
+      Pipeline = additive latency and forward failure propagation because stages are dependent;
+      fan-out = latency gated by the slowest branch with independent branches. The dependency
+      between stages is what drives both the summed latency and the downstream blocking.
+  - id: aw-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: free_form
+    prompt: >-
+      Explain why fan-out (parallel dispatch) is only appropriate when subtasks are independent, and
+      what you must do instead when subtask B needs subtask A's output.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that parallel branches run concurrently with no ordering, so a branch that
+            depends on another's result would run without that input (wrong or wasted work).
+        - id: c2
+          text: >-
+            States that dependent subtasks must be sequenced as a pipeline edge (A then B) rather
+            than run in parallel.
+        - id: c3
+          text: >-
+            Notes that real graphs are usually hybrids: parallel within a stage, sequential between
+            dependent stages.
+      referenceAnswer: >-
+        Fan-out launches branches concurrently with no guaranteed ordering, so it is only correct
+        when the branches are truly independent. If B needs A's output, running them in parallel
+        means B executes before A's result exists, producing wrong results or forcing a re-run.
+        Dependent work must instead be a sequential pipeline edge (A then B). Most real
+        orchestration is a hybrid DAG: fan out independent work within a stage, but keep sequential
+        edges between stages that depend on each other.
+      passThreshold: 0.6
+    guidance: >-
+      The correctness driver is data dependency: parallel only for independent subtasks, sequential
+      for dependent ones. Mis-parallelizing dependent work either produces wrong output or wastes a
+      re-run, which is why production graphs mix both patterns.
+  - id: aw-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      In Managed Agents, a coordinator's roster can list other agents to delegate to, and delegation
+      is "one level deep only." What does that mean for a sub-agent that itself has a multiagent
+      roster?
+    choices:
+      - id: a
+        text: The sub-agent automatically becomes a second coordinator and spawns its own sub-agents.
+      - id: b
+        text: The session rejects the sub-agent at creation time because nested rosters are illegal.
+      - id: c
+        text: Delegation recurses without limit until every rostered agent has been spawned.
+      - id: d
+        text: >-
+          The sub-agent's own roster is ignored; only the session's coordinator delegates, so deeper
+          trees do not cascade.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Delegation depth is capped at one: a sub-agent's own multiagent roster is simply not honored,
+      so you get a flat coordinator-to-subagents shape rather than a deep tree. It is not promoted
+      to a coordinator, not rejected at creation, and never recurses without limit.
+  - id: aw-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      A developer assumes a Managed Agents coordinator and its sub-agents automatically share what
+      each other has learned. Why does this break, and what is actually shared?
+    choices:
+      - id: a
+        text: >-
+          Threads share conversation history but not the filesystem, so the coordinator must
+          re-upload files for each sub-agent.
+      - id: b
+        text: Everything is shared automatically, so the assumption is correct and nothing breaks.
+      - id: c
+        text: >-
+          Each delegated agent runs in its own thread with isolated conversation history; threads
+          share the container/filesystem but not context, so the coordinator must pass needed info
+          in the delegated message or write it to disk.
+      - id: d
+        text: Sub-agents share the coordinator's context only if they use the same model.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Threads are context-isolated event streams: they share the container and filesystem but not
+      conversation history. So a coordinator that needs a sub-agent to act on something must state
+      it in the delegated message or write it to a file. The reverse (history shared, filesystem
+      not) and "all shared" are both wrong, and model choice does not gate context sharing.
+  - id: aw-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      Why does a fresh-context verifier (an agent that grades work without having seen how it was
+      produced) tend to catch errors that a single self-critiquing agent misses?
+    choices:
+      - id: a
+        text: A fresh-context verifier always uses a more capable model than the generator.
+      - id: b
+        text: >-
+          A self-critique shares the generator's reasoning and blind spots, while an independent
+          verifier re-examines the output on its own terms and is not anchored to the original
+          approach.
+      - id: c
+        text: Self-critique is impossible because a model cannot read its own output.
+      - id: d
+        text: The verifier sees the generator's hidden chain of thought, giving it more information.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The value of the generator-verifier split is independence: a same-context self-critique
+      inherits the blind spots that produced the error, whereas a fresh verifier evaluates the
+      artifact without that anchoring. It does not require a bigger model, self-review is possible
+      (just weaker), and the verifier does not get privileged access to hidden reasoning.
+  - id: aw-200-ff-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Managed Agents' Outcomes feature returns a grader result of satisfied, needs_revision,
+      max_iterations_reached, failed, or interrupted. Explain why needs_revision keeps the session
+      running while the others (the terminal ones) idle it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that Outcomes runs an iterate -> grade -> revise loop driven by a separate grader
+            against a rubric.
+        - id: c2
+          text: >-
+            Explains that needs_revision signals the rubric is not yet met, so the agent does
+            another iteration (the loop continues).
+        - id: c3
+          text: >-
+            Explains that satisfied / max_iterations_reached / failed / interrupted are terminal:
+            there is nothing left to iterate (met, out of budget, unworkable rubric, or stopped), so
+            the session idles.
+      referenceAnswer: >-
+        Outcomes runs an iterate -> grade -> revise loop where a separate grader scores each
+        iteration against a rubric. needs_revision means the rubric criteria are not yet satisfied,
+        so the loop continues with another revision pass. The other results are terminal: satisfied
+        means the rubric is met, failed means the rubric fundamentally does not fit the task,
+        max_iterations_reached means the iteration budget is exhausted, and interrupted means the
+        user stopped it. In each terminal case there is no further iteration to run, so the session
+        goes idle.
+      passThreshold: 0.6
+    guidance: >-
+      The split is loop-continuation vs loop-termination: only needs_revision says "the work is not
+      done and more iteration could help," so the session keeps running. The four terminal results
+      all mean there is nothing productive left to iterate on, so the session idles.
+  - id: aw-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      Why do N parallel requests that share an identical large prompt prefix all miss the prompt
+      cache, and what is the documented "warm one, then fan out" fix?
+    choices:
+      - id: a
+        text: >-
+          A cache entry only becomes readable after the first response begins streaming, so
+          simultaneous requests can't read what the others are still writing; send one request,
+          await its first token, then fire the remaining N-1 so they read the cache it wrote.
+      - id: b
+        text: >-
+          Prompt caching is disabled whenever more than one request is in flight; the fix is to set
+          a concurrency limit of one.
+      - id: c
+        text: >-
+          Parallel requests use different models by default, so the fix is to pin every request to
+          the same model.
+      - id: d
+        text: >-
+          The cache only stores the suffix, not the prefix; the fix is to move the shared content to
+          the end of the prompt.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The cache entry for a prefix is not readable until the first request that writes it starts
+      streaming, so truly simultaneous requests all see a cold cache and each pays the write.
+      Warming one request first (await its first streamed token) lets the rest read the entry it
+      created. Caching is not disabled by concurrency, the misses are not about model pinning, and
+      caching is a prefix match, not a suffix store.
+  - id: aw-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: >-
+      Anthropic guidance is to start with the simplest tier that works and escalate only when
+      needed. Why is multi-agent orchestration described as the most expensive tier?
+    choices:
+      - id: a
+        text: >-
+          Multi-agent always uses the most capable (priciest) model for every agent, which is
+          unavoidable.
+      - id: b
+        text: Multi-agent requires a paid add-on subscription that single-call usage does not.
+      - id: c
+        text: Each agent stores its full history server-side, and storage fees dominate the cost.
+      - id: d
+        text: >-
+          Token cost is roughly multiplicative: a coordinator plus N subagents pays for N+1 context
+          windows plus the summaries flowing back, so it is only justified when parallelism or
+          isolation outweighs the cost.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Orchestration cost compounds because every agent processes its own context window and the
+      results flow back to the coordinator, so you pay for N+1 windows plus summaries. The expense
+      is the multiplicative token math, not a forced top-tier model, a subscription, or storage
+      fees.
+  - id: aw-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: >-
+      A documented bias in LLM-as-judge / agentic code review: when a reviewer is told "only report
+      high-severity issues" or "be conservative," recent Claude models follow the filter so
+      literally that measured recall drops. Why does the report-everything-then-filter pattern fix
+      this?
+    choices:
+      - id: a
+        text: >-
+          The model still finds the issues but suppresses them at the finding step to obey the
+          filter; having it report every finding with confidence and severity, then filtering
+          downstream, separates detection from judgment so true findings are not silently dropped.
+      - id: b
+        text: >-
+          The model cannot find low-severity issues at all, so reporting everything teaches it to
+          detect more bugs.
+      - id: c
+        text: >-
+          Conservative prompting corrupts the model's tool calls, and the two-step pattern avoids
+          tool use entirely.
+      - id: d
+        text: >-
+          The fix works because filtering downstream uses a separate, more capable model that
+          re-finds the bugs.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The model's bug-finding does not regress; it investigates just as thoroughly but, taking "only
+      high-severity" literally, declines to report findings below the bar, which depresses recall.
+      Decoupling detection (report everything with confidence + severity) from judgment (filter in a
+      separate step) recovers the dropped true positives. It is not a detection-capability or
+      tool-corruption issue, and the downstream filter does not need to re-find anything.
+  - id: aw-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      The Bash tool's run_in_background flag is recommended for long-running commands in an agent
+      loop. Why is this preferred over running the command in the foreground?
+    choices:
+      - id: a
+        text: It runs the command at a higher priority so it finishes faster than a foreground command.
+      - id: b
+        text: >-
+          It detaches the command so it keeps running across turns and re-invokes the agent on exit,
+          instead of blocking the conversation while it runs.
+      - id: c
+        text: >-
+          It blocks the conversation until the command finishes, guaranteeing the agent sees the
+          result immediately.
+      - id: d
+        text: It silently discards the command's output so the context window stays small.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The whole point of background execution is non-blocking: the command detaches, keeps running
+      across turns, and the agent is re-invoked when it exits. It does not change priority/speed,
+      does not block (the opposite of option c), and does not discard output.
+  - id: aw-200-ff-n
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Spawning a Claude Code subagent for a single trivial action (one grep or one file read) is
+      often more expensive than just doing it directly. Explain the per-spawn overhead that makes
+      this true, and when delegating does pay off.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies fixed per-spawn overhead: a fresh context, re-establishing task context, and
+            the round-trip to summarize results back to the parent.
+        - id: c2
+          text: >-
+            States that for trivial single-step work this overhead exceeds the cost of acting
+            directly.
+        - id: c3
+          text: >-
+            States delegation pays off when isolation or parallel breadth is needed (e.g., many
+            independent reads/searches), where the isolation/speed benefit outweighs the overhead.
+      referenceAnswer: >-
+        Each subagent spawn carries fixed overhead: a brand-new context window, the work of
+        re-establishing the task context for that subagent, and the round-trip needed to summarize
+        its result back to the parent. For a single grep or read, that overhead is larger than just
+        performing the action directly. Delegation pays off when you need context isolation (keep
+        noisy intermediate work out of the parent) or parallel breadth (fan out across many
+        independent files or candidates), where the isolation and wall-clock benefits justify the
+        per-spawn cost.
+      passThreshold: 0.6
+    guidance: >-
+      The tradeoff is fixed spawn overhead vs the benefit obtained. For one trivial action there is
+      no isolation or parallelism to win, so the overhead dominates; for independent breadth or
+      blast-radius containment the same overhead is worth paying.
+  - id: aw-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: >-
+      Read-only tools like glob and grep can be marked parallel-safe, but the same actions run
+      through a generic bash tool must be serialized by the harness. Why?
+    choices:
+      - id: a
+        text: >-
+          Bash commands always take longer than dedicated tools, so serializing them is faster
+          overall.
+      - id: b
+        text: >-
+          Dedicated tools run on Anthropic servers while bash runs locally, and remote tools can't
+          parallelize.
+      - id: c
+        text: >-
+          Bash is an opaque command string, so the harness can't tell a parallel-safe grep from a
+          parallel-unsafe git push and must serialize to be safe; a dedicated tool carries that
+          property explicitly.
+      - id: d
+        text: >-
+          The model refuses to emit more than one bash call per turn, so there is nothing to
+          parallelize.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Promoting an action to a dedicated tool gives the harness a typed, action-specific hook it can
+      label parallel-safe; bash is just a string, so the harness can't distinguish a safe read from
+      an unsafe mutation and must serialize. The distinction is not about raw speed, hosting, or
+      per-turn call limits.
+  - id: aw-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: >-
+      An orchestrator watching a Managed Agents session over the event stream should not break its
+      wait loop the moment it sees session.status_idle. Explain why, and describe the correct
+      idle/join gate.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a session goes idle transiently (e.g., between parallel tools, or while
+            awaiting a tool confirmation / custom tool result), so plain idle does not mean the work
+            is finished.
+        - id: c2
+          text: >-
+            States the correct gate: break only on idle with a terminal stop_reason (e.g.,
+            end_turn), or on session.status_terminated.
+        - id: c3
+          text: >-
+            Notes that a stop_reason of requires_action means handle the pending request and
+            continue, not break.
+      referenceAnswer: >-
+        Idle is a transient state: the session reports idle between parallel tool executions and
+        while waiting on a user.tool_confirmation or user.custom_tool_result, so breaking on bare
+        idle cuts work off mid-flight. The correct gate is to break only when idle carries a
+        terminal stop_reason (such as end_turn) or when the session is terminated. If the idle
+        stop_reason is requires_action, the orchestrator should handle the pending request (send the
+        confirmation or tool result) and keep waiting, not break.
+      passThreshold: 0.6
+    guidance: >-
+      The key insight is that idle is not synonymous with done. You must inspect stop_reason:
+      terminal (end_turn) or terminated means break; requires_action means service the pending
+      request and continue. Breaking on raw idle is a common orchestration bug.
+  - id: aw-200-ff-q
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      The Batch API offers a 50% cost reduction, runs asynchronously, and returns results in any
+      order. Explain which orchestration shape it suits, and why its properties make it a poor fit
+      for a tight interactive loop.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States Batch fits a large fan-out of independent, non-latency-sensitive requests (an
+            alternative to live concurrent orchestration).
+        - id: c2
+          text: >-
+            Explains that async + any-order results make it unsuitable for dependent chains or
+            anything needing an immediate / streamed answer.
+        - id: c3
+          text: >-
+            Notes that because results arrive in any order, you must key them by an identifier
+            (custom_id), not by position.
+      referenceAnswer: >-
+        The Batch API is the right tool for a large fan-out of independent requests that are not
+        latency sensitive: it cuts cost roughly in half and runs asynchronously, replacing live
+        concurrent dispatch when you do not need answers right away. It is a poor fit for a tight
+        interactive loop because the loop needs each response before issuing the next request, while
+        batch is async and returns results in any order with no immediate / streamed answer. Since
+        order is not guaranteed, callers must match results by an identifier such as custom_id
+        rather than by position.
+      passThreshold: 0.6
+    guidance: >-
+      Batch trades immediacy for cost: it suits big sets of independent, latency-tolerant work but
+      cannot serve dependent chains or streaming UIs, and its any-order results mean you key by
+      custom_id, never by position.
+  - id: aw-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      Model tiering is a standard orchestration cost strategy: run the orchestrator on a top tier
+      (Opus-class) and fan cheap work out to a faster tier (Haiku-class). Why must the cheap model
+      be isolated in a subagent rather than just switched into the main loop for those steps?
+    choices:
+      - id: a
+        text: >-
+          The main loop can only ever use one model for its entire lifetime as a hard API
+          constraint.
+      - id: b
+        text: Haiku-class models cannot be used as the top-level model in any request.
+      - id: c
+        text: >-
+          Subagents are billed at a flat rate, so isolating the cheap model removes per-token
+          charges.
+      - id: d
+        text: >-
+          Switching the main loop's model mid-session invalidates the prompt cache; isolating the
+          cheaper model in a subagent keeps the main loop on one model and preserves its cache.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Caches are model-scoped, so switching the main loop's model mid-session invalidates the prompt
+      cache and forces a cold rebuild. Pushing the cheaper model into a subagent keeps the main
+      loop's model (and cache) stable. There is no hard one-model-forever rule, Haiku can be a
+      top-level model, and subagent tokens are billed normally.
+  - id: aw-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      When the harness executes several parallel tool calls from one assistant message, all the
+      matching tool_result blocks must be returned in a single user message. Explain what goes wrong
+      if they are split across multiple user messages, and what makes this failure mode insidious.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that one assistant message of parallel tool_use blocks should be answered by one
+            user message containing all the corresponding tool_result blocks.
+        - id: c2
+          text: >-
+            Explains that splitting the results across multiple user messages silently trains the
+            model to stop making parallel tool calls in future turns.
+        - id: c3
+          text: >-
+            Notes that the failure is insidious because it does not raise an error; the degradation
+            only shows up as reduced parallelism over time.
+      referenceAnswer: >-
+        A single assistant message containing several parallel tool_use blocks should be followed by
+        exactly one user message that carries all the matching tool_result blocks. If you split
+        those results across multiple user messages, the model gradually learns that its parallel
+        calls are not answered as a batch and stops emitting parallel tool calls. This is insidious
+        because nothing errors out: there is no exception, just a slow regression toward serial tool
+        use that is hard to attribute back to the message structure.
+      passThreshold: 0.6
+    guidance: >-
+      Parallel tool_use blocks map to one user message of all tool_result blocks. Splitting them
+      does not error; it silently trains the model away from parallel calls, which is why the bug is
+      easy to miss and shows up only as lost parallelism.
+  - id: aw-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: >-
+      An always_ask permission policy on a server-executed tool is the human-in-the-loop gate inside
+      an orchestrated agent loop. How does it behave when the agent tries to call that tool?
+    choices:
+      - id: a
+        text: It silently blocks the tool forever, with no way to approve it.
+      - id: b
+        text: >-
+          It logs the call for later audit but lets the tool run immediately without waiting for
+          approval.
+      - id: c
+        text: >-
+          It pauses the tool and idles the session until a user.tool_confirmation (allow or deny) is
+          sent; a deny can carry a message telling the agent why, so it can adapt.
+      - id: d
+        text: It downgrades the agent to a cheaper model whenever a gated tool is requested.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      always_ask suspends the gated tool and idles the session (stop_reason requires_action) until
+      the client replies with a tool_confirmation; a deny can include a message that steers the
+      agent. It is not a permanent block, does not run the tool immediately, and has nothing to do
+      with model selection.
+  - id: aw-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You are building a feature that involves a small, fully scripted three-step transform where
+      you control every branch in code, errors are caught by tests, and there is no need for
+      open-ended exploration. Which tier should you reach for first?
+    choices:
+      - id: a
+        text: A multi-agent coordinator with three rostered sub-agents, one per step.
+      - id: b
+        text: A single agent given the whole task and left to decide its own trajectory.
+      - id: c
+        text: >-
+          A code-orchestrated workflow that calls the model where needed and controls the loop
+          itself.
+      - id: d
+        text: Three parallel subagents fanned out so each step runs concurrently.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The guidance is to start with the simplest tier that works and only escalate to agents or
+      multi-agent when the task genuinely needs model-driven exploration. Here the control flow is
+      fully known, so a code-orchestrated workflow fits. The agent and multi-agent options add cost
+      and failure surface for no benefit, and parallel fan-out is wrong when steps are sequential.
+  - id: aw-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      Your orchestrator must (1) read 40 candidate files and extract a summary from each, then (2)
+      write one combined report from all 40 summaries. How should you shape the orchestration?
+    choices:
+      - id: a
+        text: Run all 41 steps as a single sequential pipeline so each output feeds the next.
+      - id: b
+        text: >-
+          Fan out the 40 reads in parallel, then run the report step after a join that waits for all
+          40 summaries.
+      - id: c
+        text: Fan out all 41 steps in parallel, including the report, to minimize wall-clock time.
+      - id: d
+        text: Run the report first as a draft, then fan out the 40 reads to fill it in.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The 40 reads are independent, so fan-out cuts wall-clock to the slowest branch. The report
+      depends on all summaries, so it must sit behind a join (barrier). Pure sequential (a) wastes
+      the independence; fanning out the report (c) violates the dependency since it needs the
+      summaries first; (d) inverts the data dependency.
+  - id: aw-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You configure a coordinator agent in Managed Agents and want each of its three rostered
+      sub-agents to itself delegate to two helper agents (a three-level tree). What actually
+      happens?
+    choices:
+      - id: a
+        text: The full three-level tree runs; coordinators nest to arbitrary depth.
+      - id: b
+        text: Delegation is one level deep only, so the sub-agents' own multiagent rosters are ignored.
+      - id: c
+        text: The session errors out at startup because nested multiagent fields are rejected.
+      - id: d
+        text: Only the deepest level runs; the coordinator is bypassed once nesting is detected.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In Managed Agents delegation is one level deep. The coordinator can spawn its rostered
+      sub-agents, but a sub-agent's own multiagent roster does not cascade and depth greater than
+      one is ignored. It is not an error and the coordinator is not bypassed; the nested rosters
+      simply do nothing.
+  - id: aw-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      You want to fan out 8 parallel requests that all share the same large 30k-token system prompt
+      and tool list, and you care about prompt-cache hits. What is the right pattern?
+    choices:
+      - id: a
+        text: Fire all 8 at once so they share the cache entry the moment the prefix is sent.
+      - id: b
+        text: >-
+          Send 1 request, await its first streamed token, then fire the remaining 7 so they read the
+          cache the first one wrote.
+      - id: c
+        text: Give each request a slightly different prefix so the cache can distinguish them.
+      - id: d
+        text: Send the 8 requests on 8 different models so each gets its own cache.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A cache entry becomes readable only after the first response begins streaming, so 8
+      simultaneous requests all miss. Warm one, await its first token, then fan out the rest to read
+      the freshly written cache. Differing prefixes (c) guarantee misses; per-model splits (d)
+      fragment the cache since it is per-model.
+  - id: aw-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: free_form
+    prompt: >-
+      Your team set up a request handler that calls agents.create() at the start of every incoming
+      request to build a fresh agent config, then delegates to it. Latency is high and old agents
+      pile up. Describe the corrected pattern and why it fixes both problems.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that agents.create() should be a one-time setup step, not per-request.
+        - id: c2
+          text: Says the handler should reference the existing agent by its ID at request time.
+        - id: c3
+          text: >-
+            Explains this removes create latency per request and avoids orphaned/leaked agents
+            piling up.
+      referenceAnswer: >-
+        Create the agent once during setup and store its ID. At request time, reference that agent
+        by ID instead of calling agents.create() again. This removes the create round-trip latency
+        from every request and stops the system from orphaning a new agent config on each call.
+      passThreshold: 0.6
+    guidance: >-
+      Calling agents.create() per request is the documented number-one Managed Agents anti-pattern:
+      it pays create latency for nothing and orphans configs. Create once, reference by ID. The fix
+      addresses both the latency spike and the accumulation of dead agents.
+  - id: aw-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You are designing the orchestrator's loop and need to know when a child session is truly done
+      so you can join. The session reports idle several times mid-run (between parallel tool calls
+      and while awaiting a confirmation). What is the correct break condition?
+    choices:
+      - id: a
+        text: Break the moment the session first reports idle.
+      - id: b
+        text: >-
+          Break only on idle with a terminal stop_reason such as end_turn, or on terminated; treat
+          requires_action as handle-the-request, not done.
+      - id: c
+        text: Break after a fixed number of idle events to avoid waiting forever.
+      - id: d
+        text: Never break on idle; only break when the stream connection closes.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Idle is transient: a session goes idle between parallel tools and while awaiting a
+      confirmation. Breaking on the first idle (a) cuts work off mid-flight. The correct gate is
+      idle with a terminal stop_reason (or terminated), and requires_action means handle the pending
+      request rather than break. Counting idles (c) or waiting for the socket (d) are fragile.
+  - id: aw-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      An agent must run a 12-minute integration test suite while you keep planning the next change
+      in the same conversation. Which Claude Code mechanism fits, and what is its behavior?
+    choices:
+      - id: a
+        text: >-
+          Run it as a normal Bash call and rely on the conversation to stay responsive while it
+          blocks.
+      - id: b
+        text: Put the suite in a Skill so it executes outside the conversation thread.
+      - id: c
+        text: >-
+          Run the suite with the Bash tool's run_in_background flag; it detaches and re-invokes the
+          agent on exit instead of blocking the turn.
+      - id: d
+        text: Use run_in_background, which blocks the conversation until the command finishes.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      run_in_background detaches the command, keeps it running across turns, and notifies the agent
+      when it exits, so the conversation stays free. A normal Bash call (a) blocks the turn. A Skill
+      is not an execution-detachment mechanism (b), and option (d) misstates run_in_background --
+      the whole point is to not block.
+  - id: aw-300-ff-h
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      You will fan out 500 independent document-classification calls. They are not latency sensitive
+      and results can arrive in any order. Name the Anthropic surface best suited to this fan-out
+      instead of live concurrent orchestration, and give two reasons it fits.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the Batch API.
+        - id: c2
+          text: Cites the roughly 50 percent cost reduction.
+        - id: c3
+          text: >-
+            Notes it is async and returns results in any order, matching independent
+            non-latency-sensitive work.
+      referenceAnswer: >-
+        Use the Batch API. It gives roughly a 50 percent cost reduction and is asynchronous with
+        results returned in any order, which matches a large fan-out of independent,
+        non-latency-sensitive requests far better than holding 500 live concurrent connections.
+      passThreshold: 0.6
+    guidance: >-
+      For large fan-out of independent work where latency does not matter, the Batch API is the
+      right tool: about half the cost and async out-of-order results. Live concurrent orchestration
+      is for when you need the results back immediately and interactively.
+  - id: aw-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      Your orchestrator runs on an Opus-class model and fans out 30 parallel, mechanical, read-only
+      checks (grep-style scans). You want to control cost without hurting the orchestrator's
+      reasoning. What is the documented strategy?
+    choices:
+      - id: a
+        text: Run everything, orchestrator and checks, on Opus-class for consistency.
+      - id: b
+        text: Move the orchestrator to Haiku and keep the 30 checks on Opus.
+      - id: c
+        text: Collapse the 30 checks into one Opus call to avoid per-call overhead.
+      - id: d
+        text: >-
+          Run the 30 parallel checks on a cheaper Haiku-class tier while keeping the orchestrator on
+          Opus-class.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Model tiering is the cost strategy: keep the hard reasoning (the orchestrator) on the top tier
+      and fan cheap, parallel-safe, mechanical work out to a faster, cheaper tier like Haiku.
+      Running everything on Opus (a) wastes money; downgrading the orchestrator (b) hurts the part
+      that needs reasoning; collapsing to one call (c) loses the parallelism.
+  - id: aw-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: multiple_choice
+    prompt: >-
+      You are running a generated CSV through an Outcomes rubric and want the grader to reliably
+      catch problems. Which rubric criterion is written correctly for that grader?
+    choices:
+      - id: a
+        text: '"The output CSV has a numeric price column with no missing values."'
+      - id: b
+        text: '"The data looks good and is roughly what we expected."'
+      - id: c
+        text: '"The result is high quality and well formatted."'
+      - id: d
+        text: '"The CSV is reasonable for downstream use."'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Outcome rubrics should use explicit, independently gradeable criteria because the grader
+      scores each one on its own. A numeric price column with no missing values is checkable. The
+      other options are vibes-based and give the grader nothing concrete to verify, so grading
+      becomes noisy and unreliable.
+  - id: aw-300-ff-k
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: free_form
+    prompt: >-
+      A teammate proposes that the same agent that wrote a tricky migration script should
+      immediately review its own work in the same context to catch bugs. For a high-stakes
+      irreversible change, what better verification arrangement should you use and why?
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends a separate generator-verifier split rather than same-context self-review.
+        - id: c2
+          text: >-
+            States the verifier should run in a fresh context with no memory of how the answer was
+            produced.
+        - id: c3
+          text: >-
+            Explains a fresh verifier catches errors the generator's self-critique misses because it
+            does not share the generator's blind spots.
+      referenceAnswer: >-
+        Use a generator-verifier split: have a separate verifier in a fresh context, with no memory
+        of how the script was produced, critique or grade it. A same-context self-review shares the
+        generator's blind spots and assumptions, so it misses the same errors. A fresh-context
+        verifier evaluates the output on its own merits and catches more, which is worth the extra
+        cost for an irreversible change.
+      passThreshold: 0.6
+    guidance: >-
+      Self-review in the same context inherits the generator's reasoning and blind spots. A
+      fresh-context verifier sees only the output and catches errors the author would rationalize
+      away. Verification spend should scale with cost of error; a high-stakes irreversible change
+      justifies the independent verifier.
+  - id: aw-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      An orchestrator subscribes to a child session's SSE event stream by opening the stream only
+      after sending the kickoff event. It keeps missing the earliest events. What is the fix?
+    choices:
+      - id: a
+        text: Send the kickoff event twice so the second delivery lands after the stream is open.
+      - id: b
+        text: >-
+          Open the stream before sending the kickoff event (stream-first), since SSE only delivers
+          events emitted after the stream opens.
+      - id: c
+        text: Poll session status on a timer instead, because SSE cannot deliver early events at all.
+      - id: d
+        text: Add a fixed delay after sending so the stream catches up before events fire.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      SSE only delivers events emitted after the stream is open, so streaming after sending batches
+      or drops the earliest events. Open the stream first, then send the kickoff. Sending twice (a)
+      duplicates work, polling (c) abandons real-time reactivity, and a fixed delay (d) is a race,
+      not a fix.
+  - id: aw-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >-
+      A coordinator delegates a task to a sub-agent in its own thread but does not pass the file
+      paths or findings it gathered earlier. The sub-agent acts as if it knows nothing about that
+      work. What is the underlying cause and the right fix?
+    choices:
+      - id: a
+        text: Threads share full conversation history, so this must be a transient sync bug to retry.
+      - id: b
+        text: Sub-agents cannot read context at all, so the task should run in the coordinator instead.
+      - id: c
+        text: >-
+          Threads share the filesystem but not conversation context, so the coordinator must pass
+          needed info in the delegated message or write it to disk.
+      - id: d
+        text: The coordinator must lower its effort so the sub-agent inherits its context window.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Each delegated agent runs in its own thread with isolated conversation context; threads share
+      the container filesystem but not history. The fix is to explicitly pass what the sub-agent
+      needs in the delegated message or via a file. Assuming shared history (a) is the flagged
+      anti-pattern; the others misdescribe how threads work.
+  - id: aw-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      You wrote an agentic code-review pass instructed "only report high-severity issues, be
+      conservative." Reviewers complain real bugs are being missed. Explain what recent Claude
+      models do with that instruction and describe the documented two-step fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the model follows the conservative filter literally so recall drops (true
+            findings suppressed).
+        - id: c2
+          text: >-
+            Says to instead have the model report everything, each tagged with confidence and
+            severity.
+        - id: c3
+          text: >-
+            Says to apply the severity filter in a separate downstream step rather than inside the
+            model prompt.
+      referenceAnswer: >-
+        Recent Claude models follow the "only high-severity, be conservative" instruction literally,
+        so they suppress findings and measured recall drops. The fix is two steps: have the model
+        report every issue it sees, each tagged with a confidence and severity, then filter for
+        high-severity items in a separate downstream step. That keeps detection complete and moves
+        the conservatism out of the model.
+      passThreshold: 0.6
+    guidance: >-
+      Telling the model to be conservative makes it withhold true findings because it follows the
+      instruction literally. Separate detection from filtering: report everything with confidence
+      and severity, then filter downstream. That preserves recall while still surfacing only what
+      you want to act on.
+  - id: aw-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      Your coordinator needs a roster of one "reporter" plus several identical "checker" agents to
+      run in parallel. Rather than authoring N separate near-identical checker agents, what is the
+      documented way to get N parallel checkers, and what roster constraint must you respect?
+    choices:
+      - id: a
+        text: >-
+          Roster one checker and one reporter (distinct agents), and let the coordinator spawn
+          multiple copies of the checker at runtime; the roster holds a bounded number of distinct
+          agents.
+      - id: b
+        text: >-
+          Author one agent definition per checker copy, so ten checkers means ten separate roster
+          entries, because the coordinator can only spawn one instance of each rostered agent.
+      - id: c
+        text: >-
+          Put the checker in the reporter's tools[] array so the reporter forks copies, since
+          rosters cannot contain duplicate behavior.
+      - id: d
+        text: >-
+          Set the copy count on the session object at creation time, because the coordinator agent
+          cannot control how many instances of a rostered agent run.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A coordinator's roster lists distinct agents (a bounded set), but the coordinator can spawn
+      multiple concurrent copies of any one rostered agent at runtime. So you author the checker
+      once, roster it alongside the reporter, and let the coordinator fan out N instances -- you do
+      not duplicate the agent definition (b), nest it in tools[] (c), or set instance counts on the
+      session (d).
+  - id: aw-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: multiple_choice
+    prompt: >-
+      A coordinator spawns four research sub-agents and blocks, waiting for each to finish before
+      starting the next round, re-sending the full context each round. On a top-tier model this is
+      slow and expensive. Which async redesign addresses both the bottleneck and the cost?
+    choices:
+      - id: a
+        text: >-
+          Keep spawn-and-block but raise every sub-agent to the top tier so each round finishes
+          faster.
+      - id: b
+        text: Serialize the four sub-agents fully so only one runs at a time and context stays small.
+      - id: c
+        text: Re-create each sub-agent every round so it always starts with a clean, cheap context.
+      - id: d
+        text: >-
+          Use long-lived async sub-agents that communicate with the orchestrator while running, so
+          the orchestrator is not gated on the slowest child and the agents keep their context for
+          cache-read savings.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Spawn-and-block serializes on the slowest child and re-establishes context each round. The
+      documented async recommendation is long-lived sub-agents that report back while running: the
+      orchestrator is not bottlenecked, and the agents keep their context so they benefit from cache
+      reads. Raising every sub-agent's tier (a), fully serializing (b), or recreating each sub-agent
+      per round (c) all make it worse.
+  - id: aw-300-ff-q
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      You are deciding whether to promote a "delete remote branch" action from a generic bash call
+      to a dedicated tool in your harness. Give two concrete capabilities the harness gains by
+      making it a dedicated tool, referencing why bash cannot offer them.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names at least two of: gate/confirm, render, audit, or parallelize the action via a
+            dedicated tool.
+        - id: c2
+          text: >-
+            Explains bash is an opaque string the harness cannot inspect, so it cannot tell a
+            parallel-safe action from an unsafe one and must serialize bash.
+      referenceAnswer: >-
+        As a dedicated tool the harness can gate the action behind a confirmation, render and audit
+        it distinctly, and mark whether it is parallel-safe. Bash is an opaque string the harness
+        cannot inspect, so it cannot distinguish a safe read-only grep from a destructive branch
+        delete; it must serialize bash and cannot reliably gate or parallelize specific actions.
+      passThreshold: 0.6
+    guidance: >-
+      Promoting an action to a dedicated tool lets the harness gate, render, audit, or parallelize
+      it. Bash is opaque: the harness cannot tell a parallel-safe grep from a parallel-unsafe push,
+      so bash must be serialized and cannot be selectively gated. Security-sensitive or
+      parallel-safe actions are the ones worth promoting.
+  - id: aw-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      Your harness executes a parallel batch where the model returned three tool_use blocks in one
+      assistant message. Over time you notice the model stops making parallel calls. What harness
+      mistake most likely trained that behavior?
+    choices:
+      - id: a
+        text: Returning all three tool_result blocks in a single user message.
+      - id: b
+        text: >-
+          Returning the three tool_result blocks split across multiple user messages instead of all
+          in one.
+      - id: c
+        text: Executing the three tools concurrently rather than one at a time.
+      - id: d
+        text: Including a confidence score alongside each tool_result.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      When the model emits multiple tool_use blocks, the harness must return all the matching
+      tool_result blocks in a single user message. Splitting them across messages silently teaches
+      the model to stop making parallel calls. Returning them together (a) and concurrent execution
+      (c) are correct; a confidence score (d) is irrelevant.
+  - id: aw-300-mc-s
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: >-
+      A server-executed "send customer email" tool is configured with an always_ask permission
+      policy inside an agent loop. The agent reaches that tool. What happens and how does the human
+      influence it?
+    choices:
+      - id: a
+        text: >-
+          The session idles awaiting a user.tool_confirmation; the human sends allow or deny, and a
+          deny can carry a message explaining why so the agent adapts.
+      - id: b
+        text: The tool runs immediately and the human can only review the result afterward.
+      - id: c
+        text: The agent loop terminates permanently until the policy is removed from the config.
+      - id: d
+        text: The session auto-denies after a timeout with no way for the human to allow it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      always_ask pauses the server-executed tool and idles the session pending a
+      user.tool_confirmation (allow or deny). A deny can include a message telling the agent why, so
+      it can adjust its plan. The tool does not run first (b), the loop is not killed (c), and there
+      is no silent auto-deny (d).
+  - id: aw-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      You fan out five sub-agents to gather independent data for a dashboard, joined at the end. One
+      branch fails. The dashboard consumer can display partial data with gaps marked. Which join
+      policy should you choose and how does it differ from the all-or-nothing alternative?
+    rubric:
+      criteria:
+        - id: c1
+          text: Chooses best-effort aggregation (proceed with the four successful branches).
+        - id: c2
+          text: >-
+            Says the failed branch's slot should be marked as a gap rather than failing the whole
+            join.
+        - id: c3
+          text: >-
+            Contrasts with all-or-nothing, which fails the entire join if any branch fails, and ties
+            the choice to whether the consumer tolerates partial results.
+      referenceAnswer: >-
+        Use best-effort aggregation: proceed with the four successful branches and mark the failed
+        branch's slot as a gap. That suits a consumer that can render partial data. The
+        all-or-nothing alternative fails the whole join if any single branch fails, which is right
+        only when the downstream consumer cannot tolerate missing pieces. The choice depends on
+        partial-result tolerance.
+      passThreshold: 0.6
+    guidance: >-
+      In a fan-out join you pick between all-or-nothing (fail if any branch fails) and best-effort
+      aggregation (use the successes, mark gaps). Because this consumer tolerates partial data with
+      gaps marked, best-effort is correct. The right policy always depends on whether downstream
+      consumers can use partial results.
+  - id: aw-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 421
+    type: multiple_choice
+    prompt: >-
+      A team fans out a 12-file code-read task to 12 parallel Claude Code subagents and is surprised
+      the API bill is roughly 6x higher than when one agent read all 12 files sequentially, even
+      though wall-clock time dropped. What is the most accurate diagnosis of the cost increase?
+    choices:
+      - id: a
+        text: >-
+          Fan-out reduces wall-clock latency but increases total token cost: each subagent pays for
+          its own context window and the summaries flowing back to the parent, so cost is the sum
+          across branches plus overhead.
+      - id: b
+        text: >-
+          Parallel subagents are billed at a premium per-token rate that does not apply to a single
+          sequential agent.
+      - id: c
+        text: >-
+          The parent agent's prompt cache was invalidated by the parallel dispatch, forcing every
+          branch to reprocess the shared prefix at full price.
+      - id: d
+        text: >-
+          Running subagents concurrently disables prompt caching entirely, which is the only reason
+          the cost rose.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Fan-out trades wall-clock latency for total token cost: it is the sum across N branches plus
+      the N+1 context windows and the return summaries, not a premium rate (b) or a single cache
+      effect (c/d). The misconception that "fan-out reduces total cost" confuses latency with token
+      spend.
+  - id: aw-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      An orchestrator issues 8 identical-prefix requests concurrently to warm a large shared system
+      prompt into the cache, expecting 7 cache hits. Instead all 8 report cache_read_input_tokens of
+      0 and pay the write premium. What explains this, and what is the fix?
+    choices:
+      - id: a
+        text: The prefix was below the cacheable minimum; raise max_tokens so the cache engages.
+      - id: b
+        text: >-
+          A cache entry only becomes readable after the first response begins streaming, so
+          concurrent requests can't read what the others are still writing; send 1 request, await
+          its first streamed token, then fire the remaining 7.
+      - id: c
+        text: >-
+          Concurrent requests share one cache slot and overwrite each other; add a unique request ID
+          to each prefix to separate them.
+      - id: d
+        text: Caching is disabled for any request issued in parallel; serialize all 8 to get hits.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The cache entry isn't readable until the first response starts streaming, so a true concurrent
+      fan-out has every request miss. The documented fix is "warm one, then fan out." Adding a
+      unique ID (c) would break the prefix match entirely, and caching is not globally disabled for
+      parallel work (d).
+  - id: aw-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 431
+    type: free_form
+    prompt: >-
+      An agent is told to build a report by (A) extracting figures from a PDF, (B) summarizing the
+      figures, and (C) writing a narrative around the summary. A developer parallelizes all three as
+      a fan-out to cut latency and gets garbage output. Diagnose why the topology choice is wrong
+      and state the correct topology.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the three stages are data-dependent (B needs A's output, C needs B's
+            output), so they are not independent subtasks.
+        - id: c2
+          text: >-
+            States that fan-out / parallel is only valid for independent subtasks; dependent stages
+            must be sequential (a pipeline).
+        - id: c3
+          text: >-
+            Concludes the correct topology is a pipeline (sequential edges A -> B -> C), not
+            parallel fan-out.
+      referenceAnswer: >-
+        The three stages form a dependency chain: B consumes A's extracted figures and C consumes
+        B's summary. Fan-out is only correct when subtasks are independent; here each stage needs
+        the prior stage's output, so running them concurrently means B and C operate on empty or
+        stale inputs, producing garbage. The correct topology is a sequential pipeline (A -> B ->
+        C), where each stage's output is passed to the next. Latency is the sum of stages, which is
+        the unavoidable cost of genuine dependence.
+      passThreshold: 0.6
+    guidance: >-
+      Pipeline is for dependent stages; parallel fan-out is only for independent ones.
+      Mis-parallelizing a dependency chain produces wrong results because downstream stages run
+      before their inputs exist. The latency win is not available here because the work is genuinely
+      sequential.
+  - id: aw-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: multiple_choice
+    prompt: >-
+      A Managed Agents coordinator is configured with a roster of [reviewer_id, test_writer_id]. The
+      reviewer agent is itself a coordinator whose roster includes a security-scanner agent. At
+      runtime the security scanner never runs, even though the reviewer's prompt asks it to delegate
+      there. What is the cause?
+    choices:
+      - id: a
+        text: >-
+          The reviewer exceeded the concurrent-thread limit, so the scanner thread was silently
+          dropped.
+      - id: b
+        text: >-
+          Rosters inherit upward, so the scanner should have been promoted into the top-level
+          coordinator's roster automatically and a config bug stopped it.
+      - id: c
+        text: >-
+          Delegation in Managed Agents is one level deep only; a sub-agent's own roster does not
+          cascade, so depth > 1 is ignored.
+      - id: d
+        text: >-
+          The multi-agent config must be set on the session object, not on an agent, so the
+          reviewer's roster was never read.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Managed Agents delegation is one level only; a sub-agent's roster is ignored. The scanner is
+      not a thread-limit casualty (a), rosters do not inherit upward (b), and the multi-agent config
+      lives on the coordinator agent, not the session (d). To make the scanner reachable you would
+      flatten it into the top-level coordinator's roster.
+  - id: aw-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 441
+    type: multiple_choice
+    prompt: >-
+      A client loop breaks out of a Managed Agents session the moment it sees session.status_idle.
+      Users report the agent "stops half-finished" whenever a tool needs approval. What is the
+      flawed assumption and the correct gate?
+    choices:
+      - id: a
+        text: >-
+          Tool approvals require switching to polling mode; SSE streams cannot carry confirmation
+          requests.
+      - id: b
+        text: >-
+          The loop should break on session.status_running instead, since idle means the agent is
+          still working.
+      - id: c
+        text: >-
+          The fix is to never break on idle and instead poll sessions.retrieve in a tight loop until
+          status changes.
+      - id: d
+        text: >-
+          Idle is treated as terminal, but a session goes idle transiently (e.g. awaiting a tool
+          confirmation); break only on idle with a terminal stop_reason like end_turn, or on
+          terminated — a requires_action stop_reason means handle the pending request, don't break.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Idle is a transient state (between parallel tools, awaiting confirmation, or a custom-tool
+      result), so "break on idle" cuts work mid-flight. The correct gate checks stop_reason: break
+      on a terminal reason or terminated, and treat requires_action as "handle the pending request
+      and continue."
+  - id: aw-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A code-review agent was tuned with the instruction "only report high-severity issues, be
+      conservative." After upgrading to a recent Claude model, measured bug-finding recall drops
+      noticeably even though spot-checks show it still finds the bugs internally. Diagnose the cause
+      and prescribe a fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that recent models follow the "be conservative / only high-severity" filter
+            literally, suppressing true findings at the report stage even though the bugs were
+            detected.
+        - id: c2
+          text: >-
+            Explains the drop is a harness/instruction effect (precision filter), not a capability
+            regression in bug-finding.
+        - id: c3
+          text: >-
+            Prescribes having the model report everything with confidence + severity and filtering
+            in a separate downstream step.
+      referenceAnswer: >-
+        Recent Claude models follow instructions more literally: told to be conservative and only
+        report high-severity issues, the model investigates and identifies the bugs but then
+        declines to report ones it judges below the stated bar. Precision rises but measured recall
+        falls — this is a harness/instruction effect at the report stage, not a regression in
+        bug-finding ability. The fix is to instruct the model to report every finding (including
+        uncertain and low-severity ones) annotated with confidence and severity, and move the
+        filtering/ranking into a separate downstream step rather than folding it into the finding
+        step.
+      passThreshold: 0.6
+    guidance: >-
+      The documented failure: a literal-following model suppresses true findings when told to
+      filter, so recall drops even though detection didn't. The fix is report-everything-then-filter
+      — separate the coverage step from the ranking step.
+  - id: aw-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 451
+    type: multiple_choice
+    prompt: >-
+      A harness routes both glob/grep (read-only) and bash through a single generic bash tool, then
+      complains it can never run anything in parallel. A second harness exposes glob and grep as
+      dedicated tools. Why can only the second harness parallelize the reads?
+    choices:
+      - id: a
+        text: >-
+          Bash commands are always slower than dedicated tools, so the harness refuses to overlap
+          them for performance reasons.
+      - id: b
+        text: >-
+          Bash is an opaque command string, so the harness can't tell a parallel-safe grep from a
+          parallel-unsafe git push and must serialize all bash; dedicated read-only tools can be
+          marked parallel-safe.
+      - id: c
+        text: >-
+          Parallel execution is a model-side capability that only activates when tool names contain
+          the substring "search".
+      - id: d
+        text: >-
+          Dedicated tools run on Anthropic's servers while bash runs client-side, and only
+          server-side tools can be parallelized.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Promoting an action to a dedicated tool gives the harness a typed, inspectable hook it can
+      mark parallel-safe. Bash is one opaque shape for every action, so the harness can't
+      distinguish a safe grep from an unsafe push and must serialize. It's not a rate effect (a), a
+      name trick (c), or a server/client split (d).
+  - id: aw-400-ff-h
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: free_form
+    prompt: >-
+      Two designs solve the same long-horizon coding task: (X) one strong agent run at xhigh effort
+      with the full spec given up front, and (Y) the orchestrator splits the work across 5
+      subagents. Y comes out slower and more expensive. Explain the tradeoff that determines when
+      fan-out actually wins, and why Y lost here.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that fan-out wins when the bottleneck is independent breadth (e.g. reading many
+            files, checking many candidates), not depth.
+        - id: c2
+          text: >-
+            Explains that on capable models, higher effort up front often reduces total turns/cost
+            on long-horizon depth-bound work because the model plans better.
+        - id: c3
+          text: >-
+            Concludes Y lost because the task was sequential/depth-bound with no real independent
+            parallelism or context-isolation benefit to justify the N+1 context cost.
+      referenceAnswer: >-
+        Fan-out pays off only when the bottleneck is independent breadth — many genuinely parallel
+        subtasks (read 40 files, check 20 candidates) — and/or when context isolation prevents one
+        subtask's noise from degrading others. On a deep, sequential coding task the bottleneck is
+        reasoning depth, not breadth. A single capable agent at high/xhigh effort with the full spec
+        up front plans better, often cutting total turn count and cost, and keeps one coherent
+        context. Y paid for 5+1 context windows and coordination overhead to parallelize work that
+        wasn't independent, so it was both slower and more expensive with no isolation benefit to
+        offset the cost.
+      passThreshold: 0.6
+    guidance: >-
+      Reach for fan-out when the bottleneck is independent breadth, not depth. Higher effort on one
+      agent often beats splitting because the model plans the whole trajectory and avoids the N+1
+      context tax and coordination overhead.
+  - id: aw-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      An orchestrator switches the main agent loop from Opus to Haiku partway through a session to
+      save money on a cheap subtask, then notices every subsequent turn reprocesses the full history
+      at uncached prices. A teammate suggests a fix that keeps the savings. What is it, and why does
+      it work?
+    choices:
+      - id: a
+        text: >-
+          Disable prompt caching for the Haiku turns only, since caching is what broke; the Opus
+          turns will still hit cache.
+      - id: b
+        text: >-
+          Re-pin the Haiku requests to the original cache breakpoint by reusing the Opus message
+          IDs, which restores the cache across models.
+      - id: c
+        text: >-
+          Spawn a subagent on Haiku for the cheap subtask and keep the main loop on one model;
+          switching the main loop's model mid-session invalidates the cache, but a subagent runs in
+          its own isolated context and preserves the parent cache.
+      - id: d
+        text: Lower the effort parameter on the Haiku turns so they reprocess less of the history.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Caches are per-model, so switching the main loop's model invalidates the prefix. The
+      documented workaround is to isolate the cheaper model inside a subagent (separate context
+      window) so the parent's cache survives. Cache isn't shared across models by re-pinning IDs
+      (b), and effort doesn't change which history is reprocessed (d).
+  - id: aw-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 461
+    type: multiple_choice
+    prompt: >-
+      A scatter-gather job fans out 6 independent branches and joins them. One branch fails. The
+      downstream consumer can present partial results with gaps flagged. The team currently fails
+      the whole join if any branch fails. What is the most appropriate analysis of the join-policy
+      choice?
+    choices:
+      - id: a
+        text: >-
+          Branch failures in fan-out are impossible if the subtasks are truly independent, so the
+          policy question is moot.
+      - id: b
+        text: All-or-nothing is always correct for a join because partial results corrupt the aggregate.
+      - id: c
+        text: >-
+          The join should retry the failed branch indefinitely until it succeeds, since a join must
+          wait for every branch.
+      - id: d
+        text: >-
+          Because the consumer tolerates partial results, best-effort aggregation (proceed with
+          successes, mark the gap) fits better than all-or-nothing; the right policy depends on
+          whether downstream can tolerate partial output.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Join policy is a tradeoff keyed to downstream tolerance: all-or-nothing when consumers need
+      every branch, best-effort aggregation when they can proceed with successes and flag gaps. Here
+      the consumer tolerates gaps, so best-effort fits. Independence doesn't prevent failures (a),
+      and indefinite retry (c) ignores the partial-tolerance the consumer already has.
+  - id: aw-400-ff-k
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: free_form
+    prompt: >-
+      A Claude Code agent delegates a single one-line grep to a freshly spawned subagent on every
+      task and the developer finds runs feel slower and pricier than expected. Explain the failure
+      mode and the rule of thumb for when delegating is worth it versus acting directly.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that each subagent spawn has fixed overhead (fresh context, re-establishing
+            task context, the round-trip to summarize back).
+        - id: c2
+          text: >-
+            Explains that for trivial work (a single grep/read), a direct action is cheaper than
+            delegating because the overhead exceeds the work.
+        - id: c3
+          text: >-
+            States the tradeoff: delegate to gain context isolation / parallel breadth /
+            blast-radius containment; act directly for small sequential reads.
+      referenceAnswer: >-
+        Spawning a subagent has fixed overhead: a fresh context window, the cost of re-establishing
+        the task context, and the round-trip to summarize results back to the parent. For a single
+        grep that overhead dwarfs the actual work, so delegating is slower and more expensive than
+        just running the grep in the main loop. The rule of thumb: delegate when you gain something
+        real — context isolation (keeping noisy intermediate tokens out of the parent), parallel
+        independent breadth, or blast-radius containment — and act directly for trivial, sequential
+        reads where there is nothing to isolate or parallelize.
+      passThreshold: 0.6
+    guidance: >-
+      Subagents add per-spawn overhead, so trivial single-action work is cheaper done directly.
+      Delegation earns its cost only through isolation, parallel breadth, or blast-radius
+      containment — not for a one-line read.
+  - id: aw-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      A developer's orchestrator opens the SSE event stream only after sending the kickoff
+      user.message, and intermittently misses the agent's first few status transitions and messages.
+      What is the precise cause?
+    choices:
+      - id: a
+        text: >-
+          The kickoff message must include a replay cursor; without it the stream starts from the
+          latest event and discards earlier ones permanently.
+      - id: b
+        text: >-
+          SSE only delivers events emitted after the stream opens; sending first and streaming
+          second means early events were emitted before the consumer attached, so they arrive
+          batched or are missed — open the stream before sending.
+      - id: c
+        text: >-
+          The first events are dropped because the session was still in the rescheduling state and
+          SSE skips non-running events.
+      - id: d
+        text: >-
+          Status transitions are only available via polling, never SSE, so they can never appear on
+          the stream regardless of ordering.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The stream-first rule: SSE delivers only events emitted after the stream is open. Sending the
+      kickoff before opening the stream batches or loses the early events. The fix is to open the
+      stream first, then send. Status transitions do appear on SSE (d), and there is no kickoff
+      replay cursor (a).
+  - id: aw-400-ff-m
+    tier: 400
+    bloom: analyze
+    difficulty: 471
+    type: free_form
+    prompt: >-
+      A coordinator delegates a subtask to a sub-agent with the message "handle the auth refactor"
+      and nothing else. The sub-agent produces something unrelated to the design the coordinator had
+      just worked out in its own conversation. The team assumed the sub-agent could "see" the
+      coordinator's reasoning. Diagnose the anti-pattern and state what is and isn't shared.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the anti-pattern as assuming shared conversation context between coordinator
+            and sub-agent.
+        - id: c2
+          text: >-
+            States that threads share the container/filesystem but NOT conversation history (each
+            thread is context-isolated with its own history).
+        - id: c3
+          text: >-
+            Prescribes that the coordinator must explicitly pass needed information in the delegated
+            message (or write it to disk for the sub-agent to read).
+      referenceAnswer: >-
+        The anti-pattern is assuming the sub-agent shares the coordinator's conversation context. In
+        Managed Agents, each delegated agent runs in its own thread — a context-isolated event
+        stream with its own conversation history, model, and prompt. Threads share the container and
+        filesystem, but not conversation history. So the design the coordinator worked out in its
+        own thread is invisible to the sub-agent. The coordinator must explicitly pass the needed
+        design and constraints in the delegated message, or write them to a file on the shared
+        filesystem for the sub-agent to read.
+      passThreshold: 0.6
+    guidance: >-
+      Threads share the filesystem, not conversation history. The documented anti-pattern is
+      assuming shared context; the coordinator must hand off everything the sub-agent needs in the
+      message or via disk.
+  - id: aw-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: multiple_choice
+    prompt: >-
+      A team adds 'CRITICAL: YOU MUST delegate every step to a subagent' to an orchestrator prompt
+      on a recent Claude model, hoping for more reliable orchestration. Instead the agent
+      over-spawns subagents for trivial reads. What is the best diagnosis and remedy?
+    choices:
+      - id: a
+        text: >-
+          Over-spawning is a billing artifact unrelated to the prompt; it will resolve once the
+          cache warms.
+      - id: b
+        text: >-
+          The model needs even stronger language; escalate to 'ALWAYS, WITHOUT EXCEPTION, delegate'
+          to force consistent behavior.
+      - id: c
+        text: >-
+          Recent models follow instructions literally and over-trigger on aggressive language; dial
+          the language back and state WHEN to delegate (parallel/independent work) versus act
+          directly (single reads).
+      - id: d
+        text: The orchestrator should be moved to a cheaper model, which delegates less by default.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Aggressive "CRITICAL: YOU MUST" language causes literal-following models to over-trigger
+      (here, over-spawn subagents). The remedy is to soften the language and specify the condition
+      for delegating versus acting directly — not to escalate the language (b) or change models to
+      mask it (d).
+  - id: aw-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: >-
+      A script calls agents.create() at the top of a per-request handler, then sessions.create()
+      referencing the just-created agent. Over weeks the workspace accumulates thousands of agent
+      objects and each request has extra latency. What is the root-cause analysis?
+    choices:
+      - id: a
+        text: >-
+          Each session requires its own freshly created agent by design; the accumulation is
+          expected and harmless.
+      - id: b
+        text: >-
+          sessions.create() is leaking agent objects; the fix is to delete the session after each
+          request, which garbage-collects its agent.
+      - id: c
+        text: The roster cap was exceeded, forcing the API to clone new agents per request.
+      - id: d
+        text: >-
+          Agents are persistent, versioned objects meant to be created once in setup and referenced
+          by ID; calling agents.create() per request orphans agents and pays create latency for
+          nothing.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      agents.create() belongs in one-time setup; the agent is a persistent, versioned object you
+      reference by ID on every session. Calling it per request is the documented #1 anti-pattern —
+      it orphans agents and pays create latency needlessly. Deleting sessions doesn't clean up
+      agents (b), and the accumulation is not by design (a).
+  - id: aw-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 477
+    type: free_form
+    prompt: >-
+      A coordinator spawns each sub-agent and blocks on it before spawning the next, and the whole
+      orchestration ends up serializing on the slowest child while re-establishing context each
+      round. Describe the bottleneck precisely and the async pattern that avoids it, including its
+      cost.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the coordinator-bottleneck: spawn-and-block serializes on the slowest child
+            and re-establishes context each round.
+        - id: c2
+          text: >-
+            Describes async long-lived sub-agents that communicate with the orchestrator while
+            running, avoiding the bottleneck and preserving their context (cache-read savings).
+        - id: c3
+          text: >-
+            Notes the cost/tradeoff of the async approach (added complexity: reconnect, dedupe,
+            lifecycle management).
+      referenceAnswer: >-
+        Spawn-and-block makes the coordinator a serial bottleneck: it waits on each child to finish
+        before starting the next, so total time is gated by the sum of the slowest children, and
+        each round re-establishes the child's context from scratch. The documented alternative is
+        async sub-agents that stay long-lived and communicate with the orchestrator while running:
+        the orchestrator isn't blocked on the slowest branch, and long-lived agents keep their
+        context across subtasks (cache-read savings instead of re-establishing context). The cost is
+        added machinery — reconnect/dedupe of the event stream, and sub-agent lifecycle management —
+        so the call is whether the orchestration volume justifies that complexity.
+      passThreshold: 0.6
+    guidance: >-
+      Spawn-and-block serializes on the slowest child and re-pays context setup each round. Async
+      long-lived sub-agents that report back avoid the bottleneck and preserve cache, at the cost of
+      reconnect/dedupe/lifecycle complexity.
+  - id: aw-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 479
+    type: multiple_choice
+    prompt: >-
+      An adversarial-verification setup has the SAME agent that wrote a solution also self-critique
+      it in the same conversation, and it keeps missing the same class of errors. A reviewer
+      proposes a fresh-context verifier. What is the underlying reason a fresh-context verifier
+      catches more?
+    choices:
+      - id: a
+        text: >-
+          Fresh-context verifiers run a different model architecture that is strictly better at
+          finding bugs.
+      - id: b
+        text: >-
+          A same-context self-critique shares the generator's blind spots and assumptions; a
+          fresh-context verifier has no memory of how the answer was produced and so isn't anchored
+          to the same reasoning that caused the error.
+      - id: c
+        text: >-
+          Self-critique is disabled by the API after the first generation, so the second pass never
+          actually runs.
+      - id: d
+        text: >-
+          A fresh-context verifier sees more tokens of the original work, giving it a larger input
+          to analyze.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The generator-verifier split works because a fresh-context verifier doesn't inherit the
+      generator's assumptions and reasoning chain, so it isn't anchored to the same blind spots.
+      It's not about a different architecture (a) or more tokens (d) — it's about independence of
+      context.
+  - id: aw-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A Managed Agents Outcomes loop is configured with a rubric whose only criterion is "the output
+      looks good and is high quality." Iterations thrash: the grader returns needs_revision
+      repeatedly with inconsistent feedback. Explain why this rubric design causes the thrash and
+      how to fix it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the rubric uses a vague/subjective criterion ("looks good") rather than
+            explicit, independently gradeable criteria.
+        - id: c2
+          text: >-
+            Explains the grader (a separate context window) scores each criterion independently, so
+            vague criteria produce noisy, inconsistent grades and repeated needs_revision.
+        - id: c3
+          text: >-
+            Prescribes rewriting the rubric as explicit, checkable criteria (e.g. "CSV has a numeric
+            price column per SKU") so each can be scored objectively.
+      referenceAnswer: >-
+        The rubric relies on a subjective "looks good / high quality" criterion. The Outcomes grader
+        runs in its own context window and scores each criterion independently; with nothing
+        concrete to check, it grades the same artifact differently across iterations, returning
+        needs_revision with inconsistent feedback and causing the iterate-grade-revise loop to
+        thrash. The fix is to write explicit, independently gradeable criteria — concrete, checkable
+        statements like "the CSV has a numeric price column for every SKU" or "every section cites
+        at least one source" — so each criterion can be scored objectively and the loop converges or
+        terminates cleanly.
+      passThreshold: 0.6
+    guidance: >-
+      Outcome rubrics must use explicit, independently gradeable criteria, not vibes. The grader
+      scores each criterion independently in its own context; vague criteria yield noisy grades and
+      a thrashing iterate-grade-revise loop.
+  - id: aw-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      A pipeline of three sequential stages currently lets a failed stage pass its (empty) output
+      downstream, and the final stage produces confident but wrong results. Which error-propagation
+      analysis and remedy is correct for a pipeline topology?
+    choices:
+      - id: a
+        text: >-
+          The downstream stage should detect the bad input itself; halting at the failed stage is
+          incorrect because it reduces throughput.
+      - id: b
+        text: >-
+          Pipelines have no failure boundaries by design; the only fix is to convert the whole thing
+          to a parallel fan-out.
+      - id: c
+        text: >-
+          In a pipeline a stage failure should halt or trigger a targeted retry, not silently pass
+          garbage downstream; the bug is missing failure handling at the stage boundary.
+      - id: d
+        text: >-
+          A failed stage is harmless because the final stage's confidence score will flag the wrong
+          result automatically.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Pipeline failures should halt or trigger targeted retry at the failing stage, not silently
+      feed garbage forward. Converting to fan-out (b) doesn't fix a dependency chain, pushing
+      detection downstream (a) is fragile, and a confidence score can't reliably catch garbage-in
+      (d).
+  - id: aw-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 449
+    type: multiple_choice
+    prompt: >-
+      A team applies an always_ask permission policy to EVERY server-executed tool in an agent loop,
+      including read-only glob/grep, and throughput collapses while reversible reads constantly
+      block on human approval. What is the most defensible redesign?
+    choices:
+      - id: a
+        text: >-
+          Gate hard-to-reverse actions (push, send, delete, external writes) with always_ask and
+          auto-allow reversible/read-only ones, mirroring the reversibility reasoning used for
+          bash-vs-dedicated-tool decisions.
+      - id: b
+        text: >-
+          Remove all permission gates so nothing blocks, since human-in-the-loop is incompatible
+          with orchestrated loops.
+      - id: c
+        text: >-
+          Keep always_ask everywhere but batch all confirmations into one prompt at the end of the
+          session.
+      - id: d
+        text: Move every tool to a cheaper model so confirmations resolve faster.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The expert call is to gate by reversibility: always_ask on hard-to-reverse actions
+      (push/send/delete/external writes) and auto-allow reversible, read-only ones. Gating
+      everything kills throughput; removing all gates (b) is unsafe for irreversible actions;
+      batching at the end (c) defeats the human-in-the-loop purpose; model choice (d) doesn't
+      address the policy.
+  - id: aw-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team proposes a multi-agent coordinator with five subagents to handle a task that is fully
+      sequential (each step strictly depends on the previous one's output), small, and not
+      latency-sensitive. Which critique of this design is strongest?
+    choices:
+      - id: a
+        text: >-
+          Five subagents exceeds the coordinator roster limit, so the configuration will be rejected
+          before it can run.
+      - id: b
+        text: >-
+          The work is sequential, so fan-out yields no real parallelism and no context-isolation
+          benefit; a single agent at higher effort is cheaper and more coherent than paying for
+          roughly N+1 context windows.
+      - id: c
+        text: >-
+          Multi-agent always produces lower-quality output than a single agent, so it should never
+          be used regardless of independence.
+      - id: d
+        text: >-
+          Sequential subtasks run faster as separate agents because each gets its own fresh context
+          window, so the only problem is the extra dollar cost.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Fan-out only pays off when subtasks are genuinely independent (real parallelism) or when
+      context isolation prevents one branch's noise from degrading others. Sequential dependent work
+      has neither benefit, and the coordinator + N subagents still pays for ~N+1 context windows
+      plus summaries. A is wrong (the roster comfortably holds five); C overstates (multi-agent is a
+      valid tool when independence and isolation justify the cost); D is wrong because dependent
+      work cannot run concurrently.
+  - id: aw-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      An engineer wants to cut wall-clock latency on a fan-out where 8 parallel subagents share an
+      identical large prefix, and reasons "they all share the prefix, so they'll all hit the prompt
+      cache and the writes are nearly free." Why is this reasoning flawed, and what is the better
+      design?
+    choices:
+      - id: a
+        text: >-
+          Prompt caching is disabled during fan-out, so the only fix is to disable caching entirely
+          and accept the cost.
+      - id: b
+        text: >-
+          Identical prefixes are deduplicated automatically, so the reasoning is correct and no
+          change is needed.
+      - id: c
+        text: >-
+          The cache only becomes readable after the first request begins streaming, so 8 truly
+          concurrent requests all miss and pay full write cost; warm one request first, await its
+          first streamed token, then fire the remaining 7.
+      - id: d
+        text: >-
+          The cache is per-request not per-prefix, so the engineer should give each subagent a
+          unique prefix to force separate cache entries.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A cache entry is readable only after the first response begins streaming, so N simultaneous
+      identical-prefix requests all miss and each pays the ~1.25x write premium. The documented
+      pattern is "warm one, then fan out": send one request, await its first streamed token, then
+      dispatch the rest so they read the cache the first one wrote. This adds a serialization point
+      but recovers cache hits — usually worth it for large prefixes.
+  - id: aw-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: free_form
+    prompt: >-
+      A reviewer config instructs the code-review agent: "Only report high-severity issues; be
+      conservative and do not nitpick." Measured recall on a benchmark of known bugs then drops
+      versus the previous model. Critique this design and propose a fix that preserves precision
+      without sacrificing recall.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that recent Claude models follow the conservative/severity filter literally,
+            suppressing true findings at the reporting stage (not a capability regression in
+            bug-finding).
+        - id: c2
+          text: >-
+            Proposes having the model report everything with confidence and severity attached,
+            rather than self-filtering during the finding stage.
+        - id: c3
+          text: >-
+            Moves the importance/confidence filtering into a separate downstream step so coverage
+            and ranking are decoupled.
+      referenceAnswer: >-
+        The instruction is the problem: recent Claude models follow "only high-severity / be
+        conservative" literally, so the model still finds the bugs but declines to report ones it
+        judges below the bar — precision rises but measured recall falls even though underlying
+        bug-finding improved. The fix is to instruct the model to report every finding it sees,
+        including low-confidence and low-severity ones, each tagged with a confidence level and an
+        estimated severity, and then filter/rank in a separate downstream step (or a second pass).
+        This decouples coverage from filtering: the finding stage maximizes recall, the filter stage
+        restores precision.
+      passThreshold: 0.6
+    guidance: >-
+      This is the documented LLM-as-judge filtering anti-pattern. Telling a recent model to be
+      conservative at the finding stage literally suppresses true findings. Separate "report
+      everything with confidence+severity" from "filter downstream" so a literal-following model
+      can't drop real bugs before they're ever surfaced.
+  - id: aw-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      Two designs for verifying a high-stakes, irreversible agent output are proposed: (1) the
+      generating agent critiques its own work in the same context before finalizing; (2) a separate
+      verifier with a fresh context window (no memory of how the answer was produced) grades the
+      output. For this high cost-of-error case, which judgment is best supported?
+    choices:
+      - id: a
+        text: >-
+          Design 1 is preferable because self-critique in the same context has full information
+          about the reasoning, so it always catches more errors than a fresh verifier.
+      - id: b
+        text: >-
+          The two designs are equivalent in error-catching power, so design 1 should always be
+          chosen because it is cheaper.
+      - id: c
+        text: >-
+          Neither verification is worth the cost; for irreversible output the agent should just
+          produce a single confident answer to minimize latency.
+      - id: d
+        text: >-
+          Design 2 is preferable because a fresh-context verifier doesn't share the generator's
+          blind spots and catches errors self-critique misses; the extra cost is justified by the
+          high cost of error.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A same-context self-critique shares the generator's blind spots, so it systematically misses a
+      class of errors. A fresh-context verifier reasons from the output alone and catches more. The
+      expert call is to spend verification effort proportional to cost-of-error: high-stakes,
+      irreversible output justifies the extra cost of an independent verifier (or judge panel);
+      cheap recoverable output may not.
+  - id: aw-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: >-
+      A harness routes every Claude-Code-style action through a single bash tool "to keep the
+      harness simple," including file edits, greps, and pushes to a remote. A senior reviewer
+      objects. Which objection most accurately captures the orchestration cost of this choice?
+    choices:
+      - id: a
+        text: >-
+          Bash tools are slower per call than dedicated tools, so the only cost is added latency on
+          each command.
+      - id: b
+        text: >-
+          Bash is an opaque command string, so the harness cannot tell a parallel-safe grep from a
+          parallel-unsafe push and must serialize everything, and it cannot selectively gate,
+          render, or audit individual actions.
+      - id: c
+        text: >-
+          Bash cannot express file edits at all, so the design simply will not work for editing
+          tasks.
+      - id: d
+        text: >-
+          Routing through bash invalidates the prompt cache on every call because bash commands
+          vary, so caching is the real problem.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Promoting an action to a dedicated tool gives the harness an action-specific hook it can gate
+      (confirm hard-to-reverse actions), render, audit, or mark parallel-safe. A single bash string
+      is opaque: the harness can't distinguish a parallel-safe grep from a parallel-unsafe push, so
+      it must serialize and can't selectively gate. The cost is lost control and parallelism, not
+      raw per-call latency (a) or feasibility (c).
+  - id: aw-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      An orchestrator drives a Managed-Agents session and breaks its event loop the moment it sees
+      session.status_idle, then immediately calls sessions.delete(). It works most of the time but
+      occasionally cuts off work mid-flight and sometimes 400s on delete. Evaluate the two distinct
+      flaws and give the correct gate for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that idle is transient (between parallel tools, awaiting tool confirmation /
+            custom tool result), so breaking on idle alone cuts off in-flight work.
+        - id: c2
+          text: >-
+            States the correct break gate: break only on idle with a terminal stop_reason (e.g.
+            end_turn), or on terminated; treat requires_action as "handle the pending request, don't
+            break."
+        - id: c3
+          text: >-
+            Explains the post-idle status-write race: the stream emits idle before the queryable
+            status reflects it, so an immediate delete/archive can 400; poll sessions.retrieve until
+            status is not running before cleanup.
+      referenceAnswer: >-
+        Flaw 1: session.status_idle is transient — the session goes idle between parallel tool
+        executions and while awaiting a user.tool_confirmation or user.custom_tool_result. Breaking
+        on idle alone cuts off work that is merely paused. The correct gate is to break only when
+        idle carries a terminal stop_reason (e.g. end_turn / retries_exhausted) or on
+        session.status_terminated; a requires_action stop_reason means "handle the pending request,
+        then continue," not break. Flaw 2: the SSE stream emits idle slightly before the session's
+        queryable status reflects it, so an immediate sessions.delete()/archive() can 400 with
+        "cannot delete while running." Poll sessions.retrieve() until status is no longer running
+        before cleanup.
+      passThreshold: 0.6
+    guidance: >-
+      Two separate bugs. The idle-break gate must check stop_reason (terminal vs requires_action),
+      not just the idle status, or parallel/confirmation gaps end the session early. And the
+      post-idle status-write race means cleanup must poll retrieve() before delete/archive.
+  - id: aw-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A long-horizon coding agent is built as a coordinator that spawns a subagent, blocks until it
+      returns, spawns the next, and so on. On the hardest tasks it is both slow and expensive. A
+      proposed redesign uses async sub-agents that communicate with the orchestrator while running.
+      Which evaluation of the redesign is most accurate?
+    choices:
+      - id: a
+        text: >-
+          Async sub-agents are strictly worse because parallel agents always cost more total tokens
+          than a single blocking chain.
+      - id: b
+        text: >-
+          Async long-lived sub-agents avoid serializing on the slowest child and preserve each
+          agent's context (cache-read savings) instead of re-establishing it per subtask, at the
+          cost of added reconnect/dedupe/lifecycle complexity that's justified only when
+          orchestration volume warrants it.
+      - id: c
+        text: >-
+          The redesign has no downside; async orchestration is always the right default for any
+          agent loop.
+      - id: d
+        text: >-
+          Spawn-and-block is actually faster because blocking guarantees the coordinator's prompt
+          cache is never invalidated between children.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Spawn-and-block serializes on the slowest child and re-establishes context each round. Async
+      long-lived sub-agents that report back while running avoid the bottleneck and keep their
+      context (cache-read savings), but add reconnect, dedupe, and lifecycle machinery. The judgment
+      is whether orchestration volume justifies that complexity — not an unconditional "always" (C)
+      or a blanket cost claim (A).
+  - id: aw-500-ff-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: free_form
+    prompt: >-
+      A team is choosing between (A) splitting a long-horizon refactor across five subagents and (B)
+      running one agent at xhigh effort with the full task spec given up front. Under what
+      conditions does B beat A, and what is the counter-intuitive reason higher effort on one agent
+      can reduce total cost? Name the kind of bottleneck for which fan-out is still the right call.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that higher effort up front lets the model plan better, which often reduces total
+            turn count (and thus total token cost) on long-horizon work, so one strong agent can
+            beat a five-way split.
+        - id: c2
+          text: >-
+            Identifies that fan-out is the right call when the bottleneck is independent breadth
+            (e.g. read 40 files, check 20 candidates), not depth/sequential reasoning.
+        - id: c3
+          text: >-
+            Notes a condition favoring B such as the work being sequential/dependent or lacking a
+            context-isolation benefit, where a coherent single agent is cheaper and avoids
+            coordination overhead.
+      referenceAnswer: >-
+        B beats A when the work is sequential or tightly coupled and there's no context-isolation
+        benefit from splitting. Counter-intuitively, higher effort up front (xhigh, full spec) often
+        reduces total turn count and total cost on long-horizon work because the model plans better
+        and re-derives less, so "split into 5 subagents" can lose to "one agent at high/xhigh with
+        the full spec." Fan-out is the right call when the bottleneck is independent breadth —
+        reading 40 files, checking 20 candidates, running independent searches — where parallelism
+        is real and context isolation contains each branch's noise.
+      passThreshold: 0.6
+    guidance: >-
+      On capable models, more effort up front improves planning and cuts total turns/cost on
+      long-horizon work, so fan-out isn't automatically cheaper. Reach for fan-out when the
+      bottleneck is independent breadth (parallel reads/checks), not sequential depth.
+  - id: aw-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      An orchestrator opens a fan-out of independent subtasks with an all-or-nothing join: if any
+      one branch fails, the entire aggregate fails. A reviewer argues for best-effort aggregation
+      instead. What determines which join policy is correct?
+    choices:
+      - id: a
+        text: All-or-nothing is always safer because partial results are never useful in any system.
+      - id: b
+        text: >-
+          Best-effort is always preferable because it maximizes throughput regardless of what the
+          downstream consumer needs.
+      - id: c
+        text: >-
+          Whether the downstream consumer can tolerate partial results — best-effort aggregation
+          (proceed with successes, mark the gaps) fits tolerant consumers, while all-or-nothing fits
+          consumers that require completeness.
+      - id: d
+        text: >-
+          The choice is purely a performance optimization with no correctness implications either
+          way.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      In a fan-out join you choose between all-or-nothing (fail if any branch fails) and best-effort
+      (proceed with the successful branches, mark the gaps). The right choice depends on whether the
+      downstream consumer can tolerate partial results — it's a correctness decision tied to
+      consumer requirements, not a blanket rule (a/b) or a pure perf tweak (d).
+  - id: aw-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: >-
+      A Managed-Agents coordinator is designed so each rostered sub-agent itself has a multiagent
+      roster, expecting a three-level delegation tree where sub-sub-agents do leaf work. The author
+      also assumes sub-agents automatically see the coordinator's conversation so far. Which
+      critique correctly identifies the two false assumptions?
+    choices:
+      - id: a
+        text: >-
+          Three-level delegation works fine, but threads do share full conversation history, so the
+          explicit-passing concern is unfounded.
+      - id: b
+        text: >-
+          Delegation is one level deep only — a sub-agent's own roster is ignored — and threads
+          share the container/filesystem but not conversation context, so the coordinator must pass
+          needed information explicitly or write it to disk.
+      - id: c
+        text: >-
+          Delegation depth is unlimited, and the only real problem is that sub-agents share context,
+          which leaks the coordinator's private reasoning.
+      - id: d
+        text: Both assumptions are correct; the design will work as written with no changes.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Two documented constraints break this design. Delegation is one level deep only — a
+      sub-agent's own multiagent roster does not cascade (depth > 1 is ignored). And each delegated
+      agent runs in its own thread that shares the container/filesystem but not conversation
+      history, so the coordinator must put needed information in the delegated message or on disk.
+  - id: aw-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      Critique this Outcome rubric used to drive an iterate-grade-revise loop: "The output report
+      should look professional and the data should be solid." Explain why this rubric produces noisy
+      loops and rewrite it into criteria suitable for an independent grader.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that the grader scores each criterion independently, so vibe-based / vague
+            criteria ("look professional", "data solid") are not reliably gradeable and produce
+            noisy, inconsistent results.
+        - id: c2
+          text: >-
+            Rewrites into explicit, independently checkable criteria (e.g. specific columns/fields
+            present, numeric types, required sections, value constraints).
+        - id: c3
+          text: >-
+            Notes the practical consequence: clear criteria let the loop terminate on satisfied vs
+            needs_revision deterministically rather than oscillating on subjective judgment.
+      referenceAnswer: >-
+        The rubric is "vibes," not gradeable. The Outcomes grader scores each criterion
+        independently, so "look professional" and "data solid" give it nothing concrete to check —
+        results are noisy and the iterate/grade/revise loop oscillates because the same artifact may
+        pass or fail depending on subjective judgment. Rewrite as explicit, independently gradeable
+        criteria, e.g.: "Report contains an Executive Summary, Methodology, and Results section";
+        "the data table has a numeric `price` column with no nulls"; "every revenue figure cites a
+        source row." Concrete criteria let the grader return satisfied vs needs_revision
+        deterministically and let the loop converge instead of thrashing.
+      passThreshold: 0.6
+    guidance: >-
+      Outcome rubrics should use explicit, independently gradeable criteria rather than vibes. The
+      grader scores each criterion on its own, so vague language yields noisy iterations. Concrete,
+      checkable criteria make the loop converge.
+  - id: aw-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A team wants to run 50,000 independent classification prompts that share a large common system
+      prefix and are not latency-sensitive. They debate (1) a live concurrent fan-out of 50,000
+      in-flight requests vs (2) the Batch API. Which evaluation best weighs the tradeoff?
+    choices:
+      - id: a
+        text: >-
+          Live concurrent fan-out is better because it guarantees every request hits the
+          shared-prefix cache simultaneously, which the Batch API cannot do.
+      - id: b
+        text: The two are equivalent in cost and behavior, so the choice is arbitrary.
+      - id: c
+        text: >-
+          The Batch API cannot share a common prefix across requests, so live fan-out is required to
+          reuse the system prompt.
+      - id: d
+        text: >-
+          The Batch API is the better fit: it gives a 50% cost reduction for large fan-out of
+          independent, non-latency-sensitive requests, whereas a live 50,000-way concurrent fan-out
+          maximizes infrastructure pressure for latency benefits the workload doesn't need.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The Batch API (50% cost reduction, async, results in any order) is purpose-built for large
+      fan-out of independent, non-latency-sensitive requests, and it supports prompt caching. Live
+      concurrent fan-out is for when you actually need low wall-clock latency — which this workload
+      doesn't. A is wrong (concurrent identical-prefix requests all miss the cache), and C is wrong
+      (batches support caching).
+  - id: aw-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 526
+    type: multiple_choice
+    prompt: >-
+      To make a subagent-spawning orchestrator more reliable, an author strengthens the prompt to
+      "CRITICAL: YOU MUST delegate every step to a subagent." In testing on a recent model, the
+      agent now spawns subagents even for a single grep or file read. Which evaluation and fix is
+      correct?
+    choices:
+      - id: a
+        text: >-
+          The model is malfunctioning; the fix is to add even more emphatic language until it stops
+          over-spawning.
+      - id: b
+        text: Over-spawning is harmless because subagents are free, so no change is needed.
+      - id: c
+        text: >-
+          Recent models follow such instructions literally and over-trigger; dial the language back
+          and state when to delegate (parallel/independent work) versus act directly (trivial single
+          reads), since a direct action is cheaper than a spawn for trivial work.
+      - id: d
+        text: >-
+          The fix is to forbid all delegation entirely, since subagents never provide benefit on a
+          single-model task.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Aggressive "CRITICAL: YOU MUST" language makes recent models over-trigger — here,
+      over-spawning subagents for trivial work. Each spawn adds fixed overhead (fresh context,
+      re-established task context, a summarize-back round trip), so a direct grep/read is cheaper.
+      The fix is to soften the language and state when to delegate (parallel/independent breadth)
+      versus act directly.
+  - id: aw-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      An orchestrator design uses an always_ask permission policy on every server-executed tool,
+      including read-only ones like grep and glob. Throughput is poor. The team's reaction is to
+      switch to never asking for anything. Evaluate both extremes and state the principle for where
+      the human-in-the-loop gate belongs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that always_ask on every tool kills throughput (each gated tool idles the
+            session awaiting a tool_confirmation round-trip), while never asking is risky for
+            irreversible actions.
+        - id: c2
+          text: >-
+            States the principle: gate hard-to-reverse actions (push, send, delete, external writes)
+            and auto-allow reversible/read-only ones — mirroring the bash-vs-dedicated-tool
+            reversibility reasoning.
+        - id: c3
+          text: >-
+            Notes a useful refinement, e.g. a deny can carry a message telling the agent why so it
+            adapts, or that read-only tools are safe to auto-allow.
+      referenceAnswer: >-
+        Both extremes are wrong. always_ask on every tool — including read-only grep/glob — idles
+        the session on a user.tool_confirmation round-trip for each call, destroying throughput.
+        Never asking is fast but unsafe for irreversible actions. The principle mirrors the
+        bash-vs-dedicated-tool reasoning: gate hard-to-reverse actions (push, send, delete, external
+        writes) behind always_ask, and auto-allow reversible or read-only ones. A denial can carry a
+        message explaining why so the agent adapts rather than retrying blindly. Reversibility, not
+        blanket policy, decides where the human gate belongs.
+      passThreshold: 0.6
+    guidance: >-
+      always_ask everywhere kills throughput; never asking is unsafe for irreversible work. Gate
+      hard-to-reverse actions and auto-allow reversible/read-only ones, the same reversibility
+      criterion used to decide bash vs dedicated tools.
+  - id: aw-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A subagent in Claude Code is added specifically so the main loop can run a cheaper model for
+      bulk file reads without invalidating the orchestrator's prompt cache. A reviewer asks why this
+      is done via a subagent rather than just switching the main loop's model when bulk reads come
+      up. Which justification is strongest?
+    choices:
+      - id: a
+        text: >-
+          Subagents are required because the main loop cannot call any tools while a cheaper model
+          is active.
+      - id: b
+        text: >-
+          Switching the main loop's model mid-session invalidates the prompt cache, so isolating the
+          cheaper model inside a subagent preserves the parent's cache; the subagent also contains
+          the bulk read tokens in its own context window so they don't pollute the parent.
+      - id: c
+        text: Switching models is free, so the subagent provides no benefit and adds only overhead.
+      - id: d
+        text: >-
+          Subagents share the parent's context window, so the bulk reads are visible to the parent,
+          which is the actual goal.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Switching the main loop's model mid-session invalidates the prompt cache (caches are
+      model-scoped). Isolating the cheaper model in a subagent keeps the parent on one model so the
+      cache survives, and the subagent's own context window contains the bulk-read tokens so they
+      don't pollute the parent — only the subagent's summary returns. D inverts the isolation
+      property; C ignores cache invalidation.
+  - id: aw-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: multiple_choice
+    prompt: >-
+      A harness executes parallel tool calls correctly but returns each tool_result in its own
+      separate user message, one per turn, because "it's cleaner." Over time the model stops issuing
+      parallel tool_use blocks. What is the best diagnosis?
+    choices:
+      - id: a
+        text: Parallel tool use is deprecated, so the model correctly disables it on its own over time.
+      - id: b
+        text: The model stops because separate messages cost more tokens, and it is optimizing for cost.
+      - id: c
+        text: >-
+          Tool results must each be in their own message; the real bug is that the model should
+          never have made parallel calls in the first place.
+      - id: d
+        text: >-
+          All tool_result blocks for a single assistant turn's parallel tool_use blocks must be
+          returned in one user message; splitting them across messages silently trains the model to
+          stop making parallel calls.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      When an assistant message contains multiple parallel tool_use blocks, all corresponding
+      tool_result blocks must be returned together in a single user message. Splitting them across
+      multiple messages silently teaches the model that its parallel calls weren't handled as a
+      unit, so it degrades toward serial calls. The fix is to batch all results into one user turn.
+  - id: aw-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      A team uses an odd-sized panel of three independent judges (majority vote) to grade a cheap,
+      easily-recoverable agent output on every single request. Evaluate whether this is a good
+      cost/quality tradeoff, and explain when a judge panel IS the right design and why the panel
+      size is odd.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Argues the panel is over-engineered here: judge panels multiply judging spend ~Nx, which
+            is hard to justify for cheap, easily-recoverable output; a self-check or skipping
+            verification fits better.
+        - id: c2
+          text: >-
+            States when a panel is right: high cost-of-error / irreversible output, where reducing
+            single-judge variance and bias justifies the Nx spend.
+        - id: c3
+          text: Explains the odd panel size avoids ties in majority voting.
+      referenceAnswer: >-
+        For cheap, easily-recoverable output, a three-judge panel on every request is
+        over-engineered: a judge panel reduces single-judge variance and bias but multiplies judging
+        spend roughly Nx, and the cost of an occasional bad grade here is trivial. A self-check (or
+        skipping verification) fits better; spend verification proportional to cost-of-error. A
+        panel is the right design for high-stakes, irreversible output where the variance/bias
+        reduction is worth the Nx cost. The panel size is odd specifically so majority voting can't
+        tie.
+      passThreshold: 0.6
+    guidance: >-
+      Judge panels reduce single-judge variance/bias but cost Nx; that only pays off for
+      high-stakes, irreversible output. For cheap recoverable output a panel is wasteful. Odd panel
+      sizes avoid voting ties.
+  - id: aw-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: >-
+      A team scripts a Managed Agent so that every cron tick (and every request) calls
+      agents.create() fresh, then sessions.create() against the new agent. It runs, but the team
+      notices accumulating agent objects and per-tick create latency. Which critique is most
+      accurate?
+    choices:
+      - id: a
+        text: The pattern is fine; agents are cheap and meant to be created per request like sessions.
+      - id: b
+        text: >-
+          The only problem is latency; the orphaned agents are automatically garbage-collected, so
+          there is nothing to fix structurally.
+      - id: c
+        text: >-
+          agents.create() belongs in one-time setup; calling it per-tick orphans agent objects, pays
+          create latency for nothing, and defeats versioning. Create once, persist the ID, and
+          reference it by ID on every sessions.create().
+      - id: d
+        text: >-
+          sessions.create() should carry the model/system/tools inline so agents.create() can be
+          dropped entirely.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The documented #1 Managed-Agents anti-pattern: agents are persistent, versioned objects meant
+      to be created once and referenced by ID. Calling agents.create() per request/tick orphans
+      agents, pays needless create latency, and defeats the versioning model. Hoist creation to
+      setup, persist the ID. D is also wrong — model/system/tools live on the agent, not the
+      session.
+  - id: aw-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: >-
+      A team decides every subagent in their orchestrator should run on the cheapest (Haiku-class)
+      model to minimize cost. On a workload where each subagent's branch result is hard to detect
+      when wrong and expensive to re-run, costs rise instead of falling. What is the soundest
+      evaluation of their model-tiering policy?
+    choices:
+      - id: a
+        text: >-
+          Model tiering should be per-subtask: push cheap, mechanical, parallel-safe work to the
+          cheap tier, but keep work on the top tier where a wrong branch result is costly to detect
+          and re-run — a blanket cheap-tier policy can net more expensive due to rework.
+      - id: b
+        text: >-
+          Using the cheapest model everywhere always minimizes cost; the rising cost must be a
+          billing error.
+      - id: c
+        text: All subagents should always run on the top tier, since cheap models are never worth using.
+      - id: d
+        text: >-
+          Model tier has no effect on rework, so the cost increase is unrelated to the tiering
+          decision.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Pushing every subagent to the cheapest tier minimizes per-call cost but can produce
+      low-quality branch outputs the orchestrator must redo — net more expensive when wrong results
+      are hard to detect and costly to re-run. The judgment is per-subtask: cheap tier for
+      mechanical/parallel-safe work, top tier where a wrong branch result is expensive. Neither
+      blanket extreme (b/c) is right.
+  - id: aw-500-ff-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      An orchestrator observes child progress over the SSE event stream and is written
+      "stream-after-send": it sends the kickoff event first, then opens the stream. On reconnect
+      after a dropped connection it re-opens the stream and resumes consuming. Evaluate the two
+      ordering/replay flaws and give the correct discipline for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the stream-after-send flaw: SSE only delivers events emitted after the stream
+            opens, so sending first means early events arrive batched and real-time reactivity is
+            lost; open the stream before sending (stream-first).
+        - id: c2
+          text: >-
+            Identifies the no-replay-on-reconnect flaw: the stream has no replay, so events emitted
+            during the gap are lost; on reconnect fetch event history (list) and dedupe by event ID
+            before/while tailing the live stream.
+        - id: c3
+          text: >-
+            Notes a correct consequence such as overlapping history fetch with the live stream and
+            deduping by event ID, so no event is missed or double-handled.
+      referenceAnswer: >-
+        Flaw 1 (ordering): SSE only delivers events emitted after the stream opens. Sending the
+        kickoff first means the agent may emit early events before the consumer is attached, so they
+        arrive as a single buffered batch and real-time reactivity is lost. Fix: open the stream
+        before sending (stream-first). Flaw 2 (replay): the SSE stream has no replay, so a
+        dropped-then-reopened stream silently misses every event emitted during the gap. Fix: on
+        every (re)connect, open the stream and also fetch the event history via the list endpoint,
+        then dedupe by event ID as the live stream catches up — overlapping the two so nothing is
+        missed or double-handled.
+      passThreshold: 0.6
+    guidance: >-
+      Two distinct disciplines. Stream-first (open before sending) because SSE only delivers
+      post-open events. And lossless reconnect: the stream has no replay, so on reconnect fetch
+      history via list and dedupe by event ID while tailing live events.

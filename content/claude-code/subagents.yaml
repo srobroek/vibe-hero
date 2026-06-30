@@ -1,8 +1,6 @@
 # Topic: subagents (claude-code)
-#
-# Covers Claude Code's subagent / Task tool: spawning isolated agent threads,
-# when to use isolation vs. direct edits, passing context, background execution,
-# and interpreting results. Tiers 100–500.
+# When and how to spawn isolated subagent threads with the Task tool — isolation modes, parallel fan-out, background execution, and result handling.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
 
 id: subagents
 class:
@@ -10,348 +8,3320 @@ class:
   tool: claude-code
 title: Subagents & the Task Tool
 summary: >-
-  Understanding when and how to spawn isolated subagent threads with the Task
-  tool — isolation modes, context passing, background execution, and result
-  handling.
-
+  When and how to spawn isolated subagent threads with the Task tool — isolation modes, parallel
+  fan-out, background execution, and result handling.
 triggerSignals:
+  # The Task tool (and its Agent alias) is the primary signal that the user is
+  # actively working with subagents — surface this topic as an offer candidate.
   - tool: claude-code
     match:
       toolName: Task
-    weight: 1
   - tool: claude-code
     match:
-      toolNamePattern: "^Agent$"
-    weight: 0.9
-  - tool: claude-code
-    match:
-      mcpToolPattern: ".*subagent.*"
-    weight: 0.6
-
+      toolName: Agent
 items:
-  # ── Tier 100 — Remember ──────────────────────────────────────────────────
-  - id: subagents-100-mc-a
+  - id: s-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 122
+    type: multiple_choice
+    prompt: What is a subagent in Claude Code?
+    choices:
+      - id: a
+        text: >-
+          A specialized AI assistant that runs in its own isolated context window with its own
+          system prompt, tool access, and permissions, returning a result to the main conversation.
+      - id: b
+        text: >-
+          A second terminal window that mirrors the main conversation in real time, showing the same
+          messages and tool calls so you can watch the work happen from two places at once.
+      - id: c
+        text: >-
+          A background process that automatically commits and pushes your code changes on a fixed
+          schedule, running independently of whatever the main conversation happens to be doing.
+      - id: d
+        text: >-
+          A plugin that adds new slash commands to the main conversation, extending what you can
+          type at the prompt without changing how the underlying conversation context is managed.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A subagent is a specialized assistant working independently in its own isolated context
+      window, with its own system prompt, tool access, and permissions. It does the delegated work
+      and returns a result to the parent conversation. The other options describe unrelated
+      features.
+  - id: s-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which tool does Claude use to spawn a subagent?
+    choices:
+      - id: a
+        text: >-
+          The Spawn tool, a dedicated tool whose only job is to launch a child assistant and stream
+          its output back into the parent conversation as the delegated work proceeds.
+      - id: b
+        text: >-
+          The Agent tool (the Task name is also accepted as an alias for the same mechanism), which
+          Claude calls to hand a task to a subagent that works in its own context.
+      - id: c
+        text: >-
+          The Delegate tool, which Claude invokes whenever it decides to pass a self-contained task
+          to a separate worker rather than carrying it out itself in the main conversation.
+      - id: d
+        text: >-
+          The Subprocess tool, which forks a separate operating-system process to run the delegated
+          work in isolation from the main conversation before returning the collected output.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The tool that spawns subagents is the Agent tool; the older Task name still works as an alias,
+      so "Task tool" and "Agent tool" refer to the same mechanism. Spawn, Delegate, and Subprocess
+      are not real Claude Code tools.
+  - id: s-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: How is a custom subagent defined on disk?
+    choices:
+      - id: a
+        text: >-
+          As a Markdown file with YAML frontmatter, where the frontmatter holds the configuration
+          and the Markdown body below it becomes the subagent's system prompt.
+      - id: b
+        text: >-
+          As a JSON file that contains only a flat list of the tool names the subagent is allowed to
+          use, with the system prompt supplied separately at invocation time.
+      - id: c
+        text: >-
+          As a Python script that subclasses an Agent base class and overrides methods to define the
+          subagent's behavior, tools, and the model it should run on.
+      - id: d
+        text: >-
+          As an entry inside the global settings.json file under an agents key, which is the only
+          supported on-disk location for defining a custom subagent in Claude Code.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Subagents are defined as Markdown files with YAML frontmatter: the frontmatter holds
+      configuration and the Markdown body is the subagent's system prompt. They are not JSON-only,
+      Python classes, or confined to settings.json.
+  - id: s-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 126
+    type: multiple_choice
+    prompt: Which two frontmatter fields are REQUIRED in a subagent definition?
+    choices:
+      - id: a
+        text: name and description
+      - id: b
+        text: name and tools
+      - id: c
+        text: model and prompt
+      - id: d
+        text: description and permissionMode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Only name and description are required frontmatter fields; everything else (tools, model,
+      permissionMode, etc.) is optional. The description is what Claude uses to decide when to
+      auto-delegate to that subagent.
+  - id: s-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: What happens to a subagent's tool access if the `tools` field is omitted from its frontmatter?
+    choices:
+      - id: a
+        text: >-
+          It receives no tools at all and can only reason in plain text, so it cannot read files or
+          run commands until specific tools are explicitly added to its frontmatter.
+      - id: b
+        text: >-
+          It receives only the Read tool by default, giving it read-only access so a subagent
+          defined without an explicit tools list can never accidentally modify any files.
+      - id: c
+        text: >-
+          It inherits only the handful of tools the parent conversation used most recently, so its
+          available tool set depends on whatever the parent happened to call just before delegating.
+      - id: d
+        text: >-
+          It inherits ALL tools available in the main conversation, including internal and MCP
+          tools; listing tools instead turns that inherited set into a narrower allowlist.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Omitting the tools field means the subagent inherits all tools available in the main
+      conversation (internal plus MCP). Listing tools acts as an allowlist instead. The default is
+      full inheritance, not an empty or single-tool set.
+  - id: s-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: What is the default value of a subagent's `model` field?
+    choices:
+      - id: a
+        text: >-
+          haiku, the cheapest and fastest model, so that delegated subagents stay inexpensive by
+          default and only become costly when you explicitly opt them up to a larger model.
+      - id: b
+        text: >-
+          opus, the most capable model, so that delegated work always gets the strongest available
+          reasoning unless you deliberately downgrade the subagent to a cheaper model.
+      - id: c
+        text: >-
+          inherit, meaning the subagent runs on the same model as the parent conversation unless its
+          frontmatter overrides the model with a specific alias or full model ID.
+      - id: d
+        text: >-
+          sonnet, a fixed balanced default that is independent of the parent's model, so every
+          subagent lands on the mid-tier model regardless of what the main conversation is using.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The default model value is inherit, so a subagent runs on the parent's model unless
+      overridden. A common misconception is that subagents default to Haiku; only the built-in
+      Explore agent defaults to Haiku among the built-ins.
+  - id: s-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: multiple_choice
+    prompt: >-
+      Which built-in subagent is read-only, defaults to the Haiku model, and is used for search and
+      discovery?
+    choices:
+      - id: a
+        text: general-purpose
+      - id: b
+        text: Plan
+      - id: c
+        text: Explore
+      - id: d
+        text: statusline-setup
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Explore is the read-only (Write/Edit denied) discovery agent that defaults to Haiku for cheap,
+      fast search. Plan is also read-only but inherits the model; general-purpose inherits the model
+      and has all tools; statusline-setup is a Sonnet helper for /statusline.
+  - id: s-100-mc-h
     tier: 100
     bloom: remember
     difficulty: 150
     type: multiple_choice
-    prompt: >-
-      What is the primary purpose of the Task tool in Claude Code?
+    prompt: What does a normal subagent return to the main (parent) conversation when it finishes?
     choices:
       - id: a
-        text: To run shell commands in a subprocess
+        text: Its entire context window verbatim, including every tool call
       - id: b
-        text: To spawn an isolated subagent thread that runs independently
+        text: Only a summary of its work, not the raw output or file dumps it generated
       - id: c
-        text: To create a new git branch for each change
+        text: Nothing; results are written only to a log file
       - id: d
-        text: To open a second terminal session
+        text: A diff of every file it touched, regardless of size
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      The Task tool launches a new, context-isolated agent thread. Unlike Bash
-      (which runs shell commands) it gives the subagent its own context window,
-      its own tool access, and returns a single result message when done.
-
-  - id: subagents-100-mc-b
+      The contract is that a subagent returns only a summary; the verbose work stays in the
+      subagent's own context. This is what keeps the parent's context window clean. Returning the
+      full transcript or raw output would defeat the purpose of delegation.
+  - id: s-100-mc-i
     tier: 100
     bloom: remember
-    difficulty: 160
+    difficulty: 154
     type: multiple_choice
     prompt: >-
-      Which parameter on the Agent/Task tool call signals that the subagent
-      should write files into a separate git worktree rather than the parent's
-      working tree?
+      Which TWO built-in subagents skip loading CLAUDE.md files and the git status snapshot to stay
+      fast and cheap?
     choices:
       - id: a
-        text: run_in_background
+        text: Explore and Plan
       - id: b
-        text: isolation
+        text: All subagents skip them by default
       - id: c
-        text: worktree
+        text: general-purpose and Explore
       - id: d
-        text: fork
+        text: Only statusline-setup
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Only Explore and Plan skip CLAUDE.md files and the git status snapshot; every other built-in
+      and custom subagent loads both. The misconception that all subagents skip CLAUDE.md to save
+      context is false.
+  - id: s-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: What is the maximum nesting depth for subagents spawning their own subagents?
+    choices:
+      - id: a
+        text: Unlimited
+      - id: b
+        text: 2 (a subagent may spawn at most one further level)
+      - id: c
+        text: 5 (fixed, not configurable)
+      - id: d
+        text: 10, configurable via frontmatter
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Nested subagents are capped at depth 5, a fixed value that is not configurable; a subagent at
+      depth 5 does not receive the Agent tool. Nesting is not unlimited, and the cap cannot be
+      raised in frontmatter.
+  - id: s-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: >-
+      Which CLI flag makes the whole session's main thread take on a named subagent's prompt, tools,
+      and model?
+    choices:
+      - id: a
+        text: '--print'
+      - id: b
+        text: '--worktree'
+      - id: c
+        text: '--output-format'
+      - id: d
+        text: '--agent <name>'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The --agent <name> flag (and the equivalent agent setting) makes the entire session's main
+      thread adopt that subagent's system prompt, tools, and model. --print runs headless,
+      --worktree creates an isolated worktree, and --output-format selects the headless output
+      shape.
+  - id: s-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: multiple_choice
+    prompt: 'What does setting `isolation: worktree` in a subagent''s frontmatter do?'
+    choices:
+      - id: a
+        text: >-
+          Runs the subagent in a temporary, isolated git worktree so its file changes stay separate
+          from the parent session and are cleaned up automatically if it makes no changes.
+      - id: b
+        text: >-
+          Disables git entirely for the subagent, so it cannot run any git commands and must operate
+          purely on the files present in the working directory without version control.
+      - id: c
+        text: >-
+          Mirrors every parent file edit into the subagent in real time, keeping the two in sync so
+          the subagent always sees the latest state of the parent session's working tree.
+      - id: d
+        text: >-
+          Forces the subagent to commit its work directly to the main branch as it goes, so the
+          changes are persisted immediately rather than held in a separate isolated checkout.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      isolation: worktree runs the subagent in a temporary, isolated git worktree so its changes are
+      kept separate from the parent session; the worktree is auto-cleaned if the subagent makes no
+      changes. (By default it branches from the default branch / origin-HEAD, which can be
+      overridden with worktree.baseRef.)
+  - id: s-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: What is a "fork" subagent in Claude Code?
+    choices:
+      - id: a
+        text: >-
+          A subagent that always runs on a cheaper model than the parent, chosen automatically to
+          reduce the cost of side tasks that branch off from the main conversation.
+      - id: b
+        text: >-
+          A subagent created by copying an existing agent definition file into a new directory,
+          producing a near-duplicate agent that can then be edited independently of the original.
+      - id: c
+        text: >-
+          A subagent that inherits the entire conversation (system prompt, tools, model, and message
+          history) instead of starting fresh, while keeping its tool calls out of main.
+      - id: d
+        text: >-
+          A subagent that can only read files and never write them, used for safe exploration of the
+          codebase without any risk of the side task modifying the parent's working tree.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A fork (via /fork or the fork subagent type) inherits the entire conversation, including
+      message history, dropping input isolation; its tool calls stay out of the main context and
+      only its final result returns. Its first request reuses the parent's prompt cache. A fork
+      cannot spawn another fork.
+  - id: s-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: free_form
+    prompt: >-
+      In a subagent's frontmatter, what is the difference between the `tools` field and the
+      `disallowedTools` field?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that tools is an allowlist (specifies which tools the subagent may use)
+        - id: c2
+          text: >-
+            States that disallowedTools is a denylist (removes tools from the inherited or specified
+            set)
+      referenceAnswer: >-
+        The tools field is an allowlist: it specifies exactly which tools the subagent is allowed to
+        use. The disallowedTools field is a denylist: it removes tools from the inherited or
+        specified set. If both are present, disallowedTools is applied first and a tool listed in
+        both is removed.
+      passThreshold: 0.6
+    guidance: >-
+      tools restricts to an explicit allowlist, while disallowedTools subtracts from the available
+      pool. When both appear, disallowedTools is resolved first, so a tool named in both ends up
+      removed.
+  - id: s-100-ff-o
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: free_form
+    prompt: >-
+      Name the three built-in subagents highlighted in the Claude Code docs and give a one-line
+      purpose for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Explore and identifies it as read-only for search/discovery (Haiku)
+        - id: c2
+          text: Names Plan and identifies it as read-only, used in plan mode
+        - id: c3
+          text: Names general-purpose and identifies it as all-tools for complex multi-step work
+      referenceAnswer: >-
+        Explore is a read-only Haiku agent for search and discovery. Plan is a read-only agent used
+        in plan mode that inherits the model. general-purpose inherits the model, has access to all
+        tools, and handles complex multi-step work.
+      passThreshold: 0.6
+    guidance: >-
+      The three highlighted built-ins are Explore (Haiku, read-only discovery), Plan (read-only,
+      plan mode), and general-purpose (all tools, multi-step work). Other helpers like
+      statusline-setup and claude-code-guide exist but are not the three core highlighted agents.
+  - id: s-100-ff-p
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: free_form
+    prompt: >-
+      Name the three explicit ways a user can invoke a specific subagent, from least to most
+      forceful.
+    rubric:
+      criteria:
+        - id: c1
+          text: Mentions natural language (e.g. "use the X subagent") where Claude decides
+        - id: c2
+          text: Mentions @-mention (e.g. @agent-<name>) which guarantees that subagent runs for one task
+        - id: c3
+          text: >-
+            Mentions the --agent flag or agent setting which applies the subagent to the whole
+            session
+      referenceAnswer: >-
+        First, natural language such as "use the test-runner subagent," where Claude decides.
+        Second, an @-mention like @agent-<name>, which guarantees that subagent runs for one task.
+        Third, the --agent <name> flag or the agent setting, which makes the whole session's main
+        thread take on that subagent's prompt, tools, and model.
+      passThreshold: 0.6
+    guidance: >-
+      Invocation escalates from non-deterministic (natural language auto-delegation) to guaranteed
+      for one task (@-mention) to session-wide (--agent flag / agent setting). The CLI flag
+      overrides the setting.
+  - id: s-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: free_form
+    prompt: >-
+      List the subagent file locations from highest to lowest precedence when subagent names
+      collide.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists managed (org-wide) settings as highest precedence
+        - id: c2
+          text: Includes the --agents CLI flag and project (.claude/agents/) above user-level
+        - id: c3
+          text: Lists user (~/.claude/agents/) above plugin agents/ as lowest
+      referenceAnswer: >-
+        From highest to lowest: managed settings (org-wide), then the --agents CLI flag (current
+        session), then project .claude/agents/, then user ~/.claude/agents/, then plugin agents/
+        directory. When names collide, the higher-priority location wins.
+      passThreshold: 0.6
+    guidance: >-
+      Precedence is managed > CLI --agents > project > user > plugin. Higher-priority locations
+      override lower ones on name collisions, so an org-managed agent cannot be shadowed by a
+      project or user file.
+  - id: s-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: free_form
+    prompt: >-
+      What does the `skills` frontmatter field do for a subagent, and how is that different from it
+      controlling skill access?
+    rubric:
+      criteria:
+        - id: c1
+          text: States skills preloads the full content of listed skills into the subagent at startup
+        - id: c2
+          text: >-
+            States it controls preloading, not access (the subagent can still discover/invoke other
+            skills via the Skill tool)
+      referenceAnswer: >-
+        The skills field preloads the full content of the listed skills into the subagent at
+        startup, rather than just their descriptions. It controls preloading, not access: without it
+        the subagent can still discover and invoke skills through the Skill tool. You cannot preload
+        a skill marked disable-model-invocation: true.
+      passThreshold: 0.6
+    guidance: >-
+      skills preloads full skill content at startup; it does not gate access, since the Skill tool
+      still lets a subagent discover other skills. Listing a skill in tools is not how you preload
+      it.
+  - id: s-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: >-
+      Which two main-session hook events fire for a subagent's lifecycle, and what does each one
+      signal?
+    rubric:
+      criteria:
+        - id: c1
+          text: Names SubagentStart and says it fires when a subagent begins
+        - id: c2
+          text: Names SubagentStop and says it fires when a subagent completes
+      referenceAnswer: >-
+        SubagentStart fires when a subagent begins, and SubagentStop fires when a subagent
+        completes. Both are matchable by the agent-type name. A Stop hook declared inside a
+        subagent's own frontmatter is automatically converted to SubagentStop at runtime.
+      passThreshold: 0.6
+    guidance: >-
+      The two main-session lifecycle hooks are SubagentStart (begins) and SubagentStop (completes),
+      each matchable by agent type. Separately, a frontmatter Stop hook inside a subagent is
+      auto-converted to SubagentStop.
+  - id: s-100-mc-t
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: A normal (non-fork) subagent starts with which view of the parent's conversation history?
+    choices:
+      - id: a
+        text: The full parent transcript, message for message
+      - id: b
+        text: >-
+          None; it runs in a fresh, isolated context and does not see the parent's conversation
+          history
+      - id: c
+        text: Only the parent's most recent user message
+      - id: d
+        text: A compacted summary of the entire parent conversation automatically
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      Setting `isolation: "worktree"` on an Agent call tells Claude Code to
-      create a temporary git worktree for the subagent. Its file changes stay
-      isolated from the parent working tree and the path/branch are returned in
-      the result.
-
-  # ── Tier 200 — Understand ───────────────────────────────────────────────
-  - id: subagents-200-mc-a
+      A normal subagent runs in a fresh, isolated context window and does not see the parent's
+      conversation history, prior skills, or files the parent already read; the parent composes a
+      delegation message. Inheriting the full history is true only for a fork, not a normal
+      subagent.
+  - id: s-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: Why does delegating a large search task to a subagent help keep the main conversation usable?
+    choices:
+      - id: a
+        text: >-
+          The subagent automatically compresses the main conversation's history before it begins
+          working.
+      - id: b
+        text: >-
+          The subagent does its work in its own isolated context window and returns only a summary,
+          so the verbose intermediate output never enters the main window.
+      - id: c
+        text: >-
+          The subagent shares the main window but its tokens are billed separately and so do not
+          count against the context limit.
+      - id: d
+        text: >-
+          The subagent writes all of its findings to disk so nothing is ever held in any context
+          window.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A subagent runs in a fresh, isolated context window; only its final summary returns to the
+      parent. The bulk of the work (files read, tool output) stays inside the subagent's context,
+      keeping the main window clean. It does not compact the parent's history, nor share the
+      parent's window.
+  - id: s-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      A normal subagent and a fork (/fork) differ chiefly in what initial context they receive.
+      Explain the difference and what each keeps out of the main conversation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a normal subagent starts with a fresh, isolated context and sees only the
+            delegation message (not the parent's history).
+        - id: c2
+          text: >-
+            States that a fork inherits the entire parent conversation (system prompt, tools, model,
+            message history), dropping input isolation.
+        - id: c3
+          text: >-
+            States that both keep their tool calls out of the main context and return only a final
+            result.
+      referenceAnswer: >-
+        A normal subagent starts fresh: it gets its own system prompt plus the delegation message,
+        and does not see the parent's conversation history. A fork is the opposite on input
+        isolation - it inherits the entire parent conversation, including the system prompt, tools,
+        model, and full message history, so it can resume a side task with all the current context
+        (and its first request even reuses the parent's prompt cache). Despite that difference, both
+        keep their own tool calls out of the main context window and return only a final result to
+        the parent.
+      passThreshold: 0.6
+    guidance: >-
+      A fork drops input isolation: it inherits the parent's system prompt, tools, model, and full
+      message history. A normal subagent starts fresh and sees only the delegation message. Both
+      keep their tool calls out of the main context and return only a final result; confusing the
+      two is a common misconception.
+  - id: s-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: >-
+      Someone claims "the Task tool and the Agent tool are two different mechanisms in Claude Code."
+      Why is this incorrect?
+    choices:
+      - id: a
+        text: Agent only spawns built-in subagents while Task spawns custom ones.
+      - id: b
+        text: Task spawns subagents while Agent merely lists the available subagent definitions.
+      - id: c
+        text: >-
+          They are the same subagent-spawning mechanism; Task is an accepted alias for the Agent
+          tool.
+      - id: d
+        text: >-
+          Agent runs in the foreground and Task runs in the background; otherwise they are
+          unrelated.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The tool that spawns subagents is the Agent tool, and the older Task name is accepted as an
+      alias, so "Task tool" and "Agent tool" name the same thing. The other options invent
+      distinctions that do not exist.
+  - id: s-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      The built-in Explore and Plan subagents behave differently from custom subagents at startup.
+      What is that difference and why does it exist?
+    choices:
+      - id: a
+        text: >-
+          Explore and Plan skip loading CLAUDE.md and the git status snapshot to stay fast and
+          cheap, whereas every other subagent loads both.
+      - id: b
+        text: >-
+          Explore and Plan are the only subagents that DO load CLAUDE.md; all others skip it to save
+          context.
+      - id: c
+        text: >-
+          Explore and Plan run on the parent's model while all other subagents are forced onto
+          Haiku.
+      - id: d
+        text: >-
+          Explore and Plan receive the full parent conversation history while custom subagents start
+          fresh.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Explore and Plan are the documented exceptions that skip CLAUDE.md and the git status snapshot
+      so they remain fast and cheap for search and planning. All other built-in and custom subagents
+      load both. There is no frontmatter field to change which agents skip them.
+  - id: s-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: >-
+      A subagent definition sets both tools and disallowedTools. How does Claude Code resolve the
+      final tool set?
+    choices:
+      - id: a
+        text: >-
+          tools is applied first as an allowlist, then disallowedTools is ignored because an
+          allowlist already exists.
+      - id: b
+        text: The two lists are merged, and any tool named in either list is granted.
+      - id: c
+        text: A tool listed in both lists is granted, because an explicit allow always beats a deny.
+      - id: d
+        text: >-
+          disallowedTools is applied first to remove tools, then tools resolves as an allowlist
+          against what remains; a tool in both lists is removed.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      disallowedTools (the denylist) is applied first, then tools (the allowlist) resolves against
+      the remaining pool. A tool named in both is removed, so deny wins on conflict. Granting on
+      conflict or ignoring the denylist would invert the intended restriction.
+  - id: s-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: If a subagent's frontmatter omits the tools field entirely, what tools does it have access to?
+    choices:
+      - id: a
+        text: It gets only read-only tools (Read, Grep, Glob) as a safe default.
+      - id: b
+        text: >-
+          It inherits ALL tools available in the main conversation, including internal and MCP
+          tools.
+      - id: c
+        text: It gets no tools and can only reason in text until tools are explicitly listed.
+      - id: d
+        text: It inherits only the internal tools but no MCP tools.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Omitting tools means the subagent inherits every tool available in the main conversation
+      (internal plus MCP). Listing tools turns it into an allowlist that narrows that set. There is
+      no implicit read-only or empty default.
+  - id: s-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      Several tools are never available to a subagent even if you list them in its tools field. What
+      do these tools have in common?
+    choices:
+      - id: a
+        text: >-
+          They are all MCP tools, and subagents are never permitted to call MCP tools regardless of
+          whether those tools are listed in the subagent's tools field or inherited from the parent.
+      - id: b
+        text: >-
+          They are the write tools Write and Edit, which are blocked for every subagent by default
+          so that delegated work cannot accidentally modify files unless the parent explicitly
+          re-grants them.
+      - id: c
+        text: >-
+          They depend on the main UI or interactive session state, for example AskUserQuestion,
+          EnterPlanMode, ScheduleWakeup, and WaitForMcpServers, which a subagent simply does not
+          have.
+      - id: d
+        text: >-
+          They are the most expensive tools to run, so Claude Code blocks them inside subagents
+          specifically to keep delegated fan-out work from quietly running up large per-invocation
+          costs.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Tools like AskUserQuestion, EnterPlanMode, ScheduleWakeup, and WaitForMcpServers rely on the
+      main UI or interactive session state that a subagent does not have, so they are unavailable
+      regardless of the tools field. MCP and write tools are fully usable by subagents.
+  - id: s-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: What is the default value of a subagent's model field, and what does it mean?
+    choices:
+      - id: a
+        text: inherit, meaning the subagent runs on the same model as the parent conversation.
+      - id: b
+        text: haiku, because subagents are meant to be cheap helpers.
+      - id: c
+        text: opus, so subagents always get the strongest reasoning available.
+      - id: d
+        text: sonnet, a fixed middle-tier default independent of the parent.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The model field defaults to inherit, so a subagent uses the parent's model unless overridden.
+      A common misconception is that subagents default to Haiku; only the built-in Explore agent
+      defaults to Haiku. The default is not a fixed alias like sonnet or opus.
+  - id: s-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      You edited a subagent's .md file on disk mid-session, but the running session keeps using the
+      old definition. Why?
+    choices:
+      - id: a
+        text: >-
+          The file must live in ~/.claude/agents/ for live reloads to work; subagent files stored
+          under a project's .claude/agents/ directory never reload mid-session no matter what you
+          do.
+      - id: b
+        text: >-
+          Edits to a subagent file apply only after that subagent has been invoked at least once in
+          the new session, so simply triggering it once causes Claude Code to pick up the change.
+      - id: c
+        text: >-
+          File-based subagents are loaded at session start, so disk edits require a session restart;
+          only subagents created or edited via the /agents interface take effect immediately.
+      - id: d
+        text: >-
+          The file's name field changed as part of the edit, so Claude Code treated it as a
+          brand-new agent and discarded the edit, which is why the running session kept the old
+          definition.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Subagents defined as files are read once at session start, so editing the file on disk
+      requires restarting the session to pick up the change. Subagents created or edited through the
+      /agents interface take effect immediately. Location does not change this reload behavior.
+  - id: s-200-ff-j
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Explain why a subagent file placed in .claude/agents/ takes precedence over one with the same
+      name in ~/.claude/agents/, and describe how the directory a file lives in affects the
+      subagent's identity within a single scope.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that project-level (.claude/agents/) outranks user-level (~/.claude/agents/) in
+            the precedence order, so the project copy wins on a name collision.
+        - id: c2
+          text: >-
+            States that directories are scanned recursively, so subfolders only organize files and
+            do not change identity.
+        - id: c3
+          text: >-
+            States that identity comes from the name field (and a duplicate name within one scope
+            results in one kept, one discarded), not the file path or filename.
+      referenceAnswer: >-
+        Subagent locations have a fixed precedence: managed settings, then the --agents CLI flag,
+        then project .claude/agents/, then user ~/.claude/agents/, then plugin agents. Project beats
+        user, so the .claude/agents/ copy wins a same-name collision. Both project and user
+        directories are scanned recursively, so subfolders only help organize files; the
+        subdirectory path does not affect identity. Identity comes from the name field, not the
+        filename or path, and a duplicate name within a single scope keeps one and silently discards
+        the other.
+      passThreshold: 0.6
+    guidance: >-
+      Precedence runs managed > CLI > project > user > plugin, so the project copy wins. Within a
+      scope, directories are scanned recursively for organization only; identity is the name field,
+      not the path. (Plugin subagents are the exception that DO encode the subfolder in their scoped
+      id.)
+  - id: s-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: >-
+      Why do plugin-provided subagents get a scoped identifier like my-plugin:review:security while
+      a project subagent in a subfolder does not include the subfolder in its name?
+    choices:
+      - id: a
+        text: >-
+          A plugin agent's subfolder is encoded into its scoped id (so plugins from different
+          sources cannot collide), whereas project and user directories are scanned recursively and
+          identity comes only from the name field, making the subfolder irrelevant there.
+      - id: b
+        text: >-
+          Plugin agents must declare their full scoped id in the name frontmatter field by hand,
+          while project agents leave name blank and let Claude Code derive it from the filename,
+          which is why only the plugin path shows the subfolder.
+      - id: c
+        text: >-
+          Project subagents in subfolders also get a subfolder-scoped name, but Claude Code hides it
+          in the UI; the plugin form just displays the same underlying scoping that the project form
+          keeps internal.
+      - id: d
+        text: >-
+          The colon-separated scope only appears because the plugin was installed from a
+          marketplace; a plugin loaded from a local --plugin-dir path would use the bare name
+          exactly like a project subagent does.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A plugin subagent at agents/review/security.md in my-plugin registers as
+      my-plugin:review:security, encoding both plugin and subfolder so plugins do not collide.
+      Project and user subagents are scanned recursively and take identity from the name field only,
+      so their subfolder is irrelevant; identity is never derived from the filename, and project
+      subfolders are not hidden scopes.
+  - id: s-200-ff-l
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: >-
+      A plugin ships a subagent whose frontmatter declares hooks and an mcpServers entry, but at
+      runtime those have no effect. Explain why, and what a user must do to actually use those
+      fields.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that plugin subagents ignore the hooks, mcpServers, and permissionMode
+            frontmatter fields (for security).
+        - id: c2
+          text: >-
+            States that to use them the agent must be copied into .claude/agents/ or
+            ~/.claude/agents/ (i.e. defined as a project/user subagent).
+      referenceAnswer: >-
+        Plugin subagents have hooks, mcpServers, and permissionMode disabled for security: those
+        frontmatter fields are ignored at runtime, which is why the declared hooks and MCP server
+        have no effect. To actually use them, the user copies the agent definition into
+        .claude/agents/ (project) or ~/.claude/agents/ (user), where those fields are honored.
+      passThreshold: 0.6
+    guidance: >-
+      For security, plugin subagents ignore hooks, mcpServers, and permissionMode. To use those
+      capabilities, copy the agent definition into .claude/agents/ or ~/.claude/agents/. It is not
+      about signing, foreground/background, or trust prompts.
+  - id: s-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: How does the description field of a subagent influence Claude Code's behavior?
+    choices:
+      - id: a
+        text: >-
+          It is shown to the user in the /agents menu for documentation purposes but plays no role
+          in delegation decisions, which are driven entirely by the subagent's name and tool list.
+      - id: b
+        text: >-
+          It is what Claude reads to decide when to auto-delegate; phrasing such as use proactively
+          or use immediately after writing code encourages Claude to invoke the subagent on its own.
+      - id: c
+        text: >-
+          It becomes the subagent's actual system prompt at runtime, which is precisely why the
+          markdown body underneath the frontmatter is optional and can be left empty in most
+          definitions.
+      - id: d
+        text: >-
+          It is purely human-facing documentation and is never read by the model at runtime, so its
+          exact wording has no effect on whether or when Claude chooses to delegate to the subagent.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The description is what Claude uses to decide when to auto-delegate, so phrasing such as "use
+      proactively" or "use immediately after writing code" encourages proactive delegation. The
+      system prompt is the markdown body, not the description.
+  - id: s-200-ff-n
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: free_form
+    prompt: >-
+      Compare the three documented ways to invoke a subagent (natural language, @-mention, and the
+      --agent flag / agent setting) in terms of how much determinism/force each gives you over which
+      subagent runs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Natural language ("use the X subagent") lets Claude decide and is the least forceful /
+            non-deterministic.
+        - id: c2
+          text: An @-mention guarantees that the named subagent runs for that one task.
+        - id: c3
+          text: >-
+            The --agent flag or agent setting applies session-wide, making the main thread itself
+            take on that subagent's prompt/tools/model (and the CLI flag overrides the setting).
+      referenceAnswer: >-
+        The three patterns escalate in force. Natural language ("use the test-runner subagent") is a
+        hint: Claude decides whether to delegate, so it is the least deterministic. An @-mention
+        (typing @agent-<name> or @"code-reviewer (agent)") guarantees that specific subagent runs
+        for that one task. The --agent <name> flag or the agent setting is the strongest: it makes
+        the whole session's main thread adopt that subagent's system prompt, tools, and model for
+        the entire session, and the CLI flag overrides the setting. The tradeoff is determinism and
+        control versus flexibility.
+      passThreshold: 0.6
+    guidance: >-
+      The three invocation patterns escalate: natural language (Claude decides), @-mention
+      (guarantees the agent for one task), and --agent/agent setting (session-wide, replaces the
+      main thread's prompt/tools/model). More force means less flexibility; the CLI flag overrides
+      the setting.
+  - id: s-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: >-
+      By default, isolation: worktree branches the subagent's worktree from a surprising place. From
+      where, and why does that matter?
+    choices:
+      - id: a
+        text: >-
+          From the parent session's current HEAD, so the subagent always starts out seeing your
+          in-progress, uncommitted work, which is convenient but risks the subagent acting on
+          unfinished code.
+      - id: b
+        text: >-
+          From the default branch (origin/HEAD), not the parent's HEAD, so the subagent gets a clean
+          tree but cannot see your in-progress uncommitted feature work unless you set baseRef to
+          head.
+      - id: c
+        text: >-
+          From a detached empty commit with no files at all, so the subagent must check out or
+          recreate everything it needs, which is why worktree subagents are slow to start on large
+          repositories.
+      - id: d
+        text: >-
+          From the branch of the most recently merged pull request, so the subagent always works
+          against the latest integrated state rather than whatever branch the parent session is
+          sitting on.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      isolation: worktree branches from the default branch (origin/HEAD) by default, not the
+      parent's HEAD. That gives a clean tree but means the subagent does not see
+      uncommitted/in-progress work unless you set worktree.baseRef to "head". Assuming it branches
+      from current HEAD is a common misconception.
+  - id: s-200-mc-p
     tier: 200
     bloom: understand
     difficulty: 250
     type: multiple_choice
     prompt: >-
-      A subagent spawned with `isolation: "worktree"` makes no file changes
-      during its run. What happens to the worktree when the subagent finishes?
+      Inside a subagent you run `cd build` in one Bash call, then `ls` in the next. The ls runs in
+      the original directory, not build/. Why?
     choices:
       - id: a
-        text: The worktree is committed and merged automatically
+        text: >-
+          cd does not persist between a subagent's separate tool calls; each call starts from the
+          parent's working directory, so the cd in the first call has no lasting effect on the
+          second.
       - id: b
-        text: The worktree is automatically cleaned up (deleted)
+        text: >-
+          The build directory does not actually exist in the subagent's checkout, so the cd command
+          silently failed without an error and the ls simply ran in the original starting directory.
       - id: c
-        text: The worktree persists as a stash entry
+        text: >-
+          Subagents run in a strictly read-only mode and are not permitted to change directories at
+          all, so the cd was rejected outright and ls fell back to listing the original directory.
       - id: d
-        text: The parent is asked whether to keep or delete it
+        text: >-
+          The subagent executed the two Bash calls in parallel rather than in sequence, so the
+          relative ordering between the cd and the ls was undefined and the ls happened to run
+          first.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Within a subagent, cd does not persist between Bash/PowerShell tool calls and does not affect
+      the parent's working directory; each call begins in the parent's current working directory. To
+      act on a subdirectory, use absolute paths or chain commands within a single call.
+  - id: s-200-ff-q
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Explain why the skills frontmatter field is about preloading rather than about access control,
+      and what a subagent can still do with skills that are not listed there.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that skills injects the full content of the listed skills into the subagent at
+            startup (preloading).
+        - id: c2
+          text: >-
+            States that even without listing a skill, the subagent can still discover and invoke it
+            via the Skill tool (so skills is not access control).
+      referenceAnswer: >-
+        The skills field preloads the full content of the named skills into the subagent at startup,
+        so they are immediately in context rather than just discoverable. It controls preloading,
+        not access: a subagent can still discover and invoke skills that are not listed, through the
+        Skill tool. The only caveat is that you cannot preload a skill marked
+        disable-model-invocation: true.
+      passThreshold: 0.6
+    guidance: >-
+      skills preloads full skill content at startup; it does not gate access. Without it the
+      subagent can still discover and invoke skills via the Skill tool. Listing a skill in tools is
+      not how you preload it.
+  - id: s-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: >-
+      A frontmatter hook in a subagent definition is declared on the Stop event. What actually
+      happens at runtime, and why?
+    choices:
+      - id: a
+        text: >-
+          It fires on the main conversation's own Stop event, interrupting the parent session
+          whenever the subagent stops, which is rarely what the author of the frontmatter hook
+          intended.
+      - id: b
+        text: >-
+          It is silently ignored at runtime, because Stop is not among the hook events that Claude
+          Code allows a subagent to declare inside its own frontmatter; only PreToolUse and
+          PostToolUse work.
+      - id: c
+        text: >-
+          It is automatically converted to a SubagentStop hook, because a frontmatter hook runs only
+          while that subagent is active and a Stop event there maps to the subagent's own
+          completion.
+      - id: d
+        text: >-
+          It fires twice, once on the subagent's own stop and again on the main conversation's stop,
+          because the frontmatter hook is registered against both Stop scopes when the subagent
+          spawns.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Subagent-frontmatter hooks run only while that subagent is active, so a Stop hook is
+      automatically converted to SubagentStop at runtime to match the subagent's own completion
+      rather than the main conversation. Main-session lifecycle hooks (SubagentStart/SubagentStop)
+      are configured separately and matchable by agent-type name.
+  - id: s-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      A teammate says "spawning lots of parallel subagents always saves context because each one
+      isolates its work." Explain why this can be wrong, and what the documented answer is for
+      sustained parallel work that exceeds the context window.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that each subagent's RESULT returns to the main conversation, so many subagents
+            each returning detailed output can still flood the main context.
+        - id: c2
+          text: >-
+            Notes a mitigation such as capping the number of returning subagents or demanding terse
+            summaries.
+        - id: c3
+          text: >-
+            Identifies agent teams (independent contexts) as the documented answer for sustained
+            parallelism beyond the context window.
+      referenceAnswer: >-
+        Isolation only keeps the intermediate work out of the main window; each subagent still
+        returns a result to the parent. If you run many subagents that each return detailed output,
+        the aggregated results can themselves consume significant main-conversation context,
+        defeating the goal. The mitigation is to cap how many subagents return at once and demand
+        terse summaries. For sustained parallel work that would exceed the context window, the
+        documented answer is agent teams, which run in independent contexts rather than feeding
+        everything back into one session.
+      passThreshold: 0.6
+    guidance: >-
+      Subagents isolate work but their results still land in the parent context, so fan-out can
+      paradoxically blow the main window. Cap returners and demand terse summaries; for sustained
+      parallelism beyond the context window, agent teams (independent contexts) are the documented
+      escalation.
+  - id: s-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: free_form
+    prompt: >-
+      Interpret why the built-in Explore subagent defaults to Haiku and is read-only, while the
+      general-purpose subagent inherits the parent's model and has all tools. What does each design
+      choice imply about their intended use?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains Explore is for cheap/fast search and discovery, so Haiku plus read-only
+            (Write/Edit denied) fits and keeps cost low.
+        - id: c2
+          text: >-
+            Explains general-purpose is for complex multi-step work, so inheriting the parent model
+            preserves capability and all tools let it edit.
+        - id: c3
+          text: Connects the model/tool choices to a cost-vs-capability tradeoff.
+      referenceAnswer: >-
+        Explore exists to search and discover, where speed and low cost matter more than deep
+        reasoning, so defaulting to Haiku and being read-only (Write/Edit denied) is a good fit: it
+        can scan the codebase cheaply without risk of modifying files. The general-purpose subagent
+        is meant for complex, multi-step work, so it inherits the parent's model to keep full
+        reasoning capability and has all tools so it can actually make changes. The contrast
+        reflects a cost-versus-capability tradeoff: route cheap read-only fan-out to Haiku/Explore
+        and reserve the stronger inherited model for work that needs reasoning and edits.
+      passThreshold: 0.6
+    guidance: >-
+      Explore is tuned for cheap, fast, read-only discovery (Haiku, Write/Edit denied);
+      general-purpose is tuned for capable multi-step work (inherits the parent model, all tools).
+      The split encodes a cost-versus-capability tradeoff in model and tool routing.
+  - id: s-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You want to run your full test suite (about 50k tokens of output) and have only the list of
+      failing tests come back to your main conversation so you can keep planning. What is the right
+      action?
+    choices:
+      - id: a
+        text: >-
+          Delegate to a subagent that runs the suite in its own isolated context and returns only a
+          short summary of the failures, so the verbose 50k-token output never enters the main
+          window.
+      - id: b
+        text: >-
+          Run the full suite directly in the main conversation so that the complete output stays
+          available for reference, keeping every passing and failing line in context while you
+          continue.
+      - id: c
+        text: >-
+          Use a Skill to run the suite, so the test output loads into the main context window where
+          you can refer back to it as you keep planning the rest of the work in the same
+          conversation.
+      - id: d
+        text: >-
+          Use /btw so the test run executes with the full conversation context available, letting it
+          report the failures inline without you having to spin up any separate isolated context.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A subagent runs in an isolated context window and returns only a summary, so the verbose
+      50k-token output never enters the main conversation. Running it directly (b) floods the main
+      window. Skills and /btw operate in the main context and do not isolate output volume.
+  - id: s-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: >-
+      You are deep in an iterative loop in the main conversation: planning a refactor, making a
+      small edit, checking the result, and adjusting. A teammate suggests delegating each tiny edit
+      to a fresh subagent "to save context." Why is that the wrong call here?
+    choices:
+      - id: a
+        text: >-
+          Subagents cannot use the Edit tool at all, so a per-edit subagent could not actually make
+          any of the small edits the loop requires, which is why staying in the main conversation is
+          better.
+      - id: b
+        text: >-
+          Subagents are capped at a fixed nesting depth of 5, and a tight iterate-and-edit loop
+          would quickly exceed that depth cap, so the loop has to run in the main conversation
+          instead.
+      - id: c
+        text: >-
+          Each subagent starts fresh and must re-gather context every time, so tight back-and-forth
+          edits are faster in the main conversation, where the shared context is already loaded.
+      - id: d
+        text: >-
+          Subagents always inherit the Opus model rather than the parent's, which would make each
+          tiny delegated edit far more expensive than simply making the same change in the main
+          conversation.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Subagents shine for large isolated work, but they begin with an empty context and must rebuild
+      understanding each time. For quick targeted changes in a tight iterative loop the main
+      conversation is faster. Subagents can edit, the depth cap is unrelated, and the default model
+      is inherit, not Opus.
+  - id: s-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You are writing a custom subagent that should be able to read and grep files but must never
+      write or edit, and it should keep every other tool it would normally inherit. Which
+      frontmatter is the right minimal choice?
+    choices:
+      - id: a
+        text: 'tools: Read, Grep, Glob'
+      - id: b
+        text: 'permissionMode: plan'
+      - id: c
+        text: 'tools: Read, Grep, Glob, disallowedTools: Write'
+      - id: d
+        text: 'disallowedTools: Write, Edit'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A denylist (disallowedTools) removes only Write and Edit from the otherwise inherited tool
+      set, which matches "keep everything else." An allowlist (tools) would strip every tool not
+      listed, violating the requirement to keep other tools. permissionMode plan changes enforcement
+      broadly but is not the minimal targeted choice asked for.
+  - id: s-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      A subagent must be allowed to run read-only SELECT queries through the Bash tool but must be
+      blocked from running INSERT/UPDATE/DELETE through that same Bash tool. Explain why
+      tools/disallowedTools alone cannot express this and what mechanism you would reach for
+      instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that tools/disallowedTools is coarse and operates at whole-tool granularity, so
+            it cannot allow some Bash invocations while blocking others.
+        - id: c2
+          text: >-
+            Identifies a PreToolUse hook as the mechanism that can inspect the specific command and
+            allow or deny individual uses of the tool.
+      referenceAnswer: >-
+        The tools and disallowedTools fields are whole-tool allow/deny lists: you can grant or
+        remove Bash entirely, but you cannot say "Bash for SELECT yes, Bash for INSERT no." To allow
+        some uses of a tool but not others you need a PreToolUse hook that inspects the actual
+        command and returns allow or deny based on its content.
+      passThreshold: 0.6
+    guidance: >-
+      tools/disallowedTools and even permissionMode plan are coarse, whole-tool controls. Only a
+      PreToolUse hook can examine the specific arguments of a call and selectively allow or deny,
+      which is exactly what per-statement SQL filtering requires.
+  - id: s-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: free_form
+    prompt: >-
+      You need to scan a large unfamiliar codebase to locate where authentication is handled, as
+      cheaply and quickly as possible, with no edits. Name the built-in subagent you would use, the
+      parameter you must supply when invoking it, and one reason it is cheaper than general-purpose.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the Explore subagent as the right fit for read-only search and discovery.
+        - id: c2
+          text: >-
+            States that Explore is invoked with a thoroughness level (quick, medium, or very
+            thorough).
+        - id: c3
+          text: >-
+            Gives a cost reason such as Explore defaulting to Haiku and/or skipping CLAUDE.md and
+            git status, versus general-purpose inheriting the parent model.
+      referenceAnswer: >-
+        Use the Explore subagent. It is invoked with a thoroughness level (quick, medium, or very
+        thorough). It is cheaper than general-purpose because it defaults to Haiku and skips loading
+        CLAUDE.md and the git status to stay fast and cheap, whereas general-purpose inherits the
+        parent's model and full tools.
+      passThreshold: 0.6
+    guidance: >-
+      Explore is the read-only, Haiku-backed built-in for discovery, invoked with a thoroughness
+      level. general-purpose inherits the parent model and all tools (overkill and pricier here),
+      and Explore additionally skips CLAUDE.md and git status to stay fast and cheap.
+  - id: s-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      You have a one-off side task that needs the full current conversation context (everything you
+      and Claude have discussed), but you do not want its intermediate tool calls cluttering the
+      main transcript. Which mechanism fits?
+    choices:
+      - id: a
+        text: >-
+          A normal named subagent, since it inherits the parent's full conversation history while
+          still keeping its own tool calls out of the main transcript.
+      - id: b
+        text: >-
+          A fork (/fork), which inherits the whole conversation but keeps its tool calls out of the
+          main context.
+      - id: c
+        text: >-
+          The Explore subagent at very thorough thoroughness, which re-reads the conversation
+          transcript file and then works from that recovered context.
+      - id: d
+        text: >-
+          A Skill, which reuses the full conversation history but runs it in a separate isolated
+          window so the intermediate steps never reach main.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      When a worktree-isolated subagent makes no changes, Claude Code cleans up
-      the temporary worktree automatically. A worktree is only preserved (and
-      its path/branch returned) when the subagent actually wrote files.
-
-  - id: subagents-200-sa-a
-    tier: 200
-    bloom: understand
-    difficulty: 260
-    type: short_answer
+      A fork inherits the entire conversation (system prompt, tools, model, message history) yet
+      only its final result returns to the main context. A normal subagent starts with a fresh,
+      isolated context and does NOT see prior history. Explore is read-only discovery; Skills run in
+      the main context, not isolated.
+  - id: s-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
     prompt: >-
-      You want a subagent to do read-only research across the codebase without
-      touching any files in the parent's working tree. Which iso:skip sentinel
-      should you add to the description field so the worktree guard is
-      satisfied — and why is a worktree unnecessary here?
+      During a session you edit the markdown file at .claude/agents/test-runner.md to widen its tool
+      access, then immediately @-mention it for a task. Your change does not take effect. What
+      should you do?
+    choices:
+      - id: a
+        text: Re-run the @-mention; file changes apply on the next invocation.
+      - id: b
+        text: Clear the conversation with /clear to force a reload.
+      - id: c
+        text: Restart the session, because file-based subagents are loaded at session start.
+      - id: d
+        text: Move the file to ~/.claude/agents/ so it reloads live.
     answerKey:
-      kind: keyword
-      anyOf:
-        - "iso:skip"
-        - "[iso:skip]"
-      normalize: trim
+      kind: choice
+      correctChoiceId: c
     guidance: >-
-      For read-only subagents (inspection, search, no file writes) you append
-      `[iso:skip]` to the description rather than setting isolation. A worktree
-      is only needed when the subagent writes files that must stay separate from
-      the parent tree. Read-only work needs neither isolation.
-
-  # ── Tier 300 — Apply ────────────────────────────────────────────────────
-  - id: subagents-300-mc-a
+      Subagents defined as files on disk are loaded once at session start, so editing the file
+      requires a session restart to pick up the change. Only subagents created or edited through the
+      /agents interface take effect immediately. Re-invoking, /clear, or relocating the file does
+      not reload it mid-session.
+  - id: s-300-ff-h
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: free_form
+    prompt: >-
+      You are dispatching a subagent to fix a bug, and the fix depends on uncommitted, in-progress
+      work that lives only in your current working tree. You plan to use isolation worktree. What
+      must you configure, and why does the default behavior break this task?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that by default a worktree subagent branches from the default branch
+            (origin/HEAD), so it would not see the uncommitted in-progress work.
+        - id: c2
+          text: >-
+            States that you must set worktree.baseRef to head so the worktree is based on your
+            current HEAD / in-progress state.
+      referenceAnswer: >-
+        By default isolation worktree branches the temporary worktree from your default branch
+        (origin/HEAD), which gives a clean tree but cannot see your uncommitted feature work, so the
+        bug fix would lack the very state it depends on. To make the subagent operate on the
+        in-progress state you must set worktree.baseRef to "head" so the worktree branches from your
+        current HEAD.
+      passThreshold: 0.6
+    guidance: >-
+      The worktree default (fresh from origin/HEAD) is clean but blind to uncommitted work. When the
+      delegated task depends on unpushed/in-progress state you must set worktree.baseRef to head,
+      accepting the dirtier context as the cost of seeing your work.
+  - id: s-300-mc-i
     tier: 300
     bloom: apply
     difficulty: 350
     type: multiple_choice
     prompt: >-
-      You spawn two subagents in parallel — one to write a migration script and
-      one to validate existing tests. Which combination of isolation settings
-      is correct?
+      You want a subagent to be able to discover and invoke any of your skills as needed, but you
+      also want the full text of one specific large skill loaded into its context at startup so it
+      does not have to fetch it. What do you do?
     choices:
       - id: a
         text: >-
-          Migration: isolation "worktree" — Validator: [iso:skip] in description
+          Add that skill to the subagent's skills field; access via the Skill tool is already
+          available.
       - id: b
-        text: >-
-          Migration: [iso:skip] in description — Validator: isolation "worktree"
+        text: List the skill in the subagent's tools field so it preloads.
       - id: c
-        text: Both use isolation "worktree"
+        text: Set disable-model-invocation on the skill so it is forced to load.
       - id: d
-        text: Both use [iso:skip] in description
+        text: Add the skill to disallowedTools so only the preloaded copy is used.
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      The migration agent writes files that should stay isolated until reviewed,
-      so it gets `isolation: "worktree"`. The validator only reads test output
-      and never writes to the repo, so it gets `[iso:skip]` in the description
-      — no worktree needed for read-only work.
-
-  - id: subagents-300-mc-b
+      The skills field preloads a skill's full content at startup. It controls preloading, not
+      access: even without it the subagent can still discover and invoke skills via the Skill tool.
+      Listing a skill in tools does not preload it, and you cannot preload a skill marked
+      disable-model-invocation.
+  - id: s-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: >-
+      Your parent session is running in acceptEdits permission mode. You spawn a custom subagent
+      whose frontmatter sets permissionMode plan, intending to make it read-only. What actually
+      happens?
+    choices:
+      - id: a
+        text: >-
+          The subagent runs in plan mode as requested and is read-only, because a subagent's
+          frontmatter permissionMode always wins over whatever mode the parent session happens to be
+          using.
+      - id: b
+        text: >-
+          The session immediately errors out, because a subagent declaring plan mode under a parent
+          running acceptEdits is a permission-mode conflict that Claude Code refuses to start at
+          all.
+      - id: c
+        text: >-
+          The subagent inherits the parent's acceptEdits mode, and the plan mode it declared applies
+          only to the subagent's very first turn before acceptEdits silently takes back over for the
+          rest.
+      - id: d
+        text: >-
+          The parent's acceptEdits takes precedence and cannot be overridden by frontmatter, so the
+          subagent does not become read-only; you would need to change the parent's mode instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      When the parent uses bypassPermissions or acceptEdits, that takes precedence and a subagent's
+      frontmatter permissionMode cannot override it. To make the subagent read-only here you would
+      need a different parent mode or coarse tool restrictions. There is no error and plan does not
+      partially apply.
+  - id: s-300-mc-k
     tier: 300
     bloom: apply
     difficulty: 360
     type: multiple_choice
     prompt: >-
-      A subagent must edit files directly in the parent's working tree (its
-      changes are meant to land in the current checkout immediately). Which
-      isolation choice is correct?
+      You have a code-review subagent file at both .claude/agents/code-review.md (project) and
+      ~/.claude/agents/code-review.md (user), with the same name. Which definition is used, and how
+      do you force a different, throwaway definition for just this one session?
     choices:
       - id: a
-        text: isolation "worktree" — changes land in the parent tree via merge
+        text: >-
+          The user file wins because it is the global, machine-wide definition; to change the
+          behavior for this run you simply edit that user file at ~/.claude/agents/code-review.md
+          directly.
       - id: b
         text: >-
-          [iso:skip] in description, no isolation field — the subagent writes
-          to the parent working tree directly
+          The project file wins; pass --agents JSON (or --agent) on the CLI, which outranks both
+          on-disk locations and exists only for the current session, giving you the throwaway
+          override.
       - id: c
-        text: isolation "remote" — uses a cloud environment
+        text: >-
+          The plugin copy of the agent wins over both on-disk files; to fall back to your own
+          definition for this session you have to disable the plugin that is providing the colliding
+          agent.
       - id: d
-        text: Any isolation mode; the parent always sees the changes
+        text: >-
+          Both files load and Claude picks between them at random on each invocation; to
+          disambiguate which code-review definition runs, you must delete one of the two colliding
+          files first.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      When you need a subagent's edits to land in the current checkout
-      immediately, use `[iso:skip]` (no isolation field). A worktree would
-      put the changes in a separate branch, preventing the parent from seeing
-      them directly. "Otherwise writes to parent tree" is exactly the third
-      case for skipping isolation.
-
-  # ── Tier 400 — Analyze ──────────────────────────────────────────────────
-  - id: subagents-400-mc-a
+      Precedence (high to low) is managed > --agents/--agent CLI > project (.claude/agents) > user
+      (~/.claude/agents) > plugin. So the project file beats the user file, and a CLI-supplied
+      definition outranks both and exists only for that session.
+  - id: s-300-ff-l
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: >-
+      You want to fan out research across 12 independent subtopics. A colleague says "just spawn 12
+      parallel subagents, it always saves context." Describe the trap in that plan and two concrete
+      actions you would take to keep the main conversation from being flooded.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that each subagent's result returns to the main conversation, so many detailed
+            returns can themselves blow the main context (the fan-out paradox).
+        - id: c2
+          text: >-
+            Gives at least one mitigation such as capping the number of parallel returners or
+            demanding terse summaries.
+        - id: c3
+          text: >-
+            Mentions escalating to agent teams (independent contexts) for sustained parallel work as
+            an alternative.
+      referenceAnswer: >-
+        Subagents isolate the work, but every subagent's result still returns into the main
+        conversation. Twelve subagents each returning detailed output can consume as much context as
+        doing the work inline, so it does not always save context. To control it I would cap the
+        number of parallel returners and require each to return only a terse summary, and for
+        sustained parallel work that exceeds the context window I would escalate to agent teams,
+        which run in independent contexts instead of returning into the main session.
+      passThreshold: 0.6
+    guidance: >-
+      The fan-out paradox: isolation helps until the aggregated results return. Expert handling caps
+      parallel returners, demands terse summaries, or moves to agent teams (independent contexts)
+      for sustained parallelism rather than in-session subagents.
+  - id: s-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You are scripting a CI job that fans out work across many Claude instances and needs a
+      parseable cost figure for each run. Which command shape is correct?
+    choices:
+      - id: a
+        text: claude -p "<prompt>" --output-format text, then parse the cost from the prose.
+      - id: b
+        text: claude --interactive "<prompt>" and screen-scrape the status line.
+      - id: c
+        text: claude -p "<prompt>" --output-format json, then read total_cost_usd from the payload.
+      - id: d
+        text: claude -p "<prompt>" --agent cost-reporter to compute the total.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Headless mode is claude -p (alias --print). With --output-format json the payload includes
+      total_cost_usd plus a per-model breakdown, which is parseable. The text format is prose, there
+      is no --interactive cost field, and no special agent is needed for cost reporting.
+  - id: s-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You launch Claude with `claude --agent orchestrator` so the main thread runs as an
+      orchestrator whose only job is to dispatch work to two other subagent types named worker and
+      researcher, and nothing else. Which frontmatter tools line on that main-thread agent enforces
+      this restriction?
+    choices:
+      - id: a
+        text: 'tools: Agent, Read, Bash'
+      - id: b
+        text: 'tools: Read, Bash  (omit Agent)'
+      - id: c
+        text: 'disallowedTools: Agent(plan, explore)'
+      - id: d
+        text: 'tools: Agent(worker, researcher), Read, Bash'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The Agent(type-list) allowlist syntax restricts which subagent types may be spawned, but it
+      only takes effect for an agent running as the MAIN thread via claude --agent. Here the
+      orchestrator IS the main thread, so Agent(worker, researcher) limits it to those two types.
+      Bare Agent lets it spawn anything; omitting Agent means it cannot spawn at all; a two-type
+      disallowedTools does not constrain it to only worker and researcher. (Note: inside an ordinary
+      subagent definition the parenthesized type list is ignored.)
+  - id: s-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: free_form
+    prompt: >-
+      You have a quick question about something said earlier in the current conversation, you need
+      no tools, and you do not want the answer to clutter the transcript afterward. Name the
+      documented fit and contrast it with using a normal subagent for the same purpose.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies /btw as the documented fit for a throwaway side-question in the current
+            context.
+        - id: c2
+          text: >-
+            States that /btw sees the full conversation context, uses no tools, and discards the
+            answer.
+        - id: c3
+          text: >-
+            Explains that a normal subagent would NOT work here because it starts with a fresh,
+            isolated context and cannot see the prior conversation.
+      referenceAnswer: >-
+        Use /btw. It sees the full current conversation context, uses no tools, and its answer is
+        discarded afterward, so it does not clutter the transcript. A normal subagent would be wrong
+        because it starts in a fresh, isolated context window and cannot see the earlier
+        conversation, so it could not answer a question about what was said earlier.
+      passThreshold: 0.6
+    guidance: >-
+      /btw is the documented fit for a throwaway side-question: full context, no tools, answer
+      discarded. A normal subagent starts fresh and cannot see prior conversation; a fork is for
+      side tasks that need that context plus tools/state changes.
+  - id: s-300-ff-p
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      You want a CI run of Claude to behave identically on every developer's machine and on the
+      build server, with no surprises from locally installed hooks, skills, plugins, MCP servers, or
+      CLAUDE.md. Which flag combination do you reach for, and what is the cost you must accept?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names claude --bare -p (bare mode with headless print) as the way to skip auto-discovery
+            of hooks, skills, plugins, MCP, and CLAUDE.md.
+        - id: c2
+          text: >-
+            States the tradeoff: you must pass all needed context explicitly via flags because
+            nothing is auto-loaded.
+      referenceAnswer: >-
+        Use claude --bare -p. Bare mode skips auto-discovery of hooks, skills, plugins, MCP servers,
+        and CLAUDE.md so every machine behaves identically, which gives reproducibility. The cost is
+        that nothing is loaded for you, so you must pass all needed context (system prompt, agents,
+        tools, etc.) explicitly via flags.
+      passThreshold: 0.6
+    guidance: >-
+      --bare -p trades convenience for determinism: by skipping all auto-discovered config, CI
+      behaves the same everywhere, but you must supply every needed piece of context explicitly on
+      the command line.
+  - id: s-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      You absolutely need a specific subagent named test-runner to handle the next single task (no
+      relying on Claude's auto-delegation), but you do NOT want to change the rest of the session.
+      What do you do?
+    choices:
+      - id: a
+        text: '@-mention it, e.g. type @agent-test-runner for that one task.'
+      - id: b
+        text: Start the session with --agent test-runner.
+      - id: c
+        text: 'Set agent: test-runner in settings for the project.'
+      - id: d
+        text: Describe the task in natural language and hope Claude routes to it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      An @-mention guarantees that subagent runs for one task without affecting the rest of the
+      session. The --agent flag and the agent setting make the subagent's prompt/tools/model apply
+      to the whole main thread, which is more than you want, and natural language only suggests
+      (Claude decides).
+  - id: s-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You delegated a long-running task to a background subagent. You realize you need to give it
+      additional instructions to continue, but it has already stopped. What action resumes it?
+    choices:
+      - id: a
+        text: >-
+          Re-run the exact same Explore invocation with more detail; the new run resumes the stopped
+          agent and continues its prior work where it left off.
+      - id: b
+        text: >-
+          Nothing can resume a stopped subagent; you must spawn an entirely new subagent from
+          scratch and re-describe the task it should now carry out.
+      - id: c
+        text: >-
+          Send it a message via SendMessage addressed to its agent ID/name; a stopped subagent
+          auto-resumes in the background.
+      - id: d
+        text: >-
+          Restart the whole Claude Code session so the subagent reloads from disk, then re-issue the
+          additional instructions once it has come back up.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Resumable subagents (general-purpose or custom, not one-shot Explore/Plan) are resumed via
+      SendMessage using the agent's ID/name as the "to" field; a stopped subagent that receives one
+      auto-resumes in the background and retains its full history. Explore is one-shot and returns
+      no agent ID, so it cannot be resumed.
+  - id: s-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 342
+    type: free_form
+    prompt: >-
+      Inside a subagent, your first Bash call runs `cd packages/api` and a separate second Bash call
+      runs `pytest`. The tests run from the wrong directory. Explain the underlying behavior and
+      give a concrete fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that cd does not persist between separate Bash tool calls inside a subagent (and
+            does not affect the parent's working directory).
+        - id: c2
+          text: >-
+            Gives a concrete fix such as chaining `cd packages/api && pytest` in one call or passing
+            an explicit path to pytest.
+      referenceAnswer: >-
+        A subagent's cd does not persist between separate Bash tool calls (and never affects the
+        parent's working directory), so by the second call you are back in the starting directory.
+        The fix is to make the call self-contained, for example chain `cd packages/api && pytest` in
+        a single Bash call, or pass the explicit path (`pytest packages/api`).
+      passThreshold: 0.6
+    guidance: >-
+      cd does not persist between subagent tool calls and does not affect the parent. Make each call
+      self-contained by chaining the directory change with the command or passing an explicit path.
+  - id: s-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      You are packaging a subagent in a plugin and its definition includes a hooks block and an
+      mcpServers block. After installing the plugin, neither seems to apply. What is the correct
+      explanation and remedy?
+    choices:
+      - id: a
+        text: >-
+          Plugins load their hooks and MCP servers lazily, so triggering the hook once by hand
+          registers it and the mcpServers block then connects on the next run.
+      - id: b
+        text: >-
+          Plugin subagents ignore hooks, mcpServers, and permissionMode for security; copy the agent
+          into .claude/agents/ or ~/.claude/agents/ to use them.
+      - id: c
+        text: >-
+          The plugin needs its scoped identifier (plugin:name) prefixed inside the hooks block so
+          Claude Code can bind the declared hooks to the right agent.
+      - id: d
+        text: >-
+          Hooks and mcpServers in a plugin agent only apply when it runs as a background task, so
+          marking the agent background: true is what activates both blocks.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For security, plugin subagents cannot use the hooks, mcpServers, or permissionMode frontmatter
+      fields; they are ignored. To use those fields you must copy the agent into a project
+      (.claude/agents/) or user (~/.claude/agents/) location, where they are honored.
+  - id: s-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A user delegates "summarize the failing assertions in this 60k-token test run" to a fresh
+      general-purpose subagent. The subagent reports it has no idea which tests the user means and
+      asks for the file. The user is confused because they had just discussed the test file at
+      length in the main conversation. What is the root cause?
+    choices:
+      - id: a
+        text: >-
+          General-purpose subagents skip loading CLAUDE.md at startup, so the subagent lost the
+          project context that had named the specific test file earlier in the main conversation.
+      - id: b
+        text: >-
+          The subagent runs in an isolated context window and never sees the parent's conversation
+          history; only the delegation message the parent composes for it actually reaches it.
+      - id: c
+        text: >-
+          The subagent's own transcript was auto-compacted before it had a chance to read back
+          through the prior discussion, so the file name was summarized away and lost from its
+          context.
+      - id: d
+        text: >-
+          The Agent tool failed to inherit the parent's tool set, so the subagent had no Read or
+          Grep available and literally could not open any of the files it would have needed to
+          inspect.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Normal subagents start with a fresh, isolated context: they do not inherit the parent's
+      message history or files the parent already read. Only a fork inherits conversation history.
+      The fix is to put the needed specifics into the delegation message. CLAUDE.md does load for
+      general-purpose agents (only Explore/Plan skip it), so a is wrong.
+  - id: s-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A subagent definition sets `tools: Read, Bash, mcp__db` and `disallowedTools: Bash,
+      mcp__db__write`. The author expected the subagent to keep Bash. After loading, the subagent
+      has Read plus the read-only db tools but no Bash at all. Why?
+    choices:
+      - id: a
+        text: >-
+          The tools and disallowedTools fields are mutually exclusive by design, so setting both at
+          once causes Claude Code to silently drop the tools field and keep only the denylist
+          entries.
+      - id: b
+        text: >-
+          Bash is one of the tools that is never available to any subagent regardless of
+          configuration, so it was removed automatically and listing it in the tools allowlist had
+          no effect at all.
+      - id: c
+        text: >-
+          disallowedTools is applied first, removing Bash and mcp__db__write from the pool; then the
+          tools allowlist resolves against what remains, so Bash (named in both lists) is gone.
+      - id: d
+        text: >-
+          MCP server patterns appearing in disallowedTools override the entire tools allowlist
+          whenever both fields reference the same MCP server, which is why Bash was stripped out
+          alongside it.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      When both fields are present, disallowedTools wins first (denylist applied to the pool), then
+      the tools allowlist resolves against the survivors. A tool named in both is removed. Bash is
+      not a never-available tool (those are UI-bound: AskUserQuestion, EnterPlanMode, etc.), so b is
+      wrong.
+  - id: s-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: free_form
+    prompt: >-
+      A long-running general-purpose subagent is dispatched to "keep refactoring until every lint
+      error is gone." It sometimes loops far longer than expected, burning budget, and the team
+      wants a durable, declarative ceiling on how much autonomous work it can do per run rather than
+      relying on it to stop itself. Explain which subagent frontmatter control addresses this, what
+      it bounds, and why a tool allowlist or permissionMode does NOT solve the run-length problem.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies a turn/iteration ceiling (the maxTurns frontmatter field) as the control that
+            bounds how many agentic steps the subagent may take in one run.
+        - id: c2
+          text: >-
+            Explains that this bounds the number of reasoning/tool-call turns (work volume), not
+            which tools or permissions are available.
+        - id: c3
+          text: >-
+            Explains that tools/disallowedTools and permissionMode govern WHICH tools and WHAT
+            actions are allowed, not HOW MANY steps, so they cannot cap an otherwise-legal loop's
+            length.
+      referenceAnswer: >-
+        The control for run length is the subagent's maxTurns frontmatter field, which caps how many
+        agentic turns (reasoning plus tool-call steps) the subagent may take before it must stop,
+        giving a declarative ceiling so a runaway loop ends even if the model would otherwise keep
+        going. It bounds work volume, not capability. tools/disallowedTools only change which tools
+        exist for the subagent, and permissionMode only changes whether actions are auto-allowed or
+        prompted; neither limits the number of iterations, so an agent doing legal-but-endless edits
+        would still loop. To bound the run you need the turn ceiling (and you can pair it with
+        terse-summary instructions), not a different allowlist or permission mode.
+      passThreshold: 0.6
+    guidance: >-
+      Run-length is a distinct axis from capability. maxTurns caps the number of agentic steps a
+      subagent takes per run; tool allowlists and permissionMode only govern which tools/actions are
+      permitted, not how many iterations. Reach for the turn ceiling (plus terse-output
+      instructions) for runaway loops.
+  - id: s-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      An engineer fires off eight parallel research subagents to "save context," each returning a
+      detailed multi-page report. The main conversation hits its context limit almost immediately
+      afterward. They expected the opposite. What best explains the outcome and the better design?
+    choices:
+      - id: a
+        text: >-
+          Parallel subagents all share a single context window, so spawning eight of them at once
+          simply used roughly eight times the tokens simultaneously and exhausted the parent
+          immediately.
+      - id: b
+        text: >-
+          Subagent transcripts are merged back into the main conversation in full upon completion,
+          and it was those eight merged-in transcripts that filled the parent's context window so
+          fast.
+      - id: c
+        text: >-
+          Auto-compaction is disabled for subagents by default, so each one's complete history
+          spilled directly into the parent context when it returned, which is what overran the
+          window.
+      - id: d
+        text: >-
+          Each subagent's result returns into the parent context, and many detailed returners flood
+          it; cap the returners and demand terse summaries, or use agent teams for sustained
+          parallelism.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Isolation keeps the verbose work out of the parent, but the returned summaries still land in
+      the parent context. Eight detailed reports defeat the purpose. The expert response is to limit
+      the number of returners and require terse output, or escalate to agent teams whose contexts
+      stay independent. Subagent transcripts are stored separately and not merged in, so b is wrong.
+  - id: s-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      A developer running a session with permissionMode bypassPermissions delegates to a subagent
+      whose frontmatter sets permissionMode default, intending the subagent to prompt before edits
+      as a safety measure. The subagent edits files without prompting. Why did the safety intent
+      fail?
+    choices:
+      - id: a
+        text: >-
+          Parent bypassPermissions takes precedence over the subagent and cannot be overridden by
+          the subagent's own frontmatter permissionMode, so the subagent never prompts before
+          editing.
+      - id: b
+        text: >-
+          permissionMode default actually means inherit, so the subagent simply copied the parent's
+          bypassPermissions setting even though it was free to have chosen a stricter mode instead.
+      - id: c
+        text: >-
+          Subagents ignore all permission settings entirely and always run with full edit access by
+          design, so any permissionMode declared in the frontmatter has no bearing on their
+          behavior.
+      - id: d
+        text: >-
+          The frontmatter field is actually spelled permission_mode, so the editor's permissionMode
+          key was treated as an unknown field and dropped, leaving the subagent on the parent's
+          mode.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      When the parent runs bypassPermissions (or acceptEdits), that mode takes precedence and the
+      subagent cannot override it to be safer. The subagent can override the mode in other cases,
+      but not these. To get prompting you must change the parent session's mode, not the subagent
+      frontmatter.
+  - id: s-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      A worktree subagent is asked to "run the new feature's tests," but it reports the feature code
+      does not exist. The feature is implemented on the parent session's branch but not yet
+      committed or pushed. The subagent uses the default isolation worktree config. What is
+      happening and what setting changes it?
+    choices:
+      - id: a
+        text: >-
+          The worktree was auto-cleaned because the subagent had made no changes yet, which deleted
+          the feature files; disabling the automatic worktree cleanup behavior keeps them in place.
+      - id: b
+        text: >-
+          Worktree subagents copy only tracked files into the new tree, and the new feature files
+          happened to be gitignored, so adding them to a .worktreeinclude entry brings them across.
+      - id: c
+        text: >-
+          isolation worktree branches from the default branch (origin/HEAD) by default, so unpushed
+          work is invisible; setting worktree.baseRef to head bases the worktree on the parent's
+          HEAD.
+      - id: d
+        text: >-
+          The subagent's cd into the feature directory did not persist between its separate Bash
+          calls, so it kept running from the wrong place and never actually located the new feature
+          code.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      By default a worktree subagent branches from origin/HEAD (the default branch), so it cannot
+      see in-progress, uncommitted feature work on the parent's branch. worktree.baseRef set to head
+      bases the worktree on the parent's current HEAD, letting it operate on unpushed state, at the
+      cost of carrying that dirty context.
+  - id: s-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A user edits an existing subagent's .md file to add a new tool, then immediately @-mentions
+      the agent in the same session and finds it still lacks the new tool. Meanwhile a teammate who
+      created an agent through the /agents interface saw their change apply right away. Diagnose the
+      discrepancy and state the fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that file-based subagents are loaded at session start, so on-disk edits
+            require a session restart to take effect.
+        - id: c2
+          text: >-
+            Explains that subagents created/edited via the /agents interface take effect
+            immediately, which is why the teammate's change applied.
+        - id: c3
+          text: States the fix as restarting the session (or using /agents) to pick up the file change.
+      referenceAnswer: >-
+        Subagent definition files are read once at session start, so editing the .md on disk does
+        not update the running session. The user must restart the session (or make the edit through
+        /agents) for the new tool to register. The teammate's change applied instantly because the
+        /agents interface applies edits immediately rather than waiting for a restart.
+      passThreshold: 0.6
+    guidance: >-
+      File-loaded subagents are snapshotted at session start; disk edits need a restart. Only the
+      /agents interface applies changes live. This is a common source of "my edit did nothing"
+      confusion.
+  - id: s-400-mc-h
     tier: 400
     bloom: analyze
     difficulty: 430
     type: multiple_choice
     prompt: >-
-      You receive a subagent summary saying "I fixed the bug and updated the
-      tests." Before reporting the work as done to the user, what should you
-      verify and why?
+      A scenario calls for a side task that needs the FULL current conversation (a half-finished
+      design discussion) to be useful, but whose detailed tool calls should NOT clutter the main
+      thread. A normal subagent loses the context; the main thread would get cluttered. Which
+      mechanism fits best and why?
     choices:
       - id: a
         text: >-
-          Nothing — if the subagent says it's done, the work is complete
+          A general-purpose subagent: it loads CLAUDE.md at startup, and that project context is
+          enough to reconstruct the half-finished design discussion for it.
       - id: b
         text: >-
-          Rerun all CI checks to be sure, but the file changes can be trusted
+          A fork: it inherits the entire conversation (history, tools, model) but its tool calls
+          stay out of the main context and only its final result returns.
       - id: c
         text: >-
-          Inspect the actual file changes; a subagent's summary describes intent,
-          not necessarily what it did
+          A Skill: it runs in the main context with the full conversation history available and
+          quietly discards its own intermediate tool calls afterward.
       - id: d
         text: >-
-          Ask the user to verify — the parent agent cannot read subagent output
+          An Explore subagent at very thorough level: it re-reads the conversation transcript file
+          from disk to recover the design discussion before it begins.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A fork is precisely the "needs full current context but keep tool calls out of main" case: it
+      drops input isolation by inheriting the whole conversation, yet its intermediate work stays
+      isolated and only its result returns. A Skill runs in main context but cannot hide its tool
+      calls from it, and CLAUDE.md does not contain the live discussion.
+  - id: s-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      A plugin author ships an agent at agents/review/security.md inside plugin my-plugin, with
+      frontmatter declaring hooks and an mcpServers block. In testing, the agent runs but its hooks
+      never fire and the MCP server is absent. The same file copied into .claude/agents/ works
+      fully. What explains both behaviors?
+    choices:
+      - id: a
+        text: >-
+          The plugin agent's name collided with a built-in agent of the same name and was silently
+          discarded, while the copy in .claude/agents/ got a distinct identity that let it run
+          fully.
+      - id: b
+        text: >-
+          Plugin agents load their hooks lazily rather than at startup, so the declared hooks only
+          register and begin firing after the agent has been invoked at least a second time in a
+          session.
+      - id: c
+        text: >-
+          The review/ subfolder is what disabled the hooks; placing an agent inside any plugin
+          subfolder turns off its frontmatter hooks, and flattening the file into .claude/agents/
+          re-enables them.
+      - id: d
+        text: >-
+          Plugin subagents ignore hooks, mcpServers, and permissionMode for security; copying the
+          agent into .claude/agents/ removes the plugin restriction so those frontmatter fields
+          apply.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Plugin subagents cannot use hooks, mcpServers, or permissionMode (ignored for security).
+      Copying the agent into .claude/agents/ or ~/.claude/agents/ removes that restriction. Note the
+      plugin form also gets a scoped id like my-plugin:review:security, but the subfolder is not
+      what disables the fields.
+  - id: s-400-ff-j
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: free_form
+    prompt: >-
+      An architect designs a delegation tree where a top-level orchestrator spawns workers, each
+      worker spawns analyzers, and analyzers spawn validators. They report that at one branch the
+      deepest agents silently lack the ability to delegate further, and a background agent that was
+      resumed from a shallower point still cannot spawn extra levels. Explain both observations.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that nested subagent depth is capped at 5 (fixed, not configurable); an agent at
+            depth 5 does not receive the Agent tool, so it cannot delegate.
+        - id: c2
+          text: >-
+            Explains a background subagent's depth is frozen at its first spawn, so resuming from a
+            shallower context does not grant extra spawn levels.
+        - id: c3
+          text: >-
+            Concludes the tree must be designed to stay within 5 levels because the limit cannot be
+            raised.
+      referenceAnswer: >-
+        Nested subagents are capped at depth 5, a fixed limit. An agent that reaches depth 5 is not
+        given the Agent tool, so it silently cannot delegate further. Separately, a background
+        subagent's depth is fixed at the moment it is first spawned, so resuming it from a shallower
+        context does not buy additional spawn levels. The delegation tree must therefore be designed
+        to fit within 5 levels.
+      passThreshold: 0.6
+    guidance: >-
+      The depth-5 cap is fixed and not configurable; the deepest agents simply lose the Agent tool.
+      Background depth-freezing means you cannot reclaim levels by resuming from a shallower point,
+      which matters when designing deep delegation trees.
+  - id: s-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      A team needs a CI job where every machine behaves identically regardless of which developer's
+      repo it runs in, so it must NOT pick up local hooks, skills, plugins, MCP servers, or
+      CLAUDE.md. Which approach matches, and what is the tradeoff they accept?
+    choices:
+      - id: a
+        text: >-
+          claude --agent <name> -p is the match, because the --agent flag disables CLAUDE.md
+          discovery for the run while still loading hooks for safety, giving a partly clean but
+          consistent run.
+      - id: b
+        text: >-
+          claude -p with --output-format json is the match, since selecting the JSON output format
+          makes the run execute without picking up any local project configuration on each machine.
+      - id: c
+        text: >-
+          claude --bare -p skips auto-discovery for reproducibility; the tradeoff is that the team
+          must pass any needed context (system prompt, agents, MCP) explicitly via flags on each
+          run.
+      - id: d
+        text: >-
+          Setting CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1 is the match, because disabling background
+          tasks forces a clean, config-free run that behaves the same regardless of the developer's
+          repo.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      "Trust but verify" is a key subagent principle. A subagent's result
-      message describes what it *intended* to do. You must check the actual
-      diff/file state before reporting success. Summaries can be optimistic or
-      incomplete; the files are the ground truth.
-
-  - id: subagents-400-sa-a
+      Bare mode (--bare) skips auto-discovery of hooks, skills, plugins, MCP, and CLAUDE.md so every
+      machine behaves identically. The tradeoff is convenience: any needed context must be passed
+      explicitly. JSON output and the background-tasks env var do not affect config discovery.
+  - id: s-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      An orchestrator subagent has frontmatter tools: Agent(worker, researcher), Read, Bash. At
+      runtime it is observed spawning a "validator" type that is not in that list, and the
+      parenthesized filter seems to do nothing. What is the correct diagnosis?
+    choices:
+      - id: a
+        text: >-
+          In a subagent definition the type list inside Agent(...) is ignored; that allowlist filter
+          only restricts which types can be spawned when applied to an agent running as the main
+          thread.
+      - id: b
+        text: >-
+          The expression Agent(worker, researcher) is simply invalid syntax, so Claude Code failed
+          to parse it and fell back to its default of allowing the agent to spawn every subagent
+          type.
+      - id: c
+        text: >-
+          The validator type happens to be registered as a built-in subagent, and built-in subagents
+          bypass every tools allowlist, so the Agent(...) restriction could never have applied to
+          it.
+      - id: d
+        text: >-
+          The parent session's own broad tools allowlist propagated down into the subagent at spawn
+          time and overrode its narrower Agent(...) restriction, leaving the subagent free to spawn
+          anything.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The Agent(type-list) allowlist syntax restricts which subagent types a MAIN-thread agent may
+      spawn. In a subagent definition the parenthesized list is ignored: the subagent can spawn
+      nested types freely (up to the depth cap) and the filter does not apply. The syntax itself is
+      valid.
+  - id: s-400-ff-m
     tier: 400
     bloom: analyze
     difficulty: 440
-    type: short_answer
-    prompt: >-
-      Name the parameter you set on an Agent tool call to let it run
-      concurrently with other work, so you are notified when it completes
-      rather than waiting for it.
-    answerKey:
-      kind: keyword
-      anyOf:
-        - run_in_background
-        - "run_in_background: true"
-        - run_in_background=true
-      normalize: lower
-    guidance: >-
-      Setting `run_in_background: true` on an Agent call starts the subagent
-      asynchronously. The parent continues with other work and is notified
-      automatically when the background agent completes. You should NOT poll
-      or sleep — the notification arrives when the subagent finishes.
-
-  # ── Tier 500 — Evaluate / Create ────────────────────────────────────────
-  - id: subagents-500-ff-a
-    tier: 500
-    bloom: evaluate
-    difficulty: 485
     type: free_form
     prompt: >-
-      Explain when you should NOT spawn parallel subagents, and why. Give at
-      least three distinct situations where parallelising with the Agent/Task
-      tool would be the wrong choice, and describe the failure mode each
-      situation produces.
+      A user wants a subagent that "knows about" a project skill so it can use it, and lists the
+      skill name in the subagent's tools field. The skill is still not pre-loaded, and separately
+      they have a skill marked disable-model-invocation: true that they cannot get the subagent to
+      preload at all. Diagnose both issues and give the correct mechanism.
     rubric:
       criteria:
-        - id: shared-state-conflict
+        - id: c1
           text: >-
-            Identifies that tasks sharing mutable state (the same files,
-            database rows, or in-memory structures) are unsafe to parallelize
-            because concurrent writes produce race conditions, corrupt output,
-            or silently overwrite each other's work.
-        - id: dependency-ordering
+            Explains that the skills field (not tools) preloads full skill content at startup; tools
+            controls invocation access, and a subagent can discover/invoke skills via the Skill tool
+            even without preloading.
+        - id: c2
           text: >-
-            Identifies that tasks with a dependency relationship — where the
-            output of one is the required input of the next — must run
-            sequentially; launching the downstream agent before the upstream
-            result is ready means the downstream prompt is under-specified or
-            based on stale information.
-        - id: context-cost-overhead
-          text: >-
-            Recognises that each subagent carries a full, independent context
-            window and token budget; spawning many agents for trivial or
-            fast-finishing tasks wastes money and latency relative to doing the
-            work directly in the parent context.
-        - id: sequential-simpler
-          text: >-
-            Recognises that when tasks are few, small, or tightly coupled,
-            sequential execution in the parent is simpler to reason about,
-            easier to debug, and avoids the "trust but verify" overhead that
-            every subagent result imposes on the parent.
+            States that a skill with disable-model-invocation: true cannot be preloaded via the
+            skills field.
       referenceAnswer: >-
-        Parallel subagents are wrong in at least three situations:
-
-        1. Shared mutable state. If two agents write to the same file, the same
-        database record, or the same in-memory store, their changes race. The
-        second writer silently overwrites the first, or both produce a partially
-        merged, corrupt result. Example: spawning a migration writer and a test
-        updater in parallel when both need to edit the same schema file.
-
-        2. Sequential dependency. If agent B needs agent A's output as its
-        input, launching them together means B operates on missing or stale
-        information. The result is an under-specified prompt, a hallucinated
-        implementation, or a second pass that undoes what the first did.
-        Example: research-then-write tasks where the write agent must read the
-        research findings before it can produce an accurate implementation.
-
-        3. Trivial tasks where overhead exceeds benefit. Each subagent opens a
-        new context window, pays full prompt-token cost, and returns a result
-        the parent must verify. For a quick grep, a small edit, or a single
-        file read, doing the work directly in the parent is faster, cheaper,
-        and requires no trust-but-verify round-trip. Spawning subagents for
-        tiny tasks multiplies cost without multiplying useful throughput.
-
-        A fourth valid situation: when the total number of tasks is small (two
-        or three) and they are tightly coupled, sequential execution in the
-        parent keeps the full context in one place, produces one coherent
-        history, and is simpler to debug if something goes wrong.
-      passThreshold: 0.75
+        Preloading is controlled by the skills frontmatter field, which injects the full skill
+        content at startup; the tools field only governs invocation access, and even without
+        preloading the subagent can discover and invoke skills through the Skill tool. So listing
+        the skill in tools does not preload it. Separately, a skill marked disable-model-invocation:
+        true cannot be preloaded via the skills field at all.
+      passThreshold: 0.6
     guidance: >-
-      Parallelism is powerful but has hard limits. Candidates who only recite
-      "use background agents for independent tasks" without articulating the
-      failure modes of over-parallelisation have not internalised the tradeoffs.
-      Key signals: shared-state races, dependency ordering, and cost-vs-benefit
-      for trivial tasks. Full marks require at least three distinct situations
-      with their failure modes, not just a list of slogans.
-
-
-  - id: subagents-500-mc-a
+      Listing a skill in tools is a common anti-pattern; use the skills field to preload content.
+      tools is about access, not preloading. And disable-model-invocation: true skills are excluded
+      from preloading.
+  - id: s-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      A fan-out task searches a large monorepo: spawn many subagents that each grep files and return
+      matching paths. An engineer sets model: opus on each to "get the best results." Costs spike
+      with no quality gain. What is the better routing decision and why?
+    choices:
+      - id: a
+        text: >-
+          Use model: inherit so each search subagent matches the parent's model; inherit is always
+          the cheapest available option because it never spins up a separate, differently-priced
+          model.
+      - id: b
+        text: >-
+          Use a fork for each individual search instead of a subagent, since a fork always costs
+          strictly less than any subagent for any task because it reuses the parent's prompt cache
+          every time.
+      - id: c
+        text: >-
+          Keep the subagents on Opus but switch them to run in the background; running a subagent as
+          a background task rather than in the foreground roughly halves its per-token cost on the
+          run.
+      - id: d
+        text: >-
+          Use Haiku (for example read-only Explore) for cheap, fast file-search fan-out; the task
+          needs little multi-step reasoning, so paying for Opus's capability here is simply wasted
+          spend.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Pure file-search fan-out is low-reasoning work where Haiku (the default for Explore) is cheap
+      and fast. Spending Opus on it wastes money for no gain. inherit keeps the parent's capability
+      and price, not the cheapest. Forks are cheapest only for same-context side tasks via
+      prompt-cache reuse, not arbitrary searches.
+  - id: s-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A developer relies on description-based auto-delegation to invoke a "test-runner" subagent
+      after code edits, but it only fires sometimes. For a release script they need the subagent to
+      run every time deterministically. Compare the invocation options: which choice correctly
+      trades off control vs flexibility?
+    choices:
+      - id: a
+        text: >-
+          Auto-delegation becomes fully deterministic the moment the description says use
+          proactively, so the intermittent firing here just means the subagent's description field
+          is missing entirely.
+      - id: b
+        text: >-
+          Auto-delegation via description is convenient but non-deterministic; an @-mention
+          guarantees the agent runs for one task and --agent makes it session-wide, so use either
+          for determinism.
+      - id: c
+        text: >-
+          Only the --agent flag can invoke a subagent at all; an @-mention and natural-language
+          naming are purely display-only aliases that never actually cause Claude to delegate to the
+          subagent.
+      - id: d
+        text: >-
+          An @-mention is the least forceful invocation option and natural language is the most
+          forceful, so for a deterministic release script the team should simply switch to natural
+          language.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The invocation spectrum escalates in force: natural-language/auto-delegation (Claude decides,
+      non-deterministic), @-mention (guarantees one run), then --agent/agent setting (session-wide).
+      "use proactively" only encourages, it does not guarantee. For determinism reach for @-mention
+      or --agent.
+  - id: s-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      Two subagent definitions exist with the same name "reviewer": one in the project's
+      .claude/agents/ and one in ~/.claude/agents/. Additionally the org ships a managed "reviewer"
+      agent. A developer also passes --agents with a "reviewer" JSON for this session. Which
+      definition actually runs, and why?
+    choices:
+      - id: a
+        text: >-
+          The managed org-wide reviewer runs, because managed settings sit at the highest
+          precedence, above the --agents CLI flag, the project scope, the user scope, and plugin
+          agents.
+      - id: b
+        text: >-
+          The --agents CLI reviewer runs, because per-session command-line flags always override
+          every on-disk and managed location, sitting at the very top of the subagent precedence
+          order.
+      - id: c
+        text: >-
+          The project .claude/agents/ reviewer runs, because project scope outranks the user scope,
+          the managed org settings, and the per-session --agents CLI flag whenever names collide.
+      - id: d
+        text: >-
+          The user ~/.claude/agents/ reviewer runs, because user-level configuration is loaded last
+          during startup and therefore wins on any name collision with project, managed, or CLI
+          definitions.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Precedence (highest to lowest) is managed settings, then --agents CLI flag, then project
+      .claude/agents/, then user ~/.claude/agents/, then plugin agents. On a name collision the
+      highest-priority location wins, so the managed org agent runs even though a CLI definition
+      also exists.
+  - id: s-400-ff-q
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A user tells Claude to "spin up an Explore agent to map the auth flow, then later resume that
+      same Explore agent to dig into the token refresh path." Resuming fails: there is no agent id
+      to resume. Explain why, and what they should have used if they wanted resumability.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that Explore (and Plan) are one-shot and return no agent id, so they cannot be
+            resumed.
+        - id: c2
+          text: >-
+            Says to use a general-purpose or custom subagent instead, which retains full history and
+            can be resumed.
+        - id: c3
+          text: >-
+            Optionally notes that resuming works via SendMessage targeting the agent's id/name, and
+            a stopped subagent receiving SendMessage auto-resumes.
+      referenceAnswer: >-
+        Explore and Plan are one-shot subagents that return no agent id, so there is nothing to
+        resume. To get resumability the user should have delegated to a general-purpose or custom
+        subagent, which retains full history. Resumption then works by Claude sending the agent a
+        SendMessage with the agent's id/name as the to field; a stopped subagent that receives such
+        a message auto-resumes in the background.
+      passThreshold: 0.6
+    guidance: >-
+      Explore/Plan are deliberately one-shot and id-less for speed; only general-purpose and custom
+      subagents are resumable. This is why "continue the Explore agent" never works.
+  - id: s-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      In headless mode a script runs `claude -p "deploy and report"`, which internally spawns a
+      background subagent taking about 7 minutes. The engineer is surprised the command did not
+      return after ~5 seconds the way a backgrounded shell does. They also worry a longer-running
+      subagent could be cut off. Explain why the -p run waits for the background subagent, and what
+      bounds how long it will wait.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that in claude -p, background subagents are not subject to the 5-second
+            background-shell grace; the run waits for them because their result is part of the
+            output.
+        - id: c2
+          text: >-
+            States the default wait ceiling is 10 minutes, so a ~7-minute subagent completes within
+            it.
+        - id: c3
+          text: Names CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS as the override (and that 0 means no limit).
+      referenceAnswer: >-
+        In claude -p, background subagents are not subject to the 5-second background-shell grace.
+        Because a background subagent's result is part of the printed output, the run blocks and
+        waits for it to finish. The wait is capped at 10 minutes by default, so a ~7-minute subagent
+        completes well within the limit and is not cut off. The ceiling is configurable via
+        CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS, where 0 means no limit.
+      passThreshold: 0.6
+    guidance: >-
+      -p mode awaits background subagents (their result is part of the output) rather than applying
+      the 5-second background-shell grace, with a default 10-minute ceiling tunable via
+      CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS. A 7-minute run finishes within the default cap.
+  - id: s-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 454
+    type: multiple_choice
+    prompt: >-
+      A subagent's Bash tool calls each start fresh: one call does `cd packages/api` then the next
+      call runs a test command and fails with "no such file." The author thinks the working
+      directory should persist like a normal shell. What is the correct diagnosis and a robust fix?
+    choices:
+      - id: a
+        text: >-
+          The subagent started in the wrong directory because it inherits origin/HEAD's repository
+          root rather than the parent's cwd; setting isolation to none makes it start where the
+          parent is.
+      - id: b
+        text: >-
+          Each separate Bash call actually spawns a nested subagent, which resets the shell state
+          between calls; lowering the nesting depth cap keeps everything inside a single persistent
+          shell.
+      - id: c
+        text: >-
+          cd does not persist between a subagent's separate Bash calls; run commands with absolute
+          paths, or chain the cd and the command together inside one single Bash call so they share
+          state.
+      - id: d
+        text: >-
+          The cd changed the parent conversation's working directory and broke the later relative
+          path; disabling cd in the parent session keeps the working directory stable for the
+          subagent.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Inside a subagent, cd does not persist between Bash/PowerShell tool calls and does not affect
+      the parent's working directory. A subagent starts in the parent's cwd. Use absolute paths or
+      combine the cd with the command in a single call. This is unrelated to isolation, depth, or
+      the parent's cwd.
+  - id: s-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      A maintainer wants a custom subagent to use a fork for a context-heavy side analysis,
+      expecting the cheapest possible run. They also plan to have that fork spawn its own fork to
+      parallelize. They observe the second fork is refused, and they are unsure whether a fork is
+      even cheaper than a fresh subagent here. Diagnose the refusal and explain the cost reasoning
+      for choosing a fork over a fresh subagent in this case.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that a fork cannot spawn another fork, which is why the nested fork was refused.
+        - id: c2
+          text: >-
+            Explains that a fork's first request reuses the parent's prompt cache, making it cheaper
+            than a fresh subagent for a same-context side task.
+        - id: c3
+          text: >-
+            Connects the choice to context need: a fork inherits the full conversation (no fresh
+            context-gathering), which fits a context-heavy side analysis.
+      referenceAnswer: >-
+        The second fork was refused because a fork cannot spawn another fork. Choosing a fork over a
+        fresh subagent is cost-justified here because the fork's first request reuses the parent's
+        prompt cache, making it cheaper than a fresh subagent that would re-establish context from
+        scratch. A fork also inherits the entire conversation, so it does not pay the latency/tokens
+        of re-gathering context, which suits a context-heavy side analysis. To parallelize, the
+        maintainer should spawn separate non-fork subagents rather than nesting forks.
+      passThreshold: 0.6
+    guidance: >-
+      Forks cannot nest (no fork-of-a-fork), so the parallel plan needs ordinary subagents. The
+      fork's economic edge is prompt-cache reuse plus inherited context, which is exactly why it
+      beats a fresh subagent for a same-context side task.
+  - id: s-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team designs a workflow that fans out 12 parallel subagents, each tasked with reviewing one
+      service for security issues and returning a detailed line-by-line report. After running it,
+      the main conversation's context fills up almost as fast as if no subagents had been used.
+      Which critique best identifies the root design flaw?
+    choices:
+      - id: a
+        text: >-
+          Each subagent isolated its own work, but all 12 detailed reports returned to the parent,
+          so the aggregated returns flooded it; cap returners and demand terse summaries, or use
+          agent teams.
+      - id: b
+        text: >-
+          Subagents always copy the parent's full conversation history into themselves on spawn, so
+          running 12 of them at once multiplied the parent's context cost twelvefold from the start.
+      - id: c
+        text: >-
+          Parallel subagents cannot actually run concurrently in one session, so they silently
+          serialized and each appended its complete transcript back into the parent conversation.
+      - id: d
+        text: >-
+          The subagents inherited Opus rather than Haiku, and only Haiku-backed subagents are built
+          to return short summaries instead of their full line-by-line output.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Subagents preserve the parent context by keeping their verbose intermediate work isolated, but
+      their final results still return to the main conversation. The fan-out paradox is that many
+      detailed returners can blow the context anyway. The fix is fewer returners, terse summaries,
+      or escalating to agent teams with independent contexts. Model choice does not change whether
+      the result returns.
+  - id: s-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: >-
+      A reviewer wants a read-only database agent that can run SELECT queries via Bash but must
+      never run INSERT/UPDATE/DELETE. They propose three options. Which evaluation of the mechanisms
+      is correct for achieving fine-grained allow-some-uses-of-a-tool enforcement?
+    choices:
+      - id: a
+        text: >-
+          Set permissionMode plan on the subagent; plan mode inspects each SQL string and permits
+          SELECT reads while blocking INSERT, UPDATE, and DELETE writes for you.
+      - id: b
+        text: >-
+          List Bash in tools but also add Bash to disallowedTools; the denylist runs first and is
+          smart enough to strip only the write subcommands while leaving SELECT usable.
+      - id: c
+        text: >-
+          tools/disallowedTools and permissionMode are coarse (whole-tool or broad read-only); only
+          a PreToolUse hook can inspect the actual Bash command and allow SELECT while denying
+          writes.
+      - id: d
+        text: >-
+          Set the subagent model to haiku; the smaller read-only model is incapable of emitting
+          destructive INSERT, UPDATE, or DELETE SQL, so writes never reach the database.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      tools/disallowedTools operate at whole-tool granularity and permissionMode plan enforces
+      read-only broadly, neither can split one tool's invocations by content. A PreToolUse hook is
+      the only documented mechanism that can examine the actual command and permit some uses
+      (SELECT) while denying others (INSERT). disallowedTools applied first only removes whole
+      tools; the model alias governs capability, not permissions.
+  - id: s-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A developer is mid-feature on an unpushed branch and delegates a refactor to a subagent with
+      isolation worktree, leaving worktree.baseRef at its default. The subagent reports it cannot
+      find the new functions the developer just wrote. Which judgment correctly weighs the tradeoff
+      and the fix?
+    choices:
+      - id: a
+        text: >-
+          Worktrees share the parent's working tree live and see edits instantly, so the developer
+          simply has to commit before the subagent starts; the baseRef setting has no effect on
+          visibility.
+      - id: b
+        text: >-
+          Worktrees always branch from the parent session's current HEAD, so the real cause is that
+          the subagent denied itself the Read tool; re-grant Read and the new functions appear.
+      - id: c
+        text: >-
+          Default worktrees branch from origin/HEAD (the default branch), so the subagent never sees
+          uncommitted feature work; set worktree.baseRef to head if the task needs in-progress
+          state.
+      - id: d
+        text: >-
+          The worktree was auto-cleaned because the subagent made no changes, which discarded the
+          developer's feature work; disabling the auto-clean behavior preserves the in-progress
+          files.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      By default isolation worktree branches from origin/HEAD (your default branch), giving a clean
+      tree but hiding uncommitted feature work. Setting worktree.baseRef to head lets the subagent
+      operate on in-progress/unpushed state at the cost of carrying dirty context. The right call
+      depends on whether the delegated task needs the uncommitted work. Auto-clean only removes
+      worktrees where the subagent made no changes; it does not touch the parent's files.
+  - id: s-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: free_form
+    prompt: >-
+      A teammate argues: "We should default every custom subagent to Haiku to save money, since
+      Explore already defaults to Haiku and it works fine." Critique this blanket policy as an
+      expert-level cost-vs-capability decision, and state when Haiku is and is not appropriate.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes that the default model is inherit (parent's model), not Haiku; only Explore among
+            built-ins defaults to Haiku.
+        - id: c2
+          text: >-
+            Explains Haiku is well suited to cheap/fast read-only or search/discovery work but weak
+            at multi-step reasoning, so a blanket Haiku default degrades agents doing complex
+            multi-step work.
+        - id: c3
+          text: >-
+            Recommends routing by task: Haiku for shallow read-only fan-out, inherit/Opus/Sonnet for
+            reasoning-heavy agents, and notes forks reuse the parent prompt cache for same-context
+            side tasks.
+      referenceAnswer: >-
+        The policy is wrong as a blanket rule. The documented default is inherit (the parent's
+        model), and only the built-in Explore agent defaults to Haiku; that works because Explore
+        does read-only search/discovery where Haiku is cheap and fast. A debugger or general-purpose
+        agent doing multi-step reasoning will be materially weaker on Haiku. The correct approach is
+        per-task routing: Haiku for shallow read-only discovery and large cheap fan-outs, inherit
+        (or an explicit capable model) for reasoning-heavy multi-step agents, and forks when a side
+        task needs the parent's context cheaply via prompt-cache reuse. Forcing Haiku everywhere
+        trades capability for spend on exactly the tasks that need capability.
+      passThreshold: 0.6
+    guidance: >-
+      The trap is the misconception that subagents default to Haiku. They default to inherit; only
+      Explore defaults to Haiku because it does read-only discovery. Cost routing should match the
+      model axis to the task: cheap models for shallow read-only work, capable models for multi-step
+      reasoning, forks for cache-reusing side tasks.
+  - id: s-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >-
+      Two engineers debate context handling. Engineer A says "spawn a normal subagent so it can see
+      everything we have discussed and continue the thread." Engineer B says "use /fork instead."
+      For a side task that genuinely needs the full current conversation but whose verbose tool
+      calls should stay out of the main context, which assessment is correct?
+    choices:
+      - id: a
+        text: >-
+          A is right: a normal subagent inherits the parent's full message history at spawn, whereas
+          a fork is the one that starts from a fresh, empty context with only the prompt you pass.
+      - id: b
+        text: >-
+          B is right: a normal subagent starts in a fresh isolated context and would NOT see the
+          history, whereas a fork inherits the whole conversation yet keeps its tool calls out of
+          main.
+      - id: c
+        text: >-
+          Both are effectively equivalent here; the only real difference between them is that a fork
+          is forbidden from using any tools while a normal subagent may use the tools it inherits.
+      - id: d
+        text: >-
+          Neither mechanism works for this; only a member of an agent team can read the parent's
+          prior conversation history, so the side task has to be handed to a team teammate instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A normal subagent runs in a fresh isolated context and does not see the parent's conversation
+      history; that is the common misconception. A fork inherits the entire conversation (system
+      prompt, tools, model, message history), drops input isolation, but keeps its tool calls out of
+      the main context and returns only its final result, which is exactly the fit for a
+      context-heavy side task. Forks also reuse the parent prompt cache, making them cheaper than a
+      fresh subagent.
+  - id: s-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A CI pipeline runs claude -p on many machines and gets inconsistent behavior because different
+      machines have different installed plugins, hooks, skills, and CLAUDE.md files. An engineer
+      proposes claude --bare -p with all context passed explicitly via flags. Which is the strongest
+      evaluation of this proposal?
+    choices:
+      - id: a
+        text: >-
+          Sound, but only because --bare additionally forces every subagent the run spawns onto the
+          Haiku model, which is what actually produces the reproducible latency CI depends on.
+      - id: b
+        text: >-
+          Flawed: --bare still loads CLAUDE.md and the full memory hierarchy from each machine, so
+          it cannot actually guarantee identical, deterministic behavior across all the build hosts.
+      - id: c
+        text: >-
+          Flawed: real determinism in a CI pipeline comes from passing --output-format json, not
+          from --bare; the JSON output format is what isolates a run from machine-local
+          configuration.
+      - id: d
+        text: >-
+          Sound: --bare skips auto-discovery of hooks, skills, plugins, MCP, and CLAUDE.md so
+          machines match; the cost is passing all needed context explicitly via flags.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      --bare deliberately skips auto-discovery of hooks, skills, plugins, MCP, and CLAUDE.md so runs
+      are reproducible regardless of machine-local state, which is exactly the determinism CI needs.
+      The tradeoff is that you must explicitly supply any required context. --output-format json
+      governs payload shape (cost breakdown), not which config is loaded, and --bare does not pin
+      model choice.
+  - id: s-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      A platform team relies entirely on description-based auto-delegation for a critical
+      security-review subagent, reasoning "the model will pick it when relevant." Evaluate the risk
+      of this choice and contrast it with @-mention and the --agent flag, recommending when each
+      level of forcing is appropriate.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that description-based auto-delegation is non-deterministic; Claude may or
+            may not pick the agent, which is risky for a critical mandatory step.
+        - id: c2
+          text: >-
+            Explains @-mention guarantees the named subagent runs for that one task, and --agent (or
+            the agent setting) makes a subagent govern the whole session's main thread.
+        - id: c3
+          text: >-
+            Frames the tradeoff as determinism/control vs flexibility and recommends forcing
+            (@-mention or --agent) for mandatory steps while auto-delegation is fine for
+            convenience.
+      referenceAnswer: >-
+        Pure auto-delegation is non-deterministic: Claude reads the description and decides, so the
+        security review may silently be skipped, which is unacceptable for a mandatory gate. The
+        three patterns escalate in force: natural-language/description auto-delegation (Claude
+        decides), @-mention (guarantees that subagent runs for one task), and --agent flag or agent
+        setting (the whole session's main thread adopts that subagent's prompt, tools, and model).
+        For a critical review that must always run, force it with an @-mention per task or wire it
+        into a hook/setting; reserve auto-delegation for convenient, non-critical assistance where
+        flexibility matters more than guaranteed invocation.
+      passThreshold: 0.6
+    guidance: >-
+      The invocation spectrum trades control for flexibility. Relying on description-based
+      auto-delegation for a mandatory step is the anti-pattern because it is non-deterministic.
+      @-mention guarantees one run; --agent makes a subagent session-wide. Critical steps should be
+      forced, not suggested.
+  - id: s-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      A subagent definition declares an MCP server two different ways across two drafts: draft 1
+      puts a full inline mcpServers block (command, args, env) in the agent's frontmatter; draft 2
+      references a named server already configured at the project/user level. A reviewer asks which
+      approach is the sounder default for a subagent that many projects will reuse, and why. Which
+      evaluation is correct?
+    choices:
+      - id: a
+        text: >-
+          Referencing a named, already-configured server is the sounder reusable default: it keeps
+          connection details and secrets out of the portable agent file and lets each environment
+          own its config.
+      - id: b
+        text: >-
+          The inline mcpServers block is always the preferred form for a reusable agent, because
+          servers referenced only by name are silently ignored by subagents and never actually
+          connect at runtime.
+      - id: c
+        text: >-
+          The two forms are identical in every respect; mcpServers is parsed exactly the same way
+          whether inline or referenced, so for a reusable agent the choice between them is purely
+          cosmetic.
+      - id: d
+        text: >-
+          Neither approach works, because subagents categorically cannot use MCP tools at all; any
+          mcpServers entry in a subagent's frontmatter is therefore dead configuration that has no
+          effect.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A subagent can either declare MCP servers inline in frontmatter or reference servers
+      configured elsewhere. For a widely reused agent, referencing a named server is the sounder
+      default: it keeps connection details and secrets out of the portable agent file and lets each
+      environment own its config, while an inline block bakes one environment's command/args/env
+      into the agent. Subagents can use MCP tools (so d is wrong), and the two forms are not
+      cosmetically identical (so c is wrong). Note: plugin subagents have mcpServers ignored for
+      security regardless of form.
+  - id: s-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A safety-conscious engineer launches the parent session with --permission-mode
+      bypassPermissions for speed, then writes a subagent with permissionMode default hoping the
+      subagent will be safer and prompt before risky actions. Which critique is correct?
+    choices:
+      - id: a
+        text: >-
+          Correct design: a subagent can always tighten its own permission mode to be stricter than
+          the parent's, so declaring default under a bypassPermissions parent makes it prompt
+          safely.
+      - id: b
+        text: >-
+          Flawed: the parent's bypassPermissions takes precedence and cannot be overridden by the
+          subagent's frontmatter, so the subagent will not prompt; the override being relied on does
+          not exist.
+      - id: c
+        text: >-
+          Flawed only because the permissionMode field is ignored for every subagent regardless of
+          context, so the engineer should reach for disallowedTools to remove Write and Edit
+          instead.
+      - id: d
+        text: >-
+          Correct, provided the subagent also sets isolation worktree; running in an isolated
+          worktree is what re-enables the permission prompting that bypassPermissions would
+          otherwise suppress.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A subagent inherits permission context and can override the mode in general, but parent
+      bypassPermissions and acceptEdits take precedence and cannot be overridden; auto mode is
+      inherited and ignores the subagent's permissionMode. So a subagent cannot make itself safer
+      than a parent running bypassPermissions. permissionMode is not universally ignored, and
+      worktree isolation does not re-enable prompting.
+  - id: s-500-ff-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: >-
+      Given four scenarios, justify whether each is best served by a normal subagent, the main
+      conversation, a Skill, or a fork: (1) run a 50k-token test suite and report only the failures;
+      (2) iterative back-and-forth planning then implementation that must share evolving context;
+      (3) a reusable prompt you want available in the main context across sessions; (4) a side task
+      that needs the full current conversation state. State the discriminating factors.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            (1) normal subagent (isolate high-volume output, return only a summary) and (2) main
+            conversation (needs continuous shared, evolving context and back-and-forth).
+        - id: c2
+          text: >-
+            (3) Skill (reusable prompt that runs in the main context) and (4) fork (inherits full
+            current conversation while keeping tool calls out of the main context).
+        - id: c3
+          text: >-
+            Names the discriminators: context-isolation need, back-and-forth/shared-context need,
+            and output volume.
+      referenceAnswer: >-
+        (1) Normal subagent: the 50k-token run is high-volume output that should be isolated so only
+        a terse failures summary returns. (2) Main conversation: iterative planning plus
+        implementation needs continuous, evolving shared context and tight back-and-forth, which a
+        fresh subagent would lose. (3) Skill: a reusable prompt meant to run in the main context
+        (and persist across sessions). (4) Fork: it needs the entire current conversation state but
+        should keep its tool calls out of the main context, which is exactly fork's
+        inherit-everything-but-return-a-summary behavior. The discriminators are how much context
+        isolation is needed, whether continuous back-and-forth/shared context is required, and the
+        volume of output produced.
+      passThreshold: 0.6
+    guidance: >-
+      The hardest judgment call is choosing among subagent, main conversation, Skill, and fork. The
+      axes are context-isolation need, back-and-forth/shared-context need, and output volume. High
+      isolation plus high output favors a subagent; continuous shared context favors the main
+      thread; a reusable main-context prompt is a Skill; a full-context side task is a fork.
+  - id: s-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      An architect designs a delegation tree where the top-level subagent spawns workers that spawn
+      sub-workers, intending 7 levels deep, and plans to run the top level as a background subagent
+      that may be resumed later from a shallower context to gain more spawn levels. Which evaluation
+      is correct?
+    choices:
+      - id: a
+        text: >-
+          Viable: nesting depth is configurable, so reaching 7 levels just needs a higher cap, and
+          resuming a background agent from a shallower context grants it the extra spawn levels it
+          needs.
+      - id: b
+        text: >-
+          Viable only if every level in the tree is built from the fork subagent type, since forks
+          are specifically exempt from the depth cap and can therefore be nested arbitrarily deep.
+      - id: c
+        text: >-
+          Not viable as designed: nesting is capped at a fixed depth of 5 (not configurable) so
+          depth-5 agents get no Agent tool, and a background agent's depth is frozen at first spawn.
+      - id: d
+        text: >-
+          Not viable at all, because in Claude Code no subagent may ever spawn another subagent
+          under any circumstances, so even a two-level delegation tree is impossible regardless of
+          depth.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Nested subagents are allowed but capped at a fixed depth of 5 that is not configurable; an
+      agent at depth 5 does not receive the Agent tool. Additionally, a background subagent's depth
+      is frozen at first spawn, so resuming from a shallower context does not earn extra spawn
+      levels. A 7-level tree silently hits the cap. Forks are not exempt (and a fork cannot even
+      spawn another fork).
+  - id: s-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A developer wants a subagent to have a specific skill's full content loaded at startup so it
+      does not waste turns discovering it. They add the skill name to the subagent's tools list and
+      are surprised the full skill text is not preloaded. Which critique is correct?
+    choices:
+      - id: a
+        text: >-
+          tools controls invocation access, not preloading; the skills field is what preloads full
+          skill content at startup, so listing the skill in tools was simply the wrong mechanism.
+      - id: b
+        text: >-
+          Skills can never be preloaded into a subagent's context at all; the subagent must always
+          discover and pull each skill in at runtime through the Skill tool, one fetch at a time.
+      - id: c
+        text: >-
+          The skill was not preloaded because the tools field is actually a denylist, not an
+          allowlist; the developer should have used disallowedTools to force the skill content to
+          load.
+      - id: d
+        text: >-
+          Preloading skill content requires setting the subagent's model to inherit; Haiku-backed
+          subagents are unable to preload skills, which is why the full skill text never appeared.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The skills frontmatter field preloads the full content of a skill into the subagent at
+      startup; tools governs whether the subagent can invoke a tool, not preloading. Without the
+      skills field a subagent can still discover and invoke skills via the Skill tool. tools is an
+      allowlist (not a denylist), and model choice is unrelated. Note you cannot preload a skill
+      marked disable-model-invocation true.
+  - id: s-500-ff-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: >-
+      A team ships a plugin whose subagent frontmatter declares hooks, mcpServers, and
+      permissionMode to enforce its own guardrails. They are puzzled that none of these take effect
+      when users install the plugin. Diagnose why, evaluate whether this is a defect, and recommend
+      a correct path to get those capabilities.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that plugin subagents have hooks, mcpServers, and permissionMode ignored by
+            design for security, so this is expected, not a defect.
+        - id: c2
+          text: >-
+            Recommends copying the agent into .claude/agents/ (project) or ~/.claude/agents/ (user)
+            so those fields are honored.
+        - id: c3
+          text: >-
+            Optionally notes plugin agents get a scoped identifier including the subfolder (e.g.
+            plugin:subdir:name) but that does not restore the ignored fields.
+      referenceAnswer: >-
+        This is expected behavior, not a defect: for security, plugin-provided subagents have their
+        hooks, mcpServers, and permissionMode frontmatter fields ignored. The plugin cannot enforce
+        those guardrails on installation. To use them, the agent definition must live in a
+        first-party location: copy it into the project's .claude/agents/ or the user's
+        ~/.claude/agents/, where the fields are honored. (Plugin agents also register under a scoped
+        identifier that includes their subfolder, but that scoping does not re-enable the ignored
+        fields.) The right recommendation is therefore to document a copy-into-.claude/agents step
+        or redesign so the guardrails do not depend on plugin-level hooks/MCP/permission settings.
+      passThreshold: 0.6
+    guidance: >-
+      Plugin subagents deliberately ignore hooks, mcpServers, and permissionMode for security. This
+      is by design, so the fix is to copy the agent into .claude/agents/ or ~/.claude/agents/ where
+      those fields take effect, not to file a bug.
+  - id: s-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A reviewer evaluates two competing latency claims. Dev A: "Always delegate to a subagent; it
+      is faster because it runs in parallel." Dev B: "For a quick one-line edit in a tight
+      iterate-and-test loop, stay in the main conversation." Whose reasoning is sound and why?
+    choices:
+      - id: a
+        text: >-
+          Dev A is sound: subagents are always lower latency because they skip loading CLAUDE.md and
+          the git status, so delegating any task is faster than handling it in the main
+          conversation.
+      - id: b
+        text: >-
+          Both are equally wrong; latency is effectively identical in every case because subagents
+          actually share the parent's context window rather than starting in a fresh, separate one.
+      - id: c
+        text: >-
+          Dev A is sound: a single foreground subagent runs fully concurrently with the main thread
+          and never blocks it, so offloading every task to one is always the lower-latency choice.
+      - id: d
+        text: >-
+          Dev B is sound: subagents start fresh and may need time to re-gather context, so for quick
+          targeted changes or tight iterative loops the main conversation is faster; latency varies.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Dev B is right. A subagent starts in a fresh isolated context and often must spend time
+      re-gathering context the parent already had, so for quick targeted edits or tight iterative
+      loops the main conversation is faster. Subagents do not always reduce latency. A foreground
+      subagent actually blocks the main conversation; only background subagents run concurrently,
+      and they still pay the cold-start cost.
+  - id: s-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A workflow needs to repeatedly resume a research subagent across several turns to keep
+      building on its prior findings. The author chose the built-in Explore agent with thoroughness
+      very thorough. Critique this choice.
+    choices:
+      - id: a
+        text: >-
+          Sound: the Explore agent returns an agent ID specifically so that ongoing research can
+          resume it across turns, which is exactly the resumable workflow the author was trying to
+          build.
+      - id: b
+        text: >-
+          Sound: any built-in agent, Explore included, can be resumed by sending it a SendMessage
+          with its name as the to field, so the author's choice will support the multi-turn research
+          fine.
+      - id: c
+        text: >-
+          Flawed only because the very thorough thoroughness level disables resumption; switching
+          Explore to quick mode would return an agent ID and let the research continue across turns.
+      - id: d
+        text: >-
+          Flawed: Explore (and Plan) are one-shot and return no agent ID, so they cannot be resumed;
+          a workflow that resumes across turns needs general-purpose or a custom subagent instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Explore and Plan are one-shot, return no agent ID, and cannot be resumed. To resume and keep
+      building on prior findings you need general-purpose or a custom subagent, which retain full
+      history and can be resumed (Claude resumes via SendMessage using the agent's ID/name as the to
+      field). The thoroughness level does not change Explore's one-shot nature.
+  - id: s-500-ff-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: free_form
+    prompt: >-
+      An engineer claims "subagents are bad for parallelism because they all share one session, so
+      for sustained heavy parallel work I should just spawn 30 subagents at once." Evaluate this
+      claim and recommend the documented approach for sustained parallelism that exceeds the context
+      window, distinguishing it from one-off fan-out.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes subagents work within a single session and that spawning many returners can itself
+            blow the main context (the fan-out paradox), so 30-at-once is an anti-pattern.
+        - id: c2
+          text: >-
+            Recommends agent teams (independent contexts that can talk to each other) for sustained
+            parallel work that exceeds the context window.
+        - id: c3
+          text: >-
+            Distinguishes acceptable one-off fan-out (a bounded set of independent research
+            subagents returning terse summaries) and/or scripting multiple claude -p instances for
+            headless fan-out.
+      referenceAnswer: >-
+        The claim is half-right and half-wrong. Subagents do work within a single session, but
+        spawning 30 at once is an anti-pattern: their results all return to the main conversation,
+        so heavy fan-out can blow the context window (the fan-out paradox). For sustained parallel
+        work that exceeds the context window, the documented answer is agent teams, which run as
+        independent contexts that can communicate, rather than in-session subagents. A bounded
+        one-off fan-out (a handful of independent research subagents that each return a terse
+        summary) is fine, and for headless batch parallelism you script multiple claude -p
+        instances. So: bounded fan-out or claude -p for one-off batches; agent teams for sustained
+        parallelism.
+      passThreshold: 0.6
+    guidance: >-
+      Subagents live in one session and their returns aggregate into the parent context, so massive
+      fan-out is self-defeating. Sustained parallelism that exceeds the context window is the
+      documented use case for agent teams (independent contexts). Bounded fan-out with terse
+      summaries or scripted claude -p instances handles one-off batches.
+  - id: s-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      A main-thread orchestrator agent is defined with tools Agent(worker, researcher), Read, Bash.
+      A reviewer worries it can spawn arbitrary destructive agents. Separately, a worker SUBAGENT is
+      defined with tools Agent(cleanup), expecting it can only spawn cleanup-type nested agents.
+      Evaluate both expectations.
+    choices:
+      - id: a
+        text: >-
+          Orchestrator is correctly restricted to spawning only worker and researcher types; but in
+          the worker SUBAGENT the type list inside Agent(...) is ignored, so it is not limited to
+          cleanup.
+      - id: b
+        text: >-
+          Both expectations hold: the Agent(...) type list restricts which subagent types may be
+          spawned everywhere it appears, including when it is declared inside an ordinary subagent
+          definition.
+      - id: c
+        text: >-
+          Both are wrong: writing Agent(...) with parentheses means the agent cannot spawn any
+          subagent at all; only bare Agent without parentheses actually permits spawning nested
+          subagents.
+      - id: d
+        text: >-
+          The orchestrator can in fact spawn arbitrary types, because also listing Read and Bash in
+          its tools line overrides and cancels the Agent allowlist, leaving spawning effectively
+          unrestricted.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      In a main-thread agent, Agent(type, ...) is an allowlist restricting which subagent types it
+      may spawn, so the orchestrator is correctly limited to worker and researcher. But inside a
+      subagent definition the type list within Agent(...) is ignored: the subagent can spawn nested
+      types and the filter does not apply. Bare Agent means spawn anything; omitting Agent entirely
+      means it cannot spawn subagents at all.
+  - id: s-500-mc-r
     tier: 500
     bloom: evaluate
     difficulty: 480
     type: multiple_choice
     prompt: >-
-      A task requires searching the codebase (read-only) and then, based on
-      the findings, writing a new module. Which subagent strategy is most
-      efficient and why?
+      A user repeatedly spawns a fresh general-purpose subagent just to ask a quick clarifying
+      question about what was already discussed in the current conversation, then discards the
+      answer. Which critique best identifies the better-fit tool and why?
     choices:
       - id: a
         text: >-
-          Use one subagent with [iso:skip] for both steps — simplest path
+          This is the intended use of a fresh subagent; spawning one to answer a quick discardable
+          question about the current discussion is exactly what subagents are for, so no change is
+          needed.
       - id: b
         text: >-
-          Use a foreground read-only subagent first ([iso:skip]), wait for its
-          findings, then make an informed decision on how to write the module
-          either directly or via a second worktree-isolated subagent
+          /btw is the documented fit: it sees the full current context, uses no tools, and discards
+          its answer, whereas a fresh subagent has no access to the history and pays a cold-start
+          cost.
       - id: c
         text: >-
-          Use two background subagents in parallel — one reads, one writes —
-          so they finish faster
+          Use a fork instead; a fork is the only mechanism that can answer a throwaway question, and
+          like a subagent it also cannot see the prior conversation, so it must re-derive the
+          context.
       - id: d
         text: >-
-          Always use isolation "worktree" for any task that may write files,
-          even if the read phase comes first
+          Use an Explore agent set to quick; the Explore subagent is designed precisely for
+          conversation-recall questions and answers them cheaply without cluttering the main
+          transcript afterward.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      The read step must complete before the write step can be designed well —
-      they are sequential, not parallel. Using a foreground read-only subagent
-      with [iso:skip] for the research phase, then synthesizing what was
-      learned before spawning a writer, gives the parent agent maximum
-      information to write a self-contained, accurate prompt for the second
-      agent. Launching a writer in parallel before reading is premature.
+      A fresh subagent starts with no view of the conversation history, so it is a poor and
+      expensive choice for a quick question about the current discussion. /btw is the documented
+      fit: it sees the full current context, uses no tools, and its answer is discarded. A fork does
+      see the conversation but is heavier than needed; Explore is for codebase discovery, not
+      conversation recall.
+  - id: s-500-ff-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      An engineer wires a Stop hook into a subagent's frontmatter and also adds a Stop hook to the
+      main session settings, expecting both to fire when the subagent finishes. Evaluate this
+      design: explain what actually happens to each hook and recommend the correct events for (a)
+      reacting only when a specific subagent finishes from the main session, and (b) running cleanup
+      at the end of the subagent's own run.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a Stop hook declared in subagent frontmatter is automatically converted to
+            SubagentStop at runtime, and frontmatter hooks run only while that subagent is active.
+        - id: c2
+          text: >-
+            For reacting from the main session when a specific subagent finishes, recommends a
+            main-session SubagentStop hook matched by the agent-type name (and notes SubagentStart
+            for begin).
+        - id: c3
+          text: >-
+            Clarifies the main-session Stop hook fires for the main conversation stopping, not for
+            the subagent finishing, so the two hooks are not redundant.
+      referenceAnswer: >-
+        The two hooks are not redundant and do not both fire on subagent completion. A Stop hook
+        declared in a subagent's frontmatter is automatically converted to SubagentStop at runtime,
+        and frontmatter hooks only run while that subagent is active, so it fires when the
+        subagent's own run ends, which is the right place for (b) subagent-local cleanup. The
+        main-session Stop hook fires when the main conversation stops, not when the subagent
+        finishes. For (a) reacting from the main session when a specific subagent finishes, use a
+        main-session SubagentStop hook matched by the agent-type name (SubagentStart fires when it
+        begins). So: frontmatter Stop (auto - SubagentStop) for the subagent's own end, and a
+        main-session SubagentStop matcher for observing a named subagent from the parent.
+      passThreshold: 0.6
+    guidance: >-
+      Frontmatter Stop hooks are auto-converted to SubagentStop and run only while that subagent is
+      active. The main session's Stop hook is for the main conversation ending, not the subagent. To
+      observe a subagent from the parent, use main-session SubagentStart/SubagentStop matched by
+      agent-type name.
+  - id: s-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A CI script uses claude -p and launches a background subagent to run an integration suite,
+      expecting the JSON output to include the suite's result. A reviewer warns the background task
+      will be killed by the usual 5-second background grace and lost. Which evaluation is correct?
+    choices:
+      - id: a
+        text: >-
+          The reviewer is right: claude -p applies the same 5-second background grace to subagents,
+          so the integration suite's result is dropped after five seconds; foreground the task
+          instead.
+      - id: b
+        text: >-
+          The reviewer is wrong: in claude -p, background subagents are NOT subject to the 5-second
+          grace; the run waits for them up to a default 10-minute cap
+          (CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS).
+      - id: c
+        text: >-
+          The reviewer is right unless --output-format stream-json is set on the run; that streaming
+          output format is the one thing that disables the 5-second background grace for subagents.
+      - id: d
+        text: >-
+          The reviewer is wrong, but only because background subagents always auto-deny any
+          permission prompt and therefore exit almost instantly, putting a denial result into the
+          JSON output.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      In claude -p, background subagents are explicitly exempt from the 5-second background-shell
+      grace; the run waits for them so their result is included in the output, bounded by a default
+      10-minute ceiling that is configurable via CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS (0 disables
+      the cap). The output format does not control this, and the permission-prompt behavior is a
+      separate concern from the wait ceiling.

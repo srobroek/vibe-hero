@@ -1,0 +1,2524 @@
+# Topic: codex-mcp-and-tools (codex)
+# MCP support and tool integration in the Codex CLI — connecting servers and tool use.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: codex-mcp-and-tools
+class:
+  kind: tool
+  tool: codex
+title: Codex MCP & Tools
+summary: MCP support and tool integration in the Codex CLI — connecting servers and tool use.
+triggerSignals: []
+items:
+  - id: cmt-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: What does MCP stand for in the context of the Codex CLI?
+    choices:
+      - id: a
+        text: Model Context Protocol
+      - id: b
+        text: Managed Codex Plugins
+      - id: c
+        text: Multi-Channel Pipeline
+      - id: d
+        text: Model Configuration Profile
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      MCP is the Model Context Protocol, an open standard Codex supports for connecting to external
+      tools and servers. It is not a Codex-specific plugin system, a pipeline, or a config profile.
+  - id: cmt-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: Which Codex CLI command registers a new MCP server?
+    choices:
+      - id: a
+        text: codex add mcp
+      - id: b
+        text: codex mcp add
+      - id: c
+        text: codex install server
+      - id: d
+        text: codex server new
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Servers are registered with `codex mcp add <name>`. The `codex mcp` command group manages MCP
+      servers (add, list, get, remove, login/logout).
+  - id: cmt-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 127
+    type: multiple_choice
+    prompt: In which file does Codex store MCP server definitions when you edit configuration by hand?
+    choices:
+      - id: a
+        text: ~/.codex/mcp.json
+      - id: b
+        text: ~/.codex/servers.yaml
+      - id: c
+        text: ~/.codex/config.toml
+      - id: d
+        text: ~/.codexrc
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Codex configuration is TOML at `~/.codex/config.toml`, where MCP servers live under
+      `[mcp_servers.<id>]` tables. Codex config is TOML, not JSON or YAML.
+  - id: cmt-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: What is the TOML table header used to define an MCP server named "docs" in config.toml?
+    choices:
+      - id: a
+        text: '[servers.mcp.docs]'
+      - id: b
+        text: '[docs.mcp]'
+      - id: c
+        text: '[tools.docs]'
+      - id: d
+        text: '[mcp_servers.docs]'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Each MCP server is a table under the `mcp_servers` namespace, e.g. `[mcp_servers.docs]`. The
+      segment after the dot is the server's id.
+  - id: cmt-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 133
+    type: multiple_choice
+    prompt: Which two transports can a Codex MCP server use?
+    choices:
+      - id: a
+        text: STDIO (local process) and Streamable HTTP (remote URL)
+      - id: b
+        text: gRPC and WebSocket
+      - id: c
+        text: FTP and SSH
+      - id: d
+        text: GraphQL and REST
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex MCP servers are either STDIO (a local process launched via a command) or Streamable HTTP
+      (a remote server reached at a URL). These are the two transports the CLI supports.
+  - id: cmt-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: free_form
+    prompt: What does the `/mcp` slash command do inside the Codex interactive TUI?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that /mcp lists or shows the active/configured MCP servers
+        - id: c2
+          text: Places it in the Codex TUI (interactive session) context
+      referenceAnswer: >-
+        In the Codex interactive TUI, the `/mcp` slash command lists the active MCP servers
+        configured for the session, letting you see which external tool servers are connected.
+      passThreshold: 0.6
+    guidance: >-
+      `/mcp` is one of the built-in TUI slash commands; it surfaces the configured MCP servers so
+      you can confirm what tools are available in the current session.
+  - id: cmt-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 139
+    type: multiple_choice
+    prompt: For a STDIO MCP server, which config key specifies the executable Codex launches?
+    choices:
+      - id: a
+        text: url
+      - id: b
+        text: command
+      - id: c
+        text: binary
+      - id: d
+        text: launch
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A STDIO server is defined by `command` (the executable) plus optional `args` and `env`. A
+      `url` is used only for Streamable HTTP servers.
+  - id: cmt-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: Which config key supplies command-line arguments to a STDIO MCP server?
+    choices:
+      - id: a
+        text: params
+      - id: b
+        text: flags
+      - id: c
+        text: args
+      - id: d
+        text: argv_list
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `args` is an array of command-line arguments passed to the `command`. For example, `args =
+      ["-y", "@upstash/context7-mcp"]`.
+  - id: cmt-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: Which config key sets environment variables for a STDIO MCP server process?
+    choices:
+      - id: a
+        text: environment_table
+      - id: b
+        text: vars
+      - id: c
+        text: exports
+      - id: d
+        text: env
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `env` is the table of environment variables passed to the launched server process. It applies
+      to STDIO servers started by a `command`.
+  - id: cmt-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: For a Streamable HTTP MCP server, which config key holds the server address?
+    choices:
+      - id: a
+        text: url
+      - id: b
+        text: command
+      - id: c
+        text: endpoint_path
+      - id: d
+        text: host
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      An HTTP server is defined by `url`. STDIO servers instead use `command`/`args`/`env`; mixing
+      the two key sets is the common configuration mistake.
+  - id: cmt-100-ff-k
+    tier: 100
+    bloom: remember
+    difficulty: 151
+    type: free_form
+    prompt: Besides being an MCP client, what other MCP role can the Codex CLI itself play?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that Codex can run AS an MCP server
+        - id: c2
+          text: Notes this exposes Codex as a tool to other MCP clients/agents
+      referenceAnswer: >-
+        Codex can run as an MCP server itself (its MCP server mode, e.g. `codex mcp-server`),
+        exposing Codex as a tool that other MCP clients or agents can call. So Codex is both an MCP
+        client (consuming servers) and can be an MCP server.
+      passThreshold: 0.6
+    guidance: >-
+      MCP works in both directions for Codex: it consumes external servers and can be consumed as
+      one. The server mode lets another agent drive Codex over stdio.
+  - id: cmt-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 154
+    type: multiple_choice
+    prompt: Which command lists the MCP servers currently configured in Codex?
+    choices:
+      - id: a
+        text: codex list mcp
+      - id: b
+        text: codex mcp list
+      - id: c
+        text: codex mcp show-all
+      - id: d
+        text: codex servers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `codex mcp list` enumerates configured servers; it accepts `--json` for machine-readable
+      output. The verb follows the `mcp` group (codex mcp <verb>).
+  - id: cmt-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 157
+    type: multiple_choice
+    prompt: Which command removes a stored MCP server definition from Codex?
+    choices:
+      - id: a
+        text: codex mcp delete-server <name>
+      - id: b
+        text: codex rm mcp <name>
+      - id: c
+        text: codex mcp remove <name>
+      - id: d
+        text: codex mcp drop <name>
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `codex mcp remove <name>` deletes the server's stored definition. The `mcp` group also offers
+      `add`, `list`, `get`, and `login`/`logout`.
+  - id: cmt-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: >-
+      Name the two per-server config keys Codex provides to allow-list and deny-list individual MCP
+      tools.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names enabled_tools (the allow-list)
+        - id: c2
+          text: Names disabled_tools (the deny-list)
+      referenceAnswer: >-
+        `enabled_tools` is the allow-list (only the named tools are exposed) and `disabled_tools` is
+        the deny-list (the named tools are hidden). Both are per-server keys under the server's
+        table.
+      passThreshold: 0.6
+    guidance: >-
+      These keys let you restrict which tools a server exposes without removing the server. They sit
+      alongside the `enabled` boolean that turns a whole server on or off.
+  - id: cmt-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 163
+    type: multiple_choice
+    prompt: Which per-server boolean key turns an MCP server off without deleting its definition?
+    choices:
+      - id: a
+        text: active
+      - id: b
+        text: muted
+      - id: c
+        text: paused
+      - id: d
+        text: enabled
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Setting `enabled = false` disables a server while keeping its definition in config. To
+      restrict individual tools instead, use `enabled_tools`/`disabled_tools`.
+  - id: cmt-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: multiple_choice
+    prompt: >-
+      Which config key names the environment variable that holds a bearer token for an HTTP MCP
+      server?
+    choices:
+      - id: a
+        text: bearer_token_env_var
+      - id: b
+        text: token
+      - id: c
+        text: auth_header
+      - id: d
+        text: api_key
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `bearer_token_env_var` points at an environment variable that supplies the bearer token, so
+      the secret is not written into config.toml directly.
+  - id: cmt-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 169
+    type: multiple_choice
+    prompt: Which command performs an OAuth login for a Streamable HTTP MCP server in Codex?
+    choices:
+      - id: a
+        text: codex auth mcp <name>
+      - id: b
+        text: codex mcp login <name>
+      - id: c
+        text: codex login --mcp <name>
+      - id: d
+        text: codex mcp oauth <name>
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `codex mcp login <name>` runs the OAuth flow for an HTTP server; `codex mcp logout <name>`
+      clears stored credentials. This is separate from the account-level `codex login`.
+  - id: cmt-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: Name the two per-server timeout keys Codex uses for MCP servers and what each one bounds.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names startup_timeout_sec as the server initialization/startup bound
+        - id: c2
+          text: Names tool_timeout_sec as the per-tool-call execution bound
+      referenceAnswer: >-
+        `startup_timeout_sec` bounds how long Codex waits for the server to initialize at startup,
+        and `tool_timeout_sec` bounds how long an individual tool call may run before timing out.
+      passThreshold: 0.6
+    guidance: >-
+      These two keys protect Codex from servers that hang on launch or on a single call. Defaults
+      are around 10 seconds for startup and 60 seconds for tool execution.
+  - id: cmt-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: multiple_choice
+    prompt: Which Codex subcommand shows the stored configuration for a single named MCP server?
+    choices:
+      - id: a
+        text: codex mcp inspect <name>
+      - id: b
+        text: codex show mcp <name>
+      - id: c
+        text: codex mcp get <name>
+      - id: d
+        text: codex mcp describe <name>
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `codex mcp get <name>` prints one server's stored configuration. `codex mcp list` shows all
+      configured servers.
+  - id: cmt-100-mc-t
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: multiple_choice
+    prompt: >-
+      When you add a STDIO MCP server on the command line, what separates Codex flags from the
+      server's launch command?
+    choices:
+      - id: a
+        text: A pipe (|) character
+      - id: b
+        text: The keyword "then"
+      - id: c
+        text: A semicolon (;)
+      - id: d
+        text: A double dash (--) before the server command
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The form is `codex mcp add <name> [--env VAR=VAL] -- <command> [args...]`; everything after
+      `--` is the server's launch command, so Codex does not try to parse it as its own flags.
+  - id: cmt-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: >-
+      Why does Codex use `bearer_token_env_var` (an env-var name) instead of letting you write the
+      token directly in config.toml?
+    choices:
+      - id: a
+        text: >-
+          To keep the secret out of the config file, reading it from the environment at runtime
+          instead
+      - id: b
+        text: Because TOML cannot store string values longer than 32 characters
+      - id: c
+        text: Because bearer tokens must be base64-encoded and env vars do that automatically
+      - id: d
+        text: Because config.toml is read-only and cannot hold credentials
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Storing the env-var name rather than the literal token keeps credentials out of a file that
+      may be shared or committed. None of the other reasons reflect how TOML or tokens actually
+      work.
+  - id: cmt-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: How do `enabled_tools` and `disabled_tools` differ in intent for an MCP server?
+    choices:
+      - id: a
+        text: They are aliases for the same setting, kept for backward compatibility
+      - id: b
+        text: >-
+          enabled_tools is an allow-list (only those tools are exposed); disabled_tools is a
+          deny-list (those tools are hidden, the rest stay)
+      - id: c
+        text: enabled_tools applies to STDIO servers and disabled_tools applies to HTTP servers
+      - id: d
+        text: enabled_tools controls approvals while disabled_tools controls the sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An allow-list narrows exposure to a chosen set; a deny-list hides specific tools while leaving
+      the rest available. They are not transport-specific nor tied to approvals or sandbox.
+  - id: cmt-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: multiple_choice
+    prompt: What is the practical difference between a STDIO MCP server and a Streamable HTTP MCP server?
+    choices:
+      - id: a
+        text: STDIO is encrypted by default while HTTP is plaintext only
+      - id: b
+        text: STDIO supports tools while HTTP supports only resources
+      - id: c
+        text: >-
+          STDIO launches a local process Codex talks to over stdin/stdout; HTTP connects to a server
+          reachable at a URL, possibly remote
+      - id: d
+        text: STDIO requires an API key while HTTP never needs authentication
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The distinction is transport and locality: STDIO spawns a local subprocess; HTTP reaches a
+      (possibly remote) endpoint via `url`, optionally with bearer-token or OAuth auth.
+  - id: cmt-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: free_form
+    prompt: >-
+      Explain why Codex being able to run AS an MCP server (not just consume servers) is useful for
+      multi-agent setups.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains that other MCP clients/agents can call Codex as a tool
+        - id: c2
+          text: >-
+            Gives a concrete benefit (e.g. composing Codex into a larger agent, reuse of its coding
+            ability)
+      referenceAnswer: >-
+        Running Codex as an MCP server exposes it as a callable tool to any MCP client. Another
+        agent or orchestrator can then delegate coding work to Codex over stdio, composing Codex's
+        coding ability into a larger workflow without re-implementing it. This bidirectional
+        capability lets Codex be both an orchestrator (consuming servers) and a worker (consumed by
+        others).
+      passThreshold: 0.6
+    guidance: >-
+      The value is composition: one tool that is both client and server can sit anywhere in an agent
+      graph, so Codex can drive tools and also be driven.
+  - id: cmt-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: multiple_choice
+    prompt: Why does `codex mcp add` accept a `--` separator before the server command?
+    choices:
+      - id: a
+        text: Because the server command must always be base64-encoded after the dashes
+      - id: b
+        text: To indicate the server should run as a background daemon
+      - id: c
+        text: Because the dashes mark the command as an HTTP URL rather than STDIO
+      - id: d
+        text: >-
+          So Codex stops parsing its own flags and passes everything after it verbatim to the
+          server's launch command
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `--` is a standard CLI convention: it ends Codex's own option parsing so a server command like
+      `npx -y some-mcp --verbose` is forwarded intact instead of being misread as Codex flags.
+  - id: cmt-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Why might you set `tool_timeout_sec` higher for one MCP server but not change
+      `startup_timeout_sec`?
+    choices:
+      - id: a
+        text: >-
+          Because that server's tool calls do slow work (e.g. long queries) but it still initializes
+          quickly
+      - id: b
+        text: Because startup_timeout_sec has no effect on STDIO servers
+      - id: c
+        text: Because tool_timeout_sec controls the network and startup_timeout_sec controls the CPU
+      - id: d
+        text: Because raising startup_timeout_sec would disable the sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The two timeouts bound different phases: launch versus per-call execution. A server can start
+      fast yet have individual tool calls that legitimately take a while, so only `tool_timeout_sec`
+      needs raising.
+  - id: cmt-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      A teammate says "MCP only flows one direction: Codex calls servers." Explain why that is
+      incomplete.
+    rubric:
+      criteria:
+        - id: c1
+          text: States Codex is an MCP client (consumes external servers)
+        - id: c2
+          text: States Codex can also run as an MCP server (consumed by other clients)
+      referenceAnswer: >-
+        It is incomplete because Codex plays both MCP roles. As a client it consumes external
+        servers' tools; but Codex can also run as an MCP server itself, in which case other MCP
+        clients call Codex as a tool. So MCP integration is bidirectional for Codex.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception ignores Codex's server mode. Recognizing both roles is key to understanding
+      how Codex fits into multi-agent architectures.
+  - id: cmt-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: Why does Codex put MCP servers in `config.toml` rather than a separate JSON file?
+    choices:
+      - id: a
+        text: Because JSON cannot represent arrays of arguments
+      - id: b
+        text: >-
+          Codex's entire configuration is TOML, so MCP servers are just `[mcp_servers.<id>]` tables
+          alongside other settings
+      - id: c
+        text: Because TOML is required by the Model Context Protocol specification
+      - id: d
+        text: Because config.toml is the only file Codex can read at startup
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Codex config is uniformly TOML, so MCP servers live as tables in the same file as model and
+      sandbox settings. The MCP spec itself does not mandate a config format.
+  - id: cmt-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: How does the `enabled` key differ from `disabled_tools` for an MCP server?
+    choices:
+      - id: a
+        text: They are the same setting expressed two ways
+      - id: b
+        text: enabled affects HTTP servers and disabled_tools affects STDIO servers
+      - id: c
+        text: >-
+          enabled toggles the whole server on/off; disabled_tools hides only specific tools while
+          the server stays active
+      - id: d
+        text: enabled controls authentication; disabled_tools controls timeouts
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `enabled = false` removes the entire server from the session; `disabled_tools` is
+      finer-grained, suppressing named tools while keeping the server and its other tools available.
+  - id: cmt-200-ff-j
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: free_form
+    prompt: >-
+      Explain how Codex authenticates to a remote HTTP MCP server using `bearer_token_env_var`, and
+      why that indirection exists.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the key names an env var, and Codex reads the token from that env var at
+            runtime
+        - id: c2
+          text: Explains the benefit (secret stays out of config.toml / not committed)
+      referenceAnswer: >-
+        `bearer_token_env_var` stores the NAME of an environment variable rather than the token
+        itself. At runtime Codex reads that env var and sends its value as the bearer token in the
+        Authorization header. The indirection keeps the actual secret out of config.toml, so the
+        file can be shared or version-controlled without leaking credentials.
+      passThreshold: 0.6
+    guidance: >-
+      The pattern separates configuration (which env var) from the secret (the value), a common way
+      to avoid committing tokens.
+  - id: cmt-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: What is the role of `http_headers` (and `env_http_headers`) on an HTTP MCP server entry?
+    choices:
+      - id: a
+        text: They define which tools the server may expose
+      - id: b
+        text: They set the sandbox mode for the server process
+      - id: c
+        text: They control how Codex renders the server's output in the TUI
+      - id: d
+        text: >-
+          They attach custom request headers to the server connection, with env_http_headers
+          sourcing values from environment variables
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `http_headers` adds static headers to requests; `env_http_headers` lets header values be
+      pulled from environment variables (handy for secrets). Neither affects tool exposure or the
+      sandbox.
+  - id: cmt-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: Why does adding `--json` to `codex mcp list` matter for automation?
+    choices:
+      - id: a
+        text: >-
+          It emits machine-readable output so scripts can parse the server list reliably instead of
+          scraping human text
+      - id: b
+        text: It encrypts the output before printing
+      - id: c
+        text: It forces Codex to re-authenticate every server first
+      - id: d
+        text: It limits the list to only HTTP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `--json` produces structured output suited to scripts and CI, where parsing free-form text is
+      brittle. It does not change which servers are shown or their auth.
+  - id: cmt-200-ff-m
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Compare configuring an MCP server via `codex mcp add` versus editing `config.toml` directly.
+      When would each be preferable?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes codex mcp add is convenient/interactive and writes the table for you (good for
+            quick or scripted setup)
+        - id: c2
+          text: >-
+            Notes editing config.toml gives full control over all keys and is good for version
+            control / complex setups
+      referenceAnswer: >-
+        `codex mcp add` is fast and ergonomic: it validates input and writes the
+        `[mcp_servers.<id>]` table for you, good for quick additions or scripting. Editing
+        config.toml directly is better when you need full control over every key (timeouts, header
+        maps, enabled_tools), want to keep the config under version control, or are templating many
+        servers at once. Both end up writing the same TOML table.
+      passThreshold: 0.6
+    guidance: >-
+      They are two front ends to the same data. The CLI optimizes for convenience; hand-editing
+      optimizes for completeness and reproducibility.
+  - id: cmt-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: What does `codex mcp-server` (Codex's server mode) expose to its caller?
+    choices:
+      - id: a
+        text: A web dashboard listing all installed MCP servers
+      - id: b
+        text: Codex itself as an MCP tool, callable over stdio by another MCP client
+      - id: c
+        text: A proxy that forwards requests to OpenAI's hosted API
+      - id: d
+        text: A REST endpoint for editing config.toml remotely
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The server mode turns Codex into an MCP server over stdio, so another agent can call Codex as
+      a tool. It is not a dashboard, API proxy, or config editor.
+  - id: cmt-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: Why is MCP configuration shared between the Codex CLI and the Codex IDE extension?
+    choices:
+      - id: a
+        text: Because the IDE extension cannot define its own servers at all
+      - id: b
+        text: Because MCP servers are stored in the cloud and synced per account
+      - id: c
+        text: Both read the same config.toml, so a server added once is available in both surfaces
+      - id: d
+        text: Because the CLI proxies all IDE requests through itself
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Sharing the same on-disk config means one definition serves both the CLI and IDE extension, so
+      you do not maintain two server lists.
+  - id: cmt-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: free_form
+    prompt: Explain the difference between `codex mcp login <name>` and the account-level `codex login`.
+    rubric:
+      criteria:
+        - id: c1
+          text: codex login authenticates Codex itself (ChatGPT sign-in or API key) for model access
+        - id: c2
+          text: codex mcp login <name> runs OAuth for a specific HTTP MCP server connection
+      referenceAnswer: >-
+        `codex login` authenticates the Codex CLI to OpenAI for model access (Sign in with ChatGPT
+        or an API key). `codex mcp login <name>` is scoped to one MCP server: it runs the OAuth flow
+        for that specific Streamable HTTP server so Codex can call its tools. They authenticate
+        different things and are independent.
+      passThreshold: 0.6
+    guidance: >-
+      One is about reaching the model provider; the other is about reaching a particular tool
+      server. Confusing them leads to "why can't Codex see this server's tools" puzzles.
+  - id: cmt-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: What is the relationship between an MCP server entry's `command` and `url` keys?
+    choices:
+      - id: a
+        text: command is required and url is an optional fallback
+      - id: b
+        text: Both are required for every server
+      - id: c
+        text: url overrides command when both are present, switching to a hybrid transport
+      - id: d
+        text: They are mutually exclusive — command defines a STDIO server, url defines an HTTP server
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A server is either STDIO (`command`) or HTTP (`url`); you choose one transport per entry. They
+      do not combine into a hybrid.
+  - id: cmt-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: multiple_choice
+    prompt: >-
+      Why would you set `enabled_tools` rather than relying on the model to simply ignore tools it
+      should not use?
+    choices:
+      - id: a
+        text: >-
+          enabled_tools structurally removes other tools from what the model can see, which is more
+          reliable than trusting it not to call them
+      - id: b
+        text: Because the model cannot read tool descriptions otherwise
+      - id: c
+        text: Because enabled_tools speeds up server startup
+      - id: d
+        text: Because it is required for any HTTP server to connect
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      An allow-list is a guardrail enforced by configuration, not by the model's judgment. It
+      shrinks the tool surface the model is offered, reducing both risk and prompt clutter.
+  - id: cmt-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: free_form
+    prompt: >-
+      Why does Codex distinguish `startup_timeout_sec` from `tool_timeout_sec` instead of using one
+      global MCP timeout?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains the two bound different phases (server initialization vs per-tool-call
+            execution)
+        - id: c2
+          text: >-
+            Notes the phases have different normal durations, so one value would mis-tune one of
+            them
+      referenceAnswer: >-
+        The two timeouts bound different phases of an MCP server's life: `startup_timeout_sec`
+        covers one-time initialization, while `tool_timeout_sec` covers each individual tool call.
+        These have very different expected durations — startup is usually quick, but a tool call may
+        do heavy work — so a single global value would either kill slow tools or wait too long for a
+        dead server. Separate knobs let you tune each independently.
+      passThreshold: 0.6
+    guidance: >-
+      Separating launch from execution avoids the false choice between failing fast on startup and
+      being patient with long-running tools.
+  - id: cmt-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: >-
+      After running `codex mcp add docs -- npx -y @scope/docs-mcp`, where does that definition end
+      up?
+    choices:
+      - id: a
+        text: In a hidden ~/.codex/mcp.lock binary cache only
+      - id: b
+        text: As an [mcp_servers.docs] table written into ~/.codex/config.toml
+      - id: c
+        text: Uploaded to your OpenAI account and stored server-side
+      - id: d
+        text: In the current shell's environment, lost when the shell exits
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `codex mcp add` persists the server as a `[mcp_servers.docs]` table in config.toml, so it is
+      available across sessions and to the IDE extension that reads the same file.
+  - id: cmt-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You want Codex to use a local MCP server launched with `npx -y @acme/search-mcp`. Which
+      command registers it under the name "search"?
+    choices:
+      - id: a
+        text: codex mcp add search -- npx -y @acme/search-mcp
+      - id: b
+        text: codex mcp add --url npx -y @acme/search-mcp search
+      - id: c
+        text: codex add search npx -y @acme/search-mcp
+      - id: d
+        text: codex mcp search = "npx -y @acme/search-mcp"
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The name comes first, then `--`, then the launch command. A local subprocess is STDIO, so no
+      `--url` is involved.
+  - id: cmt-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      Write the config.toml entry for an HTTP MCP server "api" at https://mcp.acme.dev whose token
+      is in the env var ACME_TOKEN. Which snippet is correct?
+    choices:
+      - id: a
+        text: |
+          [mcp_servers.api]
+          command = "https://mcp.acme.dev"
+          token = "ACME_TOKEN"
+      - id: b
+        text: |
+          [mcp_servers.api]
+          url = "https://mcp.acme.dev"
+          bearer_token_env_var = "ACME_TOKEN"
+      - id: c
+        text: |
+          [api]
+          mcp_url = "https://mcp.acme.dev"
+          bearer = "$ACME_TOKEN"
+      - id: d
+        text: |
+          [mcp.api]
+          endpoint = "https://mcp.acme.dev"
+          auth_env = "ACME_TOKEN"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An HTTP server uses `url`; the token is referenced by env-var NAME via `bearer_token_env_var`.
+      The table header is `[mcp_servers.api]`.
+  - id: cmt-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      A server exposes 12 tools but you only want Codex to use `search` and `fetch`. Which config is
+      the cleanest way to enforce that?
+    choices:
+      - id: a
+        text: disabled_tools = ["search", "fetch"]
+      - id: b
+        text: enabled = ["search", "fetch"]
+      - id: c
+        text: enabled_tools = ["search", "fetch"]
+      - id: d
+        text: tools = "search,fetch"
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      An allow-list (`enabled_tools`) is cleanest when you want only a couple of tools. Using
+      `disabled_tools` would require listing the other ten; `enabled` is a server-level boolean.
+  - id: cmt-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: free_form
+    prompt: >-
+      You added an MCP server but Codex shows no tools from it. Describe the first checks you would
+      run using Codex's own commands and the TUI.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses /mcp in the TUI (or codex mcp list) to confirm the server is connected/active
+        - id: c2
+          text: >-
+            Uses codex mcp get <name> to inspect the stored config (command/url, enabled,
+            enabled_tools/disabled_tools)
+      referenceAnswer: >-
+        First, run `/mcp` in the TUI (or `codex mcp list`) to see whether the server appears and is
+        connected. Then run `codex mcp get <name>` to inspect its stored config: confirm `enabled`
+        is not false, that `enabled_tools`/`disabled_tools` are not filtering everything out, and
+        that the `command`/`url` is correct. If it is an HTTP server, verify auth (bearer token env
+        var set, or run `codex mcp login`).
+      passThreshold: 0.6
+    guidance: >-
+      Start by confirming presence (/mcp, list), then inspect the definition (get), then check the
+      tool filters and auth. This narrows "no tools" to connection vs filtering vs auth quickly.
+  - id: cmt-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      Another agent needs to call Codex as a tool over stdio. Which command should that agent launch
+      as its MCP server process?
+    choices:
+      - id: a
+        text: codex exec --as-mcp
+      - id: b
+        text: codex serve --http
+      - id: c
+        text: codex mcp add codex
+      - id: d
+        text: codex mcp-server
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `codex mcp-server` runs Codex as an MCP server over stdio, which is exactly what a parent
+      agent spawns to consume Codex as a tool.
+  - id: cmt-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      An MCP server has one tool that takes ~90 seconds to run, and Codex keeps aborting it. Which
+      single per-server key should you raise?
+    choices:
+      - id: a
+        text: tool_timeout_sec
+      - id: b
+        text: startup_timeout_sec
+      - id: c
+        text: project_doc_max_bytes
+      - id: d
+        text: model_reasoning_effort
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A per-call abort is a `tool_timeout_sec` (default ~60s) issue, not startup. The other keys are
+      unrelated (doc size, model reasoning).
+  - id: cmt-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      You want to script, in CI, a check that lists configured MCP servers and fails if a server
+      named "github" is missing. Sketch the approach using Codex commands.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses codex mcp list --json for machine-readable output
+        - id: c2
+          text: Parses the JSON (e.g. with jq) and exits non-zero if "github" is absent
+      referenceAnswer: >-
+        Run `codex mcp list --json` to get structured output, pipe it to a parser such as `jq` to
+        test whether an entry with id "github" exists, and exit non-zero if it does not. For
+        example: `codex mcp list --json | jq -e '.[] | select(.name=="github")' >/dev/null || exit
+        1`. The `--json` flag is what makes this robust versus scraping human text.
+      passThreshold: 0.6
+    guidance: >-
+      The key moves are: machine-readable output (`--json`), structured parse, and an explicit
+      failing exit code so CI catches the missing server.
+  - id: cmt-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      You added an HTTP MCP server that uses OAuth. You ran `codex mcp add` but tools still fail
+      with an auth error. What is the missing step?
+    choices:
+      - id: a
+        text: Re-run codex login to refresh your ChatGPT session
+      - id: b
+        text: Run codex mcp login <name> to complete the OAuth flow for that server
+      - id: c
+        text: Switch the server to STDIO transport
+      - id: d
+        text: Set danger-full-access sandbox mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      OAuth HTTP servers need `codex mcp login <name>` to authorize. Account login, transport, and
+      sandbox are unrelated to a per-server OAuth grant.
+  - id: cmt-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You want to pass `API_BASE=https://internal` to a STDIO MCP server at launch via the CLI.
+      Which `codex mcp add` form is correct?
+    choices:
+      - id: a
+        text: codex mcp add svc -- npx -y @acme/svc-mcp API_BASE=https://internal
+      - id: b
+        text: codex mcp add svc --header API_BASE=https://internal -- npx @acme/svc-mcp
+      - id: c
+        text: codex mcp add svc --env API_BASE=https://internal -- npx -y @acme/svc-mcp
+      - id: d
+        text: API_BASE=https://internal codex mcp add svc
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `--env KEY=VALUE` (before the `--`) is the documented way to pass env vars to a STDIO server.
+      Args after `--` become the server's CLI args, not env vars; `--header` is for HTTP headers.
+  - id: cmt-300-ff-j
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      You maintain config.toml in git for a team. Describe how to add a private HTTP MCP server so
+      the repo stays free of secrets but every teammate can connect.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Defines the server with url and bearer_token_env_var (env-var name, not the token) in
+            config.toml
+        - id: c2
+          text: >-
+            Each teammate sets the named env var locally (e.g. in their shell/secret store), keeping
+            the secret out of git
+      referenceAnswer: >-
+        In config.toml define `[mcp_servers.<id>]` with `url` and `bearer_token_env_var =
+        "TEAM_TOKEN"` — store only the env-var NAME, never the token. Commit that. Each teammate
+        then exports `TEAM_TOKEN` locally (shell profile, direnv, or a secret manager). Codex reads
+        the value at runtime, so the committed file carries no secret while everyone can still
+        authenticate.
+      passThreshold: 0.6
+    guidance: >-
+      The pattern decouples configuration (committed) from secrets (per-machine env), which is
+      exactly what `bearer_token_env_var` enables.
+  - id: cmt-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You temporarily want to stop using an MCP server but keep its definition for later. What is
+      the least destructive change?
+    choices:
+      - id: a
+        text: Run codex mcp remove <name>
+      - id: b
+        text: Delete the entire [mcp_servers.<name>] table
+      - id: c
+        text: Set disabled_tools to an empty list
+      - id: d
+        text: Set enabled = false on its table in config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `enabled = false` disables the server while preserving its config. Removing or deleting the
+      table loses the definition; an empty `disabled_tools` disables nothing.
+  - id: cmt-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      Two of a server's tools are dangerous (`delete_repo`, `force_push`) but you want the other
+      ten. Which config is most appropriate?
+    choices:
+      - id: a
+        text: disabled_tools = ["delete_repo", "force_push"]
+      - id: b
+        text: enabled_tools = ["delete_repo", "force_push"]
+      - id: c
+        text: enabled = false
+      - id: d
+        text: Remove the server entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A deny-list (`disabled_tools`) hides just the two risky tools and keeps the rest. An
+      allow-list would force you to enumerate all ten you want; disabling the server loses
+      everything.
+  - id: cmt-300-ff-m
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >-
+      Show the config.toml block for a STDIO MCP server "db" that runs `uvx db-mcp`, passes `PG_URL`
+      from the environment, and limits Codex to the single tool `query`.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses [mcp_servers.db] with command = "uvx" and args = ["db-mcp"]
+        - id: c2
+          text: Includes env with PG_URL and enabled_tools = ["query"]
+      referenceAnswer: |
+        [mcp_servers.db]
+        command = "uvx"
+        args = ["db-mcp"]
+        env = { PG_URL = "postgres://localhost/app" }
+        enabled_tools = ["query"]
+      passThreshold: 0.6
+    guidance: >-
+      STDIO uses command/args/env; `enabled_tools = ["query"]` is the allow-list that hides every
+      other tool the server exposes.
+  - id: cmt-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >-
+      You want the same MCP server available in both the Codex CLI and the Codex IDE extension with
+      one definition. What do you do?
+    choices:
+      - id: a
+        text: Define it twice, once per surface, in separate files
+      - id: b
+        text: Nothing extra — define it once in config.toml, which both surfaces read
+      - id: c
+        text: Register it in the cloud via codex mcp publish
+      - id: d
+        text: Export it from the CLI and import it into the IDE manually
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      MCP config is shared between the CLI and IDE extension via the same config.toml, so one
+      definition covers both.
+  - id: cmt-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: free_form
+    prompt: >-
+      A STDIO MCP server fails to come up because it loads a large index at launch and is killed
+      before it is ready. What single config change fixes this, and why is it the right one?
+    rubric:
+      criteria:
+        - id: c1
+          text: Raises startup_timeout_sec (not tool_timeout_sec)
+        - id: c2
+          text: Explains the failure is during initialization, which startup_timeout_sec bounds
+      referenceAnswer: >-
+        Raise `startup_timeout_sec` for that server. The failure happens during initialization (the
+        server is still loading its index when Codex's default ~10s startup window expires), and
+        `startup_timeout_sec` is precisely the bound on how long Codex waits for the server to
+        become ready. `tool_timeout_sec` would not help because no tool call has started yet.
+      passThreshold: 0.6
+    guidance: >-
+      Diagnosing the phase (launch vs call) points to the right timeout. Startup failures map to
+      `startup_timeout_sec`.
+  - id: cmt-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You added an MCP server with `codex mcp add` and want to confirm exactly what got written for
+      it. Which command shows just that server's stored config?
+    choices:
+      - id: a
+        text: codex mcp list --all
+      - id: b
+        text: codex config dump
+      - id: c
+        text: codex mcp get <name>
+      - id: d
+        text: codex mcp verify <name>
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `codex mcp get <name>` prints the single server's stored configuration so you can verify the
+      command/url, env, and tool filters that were written.
+  - id: cmt-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      A teammate pasted a literal API token into `bearer_token_env_var = "sk-abc123..."`. Why will
+      auth fail, and what is the fix?
+    choices:
+      - id: a
+        text: Tokens must be base64-encoded first; encode it in place
+      - id: b
+        text: The key should be `token` not `bearer_token_env_var`; rename it
+      - id: c
+        text: HTTP servers cannot use bearer tokens; switch to STDIO
+      - id: d
+        text: >-
+          That key expects an env-var NAME, not the token; set it to a name like API_TOKEN and
+          export the token in that env var
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      `bearer_token_env_var` holds the NAME of an environment variable. Codex would look up an env
+      var literally called "sk-abc123...", find nothing, and fail. Use a name and export the real
+      value.
+  - id: cmt-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: free_form
+    prompt: >-
+      Describe a minimal end-to-end flow to add a remote OAuth-protected MCP server "jira" and
+      confirm its tools are usable, using only Codex commands.
+    rubric:
+      criteria:
+        - id: c1
+          text: Adds the server with its url (codex mcp add jira ... or edits config.toml with url)
+        - id: c2
+          text: >-
+            Runs codex mcp login jira for OAuth, then confirms with /mcp or codex mcp list (and
+            codex mcp get for detail)
+      referenceAnswer: >-
+        Add the HTTP server with its url: e.g. `codex mcp add jira --url https://mcp.jira.example`
+        (or add the `[mcp_servers.jira]` table with `url`). Then authorize with `codex mcp login
+        jira` to complete the OAuth flow. Finally confirm it is connected with `/mcp` in the TUI or
+        `codex mcp list`, and inspect with `codex mcp get jira` if a tool is missing.
+      passThreshold: 0.6
+    guidance: >-
+      The flow is add (url) -> login (OAuth) -> verify (/mcp or list). Skipping login is the usual
+      reason an OAuth server shows no tools.
+  - id: cmt-300-mc-s
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: multiple_choice
+    prompt: >-
+      In CI you must invoke Codex non-interactively to run a task that relies on a configured MCP
+      server. Which entry point should the pipeline call?
+    choices:
+      - id: a
+        text: codex exec "..."
+      - id: b
+        text: codex (the interactive TUI) with a piped heredoc
+      - id: c
+        text: codex resume --last
+      - id: d
+        text: codex mcp-server
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      `codex exec` is the non-interactive automation entry point that streams to stdout; it still
+      uses the MCP servers in config.toml. The bare TUI is interactive, resume continues a session,
+      and `codex mcp-server` makes Codex a server rather than running a task.
+  - id: cmt-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      You want a single config.toml-stored token sent as a custom header `X-Api-Key` to an HTTP MCP
+      server, with the value coming from an env var. Which key do you use?
+    choices:
+      - id: a
+        text: bearer_token_env_var
+      - id: b
+        text: env_http_headers (mapping X-Api-Key to the env var name)
+      - id: c
+        text: args
+      - id: d
+        text: enabled_tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `env_http_headers` maps a header name to an env-var-sourced value, ideal for a
+      non-Authorization custom header like `X-Api-Key`. `bearer_token_env_var` specifically sets a
+      bearer Authorization.
+  - id: cmt-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A server is configured with BOTH `enabled_tools = ["search"]` and `disabled_tools = ["search",
+      "write"]`. What is the safest assumption about which tools are exposed, and why?
+    choices:
+      - id: a
+        text: >-
+          Treat it as contradictory and assume "search" is hidden — a deny entry overriding an allow
+          is the conservative reading, so verify with codex mcp get
+      - id: b
+        text: All tools are exposed because enabled_tools wins automatically
+      - id: c
+        text: Only "write" is exposed
+      - id: d
+        text: The server fails to load entirely and no servers work
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Overlapping allow/deny is a config smell. The conservative reading is that a deny suppresses
+      the tool even if also allowed, so "search" ends up hidden — but the right move is to remove
+      the overlap and confirm with `codex mcp get` rather than guess.
+  - id: cmt-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: multiple_choice
+    prompt: >-
+      Codex connects to an HTTP MCP server, but every tool call returns after exactly ~60s with a
+      timeout, while the server logs show the work completing at ~75s. What is the root cause?
+    choices:
+      - id: a
+        text: startup_timeout_sec is too low
+      - id: b
+        text: >-
+          tool_timeout_sec is at its ~60s default and is shorter than the tool's real runtime; raise
+          it for this server
+      - id: c
+        text: The bearer token expired mid-call
+      - id: d
+        text: The sandbox is blocking the network
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A consistent ~60s cutoff that precedes server completion points squarely at the default
+      `tool_timeout_sec`. Startup, auth, and sandbox would fail differently (no connection, 401, or
+      network-denied), not a clean post-60s abort.
+  - id: cmt-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: free_form
+    prompt: >-
+      A teammate reports that adding a new STDIO MCP server "broke all the others — none load now."
+      Walk through how you would isolate whether the new server is the cause and what config-level
+      issue could cascade.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes a malformed TOML table (e.g. syntax error in the new [mcp_servers.x] block) can
+            break parsing of the whole config
+        - id: c2
+          text: >-
+            Describes isolating by disabling/removing the new server (enabled=false or comment it
+            out) and re-running, or using codex mcp list to see what loads
+      referenceAnswer: >-
+        First suspect a TOML parse error: a malformed `[mcp_servers.new]` table (bad quoting, a
+        stray bracket, duplicate key) can make the whole config.toml fail to parse, which would
+        knock out every server, not just the new one. Isolate by setting `enabled = false` on the
+        new server (or commenting the block out) and re-running `codex mcp list`; if the others
+        return, the new block was the culprit. Then fix its TOML and re-add. This separates "this
+        server is broken" from "this server broke the file."
+      passThreshold: 0.6
+    guidance: >-
+      The cascade clue (all servers fail) points to a file-level parse problem rather than a single
+      server's connectivity. Bisecting via enable/disable confirms it.
+  - id: cmt-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      You configured `bearer_token_env_var = "API_TOKEN"` and exported API_TOKEN, yet the HTTP
+      server returns 401. The same token works via curl. What is the most likely Codex-side cause?
+    choices:
+      - id: a
+        text: Codex always strips the Authorization header for security
+      - id: b
+        text: bearer_token_env_var only works for STDIO servers
+      - id: c
+        text: >-
+          The env var is set in a different shell/session than the one Codex runs in, so Codex sees
+          no value to send
+      - id: d
+        text: The token must also be listed in enabled_tools
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      If curl works but Codex gets 401, Codex most likely is not seeing the env var (set in another
+      shell, not exported, or not present in the launching environment). Codex does send the header;
+      the key is HTTP-specific; and tokens are unrelated to tool allow-lists.
+  - id: cmt-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      Two MCP servers each expose a tool named `search`. How should you reason about the resulting
+      tool namespace, and what is the cleanest mitigation?
+    choices:
+      - id: a
+        text: The second server silently overwrites the first, which is fine
+      - id: b
+        text: Codex refuses to start with any duplicate tool names anywhere
+      - id: c
+        text: You must merge the two servers into one before either works
+      - id: d
+        text: >-
+          Tools are scoped under their server, but ambiguous names invite confusion — use
+          enabled_tools/disabled_tools to expose only one server's search, or rename at the server
+          level
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Tools belong to their server, so collisions are about clarity for the model, not hard
+      failures. The clean fix is to narrow exposure (allow/deny lists) so only the intended `search`
+      is offered.
+  - id: cmt-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: >-
+      Compare the blast radius of exposing a write-capable MCP server to Codex under the Auto preset
+      (workspace-write + on-request) versus running Codex with --yolo. Focus on how MCP tool calls
+      are governed in each case.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes that under Auto, approvals/sandbox still gate sensitive actions, so MCP-driven
+            side effects can be paused for escalation
+        - id: c2
+          text: >-
+            Notes that --yolo (dangerously-bypass-approvals-and-sandbox) removes both gates, so MCP
+            tools run with full unsandboxed access and no prompts
+      referenceAnswer: >-
+        Under the Auto preset, the workspace-write sandbox plus on-request approvals still govern
+        what runs: actions outside the workspace or network use can trigger an approval pause, so an
+        MCP-driven side effect is not unconditionally trusted. Under `--yolo`
+        (`--dangerously-bypass-approvals-and-sandbox`), BOTH gates are off — MCP tool calls execute
+        with full system access and no approval prompts. So the blast radius of a misbehaving or
+        compromised MCP server is far larger under --yolo: it can touch anything the user can,
+        whereas Auto contains it and surfaces escalations.
+      passThreshold: 0.6
+    guidance: >-
+      The key insight is that approval/sandbox policy still wraps MCP tool execution; --yolo removes
+      that wrapper entirely, which is why it is dangerous with third-party tool servers.
+  - id: cmt-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      You set `enabled_tools = []` (empty list) on a server expecting "no restriction." Tools
+      vanish. Why?
+    choices:
+      - id: a
+        text: >-
+          An empty allow-list means "allow exactly these (none)", so it hides every tool; to impose
+          no restriction, omit the key entirely
+      - id: b
+        text: Empty lists are parsed as true, enabling everything, so this is a Codex bug
+      - id: c
+        text: enabled_tools = [] disables the whole server like enabled = false
+      - id: d
+        text: It silently falls back to disabled_tools
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      An allow-list is exhaustive: present-but-empty allows nothing. "No restriction" means leaving
+      the key out, not setting it to an empty list — a classic allow-list footgun.
+  - id: cmt-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      A teammate exposes Codex itself via `codex mcp-server` to a parent agent AND that same Codex
+      instance has 8 MCP servers configured. What subtle risk does this layering introduce?
+    choices:
+      - id: a
+        text: Codex cannot be both a server and a client, so it crashes
+      - id: b
+        text: >-
+          The parent agent effectively gains transitive access to all 8 downstream tools through
+          Codex, expanding the trust boundary beyond what the parent's own config shows
+      - id: c
+        text: The 8 servers are automatically disabled while in server mode
+      - id: d
+        text: MCP forbids more than one hop, so the parent sees nothing
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Chaining Codex-as-server in front of its own clients creates a transitive tool surface: the
+      parent's effective capabilities now include Codex's downstream servers, which is easy to miss
+      when auditing only the parent's config.
+  - id: cmt-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: free_form
+    prompt: >-
+      `codex mcp list` shows a server as configured, but `/mcp` in a running session does not list
+      it as active. Enumerate the distinct causes that produce "configured but not active."
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Lists at least two of these: enabled=false, failed startup (bad command/url) or
+            startup_timeout, auth not completed (OAuth/bearer), session started before the config
+            change
+        - id: c2
+          text: >-
+            Distinguishes "stored in config" (list) from "successfully connected this session"
+            (/mcp)
+      referenceAnswer: >-
+        `codex mcp list` reflects what is stored in config.toml; `/mcp` reflects what actually
+        connected in this session. Causes of the gap include: `enabled = false`; the server failed
+        to launch (bad command/args or unreachable url) or exceeded `startup_timeout_sec`; auth was
+        not completed (no bearer token in the env var, or `codex mcp login` not run for an OAuth
+        server); or the session was started before the config was edited and needs a restart/reload.
+        Each leaves the definition present but the live connection absent.
+      passThreshold: 0.6
+    guidance: >-
+      The split is stored-vs-connected. Walking the connection lifecycle (enabled -> launch -> auth
+      -> session freshness) covers the realistic causes.
+  - id: cmt-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      You move config.toml's MCP servers behind a `--profile ci` profile, but in CI the servers are
+      missing. What is the most likely reason?
+    choices:
+      - id: a
+        text: Profiles cannot contain MCP servers at all
+      - id: b
+        text: CI strips all [mcp_servers.*] tables automatically
+      - id: c
+        text: >-
+          MCP servers placed under a profile only apply when that profile is selected; CI must pass
+          --profile ci (or -p ci) for those entries to take effect
+      - id: d
+        text: Profiles disable MCP unless danger-full-access is set
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Anything scoped to a profile is inactive unless that profile is selected with
+      `--profile`/`-p`. If CI does not pass the profile, profile-scoped servers will not load.
+  - id: cmt-400-ff-k
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: free_form
+    prompt: >-
+      Critique this setup: a shared team config.toml hard-codes a live bearer token inside an HTTP
+      MCP server's table and is committed to git. Identify the problems and the correct redesign.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the leaked-secret problem (token in a committed file = exposed credential,
+            hard to rotate)
+        - id: c2
+          text: >-
+            Prescribes using bearer_token_env_var (or env_http_headers) with the secret in each
+            user's environment / secret store
+      referenceAnswer: >-
+        The problem is a committed live credential: anyone with repo access (and its history) gets
+        the token, rotation requires rewriting history, and it likely violates policy. The redesign
+        is to store only an env-var NAME via `bearer_token_env_var` (or `env_http_headers` for a
+        custom header) and have each user supply the actual token through their environment or a
+        secret manager. The committed config then has no secret, and rotation is a per-environment
+        change.
+      passThreshold: 0.6
+    guidance: >-
+      The anti-pattern is secrets-in-config. Codex's env-var indirection exists precisely to avoid
+      it.
+  - id: cmt-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: multiple_choice
+    prompt: >-
+      An HTTP MCP server intermittently fails only on the first call after idle, then works. Which
+      explanation best fits, and what is a reasonable mitigation?
+    choices:
+      - id: a
+        text: startup_timeout_sec is being applied per call, which is impossible to change
+      - id: b
+        text: enabled_tools is rotating which tools exist between calls
+      - id: c
+        text: The bearer token is single-use and regenerates each idle period
+      - id: d
+        text: >-
+          The server cold-starts/reconnects on the first call and exceeds tool_timeout_sec; raising
+          that timeout (or warming the server) mitigates it
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A first-call-after-idle failure that then succeeds smells like cold-start latency hitting the
+      per-call `tool_timeout_sec`. Raising the tool timeout or keeping the server warm addresses it;
+      the other options misattribute the cause.
+  - id: cmt-400-ff-m
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: free_form
+    prompt: >-
+      You are auditing a config.toml with many MCP servers for least privilege. Describe what you
+      look for in each server's table and why each check reduces risk.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Checks tool exposure (enabled_tools/disabled_tools) to ensure only needed,
+            non-destructive tools are offered
+        - id: c2
+          text: >-
+            Checks transport/auth and unused servers (enabled flag, secrets via env vars not
+            literals, remove stale servers)
+      referenceAnswer: >-
+        For each server I would check: (1) tool exposure — is there an `enabled_tools` allow-list,
+        or are dangerous tools (delete/force-push/exec) hidden via `disabled_tools`? Narrowing the
+        tool surface limits what a model or compromised server can do. (2) Auth hygiene — are
+        secrets referenced via `bearer_token_env_var`/`env_http_headers` rather than literals? (3)
+        Necessity — is `enabled` true only for servers actually in use, and are stale servers
+        removed? (4) Transport — is a remote `url` server actually needed, or could a local STDIO
+        server reduce exposure? Each check shrinks the attack and blast surface.
+      passThreshold: 0.6
+    guidance: >-
+      Least privilege for MCP = minimal tools, no embedded secrets, only needed servers enabled. The
+      audit walks each table against those axes.
+  - id: cmt-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: multiple_choice
+    prompt: >-
+      Codex runs as an MCP server for a parent agent, but the parent reports Codex's tool calls "do
+      nothing visible." Which mismatch most plausibly explains it?
+    choices:
+      - id: a
+        text: >-
+          The Codex-as-server instance runs under read-only sandbox, so edit/exec requests are
+          blocked or require approvals the parent cannot answer
+      - id: b
+        text: codex mcp-server cannot accept any prompts
+      - id: c
+        text: The parent must also run codex mcp login
+      - id: d
+        text: STDIO transport drops all tool results by design
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex-as-server still obeys its own sandbox/approval policy. If it is read-only (or needs
+      approvals no one answers in a headless parent), file edits and commands silently do nothing
+      effective. The other options misstate how the server mode works.
+  - id: cmt-400-ff-o
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: >-
+      Explain why "the MCP server worked yesterday and nothing in config changed, but tools
+      disappeared today" can still be an MCP-layer problem, not a Codex bug. Give two plausible
+      MCP-layer causes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Gives a transport/runtime cause (e.g. remote url now unreachable/changed, server package
+            updated and crashes on startup)
+        - id: c2
+          text: >-
+            Gives an auth cause (e.g. bearer token expired/rotated, OAuth session lapsed needing
+            codex mcp login again)
+      referenceAnswer: >-
+        Config being unchanged does not mean the server's runtime is unchanged. Two MCP-layer
+        causes: (1) Transport/runtime — a remote HTTP `url` became unreachable or moved, or an
+        auto-updated STDIO server package now crashes on launch and exceeds `startup_timeout_sec`.
+        (2) Auth — a bearer token rotated/expired, or the OAuth session lapsed, so the server
+        connects but is unauthorized; re-running `codex mcp login` or refreshing the env var
+        restores it. Both leave config identical while the live connection fails.
+      passThreshold: 0.6
+    guidance: >-
+      External servers have their own lifecycle (uptime, package versions, token expiry). "Config
+      didn't change" only rules out config, not the server or its credentials.
+  - id: cmt-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      You want to forbid a server's destructive tools but a teammate keeps re-adding them to
+      `enabled_tools`. What design change makes the restriction harder to accidentally undo?
+    choices:
+      - id: a
+        text: Set enabled = false so no one can use any tool
+      - id: b
+        text: >-
+          Use disabled_tools to deny the destructive tools by name, since a deny is harder to negate
+          accidentally than maintaining a complete allow-list
+      - id: c
+        text: Delete the server and document it in a README
+      - id: d
+        text: Move the server to danger-full-access
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An explicit `disabled_tools` deny is a focused, intention-revealing guard that survives
+      additions to the rest of the toolset; a hand-maintained allow-list is easy to "helpfully"
+      expand. Disabling or deleting the server is too blunt.
+  - id: cmt-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A STDIO MCP server prints diagnostics to stdout (not stderr). What MCP-layer symptom is most
+      likely, and why?
+    choices:
+      - id: a
+        text: Nothing — Codex ignores all server stdout
+      - id: b
+        text: The bearer token leaks into logs
+      - id: c
+        text: >-
+          The connection breaks or tools misbehave because stdout is the JSON-RPC channel for STDIO
+          transport, so non-protocol output corrupts the stream
+      - id: d
+        text: startup_timeout_sec is automatically doubled
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For STDIO transport, stdout carries JSON-RPC messages. Writing diagnostics there interleaves
+      garbage with protocol frames and corrupts the connection; servers should log to stderr
+      instead.
+  - id: cmt-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team proposes giving every developer one giant MCP server that bundles all internal tools,
+      with no enabled_tools/disabled_tools filtering, used under the Auto preset. Evaluate the
+      design.
+    choices:
+      - id: a
+        text: >-
+          Weak — a broad, unfiltered tool surface raises risk and prompt noise; scope tools per use
+          case with allow/deny lists and reserve broad servers for trusted contexts
+      - id: b
+        text: Ideal — fewer servers always means less risk
+      - id: c
+        text: Fine because the Auto preset disables all MCP tools anyway
+      - id: d
+        text: Fine because MCP servers cannot perform destructive actions
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      One unfiltered mega-server maximizes the tool surface the model sees and can call, increasing
+      both error and abuse potential. Better practice is to narrow exposure with allow/deny lists
+      per workflow. The Auto preset does not disable MCP, and MCP tools certainly can be
+      destructive.
+  - id: cmt-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: free_form
+    prompt: >-
+      Critique the practice of running Codex with --yolo specifically when many third-party MCP
+      servers are configured. What is the strongest argument against it, and is there any defensible
+      use?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Argues --yolo removes BOTH approvals and sandbox, so any third-party MCP tool runs with
+            full unsandboxed access and no prompts
+        - id: c2
+          text: >-
+            Notes the supply-chain/blast-radius risk of trusting external servers, and confines any
+            defensible use to fully trusted/ephemeral/disposable environments
+      referenceAnswer: >-
+        The strongest argument against it: `--yolo` (`--dangerously-bypass-approvals-and-sandbox`)
+        removes both the sandbox and approval gates, so every third-party MCP tool call executes
+        with full system access and no confirmation. With many external servers, you are trusting
+        all of their code (and any future auto-updates) to never do anything harmful — a large,
+        opaque supply-chain surface. A misbehaving or compromised server could read or destroy
+        anything the user can. A defensible use is narrow: a disposable, isolated environment
+        (throwaway container/VM with no secrets and no production access) where speed matters and
+        the blast radius is genuinely zero. On a real workstation with credentials, it is
+        indefensible.
+      passThreshold: 0.6
+    guidance: >-
+      The evaluation hinges on combining --yolo's removal of both gates with the untrusted nature of
+      third-party tool code. Sandboxing/approvals are the controls that contain that risk.
+  - id: cmt-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      Two designs for sharing MCP config across a team: (A) commit config.toml with
+      bearer_token_env_var + per-user env vars; (B) commit config.toml with literal tokens. Which is
+      better and why?
+    choices:
+      - id: a
+        text: B — literal tokens are simpler and equally safe in a private repo
+      - id: b
+        text: >-
+          A — secrets stay out of git and rotate per environment; B leaks live credentials into
+          history and is hard to rotate
+      - id: c
+        text: They are equivalent because git repos are encrypted at rest
+      - id: d
+        text: B — env vars are unreliable so literals are more robust
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Design A uses Codex's env-var indirection so the committed file holds no secret and rotation
+      is per-environment. Design B bakes a credential into shared history — a leak that is hard to
+      undo, regardless of repo privacy.
+  - id: cmt-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      A platform team wants to expose an internal review pipeline by running Codex as an MCP server
+      for other agents. Which guardrail is most important to set before doing so?
+    choices:
+      - id: a
+        text: Disable the /mcp slash command for callers
+      - id: b
+        text: Set tool_timeout_sec to 0 to make calls instant
+      - id: c
+        text: >-
+          Run that Codex instance under a restrictive sandbox/approval policy (e.g. read-only or
+          workspace-write with approvals), since callers inherit whatever access Codex has
+      - id: d
+        text: Require every caller to also run codex mcp-server
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Callers act through Codex's own permissions, so the most important guardrail is constraining
+      that instance's sandbox and approval policy. The other options are irrelevant or harmful (a
+      zero timeout would break calls).
+  - id: cmt-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: free_form
+    prompt: >-
+      Evaluate the trade-offs of a strict `enabled_tools` allow-list versus a `disabled_tools`
+      deny-list for governing an MCP server's tools over time. When is each the better governance
+      choice?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Allow-list is fail-closed (new server tools are hidden by default) — safer but needs
+            maintenance as tools you want appear
+        - id: c2
+          text: >-
+            Deny-list is fail-open (new tools are exposed by default) — lower maintenance but risks
+            exposing newly added dangerous tools
+      referenceAnswer: >-
+        An `enabled_tools` allow-list is fail-closed: anything not listed — including tools the
+        server adds in a future update — is hidden by default. That is safest for untrusted or
+        fast-moving servers, but it requires ongoing maintenance to add tools you legitimately want.
+        A `disabled_tools` deny-list is fail-open: it only hides what you name, so new tools the
+        server ships are automatically exposed. That is lower-maintenance and fine for a trusted,
+        stable server where you only need to suppress a few dangerous tools, but it risks silently
+        exposing a newly added destructive tool. Choose the allow-list when default-deny safety
+        outweighs maintenance (untrusted/volatile servers); choose the deny-list for trusted servers
+        where you only carve out a few exceptions.
+      passThreshold: 0.6
+    guidance: >-
+      The governing axis is fail-closed vs fail-open under server updates. Allow-lists default to
+      safety at a maintenance cost; deny-lists default to convenience at a safety cost.
+  - id: cmt-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: multiple_choice
+    prompt: >-
+      A reviewer claims "since MCP tool calls go through Codex, the sandbox makes any MCP server
+      safe to add." How should you judge this claim?
+    choices:
+      - id: a
+        text: Correct — the sandbox fully neutralizes any malicious server
+      - id: b
+        text: Correct — MCP servers run inside the sandbox so they have no capabilities
+      - id: c
+        text: Irrelevant — the sandbox does not apply to anything Codex does
+      - id: d
+        text: >-
+          Overstated — the sandbox limits local process actions but a server can still exfiltrate
+          data it is given or misuse network/credentials it legitimately holds; vet servers and
+          scope tools regardless
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The sandbox constrains what commands/files Codex touches locally, but a tool server can still
+      misuse the inputs, network access, or credentials it is legitimately handed. Sandboxing is one
+      layer, not a substitute for vetting servers and scoping tools.
+  - id: cmt-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >-
+      Your org standardizes MCP server config in a committed config.toml. Propose a governance
+      policy covering secrets, tool exposure, server enablement, and timeouts, and justify each
+      rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Secrets via bearer_token_env_var/env_http_headers (never literals) and tool exposure
+            scoped via enabled_tools/disabled_tools (least privilege)
+        - id: c2
+          text: >-
+            Server enablement disciplined via enabled (only needed servers on; remove stale) and
+            sane startup_timeout_sec/tool_timeout_sec with justification
+      referenceAnswer: >-
+        A reasonable policy: (1) Secrets — never commit literal tokens; require
+        `bearer_token_env_var` or `env_http_headers` so credentials live in each environment and
+        rotate independently. (2) Tool exposure — default to least privilege: prefer `enabled_tools`
+        allow-lists for untrusted/volatile servers and require `disabled_tools` to suppress
+        destructive tools on trusted ones; review on each server update. (3) Enablement — keep
+        `enabled = true` only for servers in active use and remove stale entries so the committed
+        surface reflects reality. (4) Timeouts — set `startup_timeout_sec` and `tool_timeout_sec`
+        deliberately (raise only with a recorded reason for slow tools) so failures are bounded and
+        diagnosable. Each rule reduces blast radius, leak risk, or operational ambiguity, and the
+        committed-but-secret-free file stays reviewable.
+      passThreshold: 0.6
+    guidance: >-
+      A good policy maps each Codex MCP knob to a risk it controls: secrets indirection (leaks),
+      tool lists (privilege), enabled (surface), timeouts (reliability/diagnosability).
+  - id: cmt-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      A team disables tool filtering and instead writes "do not use the delete tool" in AGENTS.md to
+      keep a destructive MCP tool from being used. Evaluate this control.
+    choices:
+      - id: a
+        text: >-
+          Weak — instructions rely on model compliance; a config-level disabled_tools entry
+          structurally removes the tool and is the durable control
+      - id: b
+        text: Strong — AGENTS.md instructions are enforced by the sandbox
+      - id: c
+        text: Equivalent to disabled_tools, just expressed in prose
+      - id: d
+        text: Best practice, since config filtering is deprecated
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Prose guidance depends on the model choosing to obey; it is not an enforced boundary.
+      `disabled_tools` removes the tool from what the model is offered, which is a structural,
+      non-negotiable control. AGENTS.md complements but cannot replace it.
+  - id: cmt-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: >-
+      You must choose a transport for an internal MCP tool used only on developer laptops with no
+      remote hosting. Evaluate STDIO vs HTTP for this case.
+    choices:
+      - id: a
+        text: HTTP is better because it is always faster than STDIO
+      - id: b
+        text: >-
+          STDIO is the better fit — a local subprocess avoids hosting, network exposure, and auth
+          overhead; HTTP would add an endpoint and credentials to manage for no benefit
+      - id: c
+        text: They are interchangeable, so pick randomly
+      - id: d
+        text: STDIO cannot expose tools, so HTTP is required
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      With no remote hosting need, STDIO is simpler and safer: a local process, no exposed endpoint,
+      no bearer tokens or OAuth. HTTP would introduce hosting and auth burden with no upside here.
+  - id: cmt-500-ff-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: free_form
+    prompt: >-
+      Assess this CI setup: a pipeline runs `codex exec` with an MCP server whose bearer token is
+      injected as an env var, under workspace-write with on-request approvals, in a headless runner.
+      What works, what is fragile, and what would you change?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes env-var token injection and codex exec are appropriate for CI (non-interactive,
+            secret not in config)
+        - id: c2
+          text: >-
+            Flags that on-request approvals can stall a headless runner with no one to approve,
+            recommending a non-interactive approval policy or scoped automation while keeping the
+            sandbox
+      referenceAnswer: >-
+        What works: `codex exec` is the right non-interactive entry point, and injecting the bearer
+        token via an env var (referenced by `bearer_token_env_var`) keeps the secret out of config —
+        both good. What is fragile: `on-request` approvals assume a human can answer escalation
+        prompts, but a headless CI runner has no one to approve, so the job can hang or stall on the
+        first escalation. The change I would make is to choose an approval policy suited to
+        automation (so the run does not block on prompts) while keeping the workspace-write sandbox
+        as the real guardrail, and to scope the MCP server's tools (enabled_tools/disabled_tools) so
+        unattended runs cannot reach destructive operations. Avoid jumping straight to --yolo, which
+        would discard the sandbox too.
+      passThreshold: 0.6
+    guidance: >-
+      The evaluation should separate the good parts (exec + env-var secret) from the
+      headless-approval mismatch, and prefer scoping + an automation-appropriate approval policy
+      over removing the sandbox.
+  - id: cmt-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      A design routes all of a company's agents through one Codex-as-MCP-server instance that itself
+      fans out to 20 downstream MCP servers. Evaluate the chief governance concern.
+    choices:
+      - id: a
+        text: It is impossible because Codex cannot chain MCP servers
+      - id: b
+        text: It is automatically safe because there is only one place to audit
+      - id: c
+        text: >-
+          It concentrates a large transitive tool surface behind one node, so the central instance's
+          sandbox/approval policy and tool scoping become the single most important control to get
+          right
+      - id: d
+        text: The downstream servers are disabled whenever Codex is in server mode
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Centralizing has an upside (one audit point) but concentrates a transitive surface: every
+      caller inherits the 20 downstream tools through the hub, so that hub's sandbox, approvals, and
+      tool scoping are the make-or-break control. The other options are factually wrong.
+  - id: cmt-500-ff-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      Compare governing MCP risk via Codex's sandbox/approval policy versus via per-server tool
+      allow/deny lists. Argue why a robust setup uses BOTH rather than relying on either alone.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains sandbox/approvals govern HOW any action executes (runtime gate on
+            commands/files/network/escalation) but do not curate which tools exist
+        - id: c2
+          text: >-
+            Explains allow/deny lists curate WHICH tools are offered (reducing surface) but do not
+            constrain a permitted tool's runtime effects; defense-in-depth needs both
+      referenceAnswer: >-
+        The two controls operate on different axes. The sandbox and approval policy are runtime
+        gates: they bound how any action executes — what files, commands, and network a permitted
+        call may touch, and when Codex pauses for escalation — but they do not decide which tools
+        the model is even offered. Per-server `enabled_tools`/`disabled_tools` curate the tool
+        surface: they remove dangerous or irrelevant tools from the model's view, but they say
+        nothing about what a permitted tool may then do at runtime. Relying on tool lists alone
+        leaves allowed tools ungoverned at execution; relying on the sandbox alone still presents
+        every tool to the model, inviting misuse and prompt clutter. A robust, defense-in-depth
+        setup uses both: minimize the tool surface AND constrain how surviving calls run.
+      passThreshold: 0.6
+    guidance: >-
+      Surface reduction (tool lists) and runtime containment (sandbox/approvals) are orthogonal
+      layers; each leaves a gap the other closes, which is the case for using both.
+  - id: cmt-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A teammate sets a uniform 600s `tool_timeout_sec` across every MCP server "to be safe."
+      Evaluate this choice.
+    choices:
+      - id: a
+        text: Ideal — longer timeouts are always safer
+      - id: b
+        text: It disables approvals, which is the real risk
+      - id: c
+        text: It only affects startup, so it is harmless
+      - id: d
+        text: >-
+          Questionable — an overly long timeout hides hung tools and delays failure feedback; tune
+          per server to each tool's realistic runtime
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A blanket large timeout means a genuinely hung tool ties up the session for ten minutes before
+      failing, masking problems. Timeouts should reflect each server's real call durations; they are
+      per-call, not startup, and do not touch approvals.
+  - id: cmt-500-ff-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      A team argues that because config.toml is shared by the Codex CLI and IDE extension, they
+      should enable every MCP server globally for convenience. Evaluate this and propose a more
+      disciplined approach.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes the downside — globally enabling all servers maximizes tool surface and prompt
+            noise across both surfaces, raising risk and cost
+        - id: c2
+          text: >-
+            Proposes discipline — enable only needed servers (enabled flag), scope tools
+            (enabled_tools/disabled_tools), and/or use profiles to vary the active set per context
+      referenceAnswer: >-
+        The shared-config convenience is real, but enabling every server globally pushes the full
+        tool surface into both the CLI and IDE for every task, increasing misuse risk, the chance of
+        the model picking a wrong/destructive tool, and prompt overhead/cost. A more disciplined
+        approach: keep `enabled = true` only for servers a workflow actually needs and remove or
+        disable the rest; scope each enabled server with `enabled_tools`/`disabled_tools` so only
+        relevant tools appear; and use profiles (`--profile`) to switch the active server/tool set
+        per context (e.g. a lean CI profile vs a richer local one). That preserves single-source
+        convenience while applying least privilege.
+      passThreshold: 0.6
+    guidance: >-
+      The judgment is convenience vs least privilege. Profiles and the enabled/tool-list knobs let
+      the team keep one config file yet vary and minimize what is live per context.
+  - id: cmt-500-mc-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      Evaluate this claim: "Because Codex can be both an MCP client and an MCP server, exposing it
+      as a server to untrusted callers is no riskier than using it as a client."
+    choices:
+      - id: a
+        text: >-
+          False — as a server Codex acts on others' instructions with its own permissions, so
+          untrusted callers can drive its sandbox-bounded capabilities; the trust direction and
+          threat model differ from client use
+      - id: b
+        text: True — the roles are symmetric, so risk is identical
+      - id: c
+        text: True — server mode disables all of Codex's capabilities
+      - id: d
+        text: False, but only because server mode is slower
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The roles are not symmetric in trust: as a client you choose which servers to call; as a
+      server, untrusted callers issue instructions that Codex executes under its own
+      sandbox/approval policy. Exposing Codex as a server widens who can drive it, so it demands
+      tighter policy, not equal treatment.
+  - id: cmt-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 421
+    type: multiple_choice
+    prompt: >-
+      You launch Codex with `-c mcp_servers.docs.enabled=false` while config.toml has that server
+      enabled. What happens, and what does it reveal about override precedence?
+    choices:
+      - id: a
+        text: config.toml wins because file settings always beat command-line flags
+      - id: b
+        text: Codex errors out because enabled cannot be overridden via -c
+      - id: c
+        text: Both apply, so the server flickers on and off during the session
+      - id: d
+        text: >-
+          The -c override wins for this run, disabling 'docs', because ad-hoc -c overrides layer on
+          top of config.toml values
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Ad-hoc `-c key=value` overrides take precedence over the stored config for that invocation, so
+      the server is disabled this run. This shows -c sits above config.toml in precedence.
+  - id: cmt-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      An HTTP MCP server is configured with BOTH bearer_token_env_var and an http_headers entry that
+      sets Authorization. Which conflict should you anticipate?
+    choices:
+      - id: a
+        text: >-
+          Two sources may both try to set the Authorization header, producing ambiguous or
+          duplicated auth; pick one mechanism
+      - id: b
+        text: Codex merges them into a multi-token header that all servers accept
+      - id: c
+        text: bearer_token_env_var is ignored for HTTP servers entirely
+      - id: d
+        text: The server switches to STDIO automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Both a bearer token and a manual Authorization header target the same header, which is
+      ambiguous. Choose a single auth mechanism per server to avoid duplicated or conflicting
+      headers.
+  - id: cmt-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: free_form
+    prompt: >-
+      When Codex runs as an MCP server for a parent agent, file edits land in the wrong directory.
+      Explain how working-directory configuration could cause this and how you would diagnose it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that the Codex-as-server process has its own working directory (inherited
+            from how it was spawned, or set via --cd/-C), which may differ from the parent's intent
+        - id: c2
+          text: >-
+            Describes diagnosing by checking the spawn cwd / passing --cd explicitly so edits target
+            the intended project root
+      referenceAnswer: >-
+        When spawned as an MCP server, the Codex process operates relative to its own working
+        directory, which it inherits from however the parent launched it (or from a `--cd`/`-C`
+        setting). If that directory is not the intended project root, edits and commands land in the
+        wrong place. Diagnose by checking the cwd the parent used to spawn `codex mcp-server`, and
+        fix it by spawning from the right directory or passing `--cd <project>` so Codex operates
+        against the intended root.
+      passThreshold: 0.6
+    guidance: >-
+      The server process's cwd governs where relative file operations resolve. Mismatched spawn
+      directories are a classic cause of edits landing in the wrong tree.
+  - id: cmt-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A team pins each MCP server's launch to `npx -y <pkg>@latest` so they always get the newest
+      tools. Evaluate this for a production automation pipeline.
+    choices:
+      - id: a
+        text: Best practice — newest is always most secure
+      - id: b
+        text: >-
+          Risky — @latest auto-pulls unreviewed updates that can break startup or change tool
+          behavior; pin versions and update deliberately
+      - id: c
+        text: Fine because Codex re-reviews server code on every launch
+      - id: d
+        text: Harmless because tool_timeout_sec would catch any problem
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Floating `@latest` makes the pipeline non-reproducible and can introduce breaking or malicious
+      changes silently. Pin versions and bump intentionally; Codex does not vet server code, and a
+      timeout does not protect against behavior changes.
+  - id: cmt-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: multiple_choice
+    prompt: >-
+      Evaluate: a team puts secrets directly in `http_headers` (static values) for an HTTP MCP
+      server instead of using env_http_headers or bearer_token_env_var.
+    choices:
+      - id: a
+        text: Equivalent, since all three end up as the same header
+      - id: b
+        text: Better, because static headers cannot expire
+      - id: c
+        text: >-
+          Poor — static header values embed the secret in config.toml;
+          env_http_headers/bearer_token_env_var keep it out of the file and committable history
+      - id: d
+        text: Required, because env-sourced headers are not supported
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Static `http_headers` bake the secret into the file. The env-sourced variants exist precisely
+      so the credential lives in the environment, not in committed config. Functionally similar at
+      the wire but very different for secret hygiene.
+  - id: cmt-500-ff-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: free_form
+    prompt: >-
+      Argue whether destructive MCP tools should be controlled at the server (config tool lists) or
+      at the approval layer (sandbox/approvals), and defend a recommended combination.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes config tool lists remove the tool from the model's choices entirely (prevention),
+            while approvals gate execution at call time (interception)
+        - id: c2
+          text: >-
+            Recommends defense in depth: hide truly unneeded destructive tools via disabled_tools
+            AND keep approvals/sandbox for the rest, with rationale
+      referenceAnswer: >-
+        They address different points in the chain. Server-level tool lists
+        (`disabled_tools`/`enabled_tools`) prevent a destructive tool from ever being offered to the
+        model, eliminating the possibility of it being called. The approval/sandbox layer intercepts
+        at execution time, letting a human or policy gate a call the model does attempt. The
+        strongest design combines both: hide destructive tools the workflow never legitimately needs
+        (so they cannot be invoked at all), and rely on the sandbox plus approvals to govern the
+        remaining permitted tools at runtime. Pure config-hiding is too rigid when a tool is
+        occasionally needed; pure approvals leaves dangerous tools in the model's hands every turn.
+        Layering minimizes both standing risk and per-call risk.
+      passThreshold: 0.6
+    guidance: >-
+      Prevention (tool lists) and interception (approvals) are complementary; the recommended answer
+      layers them rather than choosing one.
+  - id: cmt-500-ff-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: free_form
+    prompt: >-
+      A reviewer wants to drop tool_timeout_sec to 10s globally to 'fail fast'. Evaluate the
+      trade-off for a mix of fast and genuinely slow MCP tools, and recommend an approach.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes a too-low global timeout aborts legitimately slow tools, causing false failures
+            and retries
+        - id: c2
+          text: >-
+            Recommends per-server tuning to each tool's realistic runtime rather than one aggressive
+            global value
+      referenceAnswer: >-
+        A blanket 10s `tool_timeout_sec` does fail fast for hung calls, but it will also abort tools
+        whose normal runtime exceeds 10s (large queries, builds, network fetches), producing false
+        failures, wasted retries, and flaky behavior. Because the timeout is per server, the right
+        approach is to tune it to each server's realistic call durations: keep it tight for fast
+        servers and raise it for the few that legitimately take longer, ideally with a recorded
+        reason. That preserves fast failure where it is safe without breaking slow-but-valid tools.
+      passThreshold: 0.6
+    guidance: >-
+      Fail-fast is good only when the threshold reflects real runtimes; per-server tuning beats one
+      aggressive global value.
+  - id: cmt-500-ff-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: free_form
+    prompt: >-
+      Evaluate the practice of installing many MCP servers 'just in case' versus adding them on
+      demand per task. Frame your answer in terms of tool surface, model behavior, and maintenance.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes a large standing tool surface increases prompt size/cost, model confusion, and
+            attack/blast surface
+        - id: c2
+          text: >-
+            Argues for adding servers on demand or scoping via enabled/enabled_tools/profiles,
+            accepting a small convenience cost for lower risk
+      referenceAnswer: >-
+        Installing many servers 'just in case' inflates the standing tool surface: more tool
+        descriptions enlarge the prompt (cost and latency), give the model more chances to pick a
+        wrong or irrelevant tool, and widen the attack/blast surface if any server is compromised or
+        destructive. Adding servers on demand — or keeping them defined but `enabled = false` until
+        needed, scoped with `enabled_tools`, or grouped under profiles — keeps the live surface
+        minimal. The trade-off is a small convenience hit (you enable a server when a task needs it)
+        for materially lower risk, cost, and confusion. For most teams, on-demand or profile-scoped
+        enablement is the better default.
+      passThreshold: 0.6
+    guidance: >-
+      Least privilege applies to tool surface too: fewer live tools means cheaper prompts, clearer
+      model behavior, and smaller blast radius.

@@ -1,0 +1,3009 @@
+# Topic: mcp-servers (claude-code)
+# The Model Context Protocol — stdio vs HTTP transport, registering tools with schemas, .mcp.json, npx launch, the initialize handshake and tools/list.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: mcp-servers
+class:
+  kind: tool
+  tool: claude-code
+title: MCP Servers
+summary: >-
+  The Model Context Protocol — stdio vs HTTP transport, registering tools with schemas, .mcp.json,
+  npx launch, the initialize handshake and tools/list.
+triggerSignals: []
+items:
+  - id: ms-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: What is the Model Context Protocol (MCP)?
+    choices:
+      - id: a
+        text: >-
+          An open standard for connecting AI applications to external tools and data sources through
+          a common protocol
+      - id: b
+        text: A proprietary Anthropic API for fine-tuning Claude on a customer's private data
+      - id: c
+        text: A package manager that installs Claude Code plugins from a central registry
+      - id: d
+        text: A prompt-formatting language for writing system prompts in YAML
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      MCP is an open standard (protocol) for connecting AI applications, called hosts, to external
+      tools and data. It defines only the context-exchange protocol; it does not fine-tune models,
+      manage a plugin registry, or format prompts.
+  - id: ms-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: In MCP's architecture, what is the role of the "host"?
+    choices:
+      - id: a
+        text: The external program that exposes tools and resources over the protocol
+      - id: b
+        text: >-
+          The AI application (such as Claude Code) that creates and coordinates one MCP client per
+          connected server
+      - id: c
+        text: The transport layer that carries JSON-RPC messages between processes
+      - id: d
+        text: The remote cloud service that stores all MCP server configurations
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The host is the AI application (e.g. Claude Code, Claude Desktop, VS Code). It creates one
+      client per server, and each client holds a dedicated connection. The program exposing tools is
+      the server; the transport is the communication channel.
+  - id: ms-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: What message format does MCP's data layer use?
+    choices:
+      - id: a
+        text: REST over HTTP with JSON bodies
+      - id: b
+        text: gRPC with Protocol Buffers
+      - id: c
+        text: JSON-RPC 2.0
+      - id: d
+        text: GraphQL queries
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP's data layer is built on JSON-RPC 2.0, and the same message format is used across every
+      transport. A common misconception is that MCP is REST or gRPC; it is neither.
+  - id: ms-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 131
+    type: multiple_choice
+    prompt: The stdio transport in MCP is used for what kind of server?
+    choices:
+      - id: a
+        text: A remote server reached over the public internet via HTTPS
+      - id: b
+        text: >-
+          A local server that runs as a process on the same machine, communicating over standard
+          input/output
+      - id: c
+        text: A server hosted on claude.ai and accessed through an OAuth connector
+      - id: d
+        text: A server that only accepts WebSocket connections from a browser
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      stdio is the local transport: the server runs as a process on the same machine and exchanges
+      JSON-RPC over standard input/output with no network overhead. Remote servers use Streamable
+      HTTP; the common mix-up is reversing which transport is local versus remote.
+  - id: ms-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: free_form
+    prompt: Name MCP's two layers and state, in one phrase each, what each layer is responsible for.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Names the data layer and identifies it as the JSON-RPC protocol (lifecycle, primitives,
+            notifications)
+        - id: c2
+          text: >-
+            Names the transport layer and identifies it as the communication mechanism (e.g. stdio
+            or Streamable HTTP)
+      referenceAnswer: >-
+        MCP has a data layer and a transport layer. The data layer is the JSON-RPC 2.0 protocol that
+        defines the lifecycle, the primitives (tools, resources, prompts), and notifications. The
+        transport layer is the underlying communication mechanism, such as stdio or Streamable HTTP,
+        that carries those messages.
+      passThreshold: 0.6
+    guidance: >-
+      The data layer (JSON-RPC 2.0) is the conceptually inner layer defining what messages mean; the
+      transport layer is the outer layer that physically moves them. Keeping the two distinct
+      explains why the same JSON-RPC format works over both stdio and HTTP.
+  - id: ms-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 137
+    type: multiple_choice
+    prompt: Which transport does MCP define for remote servers?
+    choices:
+      - id: a
+        text: stdio
+      - id: b
+        text: Raw TCP sockets
+      - id: c
+        text: FTP
+      - id: d
+        text: Streamable HTTP
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Streamable HTTP is the spec transport for remote servers: HTTP POST for client-to-server
+      messages with optional Server-Sent Events for streaming. stdio is the local transport; raw TCP
+      and FTP are not MCP transports.
+  - id: ms-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: What is the status of the SSE (Server-Sent Events) transport in Claude Code?
+    choices:
+      - id: a
+        text: It is the current recommended transport for all remote servers
+      - id: b
+        text: It is the only transport allowed for local servers
+      - id: c
+        text: It is deprecated; HTTP (Streamable HTTP) is the recommended remote transport
+      - id: d
+        text: It has never been supported by Claude Code
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      SSE is deprecated; Streamable HTTP is the recommended remote transport. A frequent
+      misconception is that SSE is still the preferred remote option. SSE is local-unrelated and was
+      historically supported, so the "never supported" answer is also wrong.
+  - id: ms-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 143
+    type: multiple_choice
+    prompt: What are the three server-side primitives in MCP?
+    choices:
+      - id: a
+        text: Sampling, elicitation, and logging
+      - id: b
+        text: Tools, resources, and prompts
+      - id: c
+        text: Requests, responses, and notifications
+      - id: d
+        text: Hosts, clients, and servers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A server exposes tools (executable actions), resources (contextual data), and prompts
+      (reusable templates). Sampling/elicitation/logging are client-provided primitives;
+      requests/responses are message kinds; host/client/server are architecture roles.
+  - id: ms-100-ff-i
+    tier: 100
+    bloom: remember
+    difficulty: 146
+    type: free_form
+    prompt: Name the main client-side primitives in MCP that a server can invoke on the host.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names sampling (server asks the host's LLM for a completion)
+        - id: c2
+          text: Names elicitation (server asks the user for input)
+        - id: c3
+          text: Names logging (and optionally roots) as a client-provided capability
+      referenceAnswer: >-
+        The main client-side primitives are sampling, elicitation, and logging. Sampling lets a
+        server ask the host's LLM for a completion (sampling/createMessage), elicitation lets a
+        server ask the user for input (elicitation/create), and logging lets the server send log
+        messages. Roots is also a client-provided capability.
+      passThreshold: 0.6
+    guidance: >-
+      Sampling, elicitation, and logging are provided by the client (host), not the server. A common
+      error is calling sampling or elicitation server features; the server invokes them, but the
+      capability lives on the client side.
+  - id: ms-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 149
+    type: multiple_choice
+    prompt: Which JSON-RPC method does a client use to discover the tools a server offers?
+    choices:
+      - id: a
+        text: tools/get
+      - id: b
+        text: tools/call
+      - id: c
+        text: tools/list
+      - id: d
+        text: tools/read
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Discovery uses tools/list, which returns a tools array. tools/call executes a tool. There is
+      no tools/get or tools/read; the /get method is for prompts (prompts/get) and resources are
+      read with resources/read.
+  - id: ms-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: >-
+      How is an MCP tool named "search" from a server named "github" exposed to the model and
+      permission rules in Claude Code?
+    choices:
+      - id: a
+        text: search
+      - id: b
+        text: mcp__github__search
+      - id: c
+        text: github.search
+      - id: d
+        text: github:search
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Claude Code namespaces MCP tools as mcp__<server>__<tool> with double underscores, so it
+      becomes mcp__github__search. The bare tool name, dot notation, and colon notation are all
+      incorrect for how the tool surfaces to the model and permission allowlists.
+  - id: ms-100-ff-l
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: free_form
+    prompt: >-
+      Name the three configuration scopes for MCP servers in Claude Code and what each scope's
+      visibility is.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names local scope (default; current project only, private to you)
+        - id: c2
+          text: Names project scope (current project, shared via version control, in .mcp.json)
+        - id: c3
+          text: Names user scope (all your projects, private to you)
+      referenceAnswer: >-
+        The three scopes are local, project, and user. Local is the default: it applies only to the
+        current project and is private to you. Project applies to the current project and is shared
+        with the team via version control (stored in .mcp.json at the project root). User applies
+        across all of your projects and is private to you.
+      passThreshold: 0.6
+    guidance: >-
+      Local is per-project and private (stored in ~/.claude.json), project is per-project and shared
+      (in .mcp.json), and user is global to your projects and private. Confusing project (shared)
+      with user (global/private) is the common slip.
+  - id: ms-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: >-
+      After receiving the server's initialize response, what does the client send to signal it is
+      ready?
+    choices:
+      - id: a
+        text: A second initialize request with the negotiated version
+      - id: b
+        text: A notifications/initialized notification (it has no id and expects no response)
+      - id: c
+        text: An initialized/confirm request that the server must answer
+      - id: d
+        text: A tools/list request, which doubles as the readiness signal
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The client sends the notifications/initialized notification, which (like all notifications)
+      has no id and expects no response. It is not a request/response exchange, and readiness is not
+      signalled by repeating initialize or by calling tools/list.
+  - id: ms-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 161
+    type: multiple_choice
+    prompt: What form does the MCP protocolVersion value take?
+    choices:
+      - id: a
+        text: A semantic version such as 1.2.0
+      - id: b
+        text: A single integer such as 3
+      - id: c
+        text: A date string such as 2025-06-18
+      - id: d
+        text: A git commit hash
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP protocol versions are date strings (for example 2025-06-18), exchanged during the
+      initialize handshake. They are not semver, integers, or commit hashes; assuming a semver like
+      1.2.0 is a common mistake.
+  - id: ms-100-ff-o
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      In the command "claude mcp add my-server -- npx -y some-package", what is the purpose of the
+      standalone double dash (--)?
+    rubric:
+      criteria:
+        - id: c1
+          text: States that -- separates Claude Code's own flags from the server's launch command
+        - id: c2
+          text: States that everything after -- is passed to the server command untouched
+      referenceAnswer: >-
+        The standalone -- separates Claude Code's own flags from the command used to launch the MCP
+        server. Everything after -- (here, npx -y some-package) is passed to the server command
+        untouched, so server arguments are not misinterpreted as claude mcp add options.
+      passThreshold: 0.6
+    guidance: >-
+      The -- is a boundary marker: flags before it belong to claude mcp add; everything after it is
+      the server's own command and arguments, passed through verbatim. This prevents the server's
+      flags from being parsed by Claude Code.
+  - id: ms-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 167
+    type: multiple_choice
+    prompt: >-
+      Under which npm organization scope are the official Model Context Protocol packages (such as
+      the TypeScript SDK) published?
+    choices:
+      - id: a
+        text: '@anthropic-ai'
+      - id: b
+        text: '@modelcontextprotocol'
+      - id: c
+        text: '@mcp'
+      - id: d
+        text: '@claude'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The official MCP packages live under the @modelcontextprotocol npm scope (for example the
+      TypeScript SDK @modelcontextprotocol/sdk, with subpath exports such as
+      @modelcontextprotocol/sdk/server/mcp.js). The protocol is an open standard rather than an
+      Anthropic-branded one, so @anthropic-ai is wrong, and @mcp / @claude are not the official
+      scope.
+  - id: ms-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: Which values does the --scope flag of claude mcp add accept?
+    choices:
+      - id: a
+        text: private, shared, or global
+      - id: b
+        text: session, repo, or machine
+      - id: c
+        text: local, project, or user
+      - id: d
+        text: dev, test, or prod
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The --scope flag takes local, project, or user. The other triplets describe the idea of scope
+      informally but are not the literal accepted values, so they would be rejected.
+  - id: ms-100-ff-r
+    tier: 100
+    bloom: remember
+    difficulty: 173
+    type: free_form
+    prompt: >-
+      What does the in-session /mcp slash command let you do in Claude Code? Give at least two
+      things.
+    rubric:
+      criteria:
+        - id: c1
+          text: States it shows server status and/or tool counts
+        - id: c2
+          text: States it is used to authenticate OAuth servers (and/or clear/refresh credentials)
+      referenceAnswer: >-
+        The /mcp slash command opens a panel showing each MCP server's connection status and tool
+        counts, and it is used to authenticate OAuth (remote/HTTP) servers and to clear or refresh
+        their stored credentials.
+      passThreshold: 0.6
+    guidance: >-
+      /mcp is the in-session control surface for MCP: it reports server status and tool counts and
+      drives OAuth authentication for remote servers. Shell-side management (list, get, remove) is
+      done with claude mcp ... commands instead.
+  - id: ms-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: >-
+      How does an MCP server's prompt named "pr_review" on a server named "github" appear in Claude
+      Code?
+    choices:
+      - id: a
+        text: As a tool the model calls automatically named pr_review
+      - id: b
+        text: As an @ mention, @github:pr_review
+      - id: c
+        text: As a CLI subcommand, claude prompt github pr_review
+      - id: d
+        text: As a slash command, /mcp__github__pr_review
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      MCP prompts surface as slash commands of the form /mcp__<server>__<prompt>, here
+      /mcp__github__pr_review, optionally followed by arguments. The @ mention form is for
+      resources, not prompts, and prompts are not auto-called tools or CLI subcommands.
+  - id: ms-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: >-
+      Which JSON-RPC method reads an MCP resource, and how are MCP resources referenced inside a
+      Claude Code prompt?
+    rubric:
+      criteria:
+        - id: c1
+          text: States resources are read with the resources/read method
+        - id: c2
+          text: >-
+            States resources are referenced in a prompt via an @ mention (e.g.
+            @server:protocol://resource/path)
+      referenceAnswer: >-
+        Resources are read with the resources/read method. In a Claude Code prompt you reference a
+        resource with an @ mention of the form @server:protocol://resource/path (for example
+        @github:issue://123), and Claude Code fetches and attaches it automatically.
+      passThreshold: 0.6
+    guidance: >-
+      resources/read retrieves a resource's contents (resources/list discovers them). In Claude Code
+      you pull a resource into context with an @ mention like @github:issue://123, distinct from
+      prompts which appear as /mcp__server__prompt slash commands.
+  - id: ms-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: >-
+      A developer claims "MCP is basically a REST API standard for tools." Why is this
+      characterization wrong about how MCP exchanges messages?
+    choices:
+      - id: a
+        text: >-
+          MCP's data layer is built on JSON-RPC 2.0, not REST; the same JSON-RPC format is reused
+          across every transport.
+      - id: b
+        text: MCP only uses gRPC and protocol buffers, never plain JSON over HTTP.
+      - id: c
+        text: MCP uses REST for local servers but switches to GraphQL for remote ones.
+      - id: d
+        text: >-
+          MCP has no message format at all; servers stream raw bytes and the host parses them ad
+          hoc.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      MCP separates a data layer (JSON-RPC 2.0: lifecycle, primitives, notifications) from a
+      transport layer. The JSON-RPC message shape is identical whether you run over stdio or
+      Streamable HTTP, which is exactly why "it's a REST standard" misses the design.
+  - id: ms-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: >-
+      In MCP's architecture, why does adding a second MCP server to one host result in two clients
+      rather than one client juggling both connections?
+    choices:
+      - id: a
+        text: Because servers refuse to share a client for security reasons defined in JSON-RPC.
+      - id: b
+        text: Because each tool (not each server) gets its own client.
+      - id: c
+        text: >-
+          Because the host creates one dedicated MCP client per server, each maintaining its own
+          connection.
+      - id: d
+        text: Because clients are stateless and a new one must be created for every request.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP follows a host/client/server model where the host (e.g. Claude Code) spins up one client
+      per server, and each client holds a dedicated connection. Two servers therefore means two
+      clients, all coordinated by the single host.
+  - id: ms-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      A teammate says "use stdio when the tool lives in the cloud and HTTP when it runs on your
+      laptop." Why is this backwards?
+    choices:
+      - id: a
+        text: stdio requires a public URL and TLS, so it is the cloud transport.
+      - id: b
+        text: >-
+          stdio communicates over a local process's standard input/output (same machine, no
+          network), while Streamable HTTP is what enables remote servers.
+      - id: c
+        text: HTTP can only talk to processes on the same machine because it has no networking.
+      - id: d
+        text: Both transports are remote-only; local tools must use WebSockets instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      stdio pipes JSON-RPC over a local child process's stdin/stdout with no network overhead, so it
+      is the local transport. Streamable HTTP (POST plus optional SSE streaming) is what lets a
+      server live elsewhere and serve many clients. The teammate inverted the two.
+  - id: ms-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: free_form
+    prompt: >-
+      Explain why the MCP initialization step ends with a notification (notifications/initialized)
+      rather than another request/response round-trip, and what that final message signals.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that notifications/initialized is a JSON-RPC notification, which has no id and
+            expects no response.
+        - id: c2
+          text: >-
+            Explains that it signals the client is ready to begin normal operation after the
+            initialize request and response.
+        - id: c3
+          text: >-
+            Contrasts it with the initialize step, which IS a request/response carrying
+            protocolVersion and capabilities.
+      referenceAnswer: >-
+        The handshake is: client sends an initialize request, the server replies with an initialize
+        response (negotiating protocolVersion and capabilities), then the client sends
+        notifications/initialized. That last message is a notification, so by JSON-RPC rules it
+        carries no id and expects no reply. It is fire-and-forget because its only job is to signal
+        "I'm done initializing, normal operation can start." A request/response there would be
+        redundant since nothing needs to be returned.
+      passThreshold: 0.6
+    guidance: >-
+      A common misconception is treating the initialized step as a request/response. It is a
+      notification (no id, no response). The negotiation already happened in the initialize
+      request/response; the notification just flips the connection into the operational phase.
+  - id: ms-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: multiple_choice
+    prompt: >-
+      A server's initialize response includes "tools": { "listChanged": true }. How should a client
+      interpret this capability declaration?
+    choices:
+      - id: a
+        text: The server will change its tool list exactly once, right after initialization.
+      - id: b
+        text: listChanged forces the client to re-run initialize whenever a tool is added.
+      - id: c
+        text: It means tools are disabled until the client acknowledges the change.
+      - id: d
+        text: >-
+          The server supports the tools primitive AND can emit notifications/tools/list_changed when
+          its tool set changes.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Capabilities are nested objects. Declaring tools at all advertises the primitive; the nested
+      listChanged: true additionally promises the server may send notifications/tools/list_changed
+      so the client can refresh live. An empty "tools": {} would mean "supported, no extra
+      sub-features."
+  - id: ms-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: >-
+      Discovery and execution of tools use different JSON-RPC methods. Which pairing correctly
+      describes how a client finds a tool versus how it runs one?
+    choices:
+      - id: a
+        text: tools/get to discover a tool, then tools/run to execute it.
+      - id: b
+        text: resources/read to discover tools, then tools/call to execute.
+      - id: c
+        text: >-
+          tools/list to discover available tools (no params), then tools/call with name and
+          arguments to execute one.
+      - id: d
+        text: A single tools/invoke method handles both discovery and execution.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Discovery is tools/list (takes no params, returns a tools array); execution is tools/call with
+      { name, arguments }. The "/get" verb belongs to prompts (prompts/get) and resources use
+      resources/read, so tools/get is a classic mix-up.
+  - id: ms-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: >-
+      Sampling and elicitation are sometimes mistaken for server features. Why are they actually
+      client capabilities, and what does that let a server do?
+    choices:
+      - id: a
+        text: They are server tools the client calls via tools/call.
+      - id: b
+        text: >-
+          They are provided by the client/host; a server can invoke them (sampling/createMessage to
+          ask the host's LLM, elicitation/create to ask the user) only if the client advertised
+          them.
+      - id: c
+        text: They are transport options chosen by --transport at launch.
+      - id: d
+        text: They are resources the server exposes through resources/read.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Sampling, elicitation, and logging are client-side primitives. A server doesn't implement
+      them; it calls back into them (sampling/createMessage for an LLM completion,
+      elicitation/create for user input) when the client has declared the capability. They are
+      inverted from the usual "server offers, client calls" direction.
+  - id: ms-200-ff-h
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: free_form
+    prompt: >-
+      A developer expects tools/call to return a plain string and is confused by the response shape.
+      Explain what a tools/call result actually returns and why that structure exists.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that the result is a content array of typed objects, not a bare string.
+        - id: c2
+          text: 'Gives an example typed object, e.g. { "type": "text", "text": "..." }.'
+        - id: c3
+          text: >-
+            Explains the structure supports multiple/mixed content types (text, image, embedded
+            resource, etc.).
+      referenceAnswer: >-
+        tools/call returns a content array whose entries are typed content objects, for example {
+        "type": "text", "text": "..." }. It is an array of typed objects rather than a single string
+        because a tool may legitimately return several pieces of content and more than just text,
+        such as images or embedded resources. Treating the result as a string ignores both the
+        multiplicity and the type tagging that let the host render each piece correctly.
+      passThreshold: 0.6
+    guidance: >-
+      The "returns a string" assumption breaks on any tool that emits an image or multiple blocks.
+      MCP standardizes on a content array of typed objects so a single call can mix text, images,
+      and embedded resources, each labeled by its type.
+  - id: ms-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      When authoring an MCP tool with the TypeScript SDK using zod, what does the model that calls
+      the tool actually receive as the tool's inputSchema?
+    choices:
+      - id: a
+        text: The raw zod object, serialized and sent over the wire.
+      - id: b
+        text: A TypeScript interface compiled to a .d.ts file.
+      - id: c
+        text: Nothing; the model infers arguments from the tool description text alone.
+      - id: d
+        text: >-
+          A JSON Schema that the SDK generated from the zod definition; the model never sees zod
+          itself.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      zod is just an authoring convenience in the TS SDK. The SDK converts it into a JSON Schema,
+      and that JSON Schema is what travels on the wire as inputSchema and is what the model reasons
+      over. The model never sees zod or TypeScript types.
+  - id: ms-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: >-
+      In a tool definition object, both name and title are present. Why does MCP separate them
+      instead of using one field?
+    choices:
+      - id: a
+        text: name is shown to users and title is the internal id used by tools/call.
+      - id: b
+        text: >-
+          name is the unique identifier used to execute the tool (must match exactly in tools/call),
+          while title is a human-readable display label.
+      - id: c
+        text: They are aliases; using either in tools/call works identically.
+      - id: d
+        text: title is the JSON Schema and name is a comment.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      name is the primary key for execution: tools/call must pass it exactly. title is the optional
+      friendly label for display. Separating them lets a server show a readable name in UI without
+      changing the machine identifier the protocol depends on.
+  - id: ms-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: >-
+      Someone reads protocolVersion: "2025-06-18" and assumes it is a typo for a semver like 2.6.18.
+      Why is the date-string form correct, and what is it used for during the handshake?
+    choices:
+      - id: a
+        text: It is a semver and "2025-06-18" is indeed malformed; the handshake will reject it.
+      - id: b
+        text: protocolVersion encodes the server's release date only and plays no role in negotiation.
+      - id: c
+        text: >-
+          MCP versions the protocol with a date string; the client sends one in initialize and the
+          server responds with a version it supports, after which the client disconnects if it
+          cannot speak that version.
+      - id: d
+        text: It is the timeout in milliseconds before the connection drops.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP protocol versions are date strings like 2025-06-18, not semver. In initialize the client
+      sends a requested version; if the server does not support it the server responds with a
+      version it does support, and the client then disconnects only if it cannot speak that returned
+      version. It is a negotiation exchange, not a release-date label or a timeout.
+  - id: ms-200-ff-l
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: free_form
+    prompt: >-
+      Claude Code namespaces MCP tools as mcp__<server>__<tool>. Explain why this namespacing exists
+      and what problem the bare tool name would cause without it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that tools are exposed to the model/permissions as mcp__<servername>__<toolname>
+            with double underscores.
+        - id: c2
+          text: >-
+            Explains the namespacing disambiguates same-named tools across different servers / ties
+            a tool to its origin server.
+        - id: c3
+          text: Connects it to permissioning or allow/deny rules referencing the fully qualified name.
+      referenceAnswer: >-
+        Claude Code surfaces each MCP tool to the model and to permission rules as
+        mcp__<server>__<tool> (double underscores). The prefix records which server a tool came
+        from, so two servers that both expose a "search" tool don't collide and the host can tell
+        them apart. Permission allow/deny rules also key off this fully qualified name, so
+        namespacing is what lets you allow one server's tool without blanket-allowing every "search"
+        everywhere. A bare name would be ambiguous and unsafe to permission.
+      passThreshold: 0.6
+    guidance: >-
+      The mcp__server__tool form is both a disambiguator (multiple servers, same tool name) and the
+      unit that permission rules match against. Plugin-bundled servers extend it to
+      mcp__plugin_<plugin>_<server>__<tool>, and any char outside A-Za-z0-9_- becomes _.
+  - id: ms-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: >-
+      Why does Claude Code require explicit approval before using servers defined in a project's
+      .mcp.json, when local-scoped servers run without that gate?
+    choices:
+      - id: a
+        text: Project servers are slower and approval lets Claude pre-warm them.
+      - id: b
+        text: Approval is required only because project servers always use OAuth.
+      - id: c
+        text: Local servers are remote and therefore inherently trusted, unlike project ones.
+      - id: d
+        text: >-
+          .mcp.json is shared via version control, so an untrusted/checked-in config is a
+          prompt-injection risk that approval mitigates.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Project-scoped servers come from .mcp.json checked into the repo, meaning code you pulled
+      could silently add a server. The approval gate (servers show as Pending approval until
+      accepted) is a security boundary against running attacker-supplied MCP configs. Local servers
+      you added yourself don't need that gate.
+  - id: ms-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
+    prompt: >-
+      The same server name appears in both user scope and project scope with different commands. How
+      does Claude Code resolve this, and why is "the two configs get merged" wrong?
+    choices:
+      - id: a
+        text: >-
+          The two entries are deep-merged field by field, with user values overriding project
+          values.
+      - id: b
+        text: Both servers connect simultaneously under the same name.
+      - id: c
+        text: >-
+          Project outranks user, so the whole project entry is used; scopes do not merge fields, the
+          highest-precedence entry wins outright.
+      - id: d
+        text: User always wins because user scope is the broadest.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Scope precedence is local > project > user > plugin > connectors. On a name collision Claude
+      connects once using the highest-precedence whole entry; there is no field-level merge. Here
+      project beats user, so the project command is used in full and the user entry is ignored for
+      that name.
+  - id: ms-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: >-
+      A team puts secrets directly in a project .mcp.json so everyone gets the same server. Why is
+      using ${VAR} env-var expansion the better pattern, and what happens if a required ${VAR} has
+      no value?
+    choices:
+      - id: a
+        text: ${VAR} encrypts the secret in the file, so committing it is safe.
+      - id: b
+        text: >-
+          ${VAR} keeps secrets out of version control by resolving per developer; a required ${VAR}
+          with no default and no value makes Claude Code fail to parse the config.
+      - id: c
+        text: ${VAR} only works in the url field, so secrets must still be hardcoded elsewhere.
+      - id: d
+        text: >-
+          A missing required ${VAR} is silently replaced with an empty string and the server starts
+          anyway.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      .mcp.json supports ${VAR} and ${VAR:-default} expansion in command, args, env, url, and
+      headers, so each developer supplies their own secret instead of committing it. If a required
+      ${VAR} has no default and no value is present, Claude Code fails to parse the config rather
+      than starting with a blank secret.
+  - id: ms-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Compare --mcp-config and --strict-mcp-config. Explain how each affects which MCP servers
+      Claude Code loads, and why someone running CI might choose the strict flag.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States --mcp-config ADDS servers from a given file/JSON in addition to normal configured
+            sources.
+        - id: c2
+          text: >-
+            States --strict-mcp-config uses ONLY the provided config and ignores other sources
+            (.mcp.json, ~/.claude.json, etc.).
+        - id: c3
+          text: >-
+            Gives a reproducibility/CI rationale: guaranteeing exactly the intended servers with no
+            leakage from user/global config.
+      referenceAnswer: >-
+        --mcp-config loads servers from a specified file or JSON in addition to whatever is already
+        configured (.mcp.json, ~/.claude.json, connectors). --strict-mcp-config makes Claude Code
+        use only the servers from --mcp-config and ignore every other source. In CI you usually want
+        a deterministic run with exactly the servers you declared and nothing leaking in from a
+        developer's global config or claude.ai connectors, so --strict-mcp-config enforces that
+        reproducibility at the cost of any convenience servers.
+      passThreshold: 0.6
+    guidance: >-
+      The two flags are easy to conflate. --mcp-config is additive; --strict-mcp-config is exclusive
+      (only the passed config, everything else ignored). Strict mode is the right call for
+      reproducible automation where you can't tolerate ambient user/global servers bleeding in.
+  - id: ms-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      In claude mcp add <name> -- npx -y <package>, what is the role of the -- separator and the -y
+      flag?
+    choices:
+      - id: a
+        text: '-- runs the server as a background daemon; -y enables YOLO permission mode.'
+      - id: b
+        text: '-- marks the end of arguments and discards them; -y selects the YAML config format.'
+      - id: c
+        text: Both -- and -y are passed to Claude Code itself to set the transport.
+      - id: d
+        text: >-
+          -- separates Claude's flags from the server command (everything after is passed
+          untouched); -y auto-accepts npx's package-install prompt so startup is non-interactive.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The -- boundary tells Claude "stop parsing my flags; everything after is the server's launch
+      command verbatim." npx's -y (alias --yes) only auto-confirms the install prompt so the server
+      can start non-interactively. -y has nothing to do with permissions or daemonizing, a frequent
+      misreading.
+  - id: ms-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: >-
+      Claude Code auto-reconnects HTTP/SSE MCP servers with exponential backoff but does NOT
+      auto-reconnect stdio servers. Why does this distinction make sense?
+    choices:
+      - id: a
+        text: stdio servers never crash, so reconnection logic would be dead code.
+      - id: b
+        text: >-
+          A stdio server is a local child process tied to the session; if it exits there is no
+          endpoint to reconnect to, unlike a network endpoint that may come back.
+      - id: c
+        text: HTTP servers cannot be restarted, so backoff is the only option for them.
+      - id: d
+        text: stdio uses UDP, which is connectionless and cannot reconnect.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A stdio server is just a local process Claude launched; once it dies there is no persistent
+      address to retry against, so reconnection would mean re-spawning, not reconnecting. A remote
+      HTTP/SSE endpoint can transiently drop and return, which is exactly the case
+      exponential-backoff reconnect is designed for.
+  - id: ms-200-mc-s
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: multiple_choice
+    prompt: >-
+      Claude Code defers MCP tool schemas via tool search (ENABLE_TOOL_SEARCH) instead of loading
+      every schema at startup. What problem does this behavior address?
+    choices:
+      - id: a
+        text: It prevents servers from registering more than one tool each.
+      - id: b
+        text: It encrypts tool schemas so the model cannot read them until needed.
+      - id: c
+        text: >-
+          Loading all tool schemas up front consumes context budget; deferring them (loading only
+          names plus server instructions, fetching schemas on demand) saves context.
+      - id: d
+        text: It blocks tools/list so servers cannot advertise tools at all.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Every tool's full JSON Schema in context costs tokens. Tool search loads only tool names plus
+      the server's instructions at start and fetches a tool's schema on demand, trading a small
+      discovery step for a much smaller context footprint. It is a context-budget optimization, not
+      a security or registration limit.
+  - id: ms-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      Explain how an MCP server's prompts and resources surface inside a Claude Code session,
+      contrasting the way each is invoked or referenced.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that MCP prompts become slash commands of the form /mcp__<server>__<prompt>
+            (optionally with arguments).
+        - id: c2
+          text: >-
+            States that MCP resources are referenced via @ mentions like
+            @server:protocol://resource/path and are fetched/attached automatically.
+        - id: c3
+          text: >-
+            Draws the contrast: prompts are invoked as commands (an action), resources are
+            referenced as context (data pulled in).
+      referenceAnswer: >-
+        In Claude Code an MCP server's prompts become slash commands named /mcp__<server>__<prompt>,
+        which you run (optionally with space-separated arguments) to trigger a reusable interaction
+        template. Its resources are instead referenced with @ mentions such as @github:issue://123,
+        and Claude fetches and attaches them automatically as context. The contrast is that a prompt
+        is something you invoke as an action, whereas a resource is contextual data you point at and
+        have pulled in; they map to the two different server primitives.
+      passThreshold: 0.6
+    guidance: >-
+      Prompts and resources are distinct primitives with distinct entry points in Claude Code:
+      prompts are invoked as /mcp__server__prompt slash commands, while resources are @-mentioned
+      (@server:protocol://path) and auto-fetched. Conflating "run a prompt" with "reference a
+      resource" misses that one is an action and the other is attached context.
+  - id: ms-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You are building a personal MCP server that reads files from your laptop and dies when you
+      close Claude Code. There is no remote service and only your single session will ever use it.
+      Which transport should you choose?
+    choices:
+      - id: a
+        text: stdio — it runs as a local process on the same machine with no network or auth overhead.
+      - id: b
+        text: Streamable HTTP — local servers must still be reached over HTTP.
+      - id: c
+        text: SSE — it is the recommended transport for any server that touches local files.
+      - id: d
+        text: WebSocket — required whenever the server holds state during the session.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A single-user, local, session-bound tool is the textbook case for stdio: the server runs as a
+      child process and communicates over standard input/output with no network or auth complexity.
+      Streamable HTTP is for remote/multi-client servers, SSE is deprecated, and WebSocket is a
+      niche Claude Code extension — none is required for a local file tool.
+  - id: ms-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      Your team runs a shared cloud service and wants several developers' Claude Code instances to
+      connect to one MCP server that authenticates each user. Which transport fits, and how do users
+      typically get a token?
+    choices:
+      - id: a
+        text: stdio, with each user passing a token via --env.
+      - id: b
+        text: stdio, since it is the only transport that supports multiple clients.
+      - id: c
+        text: Streamable HTTP, with OAuth used to obtain bearer tokens.
+      - id: d
+        text: WebSocket, because OAuth only works over ws.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A shared, multi-client, remote service is the Streamable HTTP case, and MCP recommends OAuth
+      2.0 for obtaining the bearer tokens that HTTP auth then carries. stdio is a local
+      single-client process and cannot serve many remote developers; OAuth is not tied to WebSocket.
+  - id: ms-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 331
+    type: multiple_choice
+    prompt: >-
+      You want a database MCP server available to everyone who clones the repo, configured once and
+      checked into version control. Which scope do you pick and which file does the entry land in?
+    choices:
+      - id: a
+        text: local scope, written to ~/.claude.json.
+      - id: b
+        text: project scope, written to .mcp.json at the project root.
+      - id: c
+        text: user scope, written to .claude/settings.local.json.
+      - id: d
+        text: project scope, written to .claude/settings.json.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      project scope is the shared, version-controlled scope and its servers live in .mcp.json at the
+      repo root. local scope is private and stored in ~/.claude.json; user scope is
+      global-but-private (also in ~/.claude.json). MCP server entries do not go in
+      .claude/settings.json.
+  - id: ms-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 336
+    type: multiple_choice
+    prompt: >-
+      Your project's .mcp.json defines a server, but it needs an API key that must NOT be committed.
+      How do you set this up so each developer supplies their own key without leaking it into the
+      repo?
+    choices:
+      - id: a
+        text: Hardcode the key in .mcp.json and add the file to .gitignore.
+      - id: b
+        text: Put the literal key in the env block and rely on project approval to keep it private.
+      - id: c
+        text: Store the key in additionalContext so only the model can read it.
+      - id: d
+        text: >-
+          Reference the key in the .mcp.json entry as ${MY_API_KEY} and have each developer export
+          MY_API_KEY in their own environment.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      .mcp.json supports ${VAR} (and ${VAR:-default}) expansion in command, args, env, url, and
+      headers, so you commit a placeholder and each developer supplies the real value via their
+      environment. Hardcoding a secret then gitignoring the whole shared file defeats the purpose;
+      secrets should never be a literal in a checked-in file.
+  - id: ms-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: >-
+      A CI job launches Claude Code and must connect to exactly the MCP servers in ci-mcp.json —
+      nothing from ~/.claude.json, .mcp.json, or claude.ai connectors should leak in. Which flags do
+      you pass?
+    choices:
+      - id: a
+        text: '--mcp-config ci-mcp.json only'
+      - id: b
+        text: '--mcp-config ci-mcp.json --strict-mcp-config'
+      - id: c
+        text: '--strict-mcp-config only'
+      - id: d
+        text: '--scope project --mcp-config ci-mcp.json'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --mcp-config adds a config source but does not exclude the others, so on its own the
+      user/project servers would still load. Adding --strict-mcp-config makes Claude Code use ONLY
+      the servers from --mcp-config — the exact isolation a reproducible CI run needs. --scope is
+      for claude mcp add, not launch.
+  - id: ms-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: >-
+      You want to register a Postgres MCP server over stdio using a published npm package, passing a
+      --dsn argument, so it runs non-interactively. Which command is correct?
+    choices:
+      - id: a
+        text: claude mcp add --transport stdio db npx -y @some/pg-mcp --dsn postgres://...
+      - id: b
+        text: claude mcp add --transport http db -- npx @some/pg-mcp --dsn postgres://...
+      - id: c
+        text: claude mcp add --transport stdio db -- npx -y @some/pg-mcp --dsn postgres://...
+      - id: d
+        text: claude mcp add db --dsn postgres://... -- npx @some/pg-mcp
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The -- separates Claude's flags from the server command, and npx -y auto-confirms npx's
+      install prompt so the process starts non-interactively. Option a omits the required --; b
+      picks the wrong (http) transport for a local process; d misplaces the server's --dsn as a
+      claude flag and drops -y.
+  - id: ms-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      The same MCP server name "search" is configured in both your user scope (~/.claude.json) and
+      the project's .mcp.json, with different URLs. You expected Claude Code to merge the two
+      entries. What actually happens, and which entry is used?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the entries are NOT merged — the whole winning entry is used and the other is
+            ignored.
+        - id: c2
+          text: States project scope outranks user scope, so the project (.mcp.json) entry wins.
+        - id: c3
+          text: (optional) Notes the precedence order is local > project > user > plugin > connectors.
+      referenceAnswer: >-
+        Claude Code does not merge entries across scopes. On a name collision it connects once using
+        the single highest-precedence entry and ignores the rest — no field-level merging. Project
+        scope ranks above user scope (the order is local > project > user > plugin-provided >
+        claude.ai connectors), so the project .mcp.json entry wins and the user-scope URL is not
+        used.
+      passThreshold: 0.6
+    guidance: >-
+      The trap is assuming scopes accumulate. They don't: the winning source's whole entry is taken
+      as-is. Knowing local > project > user lets you predict which config actually drives the
+      connection.
+  - id: ms-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      A teammate added a server to the project's .mcp.json and pushed it. You pull, start Claude
+      Code, and the server shows as "Pending approval" and its tools are unavailable. What is the
+      correct next step?
+    choices:
+      - id: a
+        text: Re-run claude mcp add with --scope project to overwrite the pending entry.
+      - id: b
+        text: Move the entry to ~/.claude.json so it loads without approval.
+      - id: c
+        text: >-
+          Approve the project-scoped server when prompted; project .mcp.json servers require
+          explicit approval before use.
+      - id: d
+        text: Delete the server and recreate it with --transport http so approval is skipped.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Project-scoped servers from .mcp.json are gated behind explicit user approval as a defense
+      against untrusted/injected configs — so the fix is simply to approve it. The other options
+      work around a deliberate security gate rather than satisfying it. (claude mcp
+      reset-project-choices re-prompts later.)
+  - id: ms-300-ff-i
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: free_form
+    prompt: >-
+      You want a permissions allowlist that lets Claude call ONLY the "create_issue" tool from your
+      "github" MCP server, and nothing else from that server. Give the exact allowlist string, and
+      explain how you would broaden it to permit every tool on the github server instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Gives the exact allowlist string mcp__github__create_issue (double underscores,
+            mcp__<server>__<tool>).
+        - id: c2
+          text: >-
+            Explains that allowing every tool uses a wildcard/all-tools form such as mcp__github (or
+            mcp__github__*) referencing the whole server.
+        - id: c3
+          text: (optional) Notes the separators are double underscores, not dots/colons/slashes.
+      referenceAnswer: >-
+        To allow only that one tool you add mcp__github__create_issue — Claude Code surfaces MCP
+        tools to the model and permission rules as mcp__<server>__<tool> with double underscores. To
+        permit every tool on the server instead, you reference the whole server (e.g. mcp__github,
+        which covers all of that server's tools). The separators are double underscores, never dots,
+        colons, or slashes.
+      passThreshold: 0.6
+    guidance: >-
+      The naming convention mcp__<server>__<tool> is what both the model and permission allowlists
+      key on. Naming a single tool restricts to it; naming just the server grants all of its tools.
+      Dot/colon/slash forms match nothing.
+  - id: ms-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      Your "github" MCP server publishes a prompt template named "pr_review" that takes a PR number.
+      In a Claude Code session, how do you invoke it on PR 456?
+    choices:
+      - id: a
+        text: '@github:pr_review 456'
+      - id: b
+        text: mcp__github__pr_review(456)
+      - id: c
+        text: claude prompt github pr_review 456
+      - id: d
+        text: /mcp__github__pr_review 456
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      MCP prompts become slash commands of the form /mcp__<server>__<prompt>, with space-separated
+      arguments — here /mcp__github__pr_review 456. The @ form is for resources, the function-call
+      syntax is not a thing, and there is no claude prompt subcommand for invoking MCP prompts
+      in-session.
+  - id: ms-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      During a session you want to pull the contents of GitHub issue 123 (exposed as an MCP resource
+      by the "github" server) into your prompt so Claude can read it. What do you type?
+    choices:
+      - id: a
+        text: /mcp__github__issue 123
+      - id: b
+        text: '@github:issue://123'
+      - id: c
+        text: resources/read github issue 123
+      - id: d
+        text: mcp__github__issue://123
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      MCP resources are referenced in prompts with an @ mention shaped like
+      @server:protocol://resource/path, so @github:issue://123 fetches and attaches the issue
+      automatically. The slash-command form is for prompts, resources/read is the underlying
+      JSON-RPC method (not user syntax), and the last option mixes the tool-naming convention into a
+      resource URI.
+  - id: ms-300-ff-l
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >-
+      A remote (HTTP) MCP server you added requires OAuth. You restart Claude Code and its tools
+      show as unauthenticated. Describe how you authenticate it from inside the session, and
+      contrast which shell command you would use instead to remove the server entirely.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States you run the /mcp slash command in-session to authenticate the OAuth server (and
+            can clear/refresh credentials there).
+        - id: c2
+          text: States that to remove the server you use the shell command claude mcp remove <name>.
+        - id: c3
+          text: (optional) Notes /mcp also shows server status/tool counts.
+      referenceAnswer: >-
+        Inside the session you run /mcp, which opens the panel showing each server's status and tool
+        counts and lets you authenticate the OAuth server (and clear or refresh its stored
+        credentials). Removing the server entirely is a shell operation: claude mcp remove <name>
+        (you can inspect with claude mcp list / claude mcp get <name>). So /mcp handles auth
+        in-session, while management like removal happens via claude mcp ... from the shell.
+      passThreshold: 0.6
+    guidance: >-
+      /mcp is the in-session control surface and the only place to drive OAuth authentication;
+      lifecycle management (list/get/remove) is done with claude mcp ... commands. Mixing the two up
+      is the common error.
+  - id: ms-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      You are writing an MCP server with the TypeScript SDK. You construct an McpServer, register
+      one tool, and the process starts but Claude Code never connects over stdio. Which missing step
+      is the most likely cause?
+    choices:
+      - id: a
+        text: You wrote the JSON-RPC messages to stderr instead of letting the transport use stdout.
+      - id: b
+        text: You never called await server.connect(new StdioServerTransport()).
+      - id: c
+        text: You forgot to call server.listen(3000).
+      - id: d
+        text: You did not set protocolVersion to a semver string in the McpServer constructor.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An McpServer does nothing until you attach a transport and connect — for stdio that is await
+      server.connect(new StdioServerTransport()), which wires JSON-RPC over stdin/stdout for you.
+      There is no listen() for stdio (that would be an HTTP idea), protocolVersion is a date string
+      negotiated at runtime rather than a semver constructor field, and the transport (not your
+      code) manages writing framed messages to stdout once you connect.
+  - id: ms-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      With the high-level TypeScript SDK you need to add a tool. The handler should return its
+      result so the model can read it. Which call shape and return value are correct?
+    choices:
+      - id: a
+        text: server.registerTool(name, handler) returning a plain string from the handler.
+      - id: b
+        text: 'server.addTool({ name, run }) returning { output: result }.'
+      - id: c
+        text: server.tool(name, { schema }, async () => ({ result })) returning a bare object.
+      - id: d
+        text: >-
+          server.registerTool(name, { description, inputSchema }, async (args) => ({ content: [{
+          type: "text", text: result }] }))
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The high-level API is registerTool(name, config, handler) where config carries
+      description/title/ inputSchema and the async handler returns a result with a content array of
+      typed objects (e.g. { type: "text", text }). A tool result is never a bare string or an {
+      output } object, and addTool is not the SDK method (the older API was server.tool(...)).
+  - id: ms-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 333
+    type: free_form
+    prompt: >-
+      Someone says "use npx -y in the launch command so the MCP server runs in the background and
+      skips all permission prompts." Explain what the -y flag actually does and correct the two
+      misconceptions.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States -y (alias --yes) only auto-confirms npx's package-install prompt so the command
+            runs non-interactively.
+        - id: c2
+          text: Corrects that -y has nothing to do with background/daemon execution.
+        - id: c3
+          text: >-
+            Corrects that -y has nothing to do with Claude Code permission prompts or YOLO/bypass
+            mode.
+      referenceAnswer: >-
+        The -y (alias --yes) flag belongs to npx, not Claude Code: it auto-accepts npx's prompt to
+        install the package, so the server can start non-interactively in scripts. It does NOT make
+        the server run as a background daemon, and it has nothing to do with Claude Code's
+        permission prompts or any bypass/YOLO mode — those are governed by permission rules and
+        flags like --dangerously-skip-permissions, not npx -y.
+      passThreshold: 0.6
+    guidance: >-
+      npx -y is purely about non-interactive package installation. Conflating it with daemonization
+      or with Claude Code's permission system is the classic misread; the two systems are unrelated.
+  - id: ms-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 343
+    type: multiple_choice
+    prompt: >-
+      A stdio MCP server you wrote needs to know the directory of the user's current project so it
+      can read repo files. Which environment variable does Claude Code expose to the server process
+      for this?
+    choices:
+      - id: a
+        text: MCP_PROJECT_ROOT
+      - id: b
+        text: PWD_ROOT
+      - id: c
+        text: CLAUDE_PROJECT_DIR
+      - id: d
+        text: CLAUDE_PLUGIN_ROOT
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Claude Code exposes the project root to a stdio server via CLAUDE_PROJECT_DIR.
+      CLAUDE_PLUGIN_ROOT points at a plugin's install directory (a different concept), and
+      MCP_PROJECT_ROOT / PWD_ROOT are not real variables.
+  - id: ms-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      Your MCP server returns large database schemas and Claude Code warns the tool output exceeds
+      the token limit, truncating results. You want to raise the cap for this Claude Code instance.
+      Which knob do you turn?
+    choices:
+      - id: a
+        text: Set MCP_TIMEOUT higher so the server has time to send more.
+      - id: b
+        text: Increase MAX_MCP_OUTPUT_TOKENS (default 25,000) in the environment.
+      - id: c
+        text: Set MCP_TOOL_TIMEOUT to 0 to disable truncation.
+      - id: d
+        text: Add maxResultSizeChars to the .mcp.json server entry.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Tool-output size in tokens is governed by MAX_MCP_OUTPUT_TOKENS (default 25,000; Claude Code
+      warns past ~10,000). The MCP_TIMEOUT / MCP_TOOL_TIMEOUT vars control startup and per-tool
+      execution time, not output size, and maxResultSizeChars is a server-author _meta annotation,
+      not a .mcp.json entry field.
+  - id: ms-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: free_form
+    prompt: >-
+      Mid-session your stdio MCP server crashes and its tools vanish for the rest of the session,
+      but a remote HTTP server that briefly dropped came back on its own. Explain why the two behave
+      differently and what you would have to do to get the stdio server's tools back.
+    rubric:
+      criteria:
+        - id: c1
+          text: States HTTP (and SSE) servers auto-reconnect (with exponential backoff) when they drop.
+        - id: c2
+          text: States stdio servers (local child processes) are NOT auto-reconnected by Claude Code.
+        - id: c3
+          text: >-
+            States you would have to restart the session (or otherwise relaunch/re-add the stdio
+            server) to restore its tools.
+      referenceAnswer: >-
+        The difference is the transport. Claude Code auto-reconnects HTTP/SSE servers with
+        exponential backoff, so the remote one recovered by itself. A stdio server is a local child
+        process and is NOT auto-reconnected once it crashes, so its tools stay gone. To get them
+        back you have to relaunch it — in practice by restarting the Claude Code session (or
+        otherwise re-adding/restarting the server).
+      passThreshold: 0.6
+    guidance: >-
+      Reconnection behavior follows the transport: HTTP/SSE reconnect automatically, stdio does not.
+      The crash being terminal for stdio is why long-lived local servers warrant their own
+      supervision and why a flaky remote service is more forgiving in-session.
+  - id: ms-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      You add an MCP server with dozens of tools and worry it will flood the model's context with
+      schemas at startup. By default, how does Claude Code keep this cheap, and which environment
+      variable would you set to force every tool's schema to load eagerly instead?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States tool search is on by default, deferring tool schemas and discovering them on
+            demand (only names plus server instructions load at start).
+        - id: c2
+          text: Identifies ENABLE_TOOL_SEARCH as the controlling variable.
+        - id: c3
+          text: States setting ENABLE_TOOL_SEARCH=false disables deferral so all schemas load up front.
+      referenceAnswer: >-
+        By default Claude Code uses tool search: MCP tool schemas are deferred and discovered on
+        demand, so at startup only the tool names plus server instructions load, saving context. The
+        behavior is controlled by ENABLE_TOOL_SEARCH (true/auto/auto:N/false). Setting
+        ENABLE_TOOL_SEARCH=false turns deferral off so every tool's full schema loads eagerly at
+        startup.
+      passThreshold: 0.6
+    guidance: >-
+      Tool search exists precisely to keep large MCP tool surfaces from eating context: it loads
+      names first and fetches schemas when needed. ENABLE_TOOL_SEARCH=false reverts to eager loading
+      — useful to know when debugging why a big server suddenly costs more context.
+  - id: ms-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You want to expose Claude Code's own tools to a different MCP client (another host) by running
+      Claude Code itself as an MCP server over stdio. Which command does that?
+    choices:
+      - id: a
+        text: claude mcp add self -- claude
+      - id: b
+        text: claude mcp serve
+      - id: c
+        text: claude mcp host --transport stdio
+      - id: d
+        text: claude serve --as-mcp
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      claude mcp serve runs Claude Code itself as a stdio MCP server, exposing Claude's own tools to
+      another MCP client. The other commands are invented; claude mcp add registers an external
+      server (the opposite direction), and there is no claude mcp host or claude serve --as-mcp.
+  - id: ms-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A developer adds a server to project-scoped .mcp.json, commits it, and a teammate pulls the
+      repo. The teammate restarts Claude Code but the server's tools never appear and `claude mcp
+      list` shows the server as `⏸ Pending approval`. The teammate insists the config is identical
+      to a working user-scoped server. What is the actual cause?
+    choices:
+      - id: a
+        text: >-
+          Project-scoped servers from .mcp.json require explicit per-user approval before they are
+          used; the entry is parsed but gated until the teammate approves it.
+      - id: b
+        text: >-
+          .mcp.json only supports http servers, so a stdio entry is silently rejected and shown as
+          pending.
+      - id: c
+        text: >-
+          The teammate must re-run `claude mcp add` because committed .mcp.json files are not read
+          on startup.
+      - id: d
+        text: >-
+          Project scope is lower precedence than user scope, so the user-scoped server suppressed
+          it.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Project-scoped servers are a prompt-injection surface, so Claude Code requires each user to
+      approve them before the tools load; until then they show as pending. The config is fine.
+      User-scoped servers a teammate added themselves never went through this gate, which is why it
+      "felt" different.
+  - id: ms-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: >-
+      The same server name `db` is defined in three places: a local-scope entry (with one DSN), a
+      project `.mcp.json` entry (with a different DSN), and a user-scope entry (with a third DSN).
+      The user expects Claude Code to merge them or use the project one for the team. Which DSN does
+      Claude actually connect with, and why?
+    choices:
+      - id: a
+        text: The project-scope DSN, because project entries always win for shared team tooling.
+      - id: b
+        text: A merged entry combining all three, with later scopes overriding individual fields.
+      - id: c
+        text: >-
+          The local-scope DSN, because local has the highest precedence and the whole winning entry
+          is used without merging fields across scopes.
+      - id: d
+        text: >-
+          The user-scope DSN, because user scope is evaluated last and therefore overrides the
+          others.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Scope precedence is local > project > user > plugin > connectors. On a name collision Claude
+      connects once using the single highest-precedence entry; fields are never merged across
+      scopes. So the local DSN wins entirely. The belief that scopes merge or that "last wins" is
+      the misconception.
+  - id: ms-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      A CI job launches Claude Code with `--mcp-config ci-servers.json`. The job is supposed to use
+      only the two servers in that file, but logs show a third server (one configured in the
+      runner's `~/.claude.json`) also connecting, occasionally causing flaky failures. Which fix
+      matches the intent?
+    choices:
+      - id: a
+        text: >-
+          Add `--strict-mcp-config` so Claude Code uses only the servers from --mcp-config and
+          ignores all other configured sources.
+      - id: b
+        text: Replace --mcp-config with --strict-mcp-config; they are the same flag with a longer name.
+      - id: c
+        text: >-
+          Delete ~/.claude.json before each run, because --mcp-config cannot override user-scope
+          servers.
+      - id: d
+        text: Set MCP_TIMEOUT=0 so the extra server fails to start.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --mcp-config ADDS a config source on top of the normal ones, so user-scope servers still load.
+      --strict-mcp-config restricts Claude Code to ONLY the --mcp-config servers, giving the
+      reproducible set CI wants. The two flags are distinct, and MCP_TIMEOUT controls startup time,
+      not which servers load.
+  - id: ms-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: free_form
+    prompt: >-
+      A team commits a project `.mcp.json` with `"command": "npx"`, `"args": ["-y", "@acme/db"]`,
+      and `"env": {"DSN": "postgres://admin:hunter2@prod-db/app"}`. A security review flags the
+      hardcoded credential. Recommend a structural fix that still lets the server stay shared via
+      version control, and explain why moving it to user scope is not the right answer.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends env-var expansion (e.g. `"DSN": "${ACME_DSN}"` or `${ACME_DSN:-default}`) so
+            the secret is supplied from each developer's own environment, not committed.
+        - id: c2
+          text: Notes that .mcp.json env expansion works in command, args, env, url, and headers.
+        - id: c3
+          text: >-
+            Explains that moving to user scope would lose the shared/team aspect, defeating the
+            purpose of a committed project server.
+      referenceAnswer: >-
+        Replace the literal DSN with an env-var reference such as `"DSN": "${ACME_DSN}"` (optionally
+        with a default via `${ACME_DSN:-...}`). .mcp.json supports ${VAR} expansion in command,
+        args, env, url, and headers, so the committed file stays shared while each developer injects
+        the secret from their own environment. Moving the server to user scope would make it private
+        to each person and no longer shared via version control, defeating the reason it was a
+        project server.
+      passThreshold: 0.6
+    guidance: >-
+      The fix is ${VAR} env expansion in the committed .mcp.json, which keeps the server shared
+      while keeping secrets out of VCS. Moving to user scope loses sharing; base64-encoding still
+      commits the secret; the transport choice is irrelevant to the leak.
+  - id: ms-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A team's MCP server occasionally takes a long time to RETURN from a single tool call, and
+      those calls get cut off. To fix it a developer raises MCP_TIMEOUT, but the long calls keep
+      getting cut off while unrelated servers now wait longer at launch. Which distinction did the
+      developer miss?
+    choices:
+      - id: a
+        text: >-
+          MCP_TIMEOUT governs how long Claude Code waits for a server to START UP, not how long a
+          single tool call may run; per-tool execution time is bounded separately (a server's
+          `timeout` field, falling back to MCP_TOOL_TIMEOUT), so that is the knob to raise.
+      - id: b
+        text: >-
+          MCP_TIMEOUT does cap per-call execution, but it is overridden by MAX_MCP_OUTPUT_TOKENS, so
+          the output limit must be raised instead.
+      - id: c
+        text: >-
+          Tool-call duration cannot be configured at all; the only fix is to make the server stream
+          Server-Sent Events so the call never times out.
+      - id: d
+        text: >-
+          MCP_TIMEOUT only applies to stdio servers, so a remote HTTP server's slow calls are
+          governed by the exponential-backoff reconnect window instead.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      MCP_TIMEOUT is the server STARTUP wait, which is why raising it only made launch slower. The
+      limit on how long an individual tool call may run is a different setting: a per-server
+      `timeout` field in the config entry (in milliseconds), which overrides the MCP_TOOL_TIMEOUT
+      environment variable for that server. Conflating startup timeout with per-call execution
+      timeout is the missed distinction; MAX_MCP_OUTPUT_TOKENS caps output size, not duration, and
+      reconnect backoff is unrelated.
+  - id: ms-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: multiple_choice
+    prompt: >-
+      An engineer is choosing a transport for an internal service that maintains shared state, must
+      be reachable by several teammates' Claude Code sessions at once, and should keep running after
+      anyone closes their editor. They are leaning toward stdio "for simplicity." Why is stdio the
+      wrong fit here?
+    choices:
+      - id: a
+        text: >-
+          A stdio server is a local child process tied to one client and dies with the session, so
+          it cannot serve multiple users, share state, or outlive the editor; Streamable HTTP fits
+          those needs.
+      - id: b
+        text: stdio cannot expose tools, only resources, so multi-user tool access is impossible.
+      - id: c
+        text: stdio requires OAuth, which is too heavy for an internal service.
+      - id: d
+        text: >-
+          stdio servers cannot use JSON-RPC, so they cannot negotiate capabilities with multiple
+          clients.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      stdio runs as a local child process serving a single client and terminates with the session.
+      Shared state, multi-client access, and independent lifetime are exactly what remote Streamable
+      HTTP provides. stdio supports all primitives and uses the same JSON-RPC data layer, so b/c/d
+      are false.
+  - id: ms-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: multiple_choice
+    prompt: >-
+      A remote HTTP MCP server briefly went down. After it recovered, the user noticed it had
+      silently reconnected on its own. The same day a local stdio server crashed and stayed dead
+      until the user restarted Claude Code. Why did the two behave differently?
+    choices:
+      - id: a
+        text: stdio servers reconnect only if `list_changed` was enabled; the user forgot to enable it.
+      - id: b
+        text: Both reconnect automatically, but the stdio one needed `MCP_TIMEOUT` raised to retry.
+      - id: c
+        text: >-
+          HTTP servers reconnect because they are stateless; stdio servers are stateful and so
+          cannot.
+      - id: d
+        text: >-
+          HTTP/SSE servers auto-reconnect with exponential backoff, but stdio servers are local
+          processes that are not auto-reconnected once they exit.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Claude Code auto-reconnects HTTP/SSE servers with exponential backoff, but a stdio server is a
+      local child process and is NOT auto-restarted after it exits. list_changed governs live tool
+      refresh, not reconnection, and MCP_TIMEOUT controls startup wait, not restart-after-crash.
+  - id: ms-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      During the initialize handshake a client requests protocolVersion "2025-06-18" but the server
+      only speaks "2024-11-05". A developer assumes the client will silently keep going with reduced
+      features. According to the MCP lifecycle spec, what actually happens on a version that the
+      server does not support, and why is the developer's "just degrade gracefully" model wrong?
+    choices:
+      - id: a
+        text: >-
+          The server responds with a protocol version it does support, and the client SHOULD
+          disconnect if it cannot speak that returned version; version selection is a discrete
+          negotiation step, not per-feature graceful degradation.
+      - id: b
+        text: >-
+          The client silently downgrades to whatever the server sends and always continues, because
+          protocolVersion is advisory only.
+      - id: c
+        text: >-
+          The server picks the higher of the two versions and the client must adapt, since servers
+          are authoritative over the protocol version.
+      - id: d
+        text: >-
+          Capability negotiation replaces version negotiation entirely, so a version the server does
+          not support is harmless and ignored.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The spec defines a negotiation, not an automatic mutual-termination gate: if the server does
+      not support the client's requested version it MUST respond with another version it does
+      support. The client then SHOULD disconnect only if it cannot speak that returned version. So
+      there is a discrete version-selection step that can end the connection, but it is a
+      propose-and-disconnect negotiation, not per-feature graceful degradation (that is what
+      capability negotiation does, once a version is agreed).
+  - id: ms-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 454
+    type: free_form
+    prompt: >-
+      A server author declares `"capabilities": {"tools": {}}` in its initialize response, then
+      later tries to push a `notifications/tools/list_changed` so Claude Code picks up newly added
+      tools. Claude never refreshes the tool list. Diagnose the cause and state the one-line fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that `"tools": {}` advertises the tools primitive but does NOT advertise the
+            listChanged sub-capability.
+        - id: c2
+          text: >-
+            States that list_changed notifications are capability-gated, so the client ignores them
+            unless the capability was declared.
+        - id: c3
+          text: 'Gives the fix: declare `"tools": {"listChanged": true}` in the initialize response.'
+      referenceAnswer: >-
+        An empty object `"tools": {}` says the server supports tools but advertises no extra
+        sub-features. The listChanged notification is capability-gated: because the server never
+        declared `listChanged: true`, the client does not expect tools/list_changed and ignores it.
+        The fix is to declare `"capabilities": {"tools": {"listChanged": true}}` so the notification
+        is honored.
+      passThreshold: 0.6
+    guidance: >-
+      Capabilities are nested and meaningful: a primitive can be supported while its dynamic-update
+      sub-feature is not. `{}` means "tools, no extras"; `{"listChanged": true}` additionally
+      promises list_changed notifications, which Claude Code then honors to refresh tools live
+      without reconnecting.
+  - id: ms-400-ff-j
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A user runs `claude mcp add ws-server --transport ws -- ...` and Claude Code rejects the
+      --transport value. The user is confused because they have seen `"type": "ws"` work in a config
+      file. Reconcile these two facts: how can WebSocket be supported yet --transport ws be
+      rejected?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the --transport flag accepts only http, sse, and stdio, so ws is correctly
+            rejected.
+        - id: c2
+          text: >-
+            States WebSocket IS supported, but only when configured via JSON (.mcp.json / add-json)
+            with `"type": "ws"`.
+        - id: c3
+          text: Concludes the two facts do not conflict -- they are two different configuration paths.
+      referenceAnswer: >-
+        Both facts are true. Claude Code supports a WebSocket transport, but only when it is
+        configured through JSON with `"type": "ws"` (header-only auth). The CLI `--transport` flag
+        accepts only http, sse, and stdio -- ws is not an accepted value -- so the command is
+        correctly rejected. There is no contradiction: WebSocket is available via the JSON config
+        path, just not via the --transport flag.
+      passThreshold: 0.6
+    guidance: >-
+      The resolution is that WebSocket lives on a different configuration path. `"type": "ws"` in
+      JSON works, but the --transport flag's allowed values are only http, sse, and stdio. Both
+      observations are correct and not in conflict.
+  - id: ms-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 461
+    type: multiple_choice
+    prompt: >-
+      A reviewer claims a server is "definitely a remote server" because its config uses `"type":
+      "streamable-http"`, and separately claims another is remote because it is "reached over
+      OAuth." A colleague says local-vs-remote is about where the server runs, not the protocol. Who
+      is reasoning correctly?
+    choices:
+      - id: a
+        text: >-
+          The reviewer: any server using streamable-http is by definition remote, and OAuth is only
+          available remotely, so both claims are definitionally correct.
+      - id: b
+        text: >-
+          The colleague: local vs remote describes where the server runs. streamable-http is the
+          typical remote transport and OAuth a typical remote auth, but the transport/auth are
+          correlates, not the definition.
+      - id: c
+        text: 'Neither: local vs remote is determined solely by whether the server appears in .mcp.json.'
+      - id: d
+        text: >-
+          The reviewer for OAuth but not for transport, because OAuth is the only true remote
+          indicator.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Local" vs "remote" describes where the server runs and is reached. stdio strongly correlates
+      with local and Streamable HTTP/OAuth with remote, but those are typical pairings, not
+      definitions. The colleague has the right model; treating transport or auth as the definition
+      is the subtle error.
+  - id: ms-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: multiple_choice
+    prompt: >-
+      An allowlist pins permissions to `mcp__db__run_query`. A teammate's adaptive server uses
+      `listChanged` to add a tool the model now wants to call, but every call is blocked by
+      permissions even though the new tool clearly exists. What tension does this expose?
+    choices:
+      - id: a
+        text: >-
+          Dynamic (listChanged) tool sets conflict with permission rules that pin specific
+          mcp__server__tool names; the new tool's namespaced name is not on the allowlist, so it is
+          blocked.
+      - id: b
+        text: >-
+          listChanged disables permission checks entirely, so the block is actually a bug in the
+          server.
+      - id: c
+        text: >-
+          Adding tools at runtime forces the server name to change, breaking the mcp__db__ prefix
+          match.
+      - id: d
+        text: Permissions only apply to stdio servers, so the dynamic HTTP server should be unaffected.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Dynamic tool servers are flexible but collide with allowlists that name specific tools like
+      mcp__db__run_query. A newly added tool gets its own mcp__db__<newtool> name that the allowlist
+      never listed, so it is denied. This stability-vs-flexibility tension is the real tradeoff, not
+      a server bug.
+  - id: ms-400-ff-m
+    tier: 400
+    bloom: analyze
+    difficulty: 467
+    type: free_form
+    prompt: >-
+      A server author wants a single tool that legitimately returns very large database schema
+      dumps. Their users keep hitting truncation. The author is about to email everyone to set
+      MAX_MCP_OUTPUT_TOKENS=200000. Explain why an author-side annotation is the better lever and
+      name the relevant knobs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that Claude Code warns past ~10,000 tokens and caps MCP output via
+            MAX_MCP_OUTPUT_TOKENS (default 25,000), a user-side setting.
+        - id: c2
+          text: >-
+            States the author can annotate `_meta["anthropic/maxResultSizeChars"]` (ceiling 500,000)
+            on the tool/result instead of forcing every user to change config.
+        - id: c3
+          text: >-
+            Frames it as a server-author-vs-user-config tradeoff: the author should not push a
+            global user setting for one big tool.
+      referenceAnswer: >-
+        Claude Code warns when MCP tool output exceeds ~10,000 tokens and caps it via
+        MAX_MCP_OUTPUT_TOKENS (default 25,000), which is a per-user environment setting. Asking
+        every user to raise it is fragile and over-broad. The author can instead annotate the
+        tool/result with `_meta["anthropic/maxResultSizeChars"]` (up to a 500,000-char ceiling) so
+        the large payload is allowed for that tool specifically, without each user reconfiguring
+        their environment.
+      passThreshold: 0.6
+    guidance: >-
+      This is a server-author-vs-user-config tradeoff. The user-side MAX_MCP_OUTPUT_TOKENS (default
+      25,000, warning at ~10,000) affects everything globally. The per-tool
+      `_meta["anthropic/maxResultSizeChars"]` annotation (ceiling 500,000) lets the author raise the
+      limit precisely where it is needed.
+  - id: ms-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A `claude mcp add` for a stdio server was written as `claude mcp add db --dsn postgres://...
+      -- npx -y @bytebase/dbhub`. Claude Code errors out, complaining it does not recognize `--dsn`.
+      What is the structural mistake?
+    choices:
+      - id: a
+        text: '`--dsn` must be passed via `--env DSN=...`; server flags can never follow `--`.'
+      - id: b
+        text: The command is missing `--transport http`, which is mandatory for any stdio server.
+      - id: c
+        text: >-
+          `--dsn` is the server's flag but appears before the `--` separator, so Claude Code tries
+          to parse it as its own option; it must go after the `--`, with the server command.
+      - id: d
+        text: '`npx -y` must come before the name `db`, otherwise the `--` boundary is ignored.'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The `--` separates Claude's flags from the server command; everything after it is passed
+      untouched. Here `--dsn` landed before the `--`, so Claude tried to interpret it as one of its
+      own options and failed. The fix is `claude mcp add db -- npx -y @bytebase/dbhub --dsn
+      postgres://...`.
+  - id: ms-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: multiple_choice
+    prompt: >-
+      A developer copied a snippet that calls `server.tool("search", ...)` from one tutorial and
+      `server.registerTool("search", {...}, handler)` from another, then concluded one tutorial
+      "must be using a fake API." How should they actually interpret the difference?
+    choices:
+      - id: a
+        text: >-
+          Both are real SDK APIs across versions; `registerTool(name, config, handler)` is the newer
+          high-level form and `server.tool(...)` an older form, so the tutorials target different
+          SDK versions.
+      - id: b
+        text: '`server.tool` is the only real method; `registerTool` is invented by the second tutorial.'
+      - id: c
+        text: '`registerTool` only exists on the low-level `Server` class, never on `McpServer`.'
+      - id: d
+        text: >-
+          They are aliases that behave identically in every SDK version, so the version does not
+          matter.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Neither tutorial is fake. The TS SDK has evolved: older versions exposed `server.tool(...)`
+      and newer ones the high-level `registerTool(name, config, handler)` on McpServer. The right
+      read is a version difference, not a fabricated API. Pin your SDK version rather than assuming
+      one is wrong.
+  - id: ms-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      A server author asks Claude to call a tool by sending only the human-readable `title` of the
+      tool (not its `name`) in a `tools/call` request, reasoning the title is "friendlier." The call
+      fails. Explain which field `tools/call` keys on and why title is the wrong choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States tools/call's params use `name` (plus `arguments`), and the name must match the
+            discovery name exactly.
+        - id: c2
+          text: >-
+            Identifies `name` as the unique id / primary key for execution within the server, while
+            `title` is only a human-readable display label.
+        - id: c3
+          text: >-
+            Concludes that sending the title (or any non-matching string) causes the call to fail to
+            resolve to a tool.
+      referenceAnswer: >-
+        tools/call takes params `{ "name": ..., "arguments": {...} }`, and `name` must exactly match
+        the name returned by tools/list. `name` is the tool's unique id and the primary key used for
+        execution; `title` is only a human-readable display label and is not how tools are
+        addressed. Sending the title means there is no tool whose name matches it, so the call
+        cannot resolve.
+      passThreshold: 0.6
+    guidance: >-
+      A tool object has a machine `name` (the unique execution id) and a separate human `title`.
+      tools/call keys strictly on `name`, which must match discovery exactly; `arguments` then
+      conform to inputSchema. The title exists only for display, so using it to invoke the tool
+      cannot resolve.
+  - id: ms-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      An MCP server author defines tool input schemas in TypeScript and worries the model "sees zod
+      and gets confused" when arguments do not match. A reviewer says the model never sees zod at
+      all. Who is right and what does the model actually receive?
+    choices:
+      - id: a
+        text: >-
+          The author: the model receives the raw zod object and must understand zod syntax to call
+          tools.
+      - id: b
+        text: >-
+          Both are wrong: tools are described to the model using TypeScript interfaces, not JSON
+          Schema or zod.
+      - id: c
+        text: The reviewer, but only because zod is stripped at runtime and replaced by an empty schema.
+      - id: d
+        text: >-
+          The reviewer: the SDK converts the zod definition to JSON Schema for the wire
+          `inputSchema`; the model only ever sees the generated JSON Schema, never zod.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      zod is an authoring convenience in the TS SDK; it is compiled to JSON Schema that fills the
+      tool's inputSchema on the wire. The model only ever sees JSON Schema. It never sees zod or
+      TypeScript interfaces, so the reviewer is right and the "model is confused by zod" worry is
+      unfounded.
+  - id: ms-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: >-
+      A server returns a JavaScript string from its tool handler (e.g. `return "done"`) instead of
+      the expected structured shape, and Claude Code reports a malformed result. Describe the
+      correct shape a tools/call result must return and why a bare string fails.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a tools/call result must return a `content` array of typed objects (e.g. `{
+            "type": "text", "text": "done" }`).
+        - id: c2
+          text: Explains a bare string is not the protocol shape; the result is not "just a string."
+        - id: c3
+          text: Notes content supports multiple typed kinds (text, image, embedded resource, etc.).
+      referenceAnswer: >-
+        A tools/call result returns a `content` array of typed content objects, for example `{
+        "content": [ { "type": "text", "text": "done" } ] }`. Returning a bare string violates the
+        protocol because the result is not a string -- it is an array of typed content blocks. MCP
+        supports multiple content types (text, image, embedded resource, and more), which is why the
+        typed-array shape is required even for plain text output.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that tools/call returns a string. It returns a content array of typed
+      objects, so even plain text must be wrapped as `{ "type": "text", "text": "..." }`. The
+      typed-array design is what lets a tool return images or embedded resources, not just text.
+  - id: ms-400-ff-s
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: free_form
+    prompt: >-
+      A server author wants the host's own LLM to summarize text mid-tool and to also ask the end
+      user a clarifying question. They plan to "register sampling and elicitation as tools on the
+      server." Explain why this framing is wrong and name the correct mechanism for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States sampling and elicitation are client-provided (client-side) capabilities, not
+            server-registered tools.
+        - id: c2
+          text: >-
+            Identifies sampling/createMessage as the way a server asks the host's LLM for a
+            completion.
+        - id: c3
+          text: Identifies elicitation/create as the way a server asks the user for input.
+      referenceAnswer: >-
+        Sampling and elicitation are client-side primitives, not server tools. The server does not
+        register them; it invokes them on the host. To have the host's LLM summarize text the server
+        issues a sampling/createMessage request, and to ask the end user a clarifying question it
+        issues an elicitation/create request. Registering them as tools is the wrong model because
+        the capability lives on the client (host) side, with the server as the caller.
+      passThreshold: 0.6
+    guidance: >-
+      Sampling and elicitation are client-provided capabilities the server invokes
+      (sampling/createMessage, elicitation/create), not tools the model calls. The capability lives
+      on the client/host side; the server is the caller, which is why registering them as server
+      tools is wrong.
+  - id: ms-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A team using a Vertex/proxy setup notices their many fine-grained MCP tools consume a large
+      chunk of the context window at startup, whereas the same servers on a default Claude Code
+      install seemed "free." A developer assumes the proxy is buggy. What actually explains the
+      difference?
+    choices:
+      - id: a
+        text: The proxy double-counts tokens; the schemas are not really loaded twice.
+      - id: b
+        text: >-
+          Tool search defers MCP tool schemas by default (loading only names plus server
+          instructions), but configs where tool search is unavailable load full schemas up front,
+          reintroducing the context cost.
+      - id: c
+        text: Default Claude Code compresses tool schemas with gzip, which the proxy disables.
+      - id: d
+        text: Fine-grained tools are always free of context cost; the developer mis-measured.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Tool search is on by default and defers MCP tool schemas (only names and server instructions
+      load up front), so many tools feel cheap. In setups where tool search is not in effect, the
+      full schemas load eagerly and the per-tool context cost returns. The proxy is not buggy; the
+      deferral simply is not active there, which is the real design tradeoff between composability
+      and context budget.
+  - id: ms-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A developer is integrating a personal, machine-local linter that reads files on their disk and
+      is only ever used by them inside one editor session. They are debating whether to expose it as
+      a stdio server or stand up a Streamable HTTP server behind OAuth "to be future-proof." Which
+      critique is the most defensible?
+    choices:
+      - id: a
+        text: >-
+          HTTP+OAuth is the right call because stdio cannot read local files and so cannot serve a
+          linter that inspects the user's disk
+      - id: b
+        text: >-
+          Both are equivalent in effort; the choice is purely cosmetic since the data layer is
+          identical, so "future-proofing" with HTTP is strictly better
+      - id: c
+        text: >-
+          stdio is the right call: it has the lowest latency, needs no auth or network setup, and
+          already has direct local file access; the HTTP+OAuth design adds auth, reconnect, and
+          hosting complexity with no benefit for a single-user local tool
+      - id: d
+        text: >-
+          stdio is wrong because it cannot expose tools, only resources, so a linter action could
+          not be invoked
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For a single-user, same-machine tool, stdio is the natural fit: no network, no auth, direct
+      local access, lowest latency. HTTP+OAuth buys multi-client sharing and independent lifetime
+      you do not need here, at real complexity cost. stdio absolutely can serve tools and read local
+      files; only the transport differs, not the primitives.
+  - id: ms-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A team commits a project-scoped .mcp.json that hardcodes a database server's connection string
+      including the password directly in the args array, arguing "it is shared config, so everyone
+      needs it." Evaluate this design.
+    choices:
+      - id: a
+        text: >-
+          It is fine because project scope is private to each developer, so the committed password
+          is never actually shared
+      - id: b
+        text: >-
+          It is fine because Claude Code automatically encrypts any string in .mcp.json that looks
+          like a credential before committing
+      - id: c
+        text: >-
+          The only issue is performance; secrets in args are slower to parse, so they belong in the
+          env block where they are not a security concern
+      - id: d
+        text: >-
+          It is a real problem: .mcp.json is shared via version control, so the secret leaks to
+          everyone with repo access and into git history; use ${DB_PASSWORD} expansion in .mcp.json
+          and let each developer supply the value from their own environment
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Project scope is explicitly the shared, version-controlled scope, so a committed secret leaks
+      to the whole team and into history. The correct pattern is env-var expansion (${DB_PASSWORD},
+      optionally with a :-default) so the config is shared but each developer provides the secret;
+      secrets can also live in a local/user-scoped entry. Claude Code does not encrypt config
+      values.
+  - id: ms-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >-
+      A CI job runs Claude Code headless and must connect to exactly one MCP server passed via
+      --mcp-config, with zero chance of a developer's personal ~/.claude.json servers or claude.ai
+      connectors leaking into the run. An engineer ships only --mcp-config and calls it
+      reproducible. What is the most defensible critique?
+    choices:
+      - id: a
+        text: >-
+          It is fully reproducible already: --mcp-config replaces all other config sources, so
+          nothing from ~/.claude.json or connectors can load
+      - id: b
+        text: >-
+          It is insufficient: --mcp-config only ADDS a source, so other configured servers still
+          load; --strict-mcp-config is required to make Claude Code use ONLY the provided config and
+          ignore all other sources
+      - id: c
+        text: >-
+          It is insufficient because --mcp-config cannot load remote HTTP servers in headless mode,
+          so the single server will silently fail to connect
+      - id: d
+        text: >-
+          It is fine, but only because headless mode (claude -p) automatically ignores
+          ~/.claude.json regardless of any flags
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      --mcp-config is additive: it loads the named servers on top of everything Claude Code already
+      finds, so user-scoped servers and connectors can still leak in. --strict-mcp-config is what
+      makes Claude Code use ONLY the provided config and ignore all other sources, which is exactly
+      what a hermetic CI run wants. The tradeoff is losing convenience servers.
+  - id: ms-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      The same server name "db" appears in both the project .mcp.json and the user-scope config in
+      ~/.claude.json. The project entry sets a longer timeout and a different DSN; the user entry
+      sets an auth header. A developer assumes the effective config is the union (project DSN +
+      project timeout + user header). Evaluate this assumption.
+    choices:
+      - id: a
+        text: >-
+          It is correct: Claude Code deep-merges entries across scopes, so non-conflicting fields
+          like the user header are added to the project entry
+      - id: b
+        text: >-
+          It is wrong: on a name collision the highest-precedence whole entry wins with no field
+          merging, and project outranks user, so only the project entry is used and the user header
+          is dropped entirely
+      - id: c
+        text: >-
+          It is wrong, but because user outranks project, so the user entry wins and the project DSN
+          and timeout are dropped
+      - id: d
+        text: >-
+          It is wrong because a name collision across scopes is a fatal error and Claude Code
+          refuses to start until the duplicate is removed
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Scope precedence is local > project > user > plugin > connectors, and on a name collision
+      Claude Code connects once using the entire winning entry; fields are not merged across scopes.
+      Here project outranks user, so the project entry is used wholesale and the user-only header
+      never applies. There is no deep merge, and a collision is resolved by precedence, not treated
+      as a fatal error.
+  - id: ms-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: >-
+      A reviewer is asked to approve adding a project-scoped MCP server (committed in .mcp.json)
+      that fetches issue text from an external tracker and returns it to the model. A teammate says
+      "it is in our repo, so it is trusted; we should auto-load it without prompts to reduce
+      friction." Evaluate the security reasoning and explain why Claude Code gates project servers
+      behind approval.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that a server returning external/third-party content is a prompt-injection
+            surface (untrusted content can carry instructions to the model)
+        - id: c2
+          text: >-
+            Explains that project .mcp.json servers require explicit user approval before use as a
+            deliberate security gate against untrusted/maliciously-modified configs
+        - id: c3
+          text: >-
+            Concludes that "it is in the repo" does not make the fetched content trusted, so
+            removing the approval gate is the wrong tradeoff
+      referenceAnswer: >-
+        The reasoning conflates two different trust questions. The config being in your repo says
+        nothing about the trustworthiness of the content the server fetches: a server that pulls
+        external issue text is a prompt-injection surface, because that text can contain
+        instructions aimed at the model. Claude Code requires explicit user approval for
+        project-scoped .mcp.json servers precisely as a security gate: a malicious or compromised
+        commit could otherwise add a server that runs or fetches untrusted content silently.
+        Auto-loading to reduce friction removes that gate, so it is the wrong tradeoff; the friction
+        is the cost of defending the trust boundary.
+      passThreshold: 0.6
+    guidance: >-
+      Project servers loading silently would let any committed config pull untrusted content into
+      the model's context, an injection vector. The approval prompt (and reset-project-choices) is
+      the deliberate mitigation. Repo membership is not the same as content trust.
+  - id: ms-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: multiple_choice
+    prompt: >-
+      A server author wants their server to behave one way as a personal local tool and another way
+      as a shared remote service for the whole team. They claim they must implement two different
+      protocols. Evaluate this claim about the local/remote distinction.
+    choices:
+      - id: a
+        text: >-
+          The claim is correct: local servers speak JSON-RPC but remote servers must speak REST, so
+          two protocol implementations are genuinely required
+      - id: b
+        text: >-
+          The claim is correct because remote servers cannot expose tools, only resources, forcing a
+          separate implementation for the tool surface
+      - id: c
+        text: >-
+          The claim is wrong only because remote servers are impossible in MCP; everything must be
+          stdio
+      - id: d
+        text: >-
+          The claim is wrong: local vs remote describes where the server runs and which transport is
+          typical (stdio vs Streamable HTTP), not a different protocol; the JSON-RPC data layer is
+          the same, so one server can expose both transports
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Local and remote describe where the server runs and the typical transport (stdio for local,
+      Streamable HTTP for remote), not separate protocols. The data layer is JSON-RPC 2.0 in both
+      cases, so the same primitive logic can sit behind either transport. Remote servers fully
+      support tools, and remote servers are a first-class MCP capability.
+  - id: ms-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: free_form
+    prompt: >-
+      A server returns large database schema dumps. To stop Claude Code from truncating or warning
+      on the output, the author tells every consumer to set MAX_MCP_OUTPUT_TOKENS very high in their
+      own environment. Critique this approach and propose a better server-author-side option.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that pushing MAX_MCP_OUTPUT_TOKENS onto every user is a poor design
+            (per-consumer config burden, easy to forget, inconsistent across environments)
+        - id: c2
+          text: >-
+            Proposes the server-side option of annotating the result with
+            _meta["anthropic/maxResultSizeChars"] (subject to the ~500,000 char ceiling) so the
+            server itself declares the larger size
+        - id: c3
+          text: >-
+            Frames it as a server-author-vs-user-config tradeoff and prefers the author owning the
+            known-large output
+      referenceAnswer: >-
+        Telling every consumer to raise MAX_MCP_OUTPUT_TOKENS is a weak design: it offloads a
+        property of the server (it legitimately returns large payloads) onto every user's
+        environment, where it is easy to forget, drifts across machines, and globally loosens the
+        cap for unrelated tools. A better option is server-side: annotate the specific large result
+        with _meta["anthropic/maxResultSizeChars"] (up to the ~500,000 character ceiling) so the
+        server itself declares the larger allowed size for that tool's output. That keeps the
+        decision with the author who knows the output is intentionally large, instead of forcing
+        every user to reconfigure their client.
+      passThreshold: 0.6
+    guidance: >-
+      Claude Code warns past ~10,000 tokens and caps at MAX_MCP_OUTPUT_TOKENS (default 25,000). When
+      a tool's output is legitimately huge, the author can raise the ceiling per-result via
+      _meta["anthropic/maxResultSizeChars"] rather than making every user globally raise their cap.
+  - id: ms-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      An author redesigns a server so its tool set changes dynamically per session, emitting
+      notifications/tools/list_changed to refresh Claude Code live. A teammate objects that this
+      will break the team's permission allowlist, which pins specific mcp__server__tool names. Whose
+      concern is the strongest, and why?
+    choices:
+      - id: a
+        text: >-
+          The teammate is wrong: list_changed notifications also automatically update permission
+          allowlists, so pinned names are rewritten to match the new tools
+      - id: b
+        text: >-
+          The author is simply wrong that dynamic tools are possible; MCP tool sets are immutable
+          after the initialize handshake
+      - id: c
+        text: >-
+          The teammate has a real point: dynamic tool names can appear that are not on the pinned
+          allowlist and so will not be permitted, and the churn complicates auditing; dynamic tools
+          trade adaptive flexibility for stability and predictable permissioning
+      - id: d
+        text: >-
+          The teammate is wrong because Claude Code ignores list_changed entirely and requires a
+          full reconnect, so the tool set never actually changes mid-session
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Claude Code honors list_changed and refreshes tools live (no reconnect), and MCP tool sets are
+      not immutable. But that is exactly why the teammate's concern holds: an allowlist pinned to
+      specific mcp__server__tool names will not cover newly appearing tools, and the churn hurts
+      auditability. Dynamic tools trade flexibility for stability, and allowlists are not
+      auto-rewritten.
+  - id: ms-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: free_form
+    prompt: >-
+      A team is splitting one coarse "run_query(sql)" tool into 25 fine-grained tools (list_tables,
+      describe_table, sample_rows, ...). One reviewer says this will blow the context budget;
+      another says tool search makes the cost irrelevant. Weigh both positions and state when each
+      is right.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that more fine-grained tools improve composability/clarity but add more schema,
+            which consumes context budget if all schemas load up front
+        - id: c2
+          text: >-
+            States that Claude Code's tool search (on by default) defers schemas and loads them on
+            demand, which mitigates the per-tool budget cost
+        - id: c3
+          text: >-
+            Qualifies that the mitigation breaks down when tool search is off or unavailable (e.g.
+            alwaysLoad tools, or proxy/Vertex setups), reintroducing the budget pressure
+      referenceAnswer: >-
+        Both reviewers are partly right. Fine-grained tools improve composability and make each
+        action clearer, but each tool carries an inputSchema, so a large surface can consume
+        significant context if every schema loads at startup. That is what tool search addresses: in
+        Claude Code it is on by default and defers tool schemas, loading only names plus server
+        instructions up front and fetching full schemas on demand, which largely neutralizes the
+        per-tool budget cost. The catch is that the mitigation depends on tool search being active:
+        with it disabled, with alwaysLoad tools, or in proxy/Vertex configurations where deferral is
+        unavailable, the full schema cost returns and the budget objection becomes real again. So
+        design the tool count for composability, but verify tool search is in play before assuming
+        the cost is free.
+      passThreshold: 0.6
+    guidance: >-
+      Tool granularity is a genuine tradeoff. Tool search (ENABLE_TOOL_SEARCH, on by default) defers
+      schemas so many tools is cheaper than it used to be, but alwaysLoad tools and non-tool-search
+      setups reintroduce the budget pressure, so the "cost is irrelevant" claim is conditional.
+  - id: ms-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A long-running local stdio MCP server occasionally crashes, and the team expects Claude Code
+      to transparently reconnect it the way it does for their HTTP server. They file a bug when it
+      does not. Evaluate this expectation.
+    choices:
+      - id: a
+        text: >-
+          The expectation is correct and it is a genuine bug: Claude Code auto-restarts crashed
+          stdio servers identically to HTTP servers
+      - id: b
+        text: >-
+          The expectation is unfounded: HTTP/SSE servers auto-reconnect with exponential backoff,
+          but stdio servers (local child processes) are NOT auto-reconnected, so designing a
+          crash-prone local server to rely on auto-reconnect is the wrong assumption; harden the
+          process or use HTTP
+      - id: c
+        text: >-
+          The expectation is correct because stdio servers never crash in the first place, since
+          they share the host process
+      - id: d
+        text: >-
+          The expectation is unfounded only because reconnection requires OAuth, which stdio lacks;
+          adding OAuth to the stdio server would enable auto-reconnect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      HTTP/SSE servers auto-reconnect with exponential backoff; stdio servers are local processes
+      and are not auto-reconnected. So relying on auto-reconnect for a flaky stdio server is a
+      design mistake. stdio servers are separate child processes (not the host process) and can
+      crash, and reconnection is not a function of OAuth.
+  - id: ms-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      A server author authors tool input validation as TypeScript interfaces and ships them,
+      expecting the model to "see the types and fill the arguments correctly." Critique what is
+      wrong with this mental model and describe what the model actually consumes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that the model never sees TypeScript types/interfaces; it consumes the tool's
+            JSON Schema inputSchema sent over the wire
+        - id: c2
+          text: >-
+            States that in the TS SDK schemas are authored with zod, which the SDK converts to JSON
+            Schema; TS interfaces are erased at compile time and carry no runtime/wire information
+        - id: c3
+          text: >-
+            Concludes the design fails because TS interfaces produce no inputSchema, so the model
+            gets no argument structure to follow
+      referenceAnswer: >-
+        The mental model is broken because TypeScript interfaces are a compile-time-only construct:
+        they are erased at build time and never appear at runtime or on the wire, so the model can
+        never "see" them. What the model actually consumes is the tool's inputSchema, which is JSON
+        Schema delivered in the tools/list response. In the official TypeScript SDK you author the
+        schema with zod, and the SDK converts that to the JSON Schema inputSchema; the zod (and any
+        TS types) are an authoring detail the model never sees. Shipping bare TS interfaces produces
+        no inputSchema, so the model gets no argument structure and the design fails.
+      passThreshold: 0.6
+    guidance: >-
+      The wire contract is JSON Schema (inputSchema). The TS SDK uses zod to author it and converts
+      to JSON Schema; TypeScript interfaces are erased and never reach the model. Assuming the model
+      reads your types is a fundamental misunderstanding of the protocol surface.
+  - id: ms-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 526
+    type: multiple_choice
+    prompt: >-
+      A server author returns tool results by JSON.stringify-ing an object and returning it as the
+      raw string body, reasoning "the model can parse JSON fine." A reviewer flags it. What is the
+      strongest correct objection?
+    choices:
+      - id: a
+        text: >-
+          Nothing is wrong: tools/call results are defined as plain strings, so returning a JSON
+          string is the canonical form
+      - id: b
+        text: >-
+          A tools/call result is not a raw string; it must be a content array of typed objects (e.g.
+          {type:"text", text:"..."}). Returning a bare string violates the result shape, even though
+          the text payload could itself be JSON inside a text content item
+      - id: c
+        text: >-
+          The only problem is that JSON content must use {type:"json"}; text content items are
+          forbidden for structured data
+      - id: d
+        text: The objection is invalid because tool results can only contain images, never text
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A tools/call result returns a content array of typed content objects (text, image, embedded
+      resource, etc.), not a bare string. You can still put a JSON string inside a {type:"text"}
+      item, but the envelope must be the content array. There is no rule banning text items for
+      structured data, and results are not images-only.
+  - id: ms-500-ff-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >-
+      An author exposes a long-running "deploy" tool over a remote Streamable HTTP MCP server. To
+      surface progress, they want Claude Code to show incremental updates instead of freezing until
+      the final result, and to be able to cancel a run that is taking too long. They assume
+      "tools/call is one request and one response, so progress and cancellation are impossible."
+      Evaluate that assumption and describe the MCP mechanisms that actually support progress
+      reporting and request cancellation.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the assumption is wrong: MCP supports progress updates during a long-running
+            request (a progress token on the request plus notifications/progress from the server).
+        - id: c2
+          text: >-
+            States MCP supports cancellation via a notifications/cancelled message referencing the
+            in-flight request id, so a client can abort a pending tools/call.
+        - id: c3
+          text: >-
+            Concludes progress/cancellation are protocol-level features that do not require
+            abandoning the request/response model, and notes Streamable HTTP (SSE) is what carries
+            the streamed notifications.
+      referenceAnswer: >-
+        The assumption is wrong. A tools/call is a request/response, but MCP layers in-band
+        signaling on top of it. For progress, the client attaches a progress token to the request
+        and the server emits notifications/progress messages carrying that token as the work
+        proceeds, so the host can show incremental updates before the final result arrives. For
+        cancellation, either side can send a notifications/cancelled message that references the
+        in-flight request's id, telling the peer to stop work on that pending call. Neither feature
+        requires giving up the request/response model; they are protocol-level notifications, and
+        over a remote server the Streamable HTTP transport's SSE stream is what delivers the
+        progress and cancellation notifications alongside the eventual response.
+      passThreshold: 0.6
+    guidance: >-
+      Long-running calls are not "one shot": MCP provides progress notifications (a progress token
+      on the request plus notifications/progress) and request cancellation (notifications/cancelled
+      referencing the request id). These ride on top of the normal request/response, and Streamable
+      HTTP's SSE stream carries them for remote servers.
+  - id: ms-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 533
+    type: multiple_choice
+    prompt: >-
+      A teammate proposes adding a WebSocket-based MCP server to the project by running "claude mcp
+      add --transport ws chat -- ...". When it fails they conclude WebSocket is unsupported in
+      Claude Code. Evaluate this conclusion.
+    choices:
+      - id: a
+        text: >-
+          The conclusion is wrong: Claude Code does support a WebSocket transport, but only
+          configured via JSON ("type":"ws", header-only auth), not through the --transport flag,
+          which accepts only http, sse, or stdio
+      - id: b
+        text: >-
+          The conclusion is correct: WebSocket is not a transport Claude Code can use under any
+          configuration
+      - id: c
+        text: >-
+          The conclusion is wrong because --transport does accept ws; the command failed only due to
+          a missing -- separator
+      - id: d
+        text: >-
+          The conclusion is wrong because ws is the default transport, so specifying it explicitly
+          is what caused the error
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Claude Code does support WebSocket as an extension, but it is configured only via JSON
+      ("type":"ws", header-only auth) and is not selectable through --transport, which accepts http,
+      sse, or stdio. So the command rightly fails, but the conclusion that ws is wholly unsupported
+      is wrong; the misconception is that --transport accepts ws.
+  - id: ms-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 537
+    type: free_form
+    prompt: >-
+      A developer keeps hitting permission prompts when a trusted internal MCP server's tools run,
+      and proposes launching Claude Code with --dangerously-skip-permissions for the whole team "so
+      the tools just work." Evaluate this lever versus configuring permission rules (allow lists in
+      settings.json), and recommend the right approach for letting only that server's tools run
+      without prompts.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that --dangerously-skip-permissions bypasses ALL permission prompts for the
+            whole session (every tool, not just the trusted server), which is an over-broad and
+            risky lever.
+        - id: c2
+          text: >-
+            Recommends scoped permission rules in settings.json instead (e.g. allow mcp__<server> or
+            mcp__<server>__<tool> entries) so only that server's tools are pre-approved.
+        - id: c3
+          text: >-
+            Concludes the right tradeoff is least-privilege: allowlist the specific server/tools
+            rather than disabling the permission system globally.
+      referenceAnswer: >-
+        --dangerously-skip-permissions is the wrong lever here because it is all-or-nothing: it
+        disables every permission prompt for the entire session, so it does not just trust the one
+        internal server, it removes the guardrail for all tools (file edits, shell, every other MCP
+        server). The correct approach is scoped permission rules in settings.json: add an allow
+        entry for that server's namespaced tools, such as mcp__<server> to permit the whole server,
+        or mcp__<server>__<tool> to permit specific tools. That pre-approves exactly the trusted
+        tools without prompts while leaving the permission system intact for everything else. The
+        right tradeoff is least privilege: allowlist the specific server rather than globally
+        skipping permissions.
+      passThreshold: 0.6
+    guidance: >-
+      --dangerously-skip-permissions removes the permission gate for the whole session, far broader
+      than trusting one server. Scoped allow rules (mcp__<server> or mcp__<server>__<tool>) in
+      settings.json are the least-privilege way to let only the trusted server's tools run
+      unprompted.
+  - id: ms-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A server author wants to expose a "summarize" action that always calls back into the host's
+      LLM via sampling (sampling/createMessage), and treats that callback as a guaranteed building
+      block they can depend on in every deployment. A reviewer pushes back on depending on a client
+      capability the host may not advertise. Which assessment is most defensible?
+    choices:
+      - id: a
+        text: >-
+          The author is right: sampling is a mandatory part of MCP that every host must implement,
+          so a server can always assume it is available
+      - id: b
+        text: >-
+          The reviewer is right: sampling is an OPTIONAL client capability advertised during
+          negotiation, and many hosts do not provide it, so depending on it makes the server
+          non-portable; the server should check the negotiated capability and degrade gracefully
+          when sampling is absent
+      - id: c
+        text: >-
+          The reviewer is right, but only because sampling has been removed from MCP, so no host
+          supports it at all
+      - id: d
+        text: >-
+          Both are wrong: sampling is a server primitive, so whether the host advertises anything is
+          irrelevant to the author's design
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Sampling is a client-provided capability negotiated at initialize, and it is optional: many
+      hosts never advertise it. A server that hard-depends on sampling breaks on those hosts, so the
+      portable design is to check the negotiated capability and fall back (or return a clear error)
+      when sampling is not available. Sampling is not mandatory, not removed, and not a server
+      primitive.
+  - id: ms-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      Two engineers debate where a personal, API-key-protected MCP server should live. The key is
+      personal and the server is only useful to that one engineer. One wants it in the
+      project-scoped .mcp.json "so it is documented for the team." Which judgment is most defensible
+      in terms of scope semantics?
+    choices:
+      - id: a
+        text: >-
+          Project scope is best: documenting it for the team outweighs privacy, and Claude Code will
+          keep the personal key private even though .mcp.json is committed
+      - id: b
+        text: >-
+          Local scope is best because it is the only scope that can store credentials; user and
+          project scopes cannot hold secrets
+      - id: c
+        text: >-
+          User scope (or local) is best: it is private to the engineer, matching a single-user
+          server, whereas project scope is the version-controlled, team-shared scope and would
+          clutter shared config and risk normalizing committed personal credentials
+      - id: d
+        text: >-
+          It does not matter, since on a name collision all three scopes merge anyway, so the key
+          ends up available everywhere regardless
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Match scope to visibility: user scope is private and cross-project, fitting a single-user
+      server, while project scope is the shared, committed scope and is wrong for a personal-only
+      tool. "Documenting for the team" does not justify committing a one-person server, .mcp.json is
+      not kept private, any scope can carry credentials, and scopes do not merge on collision.
+  - id: ms-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 496
+    type: multiple_choice
+    prompt: >-
+      An author building an adaptive remote server treats the connection as stateless, opening a
+      fresh HTTP request for each call and never tracking the initialize handshake, then is
+      surprised that capability-gated features and version negotiation do not work. Evaluate the
+      design.
+    choices:
+      - id: a
+        text: >-
+          The design is correct: MCP is stateless by definition, so there is nothing to track and
+          the features should work regardless
+      - id: b
+        text: >-
+          The design is wrong only because each HTTP request must repeat the full tools/list, not
+          because of any lifecycle state
+      - id: c
+        text: >-
+          The design ignores that MCP is fundamentally a stateful protocol with a lifecycle
+          (initialize handshake, capability negotiation, protocolVersion); discarding that state
+          means negotiated capabilities and the agreed protocol version are lost, so
+          capability-gated behavior breaks
+      - id: d
+        text: >-
+          The design is wrong because HTTP cannot carry JSON-RPC at all, so no MCP server can be
+          stateless or stateful over HTTP
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP is a stateful protocol: the initialize handshake negotiates protocolVersion and
+      capabilities, and that negotiated state governs which features are available. Throwing it away
+      breaks capability gating and version negotiation. (A narrow stateless-over-HTTP mode exists as
+      an edge case, but it does not make capability negotiation optional.) HTTP does carry JSON-RPC;
+      that is the Streamable HTTP transport.
+  - id: ms-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A team standardizes on the low-level Server class with setRequestHandler for every server
+      "because it is more explicit," then spends most of their time hand-wiring
+      ListToolsRequestSchema and CallToolRequestSchema handlers for simple servers. A reviewer
+      pushes back. Which assessment is most defensible?
+    choices:
+      - id: a
+        text: >-
+          The low-level Server is always correct because McpServer is a deprecated wrapper that
+          should not be used in production
+      - id: b
+        text: >-
+          For most servers the high-level McpServer with
+          registerTool/registerResource/registerPrompt is the better default: it handles list/call
+          dispatch for you; the low-level Server is justified only when you need manual control the
+          high-level API does not give, so blanket-mandating it adds boilerplate without payoff
+      - id: c
+        text: >-
+          Both APIs are identical in effort, so the standardization is harmless and the reviewer is
+          wrong
+      - id: d
+        text: >-
+          The team should use neither; tools must be wired without the SDK by writing JSON-RPC
+          handlers directly on the transport
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The high-level McpServer (registerTool/registerResource/registerPrompt) is the ergonomic
+      default and handles list/call dispatch; the low-level Server with setRequestHandler is for
+      cases needing manual control. Mandating the low-level API for simple servers just adds
+      boilerplate. McpServer is not deprecated, the two APIs are not equal effort, and you do not
+      need to bypass the SDK.
+  - id: ms-500-ff-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      A team's project .mcp.json uses ${API_TOKEN} (no default) in a server's headers. It works on
+      everyone's machine except a new hire's, where Claude Code reports it cannot parse the config
+      and the server does not appear at all. The new hire assumes the config file is corrupt.
+      Diagnose the real cause and evaluate whether using a required ${VAR} with no default was a
+      good design choice here.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that .mcp.json supports ${VAR} / ${VAR:-default} expansion, and a required
+            ${VAR} with no value and no default makes Claude Code fail to parse the config (so the
+            new hire just has not set API_TOKEN)
+        - id: c2
+          text: Concludes the file is not corrupt; the missing environment variable is the cause
+        - id: c3
+          text: >-
+            Evaluates the tradeoff: a required ${VAR} fails loud/safe (no silent broken auth) but is
+            hostile to onboarding; a ${VAR:-} default or clear docs would make the failure less
+            mysterious
+      referenceAnswer: >-
+        The file is not corrupt. .mcp.json supports environment-variable expansion with ${VAR} and
+        ${VAR:-default}, and a required ${VAR} that has no value and no default causes Claude Code
+        to fail to parse the whole config, which is why the server does not appear on the new hire's
+        machine: they simply have not set API_TOKEN. As a design choice, a required ${VAR} with no
+        default is a reasonable fail-safe because it refuses to run with broken/empty auth rather
+        than silently misconfiguring, but it is hostile to onboarding since the failure is opaque.
+        Better would be to document the required variable clearly, or supply a sentinel default like
+        ${API_TOKEN:-} combined with a runtime check, so the missing-credential case produces an
+        understandable error instead of a config that vanishes.
+      passThreshold: 0.6
+    guidance: >-
+      Required ${VAR} expansion with no default makes Claude Code fail to parse the config, so the
+      server silently disappears for anyone missing the variable. It is a fail-loud-on-auth design
+      (good) but poor onboarding ergonomics (bad); document it or use a sentinel default plus a
+      runtime check.

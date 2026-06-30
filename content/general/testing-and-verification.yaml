@@ -1,0 +1,3063 @@
+# Topic: testing-and-verification (general)
+# Unit/integration/e2e testing, the test pyramid, TDD, meaningful assertions and coverage, flaky vs deterministic tests, and verifying changes before claiming they work.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: testing-and-verification
+class:
+  kind: general
+title: Testing & Verification
+summary: >-
+  Unit/integration/e2e testing, the test pyramid, TDD, meaningful assertions and coverage, flaky vs
+  deterministic tests, and verifying changes before claiming they work.
+triggerSignals: []
+items:
+  - id: tav-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: What is a unit test?
+    choices:
+      - id: a
+        text: >-
+          A test that exercises a single small unit such as a function, method, or class in
+          isolation from its external collaborators
+      - id: b
+        text: A test that drives the fully assembled system through its user interface
+      - id: c
+        text: A test that verifies two or more deployed services talk to each other over the network
+      - id: d
+        text: A manual checklist a tester runs by hand before a release
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A unit test isolates one small unit (function/method/class) from its collaborators, which
+      makes it the fastest and most numerous test type. Driving the assembled system through the UI
+      is an end-to-end test, and checking services over the network is integration testing.
+  - id: tav-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 123
+    type: multiple_choice
+    prompt: What does an integration test primarily verify?
+    choices:
+      - id: a
+        text: That a single function returns the right value for one input in complete isolation
+      - id: b
+        text: >-
+          That two or more components or modules work together correctly across a real boundary,
+          such as code plus a database or a service plus an API client
+      - id: c
+        text: That the source code compiles without type errors
+      - id: d
+        text: That the user interface renders pixel-perfectly across browsers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Integration tests exercise the real boundaries that unit tests stub out, confirming that
+      collaborating components work together. Checking one isolated function is a unit test,
+      compiling is static analysis, and pixel rendering is a visual/UI concern.
+  - id: tav-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 126
+    type: multiple_choice
+    prompt: An end-to-end (e2e) test is best described as one that...
+    choices:
+      - id: a
+        text: Replaces every dependency with a mock so nothing real is touched
+      - id: b
+        text: Measures how much of the code was executed by the rest of the suite
+      - id: c
+        text: >-
+          Drives the fully assembled system through its external interface (UI or public API) the
+          way a real user or client would
+      - id: d
+        text: Checks a single class in isolation with all collaborators stubbed
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      An e2e test exercises the whole stack through the system's external interface, like a real
+      user. Mocking everything describes heavy stubbing, measuring executed code is coverage, and
+      checking one class in isolation is a unit test.
+  - id: tav-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 129
+    type: free_form
+    prompt: >-
+      Describe the shape the classic test pyramid prescribes, naming the three tiers from base to
+      top and stating how the count of tests changes as you go up.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names unit tests at the base (most numerous)
+        - id: c2
+          text: Names integration tests in the middle (fewer)
+        - id: c3
+          text: Names end-to-end (or UI/system) tests at the top (fewest)
+        - id: c4
+          text: States that test count decreases as you move up the pyramid
+      referenceAnswer: >-
+        The test pyramid prescribes many fast unit tests at the base, fewer integration tests in the
+        middle, and few slow end-to-end tests at the top. The number of tests decreases as you move
+        up because higher-level tests are slower, more brittle, and more expensive to maintain.
+      passThreshold: 0.6
+    guidance: >-
+      The pyramid (popularized by Mike Cohn) puts the bulk of tests at the fast unit level and only
+      a few at the slow e2e level. The decreasing count reflects that higher-level tests cost more
+      in run time, flakiness, and maintenance.
+  - id: tav-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: What does the "ice-cream cone" testing anti-pattern describe?
+    choices:
+      - id: a
+        text: A suite with equal numbers of unit, integration, and e2e tests
+      - id: b
+        text: An inverted pyramid that is heavy on manual and end-to-end tests and light on unit tests
+      - id: c
+        text: A suite that has been frozen and is no longer maintained
+      - id: d
+        text: A strategy of writing tests only after a bug is reported in production
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The ice-cream cone is the upside-down pyramid: lots of slow, fragile manual/e2e tests and few
+      fast unit tests, which is generally considered slow and brittle. It is not a balanced suite, a
+      frozen suite, or a bug-triggered testing policy.
+  - id: tav-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: >-
+      In Kent C. Dodds's "testing trophy" model, which tier is emphasized as the highest-value
+      layer, and what foundational layer does it add beneath unit tests?
+    choices:
+      - id: a
+        text: It emphasizes integration tests and adds static analysis (types/linting) as a foundation
+      - id: b
+        text: It emphasizes end-to-end tests and adds manual exploratory testing as a foundation
+      - id: c
+        text: It emphasizes unit tests and adds mutation testing as a foundation
+      - id: d
+        text: It emphasizes performance tests and adds load testing as a foundation
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The testing trophy treats integration tests as the highest-value tier and adds static analysis
+      (type checking and linting) as a base layer below unit tests. The other options mix up
+      unrelated test flavors.
+  - id: tav-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: What are the three steps of the Test-Driven Development (TDD) loop, in order?
+    choices:
+      - id: a
+        text: Plan, Implement, Review
+      - id: b
+        text: Arrange, Act, Assert
+      - id: c
+        text: Red, Green, Refactor
+      - id: d
+        text: Given, When, Then
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      TDD's loop is Red (write a failing test), Green (write the minimum code to pass it), then
+      Refactor with the test as a safety net. Arrange-Act-Assert structures an individual test,
+      Given-When-Then is BDD phrasing, and Plan-Implement-Review is not a TDD term.
+  - id: tav-100-ff-h
+    tier: 100
+    bloom: remember
+    difficulty: 141
+    type: free_form
+    prompt: >-
+      What does BDD (Behavior-Driven Development) stand for, and what three-part phrasing template
+      is commonly used to write its scenarios?
+    rubric:
+      criteria:
+        - id: c1
+          text: Expands BDD as Behavior-Driven Development
+        - id: c2
+          text: Names the Given-When-Then template (Gherkin)
+        - id: c3
+          text: States the aim is readable behavior specifications (readable by non-developers)
+      referenceAnswer: >-
+        BDD stands for Behavior-Driven Development. It reframes tests as behavior specifications,
+        commonly written with the Given-When-Then (Gherkin) template so they can be read by
+        non-developers as well as engineers.
+      passThreshold: 0.6
+    guidance: >-
+      BDD focuses tests on observable behavior and uses Given (context) / When (action) / Then
+      (outcome) phrasing, often in Gherkin. The goal is a shared, readable specification rather than
+      a low-level code-focused test.
+  - id: tav-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: What is an assertion in a test?
+    choices:
+      - id: a
+        text: A comment describing what the test is supposed to do
+      - id: b
+        text: >-
+          A statement that checks an actual value or condition against an expected one, failing the
+          test if it does not hold
+      - id: c
+        text: The setup code that prepares objects before the action under test
+      - id: d
+        text: A configuration flag that enables verbose logging during the run
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An assertion compares an actual result to an expected one and fails the test when they differ;
+      it is the verification step. Setup code is the "Arrange" phase, and comments or logging flags
+      do not verify anything.
+  - id: tav-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 147
+    type: multiple_choice
+    prompt: What do the three A's in the "Arrange-Act-Assert" (AAA) test structure stand for?
+    choices:
+      - id: a
+        text: Allocate, Activate, Audit
+      - id: b
+        text: Analyze, Apply, Approve
+      - id: c
+        text: >-
+          Arrange (set up state and inputs), Act (perform the action under test), Assert (verify the
+          result)
+      - id: d
+        text: Assemble, Await, Acknowledge
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      AAA splits a test into Arrange (setup), Act (the single action under test), and Assert
+      (verification), which improves readability and keeps one logical action per test. The other
+      expansions are not the AAA pattern.
+  - id: tav-100-ff-k
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: >-
+      Define line/statement coverage and branch (decision) coverage, and state which of the two is
+      the stronger metric.
+    rubric:
+      criteria:
+        - id: c1
+          text: States statement/line coverage measures which statements (lines) were executed
+        - id: c2
+          text: States branch coverage requires each conditional branch (true and false) to be taken
+        - id: c3
+          text: >-
+            States branch coverage is the stronger metric (100% branch implies 100% statement, not
+            vice versa)
+      referenceAnswer: >-
+        Statement (line) coverage measures which statements were executed by the tests. Branch
+        (decision) coverage requires that each conditional branch, both the true and false outcomes,
+        is taken. Branch coverage is strictly stronger: 100% branch coverage implies 100% statement
+        coverage, but full statement coverage does not imply full branch coverage.
+      passThreshold: 0.6
+    guidance: >-
+      A conditional like an "if" with no "else" can reach 100% statement coverage while its false
+      branch is never tested, so branch coverage is the stronger guarantee. Both still measure
+      execution, not correctness.
+  - id: tav-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 153
+    type: multiple_choice
+    prompt: What does mutation testing measure?
+    choices:
+      - id: a
+        text: How quickly the test suite runs from a cold start
+      - id: b
+        text: How much of the source code was executed during the tests
+      - id: c
+        text: >-
+          Test effectiveness, by introducing small faults ("mutants") into the code and checking
+          whether tests fail and thereby "kill" them
+      - id: d
+        text: How many lines of production code each test file touches
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Mutation testing injects small faults and checks whether the suite detects them; surviving
+      mutants reveal gaps that plain coverage hides. Measuring which code ran is coverage, and run
+      time is a performance concern, not effectiveness.
+  - id: tav-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: What is a flaky test?
+    choices:
+      - id: a
+        text: A test that always fails until the underlying bug is fixed
+      - id: b
+        text: >-
+          A test that produces different results (sometimes passing, sometimes failing) on the same
+          unchanged code, behaving non-deterministically
+      - id: c
+        text: A test that takes much longer to run than the rest of the suite
+      - id: d
+        text: A test that has no assertions and therefore never fails
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A flaky test is non-deterministic: it can pass or fail on identical code without changes to
+      that code. A consistently failing test, a merely slow test, and an assertion-free test are
+      different problems.
+  - id: tav-100-ff-n
+    tier: 100
+    bloom: remember
+    difficulty: 159
+    type: free_form
+    prompt: List at least three common sources of test flakiness (non-determinism).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names a time-related source (wall-clock time, timezones, or fixed sleep-based waits)
+        - id: c2
+          text: >-
+            Names a concurrency or shared-state source (race conditions, shared mutable state, or
+            test-order dependence)
+        - id: c3
+          text: >-
+            Names an external/randomness source (real network/IO, or randomness without a fixed
+            seed)
+      referenceAnswer: >-
+        Common sources include reliance on wall-clock time or timezones, fixed sleep-based waits,
+        unordered collections, shared mutable state between tests, race conditions and concurrency,
+        real network or disk IO, randomness without a fixed seed, and dependence on test execution
+        order.
+      passThreshold: 0.6
+    guidance: >-
+      Flakiness usually traces back to uncontrolled time, ordering, concurrency, external
+      dependencies, or unseeded randomness. Controlling these (freezing time, seeding, isolating
+      state, using test doubles) is what restores determinism.
+  - id: tav-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: In Gerard Meszaros's test-double taxonomy, what distinguishes a "mock" from a plain "stub"?
+    choices:
+      - id: a
+        text: >-
+          A mock is pre-programmed with expectations and verifies the interactions made against it,
+          whereas a stub just returns canned answers
+      - id: b
+        text: >-
+          A mock is a real working but simplified implementation, while a stub is an empty
+          placeholder
+      - id: c
+        text: A stub records how it was called for later inspection, while a mock never records anything
+      - id: d
+        text: There is no difference; "mock" and "stub" are interchangeable names for the same thing
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A stub returns canned answers; a mock additionally carries pre-set expectations and verifies
+      the interactions. A simplified working implementation is a fake, and a double that records
+      calls is a spy, so the terms are not interchangeable.
+  - id: tav-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: >-
+      Recall the standard one-line definitions: which option states "verification" and "validation"
+      in their correct, non-swapped form?
+    choices:
+      - id: a
+        text: >-
+          Verification = "are we building the right product?"; Validation = "are we building it
+          right?"
+      - id: b
+        text: >-
+          Verification = "are we building the product right?" (conformance to spec); Validation =
+          "are we building the right product?" (meeting user needs)
+      - id: c
+        text: Both ask the same question; the terms are synonyms
+      - id: d
+        text: Verification = "is it fast enough?"; Validation = "is it secure enough?"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Verification checks conformance to the specification ("building it right"); validation checks
+      that the product meets user needs ("building the right thing"). They are distinct per IEEE/ISO
+      usage; option a is the same two phrases with the labels swapped, which is the classic trap.
+  - id: tav-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: free_form
+    prompt: What is regression testing, and when is it run?
+    rubric:
+      criteria:
+        - id: c1
+          text: States it re-runs existing tests after a change
+        - id: c2
+          text: >-
+            States its purpose is to confirm previously working behavior still works (no regressions
+            introduced)
+      referenceAnswer: >-
+        Regression testing re-runs existing tests after a code change to confirm that previously
+        working behavior still works, i.e. that the change did not introduce a regression. It is run
+        after changes such as new features, refactors, or bug fixes, typically as part of CI.
+      passThreshold: 0.6
+    guidance: >-
+      Regression testing guards against breaking what already worked by re-executing the existing
+      suite after a change. It is about catching newly introduced regressions, not about testing
+      only the new code in isolation.
+  - id: tav-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 171
+    type: multiple_choice
+    prompt: What do the FIRST principles of good unit tests stand for?
+    choices:
+      - id: a
+        text: Formal, Integrated, Robust, Scalable, Tested
+      - id: b
+        text: Fast, Isolated/Independent, Repeatable, Self-validating, Timely
+      - id: c
+        text: Functional, Idempotent, Reliable, Secure, Traceable
+      - id: d
+        text: Flexible, Incremental, Reusable, Simple, Thorough
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      FIRST stands for Fast, Isolated/Independent, Repeatable, Self-validating, and Timely. The
+      other expansions are plausible-sounding but are not the recognized FIRST acronym for unit-test
+      quality.
+  - id: tav-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: multiple_choice
+    prompt: What distinguishes a smoke test from a sanity test?
+    choices:
+      - id: a
+        text: >-
+          A smoke test is a quick broad check that the most critical paths work at all; a sanity
+          test is a narrow check that a specific function or fix behaves as expected
+      - id: b
+        text: >-
+          A smoke test runs in production only, while a sanity test runs only on a developer's
+          machine
+      - id: c
+        text: A smoke test measures performance, while a sanity test measures security
+      - id: d
+        text: They are identical; "smoke" and "sanity" are two names for the same broad check
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A smoke test broadly confirms the build is not "dead on arrival" by hitting critical paths; a
+      sanity test narrowly confirms a specific function or fix works. They differ in breadth and are
+      not the same thing, nor are they defined by environment or by performance vs security.
+  - id: tav-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: >-
+      What does the practice "verify before claiming done" mean, and why is asserting success from
+      reasoning alone considered an anti-pattern?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States it means actually running the relevant tests/build/commands and observing the
+            real output before reporting completion
+        - id: c2
+          text: >-
+            Contrasts this with assuming or inferring success from reasoning (or because the diff
+            looks right / it compiles)
+        - id: c3
+          text: States that assumed success is unverified and a frequent source of false "done" claims
+      referenceAnswer: >-
+        "Verify before claiming done" means confirming a change works by actually running the
+        relevant tests, build, or commands and observing the real output, rather than asserting
+        success purely from reasoning. Assuming success because the code compiles or the diff looks
+        right is an anti-pattern: it is unverified and a frequent source of false "done" claims,
+        since untested paths and edge cases remain unconfirmed.
+      passThreshold: 0.6
+    guidance: >-
+      Empirical confirmation (run it and read the output) is what separates a verified "done" from a
+      guessed one. Compiling or a plausible-looking diff is only a static signal, not behavioral
+      proof, so reasoning-only claims regularly turn out to be wrong.
+  - id: tav-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: >-
+      Why does the test pyramid put many unit tests at the base and only a few end-to-end tests at
+      the top?
+    choices:
+      - id: a
+        text: >-
+          Because higher-level tests are slower, more brittle, and harder to debug, so the suite
+          leans on cheap fast unit tests and uses few expensive e2e tests
+      - id: b
+        text: Because unit tests are the only kind that can find real bugs, so e2e tests are optional
+      - id: c
+        text: Because end-to-end tests cannot be automated and must always be run by hand
+      - id: d
+        text: >-
+          Because the number of tests at each tier must legally match the number of modules in that
+          tier
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The pyramid's shape follows from cost: e2e tests exercise more real wiring but run slowly,
+      flake more, and localize failures poorly, so you want few of them and many cheap unit tests.
+      E2e tests can be automated and do find bugs, so the other options misstate the rationale.
+  - id: tav-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: multiple_choice
+    prompt: >-
+      A higher-level (e2e) test and a unit test both pass. The e2e test is generally said to give
+      "more confidence per test." Why, and what is the tradeoff?
+    choices:
+      - id: a
+        text: It runs faster, so you can run it more often and gain confidence through repetition
+      - id: b
+        text: >-
+          It exercises more real wiring so a pass means more of the system works, but when it fails
+          it localizes the fault worse and is slower and more flaky
+      - id: c
+        text: It uses more mocks, so it isolates the failure to a single line of code
+      - id: d
+        text: It has no tradeoff; e2e tests are strictly better than unit tests in every dimension
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An e2e pass covers real integration, so it carries more confidence, but the same breadth means
+      a failure could be anywhere in the stack, and the test is slower and flakier. E2e tests use
+      fewer mocks, not more, and are not strictly better, so the tradeoff is real.
+  - id: tav-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 228
+    type: free_form
+    prompt: >-
+      A teammate says "we hit 100% line coverage, so the code is fully tested and bug-free." Explain
+      why this conclusion does not follow.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States coverage measures which code was executed, not whether results were correctly
+            checked
+        - id: c2
+          text: Notes that assertions can be weak or absent even at 100% coverage (executed != verified)
+        - id: c3
+          text: >-
+            States coverage is necessary-but-not-sufficient (a proxy), so high coverage does not
+            prove correctness or absence of bugs
+      referenceAnswer: >-
+        Coverage only records which lines ran during the tests; it says nothing about whether the
+        tests actually checked the results. Code can be 100% line-covered while assertions are weak
+        or missing, so wrong behavior still passes. Coverage is a necessary-but-not-sufficient
+        signal: useful for spotting untested code, but it cannot prove correctness or the absence of
+        bugs.
+      passThreshold: 0.6
+    guidance: >-
+      The gap is between "executed" and "verified." Running a line does not mean its result was
+      asserted correctly, and untested inputs and edge cases persist at any coverage number.
+      Coverage is a proxy for test presence, not a proof of correctness.
+  - id: tav-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      A function is `if (x > 0) doA();` with no else. The single test passes x = 5 and the line for
+      doA() runs. Why can this reach 100% statement coverage but not 100% branch coverage?
+    choices:
+      - id: a
+        text: Because statement coverage counts comments and branch coverage does not
+      - id: b
+        text: >-
+          Because branch coverage requires the test to assert a value, while statement coverage does
+          not
+      - id: c
+        text: >-
+          Statement coverage only needs each statement executed once, but branch coverage also
+          requires the false outcome (x <= 0) to be exercised, which this test never does
+      - id: d
+        text: They are the same metric, so the premise is wrong and both would be 100%
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The only statement (the call) executed, so statements are fully covered, but the false branch
+      of the condition was never taken, so branch coverage is below 100%. This is exactly why branch
+      coverage is strictly stronger than statement coverage; neither metric is about comments or
+      assertions.
+  - id: tav-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: multiple_choice
+    prompt: >-
+      Coverage tools say a line ran, but mutation testing reports a "surviving mutant" on that same
+      line. How should you interpret this combination?
+    choices:
+      - id: a
+        text: >-
+          The line is executed but no test actually checks its behavior, so a fault could be
+          introduced there without any test failing -- a gap coverage alone hides
+      - id: b
+        text: The coverage tool is broken, because covered lines cannot have surviving mutants
+      - id: c
+        text: The mutant survived because the line is dead code that never runs
+      - id: d
+        text: It means the line is over-tested and you should delete some of its assertions
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A surviving mutant on a covered line means the code ran but no assertion caught the injected
+      fault, revealing weak or missing verification that coverage cannot see. The line is not dead
+      (coverage confirms it ran), and the finding signals under-testing, not over-testing.
+  - id: tav-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: >-
+      Someone claims "unit tests will catch our integration bugs, so we do not need integration
+      tests." Why is this reasoning flawed?
+    choices:
+      - id: a
+        text: >-
+          Unit tests deliberately isolate the unit and stub its collaborators, so wiring and
+          contract bugs at real boundaries are exactly what they do not exercise
+      - id: b
+        text: Unit tests are slower than integration tests, so they time out before reaching the bug
+      - id: c
+        text: Unit tests cannot use assertions, so they cannot detect any defect at all
+      - id: d
+        text: Integration bugs only appear in production, so no automated test can find them
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      By design, unit tests replace collaborators with doubles, so the real wiring, contracts, and
+      boundary behavior go unexercised -- precisely where integration bugs live. Unit tests are
+      faster, do use assertions, and integration tests can catch these bugs before production.
+  - id: tav-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: free_form
+    prompt: >-
+      Explain why "test-after" (writing tests once the code already works) is not the same as TDD,
+      and what TDD's ordering is meant to achieve beyond just having tests.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States TDD writes the test before the production code (red-green-refactor), unlike
+            test-after
+        - id: c2
+          text: >-
+            Explains the failing test first proves the test can fail and that it drives/shapes the
+            design and API
+        - id: c3
+          text: >-
+            Notes test-after still yields tests but does not get the design-driving or fail-first
+            guarantee
+      referenceAnswer: >-
+        In TDD you write a failing test first, then the minimum code to pass it, then refactor. The
+        defining discipline is the ordering: writing the test before the code. That order forces you
+        to see the test fail (proving it can fail and is wired correctly) and lets the test drive
+        the design and the unit's API. Test-after produces tests too, but it skips the fail-first
+        check and does not let the test shape the design, so it is not TDD even though it ends with
+        test coverage.
+      passThreshold: 0.6
+    guidance: >-
+      TDD is about the order, not merely the existence of tests. Writing the test first guarantees
+      you have seen it fail (so a later pass is meaningful) and uses the test as a design pressure
+      on the interface. Test-after misses both benefits.
+  - id: tav-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      A test exercises a function but contains no assertions. Why does it provide little
+      verification value even though it passes?
+    choices:
+      - id: a
+        text: It will always fail because a test without an assertion is a syntax error
+      - id: b
+        text: It double-counts toward coverage, inflating the metric to over 100%
+      - id: c
+        text: >-
+          It only proves the code ran without throwing; with nothing checked, wrong return values or
+          states pass undetected
+      - id: d
+        text: It runs in a separate process, so its result is never reported to the suite
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      With no assertion, the only thing the test confirms is "did not crash"; any incorrect result
+      still passes, so it verifies almost nothing. It is valid code (not a syntax error), does not
+      exceed 100% coverage, and its result is reported normally.
+  - id: tav-200-ff-i
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: free_form
+    prompt: >-
+      Explain why a flaky test that you "just hit re-run on until it goes green" is more dangerous
+      than a test that fails consistently.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States flaky tests erode trust in the suite (developers start ignoring or auto-rerunning
+            failures)
+        - id: c2
+          text: >-
+            Explains that ignoring/re-running can mask a genuine intermittent product bug, not just
+            a test problem
+        - id: c3
+          text: Contrasts with a consistently failing test, which gives a clear, actionable signal
+      referenceAnswer: >-
+        A consistently failing test gives a clear signal: something is broken, fix it. A flaky test
+        that you re-run until green trains the team to ignore red, so over time real regressions get
+        rerun away with the noise. Worse, the flakiness may be a genuine intermittent product bug (a
+        race, timing, or ordering defect); re-running hides it instead of surfacing it. The result
+        is eroded trust in the whole suite.
+      passThreshold: 0.6
+    guidance: >-
+      The danger is cultural and diagnostic: re-running normalizes ignoring failures, and an
+      intermittent product bug looks identical to test flakiness, so re-running can bury a real
+      defect. A deterministic failure, by contrast, is unambiguous and actionable.
+  - id: tav-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      Two tests share a module-level mutable counter and pass when run alone but fail when the suite
+      runs them together. Why, and what category of problem is this?
+    choices:
+      - id: a
+        text: The tests are too fast, so the runner cannot schedule them -- a performance problem
+      - id: b
+        text: The assertions are too strict -- a coverage problem
+      - id: c
+        text: One test has more lines than the other -- a code-size problem
+      - id: d
+        text: >-
+          Shared mutable state leaks between tests so order/co-execution changes the result -- a
+          determinism/isolation problem
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Shared mutable state means one test's effects bleed into another, so the outcome depends on
+      execution order or co-execution -- a violation of isolation/independence and a classic
+      flakiness source. It is not about speed, assertion strictness, or line count.
+  - id: tav-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: >-
+      Why is replacing a slow real dependency with a "fake" (e.g., an in-memory database) different
+      in intent from replacing it with a "mock"?
+    choices:
+      - id: a
+        text: >-
+          A fake records the calls made to it, while a mock only returns canned values and records
+          nothing
+      - id: b
+        text: >-
+          A fake is a working but simplified implementation you exercise for real behavior, while a
+          mock is pre-set with expectations and verifies that specific interactions occurred
+      - id: c
+        text: A fake is always slower than the real dependency, while a mock is always faster
+      - id: d
+        text: There is no difference in intent; "fake" and "mock" are interchangeable labels
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A fake gives you a lightweight but genuinely functioning implementation to test behavior
+      against, whereas a mock encodes expected interactions and asserts they happened. Recording
+      calls describes a spy, the speed claim is wrong, and the two doubles serve different purposes.
+  - id: tav-200-ff-l
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: free_form
+    prompt: >-
+      Explain how over-mocking can make a test suite brittle, and why a refactor that does not
+      change behavior might still break heavily mocked tests.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States over-mocking couples tests to implementation details (specific
+            calls/collaborators) rather than observable behavior
+        - id: c2
+          text: >-
+            Explains a behavior-preserving refactor changes the internal calls, so interaction-based
+            mock assertions fail despite unchanged behavior
+        - id: c3
+          text: >-
+            Notes this gives false confidence / tests the mock instead of the real system
+            (test-induced design damage)
+      referenceAnswer: >-
+        Heavy mocking pins a test to how the code is implemented -- which methods are called on
+        which collaborators and in what order -- rather than to what the code observably does. A
+        refactor that preserves behavior but reorganizes the internals changes those calls, so
+        interaction-based mock expectations fail even though nothing the user sees changed. The
+        suite becomes brittle and, worse, can give false confidence because it is verifying the
+        mock's choreography instead of the real system's outputs.
+      passThreshold: 0.6
+    guidance: >-
+      Over-mocking tests "how" instead of "what," so internal reorganization breaks tests with no
+      behavior change. That brittleness both slows refactoring and gives false confidence, since
+      green tests may only confirm the mock setup, not real behavior.
+  - id: tav-200-ff-m
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      A change compiles cleanly and the type checker is happy, and the agent reports the task
+      "done." Explain why passing static checks is not the same as verifying the change works.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States compiling/type-checking is a static layer that proves the code is well-formed,
+            not that runtime behavior is correct
+        - id: c2
+          text: >-
+            Explains behavioral correctness requires actually running the relevant
+            tests/build/command and observing real output
+        - id: c3
+          text: >-
+            Notes assuming success from "it compiles / diff looks right" is the verification
+            anti-pattern that yields false done claims
+      referenceAnswer: >-
+        Compiling and type-checking are static checks: they confirm the code is well-formed and
+        type-consistent, but they say nothing about whether it produces the right behavior at
+        runtime. Logic bugs, wrong outputs, and broken edge cases all type-check fine. Verifying the
+        change means actually running the relevant tests, build, or command and reading the real
+        output. Claiming "done" because it compiles or the diff looks right is the classic
+        verification anti-pattern and a frequent source of false done claims.
+      passThreshold: 0.6
+    guidance: >-
+      Static analysis is a useful foundational layer (the base of the testing trophy) but it is not
+      behavioral proof. Only running the code and observing output confirms it works; reasoning that
+      "it compiles, so it is done" skips empirical confirmation.
+  - id: tav-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: >-
+      Why does the testing trophy place static analysis (types and linting) as a foundational layer
+      below the test tiers?
+    choices:
+      - id: a
+        text: >-
+          Because static checks catch a whole class of errors cheaply without running the code,
+          freeing the dynamic tests to focus on behavior
+      - id: b
+        text: Because linting can fully replace integration tests for any I/O-heavy service
+      - id: c
+        text: Because static analysis executes the code path-by-path and so subsumes branch coverage
+      - id: d
+        text: Because types are slower to check than tests, so they must run first
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Static analysis runs without executing the program and catches type and lint errors cheaply,
+      forming a base layer so behavioral tests handle what static checks cannot. It does not execute
+      code paths, does not subsume branch coverage, and cannot replace integration tests for real
+      wiring.
+  - id: tav-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      How does property-based testing differ in intent from example-based testing, and what does it
+      buy you?
+    choices:
+      - id: a
+        text: Property-based testing removes all assertions, while example-based testing keeps them
+      - id: b
+        text: >-
+          Property-based testing only works on UI code, while example-based testing only works on
+          backends
+      - id: c
+        text: They are identical except property-based tests run in production
+      - id: d
+        text: >-
+          Example-based tests check specific hand-picked inputs, while property-based tests assert
+          an invariant over many generated inputs, surfacing edge cases the author did not think of
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Example-based tests pin specific input/output pairs; property-based tests state a general
+      property and let a generator throw many inputs at it, finding edge cases a human would miss.
+      Property-based tests still assert (on the property), are not UI-only, and do not run in
+      production.
+  - id: tav-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      A team relies almost entirely on a large suite of end-to-end tests and few unit tests. Explain
+      two concrete downsides of this shape (the "ice-cream cone") compared with a more pyramid-like
+      balance.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names slow feedback / long run times as a downside of e2e-heavy suites
+        - id: c2
+          text: >-
+            Names flakiness and/or poor failure localization (hard to pinpoint the cause) as a
+            downside
+        - id: c3
+          text: >-
+            Connects these to slower development or eroded trust versus a unit-heavy pyramid that
+            gives fast, localized signals
+      referenceAnswer: >-
+        An e2e-heavy "ice-cream cone" is slow: the whole suite must spin up and drive the assembled
+        system, so feedback takes much longer than fast unit tests. It is also flaky and localizes
+        failures poorly -- a red e2e test could be caused by anything in the stack, so debugging is
+        hard. Together these slow the feedback loop and erode trust in the suite, whereas a
+        pyramid's many fast, isolated unit tests give quick, pinpointed signals with a few e2e tests
+        for confidence.
+      passThreshold: 0.6
+    guidance: >-
+      The two structural costs of e2e-heaviness are speed and diagnosability: slow runs delay
+      feedback, and broad tests make failures hard to localize and prone to flakiness. A pyramid
+      pushes most checks down to the fast, isolated tier.
+  - id: tav-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: multiple_choice
+    prompt: Why is "the test suite is deterministic" not the same claim as "the code is correct"?
+    choices:
+      - id: a
+        text: Determinism guarantees correctness, so the two claims are equivalent
+      - id: b
+        text: >-
+          Determinism only means the same inputs yield the same result every run; a test can
+          deterministically pass on wrong logic or deterministically fail, so reproducibility is
+          independent of correctness
+      - id: c
+        text: A deterministic suite cannot contain any assertions, so it cannot judge correctness
+      - id: d
+        text: Determinism means every test passes, which by definition proves correctness
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Determinism is about reproducibility -- same inputs, same outcome -- not about whether that
+      outcome is right. A buggy implementation with a matching buggy test can pass
+      deterministically. Determinism does not imply all tests pass, nor does it forbid assertions.
+  - id: tav-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 221
+    type: multiple_choice
+    prompt: >-
+      Why does freezing the clock and seeding the random generator help, but not fully guarantee, a
+      realistic test?
+    choices:
+      - id: a
+        text: Seeding randomness makes tests slower, so they become less realistic by definition
+      - id: b
+        text: Freezing the clock disables all assertions in the test
+      - id: c
+        text: >-
+          Controlling time and randomness makes the test reproducible, but it also removes the very
+          variation that real-world timing and ordering bugs depend on, so some real defects go
+          unseen
+      - id: d
+        text: It fully guarantees realism, because real systems also run at a fixed time and seed
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Pinning time and seeds buys determinism by eliminating uncontrolled variation, but real-world
+      timing, ordering, and randomness are exactly where some bugs live, so over-controlling can
+      hide them. This is the determinism-versus-realism tradeoff; it does not disable assertions or
+      guarantee realism.
+  - id: tav-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: free_form
+    prompt: >-
+      Distinguish verification ("building the product right") from validation ("building the right
+      product") with a short example of a system that could pass one while failing the other.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States verification = conformance to spec ("building it right"); validation = meeting
+            user needs ("building the right thing")
+        - id: c2
+          text: >-
+            Gives an example where the spec is met exactly (verification passes) but the product
+            does not meet the real user need (validation fails), or the reverse
+      referenceAnswer: >-
+        Verification asks whether the product conforms to its specification -- are we building it
+        right? Validation asks whether the product meets the users' actual needs -- are we building
+        the right thing? A system can pass verification and fail validation: for example, software
+        that implements every spec'd requirement perfectly (verification passes) but solves a
+        problem users do not have, so it fails to meet the real need (validation fails).
+      passThreshold: 0.6
+    guidance: >-
+      The two are orthogonal: you can perfectly implement the wrong spec (verified but not
+      validated) or build something useful that drifts from its written spec. Verification checks
+      conformance; validation checks fitness for the real need.
+  - id: tav-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: >-
+      Why are deterministic CI hooks or pre-merge gates considered stronger verification than an
+      agent's self-reported "I ran the tests and they pass"?
+    choices:
+      - id: a
+        text: A gate is faster than running tests, so it skips the slow parts an agent would run
+      - id: b
+        text: A self-report is always a lie, whereas a gate is always honest by definition
+      - id: c
+        text: >-
+          A gate runs the real commands and decides on the actual exit status, so the result does
+          not depend on the agent remembering to check or judging correctly
+      - id: d
+        text: Gates replace the need for any tests at all, since the gate itself is the verification
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A pre-merge gate executes the actual checks outside the model and bases the verdict on their
+      real exit status, so a correct "done" is enforced by the harness rather than the agent's
+      judgment. A gate is not faster by skipping work, a self-report is not inherently a lie, and a
+      gate still runs real tests rather than replacing them.
+  - id: tav-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You add a method that formats a currency string and want a fast test that runs in
+      milliseconds, never touches the network or filesystem, and pins down exactly this function's
+      logic. Which test level should you reach for first?
+    choices:
+      - id: a
+        text: A unit test that calls the formatter directly with a few representative inputs
+      - id: b
+        text: An end-to-end test that loads the checkout page and reads the rendered total
+      - id: c
+        text: An integration test that writes a row to the real database and reads it back
+      - id: d
+        text: A manual smoke test you run by hand before each release
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Isolated, fast, logic-focused verification of one function is exactly what a unit test is for.
+      An e2e or DB-backed integration test would be far slower and would dilute the failure signal,
+      and a manual smoke test is neither fast nor automated.
+  - id: tav-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      Your consumer service and the provider service it calls are built and deployed by separate
+      teams on separate pipelines, so spinning up both for end-to-end tests is slow and fragile. You
+      want each side to be tested independently yet still catch any mismatch in the request/response
+      shape they exchange. Which approach is purpose-built for this, and how does it work?
+    choices:
+      - id: a
+        text: >-
+          Consumer-driven contract testing (e.g., Pact): the consumer's tests record the requests it
+          makes and responses it expects as a shared "contract," and the provider's pipeline replays
+          that contract to verify it still satisfies the consumer, so each side is checked
+          separately without booting both together
+      - id: b
+        text: >-
+          Raise line-coverage targets on both services until each reaches 100%, which guarantees the
+          two will agree on the wire format
+      - id: c
+        text: >-
+          A single end-to-end test that boots both services for every change, since that is the only
+          way to ever detect a boundary mismatch
+      - id: d
+        text: >-
+          Mock the provider inside the consumer's tests and stop there; if the consumer's mocks
+          pass, the real provider is guaranteed to match them
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Contract testing puts a shared, verifiable agreement at the service boundary: in the
+      consumer-driven form (Pact-style), the consumer generates a contract from its expectations and
+      the provider's pipeline verifies it still honors that contract, so the two are tested
+      independently without an end-to-end environment. Coverage numbers say nothing about the wire
+      format, full e2e is exactly the slow setup being avoided, and a consumer-side mock can
+      silently drift from the real provider unless a contract pins it, which is the gap contract
+      testing closes.
+  - id: tav-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      A teammate proposes the team's strategy be "write mostly end-to-end tests because they are the
+      most realistic, and only a few unit tests." Following the test pyramid, what is the best
+      correction?
+    choices:
+      - id: a
+        text: Agree, since realism is the only thing that matters in testing
+      - id: b
+        text: >-
+          Invert it: keep many fast unit tests at the base and only a few slow e2e tests at the top,
+          because the proposed shape is the slow, brittle ice-cream-cone anti-pattern
+      - id: c
+        text: Drop unit tests entirely and rely on manual QA instead
+      - id: d
+        text: Replace all tests with a strict 100% line-coverage gate
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The proposal is the ice-cream-cone anti-pattern: an e2e-heavy suite is slow, flaky, and hard
+      to debug. The pyramid puts the bulk of tests at the fast unit level and only a few at the e2e
+      level; abandoning automation or chasing coverage numbers does not fix the shape.
+  - id: tav-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: free_form
+    prompt: >-
+      You are practicing TDD to add a discount rule. Describe the exact sequence of steps you take
+      for the very first behavior, and state what you must observe before writing any production
+      code.
+    rubric:
+      criteria:
+        - id: c1
+          text: Write the test first, before any production code for the behavior
+        - id: c2
+          text: Run the test and observe it FAIL (red) for the expected reason before implementing
+        - id: c3
+          text: >-
+            Write the minimum code to make it pass (green), then refactor with the test as a safety
+            net
+      referenceAnswer: >-
+        First I write a failing test that expresses the desired discount behavior. I run it and
+        confirm it fails (red) for the right reason, which proves the test actually exercises the
+        missing code. Then I write the minimum production code to make it pass (green), and finally
+        refactor while the test guards behavior. Seeing the test fail first is essential; a test
+        that passes before I write code is not testing the new behavior.
+      passThreshold: 0.6
+    guidance: >-
+      TDD's defining discipline is test-first and confirming the red state before implementing.
+      Skipping the failing-first observation risks a test that passes for the wrong reason and never
+      actually drives or guards the new code.
+  - id: tav-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      Reviewing a pull request you find a test that calls the function under test but contains no
+      assertion of any kind. The author says "it passes, so we are covered." What is the right
+      assessment?
+    choices:
+      - id: a
+        text: It is fine; passing means the behavior is verified
+      - id: b
+        text: >-
+          It only proves the call did not throw; with no assertion it verifies almost nothing, so a
+          meaningful assertion on the result should be added
+      - id: c
+        text: It is fine as long as the line is counted toward coverage
+      - id: d
+        text: It should be deleted because tests without assertions are illegal syntax
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      An assertion-free test passes simply because nothing threw; it does not check that the result
+      is correct, so it has little verification value. It is syntactically valid and may even raise
+      coverage, which is exactly why coverage alone is a misleading signal.
+  - id: tav-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 342
+    type: multiple_choice
+    prompt: >-
+      A pricing helper runs `total = base; if (isMember) total -= discount; return total;`. Your one
+      test passes a member and asserts the discounted total. Coverage reads 100% statement but the
+      gate config also requires branch coverage, which is below 100%. What concrete extra test do
+      you add to close the branch gap, and why does the statement number not already cover it?
+    choices:
+      - id: a
+        text: >-
+          Add a test for a non-member (isMember false) and assert the undiscounted total; statement
+          coverage was satisfied by the member path alone, but the "condition false" branch was
+          never taken, so branch coverage stayed below 100%
+      - id: b
+        text: >-
+          Add a second member test with a different discount value; running the same true branch
+          twice is what branch coverage actually counts
+      - id: c
+        text: Nothing is needed; 100% statement coverage already implies 100% branch coverage
+      - id: d
+        text: >-
+          Switch the gate to measure only statement coverage, since branch coverage double-counts
+          the single if-statement
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The member path executes every statement (100% statement) but only takes the true branch of
+      `isMember`; the missing test is the non-member case that exercises the false branch.
+      Re-running the true branch adds no branch coverage, statement coverage does not imply branch
+      coverage, and weakening the gate hides the gap rather than closing it.
+  - id: tav-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: multiple_choice
+    prompt: >-
+      Your module sits at 100% line coverage, but a mutation-testing run reports several "surviving
+      mutants" in it. What does this most likely mean and what is the right next step?
+    choices:
+      - id: a
+        text: >-
+          The tests execute the code but their assertions are too weak to detect the injected
+          faults, so you should strengthen the assertions to kill the surviving mutants
+      - id: b
+        text: The coverage tool is broken, since 100% coverage cannot coexist with surviving mutants
+      - id: c
+        text: Mutation testing is wrong; with 100% coverage there is nothing left to test
+      - id: d
+        text: You should lower the coverage target until no mutants survive
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Surviving mutants at full coverage are the textbook signal that assertions are weak: the code
+      runs but the tests fail to detect introduced faults. The fix is stronger, more specific
+      assertions, not distrusting the tools or lowering targets.
+  - id: tav-300-ff-h
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: free_form
+    prompt: >-
+      A test fails about one run in ten on CI even though no one has touched the code, and you
+      discover it asserts on the order of items returned from a hash-based collection. Identify the
+      root cause category and describe a concrete fix that restores determinism.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the test as flaky / non-deterministic
+        - id: c2
+          text: >-
+            Names the root cause as dependence on the unstable ordering of an unordered (hash-based)
+            collection
+        - id: c3
+          text: >-
+            Gives a concrete determinism fix (e.g., sort before asserting, assert on set membership
+            rather than order, or force a stable ordering)
+      referenceAnswer: >-
+        This is a flaky (non-deterministic) test. The root cause is that it depends on the iteration
+        order of an unordered hash-based collection, which is not guaranteed. The fix is to remove
+        the order dependence: sort the results before asserting, assert on set membership or counts
+        rather than positional order, or otherwise impose a stable ordering before comparing.
+      passThreshold: 0.6
+    guidance: >-
+      Intermittent failures on unchanged code are flakiness; unordered collections are a classic
+      source. Restoring determinism means not asserting on incidental ordering, e.g., sorting or
+      comparing as a set, rather than re-running until it passes.
+  - id: tav-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      A flaky integration test occasionally fails the merge pipeline. A teammate wires CI to retry
+      it up to five times and only fail if all five fail. Why is this a poor remediation?
+    choices:
+      - id: a
+        text: Retrying is fine and is the recommended way to handle all flaky tests
+      - id: b
+        text: >-
+          Retry-until-pass hides the flakiness instead of fixing it and can mask a genuine
+          intermittent product bug, so the underlying non-determinism still needs to be diagnosed
+      - id: c
+        text: Retrying makes the test run faster, which is the only concern
+      - id: d
+        text: Retrying changes the test from integration to unit level, which is invalid
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Retrying normalizes ignoring failures and can paper over a real intermittent bug in the
+      product, not just the test. The non-determinism should be diagnosed and fixed (or the test
+      quarantined with a fix SLA), not silently retried away.
+  - id: tav-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      Your code under test calls an EmailClient. In one test you just need send() to return a
+      success value so the code path continues, and you do not care how it was called. Which test
+      double fits best?
+    choices:
+      - id: a
+        text: A stub that returns a canned success value from send()
+      - id: b
+        text: >-
+          A mock pre-programmed with strict expectations that verifies send() was called exactly
+          once
+      - id: c
+        text: A dummy object that is passed in but never used
+      - id: d
+        text: A fake email server that actually stores and renders messages in memory
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      When you only need a canned return value to let the path proceed and do not assert on the
+      interaction, a stub is the right, lowest-coupling choice. A mock adds interaction expectations
+      you do not need, a dummy is never invoked, and a fake is heavier than required here.
+  - id: tav-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      A test mocks the repository, the logger, the clock, and the mapper, then asserts each was
+      called in a specific order. After a behavior-preserving refactor, the test breaks even though
+      outputs are unchanged. What is the most likely diagnosis?
+    choices:
+      - id: a
+        text: The refactor introduced a real bug, since a passing test broke
+      - id: b
+        text: >-
+          Over-mocking has coupled the test to implementation details, so it tests the interactions
+          rather than the behavior and is brittle to refactors
+      - id: c
+        text: The test is flaky and should be retried
+      - id: d
+        text: The production code now needs even more mocks to be testable
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A test that breaks on a behavior-preserving refactor while outputs are unchanged is coupled to
+      implementation via over-mocking; it is verifying call sequences instead of observable
+      behavior. The fix is to assert on outcomes and mock only true boundaries, not to add more
+      mocks.
+  - id: tav-300-ff-l
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      A logic-heavy validation function currently has no automated tests but is reachable through
+      three public API endpoints, and a stakeholder wants "the strongest evidence the rules are
+      correct without a slow suite." Recommend where to put the bulk of the tests and justify the
+      placement using the test-pyramid tradeoff.
+    rubric:
+      criteria:
+        - id: c1
+          text: Recommends putting the bulk of tests at the unit level against the validation logic
+        - id: c2
+          text: Justifies it via speed and precise failure localization of low-level tests
+        - id: c3
+          text: >-
+            Notes higher-level (integration/e2e) tests give broader confidence but are
+            slower/brittler, so only a few are needed to confirm wiring
+      referenceAnswer: >-
+        Put the bulk of the tests at the unit level directly against the validation logic, covering
+        its rules and edge cases. Unit tests are fast and localize failures precisely, which gives
+        strong, cheap evidence the rules are correct. Add only a small number of integration or e2e
+        tests through the endpoints to confirm the wiring, since higher-level tests are slower and
+        more brittle and should be few, per the pyramid.
+      passThreshold: 0.6
+    guidance: >-
+      Rule correctness is logic, best pinned by many fast unit tests with good failure localization.
+      A few higher-level tests confirm the endpoints are wired up; loading the suite with slow e2e
+      tests would trade away speed and debuggability for little extra confidence in the rules.
+  - id: tav-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      A test relies on the current date by calling the system clock and asserts a record is
+      "expired." It passes today but will fail next year. What is the correct fix to make it
+      deterministic?
+    choices:
+      - id: a
+        text: Add a sleep so the test waits long enough for the date to be correct
+      - id: b
+        text: Mark the test to be skipped after the current year
+      - id: c
+        text: Retry the test three times so the timing averages out
+      - id: d
+        text: Inject or freeze the clock (pass a fixed reference time) so the test controls "now"
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Determinism here means controlling time: inject a clock or freeze "now" to a fixed value so
+      the expiry comparison is reproducible. Sleeping, skipping, or retrying do not remove the
+      dependence on the real wall-clock date.
+  - id: tav-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      Two tests share a module-level cache object. Run alone each passes, but running the full file
+      sometimes fails the second test depending on order. Name the FIRST principle being violated
+      and describe how to restore it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the violated principle as Isolated/Independent (tests sharing/leaking state,
+            order-dependence)
+        - id: c2
+          text: >-
+            Describes restoring independence by resetting/recreating state per test (fresh cache,
+            setup/teardown, or avoiding shared mutable state)
+      referenceAnswer: >-
+        The Isolated/Independent principle of FIRST is violated: the tests share mutable state
+        through the module-level cache, so one leaks state into the other and the result depends on
+        execution order. Restore independence by giving each test a fresh cache, resetting or
+        clearing shared state in setup/teardown, or removing the shared mutable state entirely so
+        tests do not depend on order.
+      passThreshold: 0.6
+    guidance: >-
+      Order-dependent failures from shared mutable state are an isolation/independence failure (the
+      I in FIRST). The fix is per-test fresh state via setup/teardown or eliminating the shared
+      object, not pinning a particular run order.
+  - id: tav-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: multiple_choice
+    prompt: >-
+      You implemented a parser and want to catch edge cases you would never think to enumerate by
+      hand (deeply nested, empty, unicode, huge inputs). Which testing approach is designed for
+      exactly this?
+    choices:
+      - id: a
+        text: >-
+          Property-based testing, which generates many randomized inputs and checks invariants that
+          should hold for all of them
+      - id: b
+        text: Writing three more hand-picked example-based tests
+      - id: c
+        text: Raising the branch-coverage gate to 95%
+      - id: d
+        text: A load test that sends many requests per second
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Property-based testing generates a wide range of inputs and checks invariants, surfacing edge
+      cases example-based tests miss. More hand-picked examples still rely on you imagining the
+      cases, coverage gates measure execution not input diversity, and load testing is a performance
+      flavor.
+  - id: tav-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: multiple_choice
+    prompt: >-
+      After deploying a release you want a single quick check that the app boots, the home page
+      loads, and login works, before running the full regression suite. Which kind of test is this?
+    choices:
+      - id: a
+        text: A smoke test of the critical paths to confirm the build is not "dead on arrival"
+      - id: b
+        text: A mutation test of the authentication module
+      - id: c
+        text: A property-based test of the login form fields
+      - id: d
+        text: A full end-to-end regression of every feature in the product
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A quick, broad check that the most critical paths work at all is a smoke test, used to confirm
+      a build is worth deeper testing. Mutation and property-based testing serve different goals,
+      and a full regression is exactly the heavier suite you run after smoke passes.
+  - id: tav-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 328
+    type: multiple_choice
+    prompt: >-
+      Working in Claude Code, you edit a function and want every edit to a Python file to be checked
+      by the test runner automatically, without depending on the model remembering to run it. Which
+      mechanism gives you that deterministic verification?
+    choices:
+      - id: a
+        text: A note in CLAUDE.md asking the model to please run tests after each edit
+      - id: b
+        text: Increasing the model's temperature so it tests more thoroughly
+      - id: c
+        text: >-
+          A PostToolUse hook configured in settings JSON that runs the test/lint command after file
+          edits
+      - id: d
+        text: Adding more example-based unit tests to the repository
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A PostToolUse hook runs as a real shell command after edits, so verification is deterministic
+      and does not depend on the model's judgment or memory. A CLAUDE.md request still relies on the
+      model choosing to comply; temperature and test count do not provide an enforced gate.
+  - id: tav-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      A Claude Code agent reports "Done, the fix is complete" after editing a file, but it never ran
+      the build or tests. State why this claim is not yet trustworthy and the concrete step the
+      agent should take to make a defensible "done" claim.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the claim is unverified because success was assumed from reasoning / the diff
+            looking right, not from observed behavior
+        - id: c2
+          text: >-
+            States the concrete step: actually run the relevant tests/build/commands and read the
+            real output before claiming done
+      referenceAnswer: >-
+        The claim is not trustworthy because it asserts success from reasoning or because the diff
+        looks right, not from observed behavior; compiling-looking code is only a static signal, and
+        untested paths remain unconfirmed. To make a defensible claim the agent should actually run
+        the relevant tests, build, or commands and read the real output, confirming the change works
+        before reporting done.
+      passThreshold: 0.6
+    guidance: >-
+      "Verify before claiming done" requires empirical confirmation: run it and observe the output.
+      An edit that looks correct is not behavioral proof, and assumed success is a frequent source
+      of false "done" claims.
+  - id: tav-300-mc-s
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You set up a Claude Code PostToolUse hook that runs the linter and want a lint failure to
+      actually stop the agent from proceeding (rather than just printing a warning). What does the
+      hook command need to do?
+    choices:
+      - id: a
+        text: Print the word "ERROR" to stdout and exit 0
+      - id: b
+        text: Write the failure into CLAUDE.md so the model reads it next time
+      - id: c
+        text: Sleep for a few seconds so the model notices the delay
+      - id: d
+        text: >-
+          Exit with a non-zero status (conventionally exit code 2) so the blocking error and its
+          stderr are fed back to the model
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A hook signals a blocking error through its exit code: a non-zero exit (conventionally 2)
+      feeds stderr back to the model and blocks progress, giving deterministic enforcement. Printing
+      to stdout with exit 0 is treated as success, and the other options do not block anything.
+  - id: tav-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: free_form
+    prompt: >-
+      A reviewer insists "we hit 100% line coverage, so this PR is fully tested and bug-free." You
+      disagree. Give two concrete reasons coverage does not establish correctness, and what you
+      would look at instead to judge test quality.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States coverage measures execution, not whether assertions check correctness (assertions
+            can be weak or absent)
+        - id: c2
+          text: >-
+            States untested inputs/edge cases (or untested branches) can persist even at 100% line
+            coverage
+        - id: c3
+          text: >-
+            Names a better signal of test quality (e.g., assertion strength, mutation testing,
+            branch coverage, or risk-based review of edge cases)
+      referenceAnswer: >-
+        Coverage only records which lines executed, not whether the assertions actually check the
+        result, so a 100%-covered suite can have weak or missing assertions. It also says nothing
+        about untested inputs, edge cases, or untaken branches that remain unverified at 100% line
+        coverage. To judge quality I would look at assertion strength and the edge cases covered,
+        and use signals like mutation testing or branch coverage rather than the line-coverage
+        number alone.
+      passThreshold: 0.6
+    guidance: >-
+      Coverage is a necessary-but-not-sufficient signal: it proves execution, not assertion strength
+      or correctness, and edge cases persist at 100%. Mutation testing and assertion review judge
+      whether the tests would actually detect a fault.
+  - id: tav-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 421
+    type: multiple_choice
+    prompt: >-
+      A team reports 100% line coverage, yet a production bug slips through in a function that the
+      suite definitely executes. Inspecting the test, you find it calls the function but never reads
+      or checks the return value. What is the most precise diagnosis of why coverage failed to catch
+      this?
+    choices:
+      - id: a
+        text: >-
+          Coverage records that the code was executed, not that any assertion validated its output,
+          so an assertion-free test inflates the number without verifying correctness
+      - id: b
+        text: Line coverage is being measured when only branch coverage can detect logic bugs
+      - id: c
+        text: The function must have been excluded from the coverage report by a configuration error
+      - id: d
+        text: 100% line coverage is impossible, so the reported number is simply wrong
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Coverage measures which lines ran, not whether results were checked. A test that exercises
+      code but asserts nothing passes as long as nothing throws, so the line is "covered" while its
+      behavior is unverified. The gap is weak assertions, not the coverage metric type or a config
+      error.
+  - id: tav-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      A safety check is `if (altitude < 1000 && gearDown) warn();`. Branch (decision) coverage is
+      already 100%: tests took the whole condition both true and false. A reviewer says this still
+      does not prove each boolean operand independently affects the outcome. What stronger criterion
+      are they invoking, and what does it additionally require?
+    choices:
+      - id: a
+        text: >-
+          Condition/decision coverage (toward MC/DC): beyond taking the decision both ways, it
+          requires each operand (altitude < 1000 and gearDown) to be independently shown to flip the
+          decision's outcome
+      - id: b
+        text: >-
+          Statement coverage: they just want every line executed, which the existing tests already
+          guarantee
+      - id: c
+        text: >-
+          Path coverage of the whole program, which is always achievable and is what "100% branch"
+          actually means
+      - id: d
+        text: >-
+          Loop coverage, since any compound boolean condition is internally implemented as a loop
+          over its operands
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Decision coverage only requires the combined condition to be evaluated true and false; it can
+      be satisfied without ever showing that each operand alone changes the result. Condition
+      coverage, and more strictly MC/DC (Modified Condition/Decision Coverage, used in
+      safety-critical standards), additionally requires each operand to be demonstrated to
+      independently affect the decision. Statement coverage is weaker, full path coverage is
+      generally infeasible (it is not what branch coverage means), and compound conditions are not
+      loops.
+  - id: tav-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 431
+    type: free_form
+    prompt: >-
+      A CI suite passes locally every time but fails roughly one run in ten on the shared CI runner,
+      always in a different test. Break down the likely root causes you would investigate and
+      explain why "just add a retry" is a poor first response.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies plausible flakiness sources such as shared mutable state between tests,
+            test-order dependence, real network/IO, race conditions/concurrency, or unseeded
+            randomness/time
+        - id: c2
+          text: >-
+            Explains that the symptom (different test each run, environment-dependent) points to
+            nondeterminism rather than a single broken test
+        - id: c3
+          text: >-
+            Explains that retrying hides flakiness rather than fixing it and can mask genuine
+            intermittent product bugs, while eroding trust in the suite
+      referenceAnswer: >-
+        The pattern (passes locally, intermittent on the shared runner, a different test each time)
+        points to nondeterminism: shared mutable state or test-order dependence surfacing under CI's
+        parallelism/ordering, real network or filesystem IO, race conditions, or randomness/time
+        that isn't seeded or frozen. I would isolate tests, fix ordering and shared fixtures, seed
+        randomness, and fake time/network. Adding a retry is a poor first move because it normalizes
+        ignoring failures, can mask a real intermittent product bug, and erodes trust in the suite
+        so developers start ignoring genuine regressions.
+      passThreshold: 0.6
+    guidance: >-
+      Flakiness is non-determinism: the same code yields different pass/fail without changing. The
+      "different test each run, only on the shared runner" signature points at order-dependence,
+      shared state, or real IO/concurrency. Retrying treats the symptom and can hide a real bug, so
+      the fix is to remove the source of nondeterminism.
+  - id: tav-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 436
+    type: multiple_choice
+    prompt: >-
+      After a small, behavior-preserving refactor (renaming a private helper and reordering its
+      internal calls) a large fraction of a class's unit tests break, even though external behavior
+      is unchanged. What does this most strongly indicate about the test design?
+    choices:
+      - id: a
+        text: The refactor must have changed behavior despite appearances, so the tests are correct
+      - id: b
+        text: The tests have too few assertions and need more interaction checks added
+      - id: c
+        text: >-
+          The tests are over-mocked and assert on internal interactions/implementation details
+          rather than observable behavior, so they break on refactors that change nothing observable
+      - id: d
+        text: Unit tests are simply unsuitable for any class with private helpers
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Tests that break on a behavior-preserving refactor are coupled to implementation details, the
+      classic over-mocking failure mode where you test the mock/interactions instead of the system.
+      Behavior-focused tests would survive an internal rename. The fix is fewer interaction
+      assertions, not more.
+  - id: tav-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 441
+    type: multiple_choice
+    prompt: >-
+      A service has very thin business logic but heavy I/O wiring (HTTP handlers, a database, a
+      message queue). The team's classic unit-heavy pyramid yields high coverage yet keeps shipping
+      bugs at the seams between components. Which shift best addresses the mismatch, and why?
+    choices:
+      - id: a
+        text: Add many more unit tests until coverage reaches 100% so every line is exercised twice
+      - id: b
+        text: Replace all tests with a single end-to-end suite since e2e is the most realistic
+      - id: c
+        text: Delete the integration tests because they are slower and reduce the suite's average speed
+      - id: d
+        text: >-
+          Weight the suite toward integration tests (a "testing trophy" shape) because the risk
+          lives in the wiring between components, which unit tests stub out by design
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Unit tests isolate units and stub collaborators, so they cannot catch wiring/contract bugs by
+      design. When risk concentrates in I/O seams with thin logic, an integration-weighted shape
+      (testing trophy) gives more confidence per unit of effort. More unit tests or pure e2e do not
+      target the actual failure location.
+  - id: tav-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A team enforces a hard CI gate that fails any build under 80% line coverage. Six months later
+      coverage sits at 82% but bug escape rates are unchanged. Diagnose how a coverage gate can
+      produce this outcome, and name a more honest (if costlier) signal of test effectiveness.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a coverage-number gate incentivizes low-value or assertion-free tests that
+            raise the number without improving verification (gaming the metric)
+        - id: c2
+          text: >-
+            Notes that coverage measures execution, not assertion strength or correctness, so it is
+            necessary-but-not-sufficient for test quality
+        - id: c3
+          text: >-
+            Proposes mutation testing (or risk-based coverage) as a stronger signal of test
+            effectiveness, acknowledging it is more expensive to run
+      referenceAnswer: >-
+        A hard coverage gate optimizes for the number, not for verification. Developers add tests
+        that execute code to clear 80% but assert little, so coverage rises while real
+        defect-catching power does not, because coverage measures execution, not assertion strength
+        or correctness. A more honest signal is mutation testing: it injects small faults and checks
+        whether tests "kill" them, directly measuring test effectiveness and revealing
+        surviving-mutant gaps that coverage hides. The tradeoff is cost, mutation testing is far
+        more expensive to run, so risk-based targeting is often used.
+      passThreshold: 0.6
+    guidance: >-
+      Coverage gates reward hitting a number, which is gameable with weak or assertion-free tests,
+      so the escape rate need not move. Mutation testing measures whether tests actually detect
+      injected faults, a far stronger effectiveness signal, at much higher compute cost.
+  - id: tav-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 451
+    type: multiple_choice
+    prompt: >-
+      Two changes pass review. Change A makes the code conform exactly to its written specification.
+      Change B reveals that the specification itself describes a workflow users never actually need.
+      Which framing correctly maps these to verification and validation?
+    choices:
+      - id: a
+        text: >-
+          A is about verification ("building it right" / conformance to spec); B is about validation
+          ("building the right thing" / meeting real user needs)
+      - id: b
+        text: Both A and B are verification because both involve checking the software against criteria
+      - id: c
+        text: A is validation and B is verification, since validation concerns the spec document
+      - id: d
+        text: Verification and validation are synonyms, so the distinction does not apply here
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Verification asks "are we building the product right?" (conformance to spec), which is change
+      A. Validation asks "are we building the right product?" (meeting user needs), which is change
+      B's discovery that the spec targets an unneeded workflow. They are distinct, not synonyms.
+  - id: tav-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A developer claims a fix is "done" because the code compiles, the type-checker passes, and the
+      diff looks right, but the relevant tests were never run. From a verification standpoint, what
+      is the core flaw in calling this done?
+    choices:
+      - id: a
+        text: Nothing is wrong; if it compiles and the types pass, the behavior is guaranteed correct
+      - id: b
+        text: >-
+          Compiling and type-checking are a static layer that proves conformance of types/syntax,
+          not behavioral correctness; without running the relevant tests the success is assumed, not
+          empirically confirmed
+      - id: c
+        text: The flaw is that the type-checker should have caught the behavioral bug automatically
+      - id: d
+        text: The only flaw is that linting was not also run alongside the type-checker
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Type-checking and compiling are static analysis: they verify a layer of the system but cannot
+      prove runtime behavior. "Verify before claiming done" means running the relevant tests/build
+      and reading real output; reasoning that it "should work" is unverified and a common source of
+      false "done" claims.
+  - id: tav-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 461
+    type: free_form
+    prompt: >-
+      An agent harness relies on the model self-reporting "all tests pass" at the end of a task, and
+      occasionally the claim is wrong. Compare the trust properties of this self-report against a
+      PostToolUse hook that runs the test command, and explain why moving verification out of the
+      model is the stronger design.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a model self-report depends on the model's judgment/memory and can claim
+            success without empirical confirmation
+        - id: c2
+          text: >-
+            Explains that a hook runs as a real shell command outside the model, giving
+            deterministic, non-bypassable verification independent of what the model "remembers" to
+            do
+        - id: c3
+          text: >-
+            Notes that the hook can block the agent via its exit code (a non-zero/exit-2 failure
+            feeds stderr back and stops progress), so a "done" claim is enforced by the harness
+            rather than trusted from the model
+      referenceAnswer: >-
+        A self-report is only as reliable as the model's judgment: it can assert "tests pass" from
+        reasoning without actually running them, so the claim is unverified. A PostToolUse hook runs
+        the test command as a real shell process outside the model, producing deterministic output
+        the model cannot fake or forget. Because the hook communicates back through its exit code (a
+        non-zero exit, conventionally 2, signals a blocking error and feeds stderr to the model), a
+        failing test can block the agent from proceeding. Moving verification into the harness means
+        a correct "done" is enforced by a deterministic gate, not trusted from the agent's
+        self-report.
+      passThreshold: 0.6
+    guidance: >-
+      Self-reports depend on the model remembering and honestly judging; hooks are real shell
+      commands outside the model, so they verify deterministically and can block via exit code (exit
+      2 signals a blocking error). The expert design choice is to put the gate in the harness, not
+      the model.
+  - id: tav-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 463
+    type: multiple_choice
+    prompt: >-
+      A test suite mocks a third-party payment API. All tests pass, but in production the
+      integration fails because the real API changed a required field. What does this scenario
+      expose about the mocking tradeoff, and what hedge most directly addresses it?
+    choices:
+      - id: a
+        text: The mocks were written incorrectly and rewriting them to be stricter solves the drift
+      - id: b
+        text: Mocking is never appropriate, so all external dependencies should always be hit for real
+      - id: c
+        text: >-
+          Mocks can drift from real behavior (the "mock is a lie" problem); a contract test or a
+          small set of integration tests against the real API hedges the drift at the boundary
+      - id: d
+        text: The failure proves the suite needs higher line coverage of the payment module
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A mock encodes assumptions about an external system that can silently diverge from reality, so
+      fast/deterministic mocked tests stay green while production breaks. The targeted hedge is a
+      contract test or a thin slice of real-dependency integration tests at the seam, not stricter
+      mocks or more line coverage.
+  - id: tav-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      A reviewer insists a test is "deterministic" because it has passed 500 times in a row, and
+      therefore the logic under test must be correct. Where exactly does this reasoning break down?
+    choices:
+      - id: a
+        text: 500 passing runs do statistically prove correctness, so the reasoning is sound
+      - id: b
+        text: A test that always passes is by definition flaky and the reviewer has it backwards
+      - id: c
+        text: Determinism guarantees correctness only if branch coverage is also 100%
+      - id: d
+        text: >-
+          Determinism means reproducible results for the same inputs, not correctness; a test can
+          deterministically pass on wrong logic (or only exercise inputs that happen to be correct)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Determinism is about reproducibility, not truth: a test can deterministically and consistently
+      pass on incorrect logic, or only cover inputs that happen to work. Repeated passes confirm
+      stability, not that the tested cases (let alone untested ones) are correct.
+  - id: tav-400-ff-l
+    tier: 400
+    bloom: analyze
+    difficulty: 471
+    type: free_form
+    prompt: >-
+      A team froze the clock, seeded all randomness, and faked the network so every test is
+      perfectly deterministic. Their suite is now rock-solid green, but a class of real-world
+      timing/ordering bugs keeps reaching production. Explain the tradeoff they have made and what
+      testing technique can reintroduce controlled variation to catch the missed edge cases.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that maximizing determinism (frozen time, seeded randomness, faked network)
+            trades away realism, reducing the chance of catching real-world
+            timing/ordering/concurrency bugs
+        - id: c2
+          text: >-
+            Explains that example-based deterministic tests only exercise the specific inputs the
+            author chose, leaving edge cases unexplored
+        - id: c3
+          text: >-
+            Names property-based and/or fuzz testing as a way to reintroduce controlled
+            nondeterminism/wide input exploration to surface edge cases example tests miss
+      referenceAnswer: >-
+        By freezing time, seeding randomness, and faking the network they maximized reproducibility
+        but reduced realism: the very nondeterminism that surfaces timing, ordering, and concurrency
+        bugs is now engineered out, so those bugs never appear in tests yet still happen in
+        production. Example-based tests also only cover the inputs the author picked. Property-based
+        testing and fuzzing reintroduce controlled variation, generating wide or randomized inputs
+        against invariants, to explore edge cases that fixed example tests never reach, while still
+        being reproducible via recorded seeds.
+      passThreshold: 0.6
+    guidance: >-
+      Determinism buys reproducibility at the cost of realism; over-faking hides real
+      timing/ordering bugs. Property-based and fuzz testing reintroduce controlled variation to
+      explore the input space that hand-picked example tests miss, recovering some realism without
+      abandoning repeatability.
+  - id: tav-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 473
+    type: multiple_choice
+    prompt: >-
+      A team practices "test-after": they write production code, then add tests that pass on the
+      first run. A colleague argues this is not TDD. Beyond terminology, what concrete verification
+      weakness does writing the test after, and never seeing it fail, introduce?
+    choices:
+      - id: a
+        text: There is no weakness; a test that passes immediately is simply a more efficient workflow
+      - id: b
+        text: >-
+          A test that has never been observed to fail might be asserting nothing meaningful or
+          testing the wrong thing; the red step exists precisely to prove the test can detect the
+          absence of the behavior
+      - id: c
+        text: Test-after always produces lower line coverage than test-first by construction
+      - id: d
+        text: The only difference is that test-after cannot use Arrange-Act-Assert structure
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      TDD's red step confirms the test actually fails without the behavior, proving the test can
+      catch its absence. A test written after the code that passes on first run was never shown to
+      fail, so it may assert nothing or target the wrong condition, a real verification gap,
+      independent of coverage numbers or AAA structure.
+  - id: tav-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      A nightly "smoke test" of a deployment is steadily growing: it now exhaustively checks edge
+      cases of one billing calculation and takes 40 minutes, while no longer confirming that login
+      or checkout work at all. What has gone wrong with respect to the purpose of a smoke test?
+    choices:
+      - id: a
+        text: >-
+          A smoke test should be a quick, broad check that the most critical paths work at all; it
+          has drifted into deep, narrow verification (more like an exhaustive sanity/unit check of
+          one feature) and lost its broad critical-path coverage
+      - id: b
+        text: Nothing is wrong; smoke tests are supposed to exhaustively verify one feature in depth
+      - id: c
+        text: The smoke test should be even slower and check every feature exhaustively
+      - id: d
+        text: Smoke tests and end-to-end tests are identical, so depth versus breadth is irrelevant
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A smoke test is a fast, broad "is the build dead on arrival?" check of the most critical
+      paths. Exhaustively probing one calculation's edge cases is narrow, deep verification (closer
+      to a sanity/unit check) and abandons the breadth that makes a smoke test valuable, leaving
+      critical flows like login unguarded.
+  - id: tav-400-ff-o
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      An agent must verify a one-line change to a single pure function. One reviewer says "run the
+      entire test suite and full build to be safe"; another says "trust the diff, it is one line."
+      Explain why both extremes are suboptimal and what principle governs choosing the right
+      verification scope.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that running everything wastes time/over-verifies when only a small set of
+            tests exercise the changed code path
+        - id: c2
+          text: >-
+            Explains that trusting the diff without running anything ships an unverified ("assumed")
+            claim, the core verification anti-pattern
+        - id: c3
+          text: >-
+            States the governing principle: pick the minimal relevant verification set that actually
+            exercises the changed code paths (e.g., the tests covering that function plus any direct
+            callers)
+      referenceAnswer: >-
+        Running the entire suite and full build over-verifies a one-line pure-function change: it
+        wastes time on tests that cannot touch the changed path. Trusting the diff under-verifies,
+        it ships an assumed "done" with no empirical confirmation, which is the core verification
+        anti-pattern. The governing principle is to run the minimal relevant verification set that
+        actually exercises the changed code paths, here the unit tests covering that function and
+        any direct callers, so the claim is empirically confirmed without paying for irrelevant
+        work.
+      passThreshold: 0.6
+    guidance: >-
+      Over-verifying wastes time; under-verifying ships unverified claims. The expert call is the
+      minimal relevant suite that still exercises the changed paths, enough to empirically confirm
+      the change, no more. Scope verification to what the change can actually affect.
+  - id: tav-400-mc-p
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      A team adopts a "quarantine flaky tests" policy to keep the pipeline green: failing flaky
+      tests are moved out of the gating signal. A year later, several quarantined tests cover real,
+      now-broken features, but nobody noticed. What was the missing ingredient that turned a
+      reasonable mitigation into hidden risk?
+    choices:
+      - id: a
+        text: Quarantine is always wrong and flaky tests should simply be deleted on sight
+      - id: b
+        text: The tests should have been retried more times before quarantining them
+      - id: c
+        text: >-
+          Quarantine without an enforced fix SLA just hides risk; isolating a flaky test from the
+          gate is only safe when paired with a tracked obligation to fix (or delete) it within a
+          deadline
+      - id: d
+        text: The gate itself was the problem and removing all gating would have prevented this
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Quarantine is a legitimate way to protect the gating signal from noise, but it removes the
+      pressure that would otherwise force a fix. Without an enforced fix SLA, quarantined tests rot
+      and can silently stop guarding real behavior. The missing ingredient is the tracked,
+      time-bound obligation to fix or remove them.
+  - id: tav-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 433
+    type: multiple_choice
+    prompt: >-
+      A test class has 200 fast unit tests that all pass, yet a defect ships where Service A calls
+      Service B with a field B recently renamed. The unit tests stubbed B's client. Why were these
+      tests structurally incapable of catching this, and what test level would have?
+    choices:
+      - id: a
+        text: The unit tests were too slow and should have been split into smaller units
+      - id: b
+        text: The defect proves the unit tests had insufficient line coverage of Service A
+      - id: c
+        text: >-
+          Unit tests isolate the unit and stub collaborators by design, so a contract mismatch at
+          the A-B boundary is invisible to them; an integration (or contract) test exercising the
+          real boundary would catch it
+      - id: d
+        text: Only an exhaustive end-to-end UI test could ever detect a renamed field anywhere
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Unit tests deliberately stub collaborators, so wiring/contract bugs between services slip past
+      them no matter how many there are or how high their coverage. The boundary mismatch surfaces
+      only when a test exercises the real seam, an integration or contract test, not necessarily a
+      full e2e suite.
+  - id: tav-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: free_form
+    prompt: >-
+      Two senior engineers disagree. One introduced heavy dependency injection and interfaces purely
+      so a class could be mocked in tests; the other argues this complicated the production design
+      for no runtime benefit. Analyze this as the "test-induced design damage" tradeoff and explain
+      why reasonable experts land in different places.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Frames the tension as testability versus production simplicity, where seams added only
+            for mocking can complicate the design (test-induced design damage)
+        - id: c2
+          text: >-
+            Explains the upside the first engineer is chasing (isolation, fast/deterministic tests)
+            and the downside the second sees (added indirection/complexity with no runtime payoff)
+        - id: c3
+          text: >-
+            Acknowledges this is a genuine, context-dependent judgment call where experts
+            legitimately disagree (e.g., the "Is TDD Dead?" debate), rather than one side being
+            simply wrong
+      referenceAnswer: >-
+        This is the test-induced design damage tradeoff: testability versus production simplicity.
+        The first engineer added DI and interfaces to create a seam for mocking, buying isolated,
+        fast, deterministic unit tests. The second sees indirection and abstraction added solely for
+        tests, complicating the production design with no runtime benefit and arguably worse
+        readability. Neither is categorically right: how much design pressure from tests is healthy
+        depends on context (logic density, refactor frequency, risk), and reasonable experts
+        genuinely disagree, as in the Beck/Fowler/DHH "Is TDD Dead?" debate. The judgment is where
+        to put the seam, not whether seams are always good or bad.
+      passThreshold: 0.6
+    guidance: >-
+      Adding indirection only to enable mocking can damage production design, the
+      testability-versus- simplicity tradeoff. There is no universal answer: it depends on logic
+      density, refactor frequency, and risk, which is why experts (the "Is TDD Dead?" debate)
+      legitimately disagree on where the line sits.
+  - id: tav-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 443
+    type: multiple_choice
+    prompt: >-
+      A flaky end-to-end test fails intermittently. The author "fixes" it by inserting a fixed
+      `sleep(2)` before the assertion, and it passes for a week before flaking again. Diagnose why
+      the sleep was never a real fix.
+    choices:
+      - id: a
+        text: The sleep duration was simply too short and any flake means it must be increased forever
+      - id: b
+        text: >-
+          Fixed sleeps make tests deterministic, so the later flake must be a brand-new unrelated
+          bug
+      - id: c
+        text: E2E tests cannot be made reliable, so the sleep was the best possible outcome
+      - id: d
+        text: >-
+          A fixed sleep papers over a race/timing dependency rather than removing it; under load the
+          awaited condition can still take longer than the constant, so nondeterminism remains
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A constant sleep assumes the awaited event always completes within a fixed window; it hides
+      the underlying race instead of removing it, so heavier load reintroduces the flake. The real
+      fix is to wait on the actual condition (poll/await the state) and control the timing source,
+      eliminating the nondeterminism.
+  - id: tav-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 457
+    type: multiple_choice
+    prompt: >-
+      A manager proposes mandating that every developer write at least three tests per function to
+      "increase quality." A staff engineer pushes back. What is the strongest analysis of why a raw
+      test-count target can backfire?
+    choices:
+      - id: a
+        text: More tests are always strictly better, so the staff engineer's pushback is unfounded
+      - id: b
+        text: >-
+          Test value, not count, drives confidence; a count target incentivizes redundant or brittle
+          tests that raise maintenance cost and slow CI without catching more bugs
+      - id: c
+        text: Three tests per function is too few; the only fix is mandating ten per function instead
+      - id: d
+        text: Test count and test value are the same thing, so the target is a precise quality measure
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Counting tests optimizes a proxy, not the goal. A quota produces redundant, low-value, or
+      brittle tests that bloat maintenance cost and CI time while adding little real verification.
+      Confidence comes from what tests assert and which risks they cover, not from how many exist.
+  - id: tav-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team's service is a thin HTTP layer over a database: most logic is orchestration and I/O
+      wiring, with little branching domain logic. They currently run a classic unit-heavy pyramid
+      where every collaborator is mocked, and they keep shipping bugs in the wiring between handler,
+      ORM, and schema. Which critique of their current strategy is the most defensible?
+    choices:
+      - id: a
+        text: >-
+          For this logic-thin, I/O-heavy shape an integration-weighted ("testing trophy") suite that
+          exercises the real handler-ORM-DB seam would likely deliver more confidence per unit of
+          effort, because the bugs live in the wiring their mocks stub out
+      - id: b
+        text: >-
+          The pyramid is always correct; they simply need more unit tests and higher line coverage
+          to catch the wiring bugs
+      - id: c
+        text: >-
+          They should delete all unit tests and rely solely on manual end-to-end testing, since that
+          is the most realistic
+      - id: d
+        text: >-
+          The bugs prove their mocks are wrong, so they should add stricter mock expectations to
+          assert every internal ORM call
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The "right" test shape is context-dependent: for thin-logic, I/O-heavy services the wiring is
+      where risk concentrates, and unit tests that mock the DB/ORM cannot see those bugs by design.
+      A trophy-style integration tier exercises the real seam. More unit tests (b) or stricter mock
+      expectations (d) only re-test the stubs, and an all-manual-e2e suite (c) is the slow, fragile
+      ice-cream cone.
+  - id: tav-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      A reviewer is judging two competing test files for the same pure pricing function. File X has
+      100% line and 100% branch coverage but its only assertion is `expect(result).toBeDefined()`.
+      File Y has 78% branch coverage but asserts exact computed totals across boundary and edge
+      inputs. Which assessment best reflects what coverage does and does not prove?
+    choices:
+      - id: a
+        text: File X is stronger because higher coverage numbers are the goal of testing
+      - id: b
+        text: >-
+          File Y is the better safety net despite lower coverage: coverage measures execution, not
+          assertion strength, so X's full coverage with a vacuous assertion mostly proves "did not
+          throw," while Y actually pins down correct outputs
+      - id: c
+        text: >-
+          Both are equivalent because they exercise the same function, so coverage difference is
+          irrelevant
+      - id: d
+        text: >-
+          File X is stronger because 100% branch coverage mathematically guarantees the absence of
+          bugs
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Coverage records which code ran, not whether outputs were checked. A 100%-covered test with a
+      `toBeDefined` assertion verifies almost nothing beyond "no exception," whereas weaker-coverage
+      tests with precise assertions actually constrain behavior. Coverage is
+      necessary-but-not-sufficient; it can never guarantee absence of bugs (a, d), and the assertion
+      gap makes the two files far from equivalent (c).
+  - id: tav-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      An engineering org introduces a hard CI gate: any PR that drops total line coverage below 80%
+      is blocked from merging. Six months later, coverage sits at 84% but escaped-bug rates are
+      unchanged. Which critique of the gate is the most expert-grounded?
+    choices:
+      - id: a
+        text: The gate is fine; the threshold just needs to be raised to 100% to eliminate escaped bugs
+      - id: b
+        text: Escaped bugs are unrelated to test quality, so no testing policy could affect them
+      - id: c
+        text: >-
+          A coverage-number gate is a game-able proxy: it can be satisfied with assertion-free or
+          trivial tests that execute code without verifying it, so it raises the number without
+          raising bug-catching power; a mutation-testing or risk-based signal is more honest, though
+          far more expensive to run
+      - id: d
+        text: >-
+          The team should remove all coverage measurement, because coverage is meaningless and
+          provides no signal at all
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Hard coverage gates reward executing lines, not asserting on them, so teams hit the number
+      with low-value tests and bug rates stay flat. Mutation testing measures whether tests actually
+      detect injected faults, a more honest (but costly) signal. Pushing the threshold to 100% only
+      amplifies the gaming; and coverage is a weak-but-real signal, so it is neither irrelevant to
+      test quality nor worth abandoning entirely.
+  - id: tav-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A flaky integration test fails about 1 in 20 runs. The team's policy is a CI step that
+      automatically retries any failed test up to three times and reports green if any attempt
+      passes. Velocity is high and the board is green. What is the strongest objection to relying on
+      this policy?
+    choices:
+      - id: a
+        text: >-
+          Retrying is wrong only because it makes CI marginally slower; the test result is otherwise
+          trustworthy
+      - id: b
+        text: >-
+          Auto-retrying normalizes ignoring failures and can mask a genuine intermittent product
+          bug: a 1-in-20 flake may be a real race condition that retries hide rather than fix,
+          eroding trust in what "green" means
+      - id: c
+        text: There is no objection; if a test ever passes, the code under test is proven correct
+      - id: d
+        text: >-
+          The team should increase retries to ten so the board is always green, removing the problem
+          entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Blind retries treat every intermittent failure as noise, but an intermittent failure can be a
+      real concurrency or timing bug in the product, not the test. Hiding it degrades trust in the
+      suite and lets regressions through. The harm is epistemic, not merely the small extra runtime;
+      a single eventual pass proves nothing; and adding more retries just buries the signal deeper.
+  - id: tav-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A unit-test file for an OrderService mocks the repository, the payment gateway, and the email
+      sender, then asserts that `repository.save()` was called once, `gateway.charge()` was called
+      before `save`, and `email.send()` received a specific internal DTO shape. A refactor that
+      preserves identical observable behavior breaks every test. What is the best diagnosis?
+    choices:
+      - id: a
+        text: >-
+          The tests are exemplary because verifying every internal interaction is the goal of unit
+          testing
+      - id: b
+        text: >-
+          The refactor was clearly incorrect, since correct refactors never change which methods are
+          called
+      - id: c
+        text: >-
+          The fix is to add even more mock expectations so the tests pin down the implementation
+          completely
+      - id: d
+        text: >-
+          These are over-mocked, interaction-coupled tests: by asserting on internal call order and
+          private DTO shapes rather than observable outcomes, they test the implementation, so
+          behavior-preserving refactors break them and they give false confidence ("test-induced
+          design damage")
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Tests that assert on call order and internal DTO shapes are coupled to how the code works, not
+      what it produces. A refactor that keeps behavior identical can legitimately change internal
+      calls, so the suite breaks without any real regression, the signature of over-mocking and
+      test-induced design damage. The cure is to assert observable outcomes, not to add still more
+      interaction expectations; the refactor was not necessarily wrong, and such tests are not
+      exemplary.
+  - id: tav-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      A teammate argues: "We have 100% code coverage, so our module is fully tested and effectively
+      bug-free; we don't need any more tests." Critique this claim on its merits and name at least
+      two distinct reasons it is unsound.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States coverage measures execution (which code ran), not correctness or assertion
+            strength
+        - id: c2
+          text: >-
+            Gives a concrete way 100% coverage coexists with bugs (weak/absent assertions, untested
+            input values/edge cases, or unspecified behavior)
+        - id: c3
+          text: >-
+            Invokes the principle that testing shows the presence, not the absence, of bugs
+            (Dijkstra) or otherwise notes full coverage is necessary-but-not-sufficient
+      referenceAnswer: >-
+        The claim conflates execution with verification. 100% coverage means every line/branch was
+        executed at least once, not that outputs were checked: a suite of assertion-free or
+        weak-assertion tests can reach full coverage while verifying almost nothing. Coverage also
+        says nothing about untested input values, boundary/edge cases, or behavior the spec never
+        captured, all of which can still be wrong at 100% coverage. As Dijkstra put it, testing can
+        show the presence of bugs but never their absence, so full coverage is a
+        necessary-but-not-sufficient signal, not proof of correctness.
+      passThreshold: 0.6
+    guidance: >-
+      The core error is treating a structural execution metric as a correctness proof. Coverage
+      ignores assertion strength and the space of untested inputs, and even exhaustive structural
+      coverage cannot prove the absence of bugs. A strong critique separates "code ran" from
+      "behavior was verified."
+  - id: tav-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      Two QA strategies are proposed for a payments feature. Strategy A: heavily verify conformance
+      to the written spec (every documented rule has a test). Strategy B: also run user-acceptance
+      sessions to confirm the feature actually solves the customer's problem. A lead says "A alone
+      is sufficient; if it meets the spec, we're done." Which evaluation is most sound?
+    choices:
+      - id: a
+        text: >-
+          The lead is correct: validation is just a slower duplicate of verification and adds no new
+          information
+      - id: b
+        text: >-
+          B alone would be sufficient and A is redundant, because if users are happy the spec is
+          irrelevant
+      - id: c
+        text: >-
+          A alone only addresses verification ("building it right"); without validation ("building
+          the right thing") a feature can perfectly match a flawed or misunderstood spec and still
+          fail users, so B covers a distinct risk A cannot
+      - id: d
+        text: >-
+          Verification and validation are synonyms, so running either one satisfies the other
+          automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Verification checks conformance to the spec; validation checks that the product meets real
+      user needs. A spec can itself be wrong or incomplete, so passing every spec-conformance test
+      still leaves the "are we building the right thing" risk open, which only validation addresses.
+      They are distinct, not synonyms, and neither one fully substitutes for the other.
+  - id: tav-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >-
+      A reviewer must choose where to place the test "seam" for a module that calls a third-party
+      billing API. Option 1: mock the billing client everywhere for fast, deterministic unit tests.
+      Option 2: hit a real sandbox for every test. The team wants both speed and protection against
+      the vendor changing their contract. Which design judgment best balances the competing
+      concerns?
+    choices:
+      - id: a
+        text: >-
+          Mock everything always; if the mock ever drifts from the real API that is the vendor's
+          problem, not the test suite's
+      - id: b
+        text: >-
+          Run every test against the live sandbox, since the only realistic test is one that uses
+          the real dependency, regardless of speed or flakiness
+      - id: c
+        text: >-
+          Skip boundary testing entirely and rely on production monitoring to catch contract breaks
+          after release
+      - id: d
+        text: >-
+          Keep fast mocked tests for the module's own logic, but add a small set of contract tests
+          (or a few integration tests against the sandbox) at the boundary, because pure mocks risk
+          drifting from the real contract (the "mock is a lie" problem) while all-sandbox tests are
+          slow and flaky
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The expert call is where to put the seam. Mocks make logic tests fast and deterministic but
+      can silently diverge from the real contract; contract tests (or a thin integration tier) pin
+      the boundary against real behavior without making the whole suite slow and flaky. Mocking
+      everything ignores drift risk, running every test against the live sandbox is slow and flaky,
+      and deferring entirely to production monitoring ships the contract risk to users.
+  - id: tav-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      A team proposes a flaky-test policy: "Whenever a test is flaky, immediately move it to a
+      quarantine suite that does not block merges, and keep shipping." Evaluate this policy: under
+      what condition is quarantine reasonable, and what makes it dangerous if adopted as-is?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Acknowledges quarantine has a legitimate purpose (isolating a flaky test from the gating
+            signal so it stops eroding trust / blocking unrelated work)
+        - id: c2
+          text: >-
+            Identifies the danger that quarantine without a follow-up/fix just hides risk and
+            accumulates unmonitored gaps
+        - id: c3
+          text: >-
+            States the safeguard that makes it acceptable (an enforced fix SLA / commitment to
+            fix-or-delete, so quarantine is temporary not permanent)
+      referenceAnswer: >-
+        Quarantine is reasonable as a short-term measure: a flaky test that randomly fails erodes
+        trust in the whole suite and blocks unrelated merges, so isolating it from the gating signal
+        can be the right triage. The danger is that quarantine-and-ship, as written, has no exit
+        condition: tests pile up in the quarantine suite, the behavior they were meant to protect
+        goes unverified, and the policy quietly hides accumulating risk. It is only safe with an
+        enforced fix SLA (a deadline to fix or delete each quarantined test), so quarantine stays a
+        temporary holding pen rather than a graveyard.
+      passThreshold: 0.6
+    guidance: >-
+      Quarantine trades short-term velocity for protected signal, which is fine only if paired with
+      an enforced fix-or-delete SLA. Without that exit condition it becomes a place tests go to be
+      forgotten, masking real coverage gaps and the very intermittent bugs the flakiness might
+      signal.
+  - id: tav-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A test for a date-sensitive billing calculation freezes the clock to a fixed instant, seeds
+      the RNG, and fakes the network. A senior engineer worries this "perfectly deterministic" test
+      will miss real-world timing and edge-case bugs. Which response best weighs determinism against
+      realism?
+    choices:
+      - id: a
+        text: >-
+          The engineer is wrong: a deterministic test that always passes proves the calculation is
+          correct for all inputs, so no further testing is needed
+      - id: b
+        text: >-
+          Determinism is a flaw; the test should use the real wall clock and live network so it is
+          realistic, even though it will then be flaky
+      - id: c
+        text: >-
+          Both concerns are valid: freezing time/seed/network maximizes reproducibility (you can
+          debug a failure), but reduces the chance of catching real timing/ordering edge cases, so
+          pairing the deterministic test with property-based or fuzz tests reintroduces controlled
+          variation to probe inputs example tests miss
+      - id: d
+        text: >-
+          Determinism and correctness are the same thing, so a deterministic test cannot miss any
+          bug by definition
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Controlling time, randomness, and the network makes failures reproducible but narrows the
+      inputs you actually exercise, so genuine edge cases can slip through. Property-based and fuzz
+      testing add controlled nondeterminism to widen input space without making tests flaky.
+      Determinism is about reproducibility, not correctness, so a deterministic test can certainly
+      pass on wrong logic or miss untested inputs, and deliberately reintroducing wall-clock
+      flakiness trades away debuggability for nothing.
+  - id: tav-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      An AI coding agent edits three files, then reports: "Done. The change is correct, the diff
+      looks right, and it should compile." No commands were run. From a verification-discipline
+      standpoint, what is the strongest critique of this "done" claim?
+    choices:
+      - id: a
+        text: >-
+          The claim is fine, because if a competent agent reasons that code is correct, running
+          tests would be redundant
+      - id: b
+        text: >-
+          The claim is unverified: "the diff looks right" and "should compile" are reasoning and at
+          best a static signal, not behavioral proof; without running the relevant build/tests and
+          reading real output, the agent is asserting success it has not observed, a frequent source
+          of false "done"
+      - id: c
+        text: >-
+          The only problem is that the agent did not also write new tests; running the existing
+          suite would add nothing
+      - id: d
+        text: >-
+          Compiling is full behavioral proof, so "should compile" already establishes the change
+          works at runtime
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      "Verify before claiming done" means running the relevant build/tests/commands and observing
+      actual output, not inferring success from a plausible diff. Compiling is a static layer, never
+      proof of runtime behavior, and reasoning alone is exactly the assumed-success anti-pattern,
+      never a redundant step. Running the existing suite is the point, not merely an afterthought to
+      writing more tests.
+  - id: tav-500-ff-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >-
+      Compare two ways to enforce "tests must pass before an AI agent claims a task is done": (1)
+      instruct the agent in its prompt to always run the tests and self-report the result, versus
+      (2) configure a Claude Code PostToolUse hook that runs the test/lint command after edits.
+      Which gives a more trustworthy "done" signal, and why?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a hook runs as a real shell command outside the model, so its result does
+            not depend on the model remembering or honestly reporting
+        - id: c2
+          text: >-
+            Notes a hook can deterministically block/feed back failure to the agent (e.g., via
+            non-zero exit), enforcing the gate in the harness rather than relying on self-report
+        - id: c3
+          text: >-
+            Concludes the deterministic hook (2) is the more trustworthy signal because prompt-based
+            self-report depends on the model's judgment, which can wrongly claim success
+      referenceAnswer: >-
+        The hook (option 2) gives the more trustworthy signal. A PostToolUse hook executes as a real
+        shell command outside the model, so the verification happens whether or not the model
+        "remembers" to run tests or reports honestly; its outcome is deterministic and
+        non-bypassable. The hook can feed a failure back to the agent and block it from proceeding
+        (e.g., a non-zero exit code signals an error), so the gate is enforced by the harness.
+        Prompt-based self-report (option 1) depends entirely on the model's judgment and good faith:
+        a model can skip the step, misread output, or simply assert success, which is the classic
+        unverified-"done" failure. Moving verification out of the model is the stronger design.
+      passThreshold: 0.6
+    guidance: >-
+      The key insight is locating verification outside the model. A hook is a deterministic shell
+      command whose result the agent cannot fake or forget, and it can block on failure; a prompted
+      self-report is only as reliable as the model's judgment in that moment. Enforce the gate in
+      the harness, not in the agent's intentions.
+  - id: tav-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      A team's e2e suite has grown to 1,200 browser tests that take 90 minutes and fail
+      intermittently; unit tests are sparse. A new hire proposes "writing more e2e tests because
+      they are the most realistic." How should a tech lead evaluate this proposal?
+    choices:
+      - id: a
+        text: >-
+          Accept it, because realism is the only thing that matters and more e2e tests strictly
+          increase confidence
+      - id: b
+        text: Accept it, because e2e tests pinpoint the failing line faster than unit tests do
+      - id: c
+        text: >-
+          Reject it and remove all e2e tests, since e2e testing provides no value once unit tests
+          exist
+      - id: d
+        text: >-
+          Reject it as deepening the ice-cream-cone anti-pattern: e2e tests are realistic but slow,
+          flaky, and give poor failure localization; the better move is to push logic down into fast
+          unit/integration tests and keep only a thin layer of high-value e2e checks
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Piling on e2e tests is the ice-cream cone: realistic but slow, brittle, and bad at localizing
+      failures, so confidence-per-minute drops. The fix is to move logic into faster
+      unit/integration tests and keep a curated, thin e2e layer for whole-stack smoke. Realism is
+      not the only axis that matters, e2e gives worse not better failure localization, and yet e2e
+      still has genuine value at the top of the pyramid, so removing it entirely is also wrong.
+  - id: tav-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 492
+    type: multiple_choice
+    prompt: >-
+      A team adopts a mutation-testing gate and demands a 100% mutation score (every mutant killed).
+      After weeks of effort the score plateaus at 96% on a handful of mutants nobody can kill no
+      matter what assertions they add. A staff engineer says chasing the last few mutants is the
+      wrong goal. What is the most defensible evaluation of why a literal 100% mutation-score target
+      is unsound?
+    choices:
+      - id: a
+        text: >-
+          Some surviving mutants are likely "equivalent mutants": semantically identical to the
+          original code (no input distinguishes them), so no test can kill them; a hard 100% target
+          forces wasted effort on unkillable mutants, and a high-but-not-perfect score with human
+          triage is the more honest goal
+      - id: b
+        text: >-
+          The remaining mutants prove the production code is dead and should be deleted until the
+          score reaches 100%
+      - id: c
+        text: >-
+          Mutation testing is unreliable, so the gate should be replaced with a 100% line-coverage
+          gate instead
+      - id: d
+        text: >-
+          A 100% mutation score is always achievable; the plateau just means the team needs to add
+          more assertion-free tests to execute those lines
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Mutation testing can generate equivalent mutants whose behavior is indistinguishable from the
+      original, so by definition no test input can kill them; detecting equivalence is itself
+      undecidable in general. Insisting on a literal 100% score wastes effort on these, so experts
+      target a high score and triage survivors by hand. The survivors are not dead code, line
+      coverage is a weaker signal, and assertion-free tests cannot kill a mutant at all.
+  - id: tav-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: free_form
+    prompt: >-
+      A teammate claims: "Our integration tests are so thorough that we can delete the unit tests;
+      integration tests are a superset, so we lose nothing and reduce maintenance." Critique this
+      trade-off, naming the concrete properties you would lose.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes integration tests give broader/more realistic confidence but at higher cost
+            (slower run time, more setup, more flakiness)
+        - id: c2
+          text: >-
+            Notes worse failure localization (a failure spans many components, so it is harder to
+            pinpoint the cause) versus a unit test that fails on one unit
+        - id: c3
+          text: >-
+            Concludes this slows the feedback loop / violates FIRST (fast), so integration tests are
+            not a free superset; the trade-off costs speed and diagnosability
+      referenceAnswer: >-
+        Integration tests are not a cost-free superset. They do give broader, more realistic
+        confidence because they exercise real wiring, but each one is slower, needs more
+        setup/environment, and is more prone to flakiness. Crucially, when an integration test fails
+        it implicates many components at once, so failure localization is poor; a focused unit test
+        that fails tells you exactly which unit broke. Deleting the unit tests therefore trades away
+        fast feedback and diagnosability, slowing the loop and making debugging harder, even though
+        surface "confidence" looks high. The two tiers serve different purposes, which is why the
+        pyramid keeps both.
+      passThreshold: 0.6
+    guidance: >-
+      "Superset" reasoning ignores the axes that matter most day to day: speed and failure
+      localization. Integration tests buy realism but lose the fast, precise feedback unit tests
+      give. Keeping a unit base is what preserves a quick, diagnosable loop, which is exactly the
+      pyramid's rationale.
+  - id: tav-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: multiple_choice
+    prompt: >-
+      A team relies on snapshot tests: each test renders a component and asserts the output equals a
+      stored snapshot, auto-regenerated with `--update` whenever it differs. After a refactor a
+      developer reruns with `--update`, all snapshots go green, and they ship. A reviewer is uneasy.
+      What is the most expert critique of leaning on snapshot tests this way?
+    choices:
+      - id: a
+        text: >-
+          Snapshot tests are the strongest possible assertion because they compare the entire
+          output, so regenerating them on every change is exactly the intended workflow
+      - id: b
+        text: >-
+          A blindly-regenerated snapshot asserts only "output equals whatever it currently
+          produces," so `--update` can silently bless a regression as the new baseline; without a
+          human reviewing the diff the test verifies self-consistency, not correctness
+      - id: c
+        text: >-
+          Snapshot tests are invalid because comparing strings is not a real assertion, so the suite
+          should be deleted
+      - id: d
+        text: >-
+          The problem is purely performance: snapshot comparisons are slow, and speeding them up
+          resolves the concern
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A snapshot's oracle is the last accepted output, so re-running with `--update` and accepting
+      the new file turns any change, including a bug, into the approved baseline. Their value
+      depends on a human actually reviewing the snapshot diff; auto-regenerated snapshots assert
+      self-consistency, not correctness. They are a legitimate (not invalid) technique with real
+      value for catching unintended output changes, and the issue is the blind-update workflow, not
+      raw speed.
+  - id: tav-500-ff-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: >-
+      An agent is told "after making a change, verify it before claiming done, but don't waste
+      time." It faces a one-line change to a single utility function in a large repo whose full
+      suite takes 25 minutes. Evaluate how the agent should choose what to run, and explain the
+      trade-off it is balancing.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States the goal is to run the minimal RELEVANT verification that actually exercises the
+            changed code path (e.g., the unit tests for that function plus any direct callers / the
+            relevant build/lint), then observe real output
+        - id: c2
+          text: >-
+            Names the over-verifying cost (running everything wastes time) versus the
+            under-verifying cost (skipping the relevant tests ships an unverified claim)
+        - id: c3
+          text: >-
+            Concludes the expert call is selecting the sufficient set that still exercises the
+            changed paths, not "run everything" and not "run nothing / assume"
+      referenceAnswer: >-
+        The agent should run the smallest set of checks that actually exercises the changed code
+        path: the unit tests covering that utility function (and any direct callers it touches),
+        plus the relevant lint/type/build step, then read the real output rather than assume. The
+        trade-off is between over-verifying (running the entire 25-minute suite wastes time on paths
+        the one-line change cannot affect) and under-verifying (running nothing and asserting
+        success ships an unverified "done" claim, the core anti-pattern). The expert judgment is
+        choosing the sufficient relevant suite that still exercises the modified paths, not
+        defaulting to "run everything" and not skipping verification entirely. If the change could
+        plausibly have broad effects, widen the set accordingly.
+      passThreshold: 0.6
+    guidance: >-
+      Verification is not all-or-nothing. The skill is scoping the check to what the change can
+      actually affect, then observing real output. Running the whole suite for a one-liner wastes
+      time; running nothing reverts to assumed success. Pick the minimal set that still exercises
+      the changed paths, and widen it when the blast radius is unclear.
+  - id: tav-500-mc-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A team writes example-based tests for a custom serializer: a dozen hand-picked inputs that all
+      round-trip correctly. A reviewer proposes adding property-based tests asserting "for any
+      input, deserialize(serialize(x)) == x." How should the relative strengths of the two
+      approaches be judged?
+    choices:
+      - id: a
+        text: >-
+          Example-based tests are strictly superior because the author already knows which inputs
+          matter, so generated inputs add nothing
+      - id: b
+        text: >-
+          Property-based tests are pointless because a round-trip property cannot be checked without
+          enumerating every input
+      - id: c
+        text: The two are identical in power, since both ultimately call the same serializer
+      - id: d
+        text: >-
+          Property-based tests explore a large, generated input space and can surface edge cases
+          (unusual unicode, empty/huge values, nesting) that a dozen hand-picked examples never
+          imagined, while example tests remain useful as clear, named regression cases; the two are
+          complementary, not redundant
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Property-based testing generates many inputs against an invariant (here, round-trip equality),
+      routinely finding edge cases the author never enumerated; example tests stay valuable as
+      explicit, readable regression anchors. They cover different risk and complement each other.
+      Hand-picked examples miss the inputs the author never imagined, the round-trip property is
+      checked by sampling rather than full enumeration, and exercising the same serializer does not
+      make the two strategies equivalent in bug-finding power.
+  - id: tav-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      To make a class "testable," a developer extracts seven interfaces and injects them, adds a
+      factory, and routes everything through a DI container, even though only one collaborator ever
+      varies. A colleague calls this "test-induced design damage." Which evaluation of the situation
+      is most balanced?
+    choices:
+      - id: a
+        text: >-
+          The developer is right that production design should be dictated entirely by what makes
+          mocking easiest, regardless of runtime complexity
+      - id: b
+        text: >-
+          The colleague is simply wrong: more interfaces and DI are always better design, so there
+          is no trade-off to weigh
+      - id: c
+        text: >-
+          The colleague has a real point: testability and simplicity can trade off, and abstractions
+          introduced solely to enable mocking can complicate the production design without paying
+          their way; the judgment is where the line sits, and experts genuinely disagree (the "Is
+          TDD Dead?" debate)
+      - id: d
+        text: >-
+          Test-induced design damage is a myth; adding indirection for tests never affects
+          production design quality
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Indirection added purely for testability is not free: it can complicate the production design,
+      and "test-induced design damage" names exactly that risk. Whether seven interfaces for one
+      varying collaborator is justified is a genuine judgment call where reasonable experts (the
+      DHH-Fowler-Beck debate) disagree. It is not the case that more abstraction is always better,
+      that mocking should dictate production design, or that the phenomenon does not exist.
+  - id: tav-500-ff-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: free_form
+    prompt: >-
+      A Claude Code Stop hook can return JSON that sets `decision: "block"` together with an
+      `additionalContext` (or `reason`) message that is fed back to the agent, instead of just
+      exiting non-zero. A team wants their test gate to not merely fail an agent that claims "done"
+      with failing tests, but to actively steer it toward the fix. Evaluate how a Stop hook that
+      injects `additionalContext` improves on a bare exit-code gate, and name the failure mode this
+      design must still guard against.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that a bare non-zero exit blocks/feeds back stderr but a Stop hook returning
+            decision=block with additionalContext can inject a structured, actionable message that
+            re-prompts the agent (e.g., which tests failed and to fix them) rather than only halting
+        - id: c2
+          text: >-
+            Notes the verification is still deterministic and enforced outside the model (the hook
+            ran the real command and decided based on the real result), so the steer does not depend
+            on the model's self-report
+        - id: c3
+          text: >-
+            Names a failure mode the design must guard against (e.g., a non-terminating
+            block/re-prompt loop, or the agent treating the injected context as advisory; needs a
+            stop condition / iteration cap or a truly non-bypassable block)
+      referenceAnswer: >-
+        A bare exit-code gate can halt the agent and surface stderr, but it is a blunt stop. A Stop
+        hook that runs the test command and, on failure, returns `decision: "block"` with an
+        `additionalContext` message can feed the agent a structured, actionable signal, e.g., "these
+        tests failed, here is the output, fix them before finishing", so it both blocks the
+        premature "done" and steers the next step instead of just stopping. The verification stays
+        deterministic and lives outside the model: the hook ran the real command and decided on the
+        real result, so the steer is not the model's self-report. The design must still guard
+        against a non-terminating loop, the agent could keep hitting the block and re-prompting
+        forever, so it needs a stop condition (an iteration cap, escalation to a human, or a hard
+        non-bypassable block), and it must ensure the injected context is treated as an enforced
+        gate rather than advisory text the agent can rationalize away.
+      passThreshold: 0.6
+    guidance: >-
+      The upgrade over a raw exit code is the structured feedback channel: a Stop hook returning
+      decision=block plus additionalContext both blocks and tells the agent what to do next, while
+      keeping verification deterministic and outside the model. The risk is a re-prompt loop or
+      treating the steer as advisory, so it needs a termination condition and a genuinely
+      non-bypassable block.

@@ -10,6 +10,10 @@ This skill collects the user's learning preferences and persists them via the
 returns `SETUP_REQUIRED` — nothing else proceeds. Re-running setup updates
 preferences only; it never touches learning progress (FR-033).
 
+**Tool auto-detection**: vibe-hero detects the active host tool automatically
+from the MCP handshake (`clientInfo.name`). There is no need to ask the user
+which tool they are using — `toolsLearning` may be omitted from `save_config`.
+
 ## When to invoke
 
 - A vibe-hero MCP tool returned `{ "status": "SETUP_REQUIRED" }`.
@@ -18,25 +22,10 @@ preferences only; it never touches learning progress (FR-033).
 
 ## Q&A flow
 
-Ask the four questions below in sequence. Keep the tone conversational. Accept
+Ask the three questions below in sequence. Keep the tone conversational. Accept
 natural-language answers and map them to the values shown.
 
-### Q1 — Which tool(s) are you learning?
-
-> "Which agentic coding tool(s) are you currently learning or using day-to-day?"
-
-Accept any combination. Map to `toolsLearning: ToolId[]`:
-
-| Answer | ToolId |
-|---|---|
-| Claude Code / claude-code / CC | `"claude-code"` |
-| Codex | `"codex"` |
-| Kiro CLI / kiro-cli | `"kiro-cli"` |
-| Kiro IDE / kiro-ide | `"kiro-ide"` |
-
-Multiple tools are allowed. At least one is required.
-
-### Q2 — How often should vibe-hero offer quizzes?
+### Q1 — How often should vibe-hero offer quizzes?
 
 > "How often should vibe-hero offer you a knowledge check — never, once per
 > session, or whenever a relevant topic comes up?"
@@ -51,7 +40,7 @@ Map to `offerCadence`:
 
 Default if unclear: `"per_session"`.
 
-### Q3 — Enable proactive quiz offers?
+### Q2 — Enable proactive quiz offers?
 
 > "Should vibe-hero proactively offer you a quick quiz at natural end-of-work
 > breakpoints, or would you prefer to request quizzes yourself?"
@@ -63,10 +52,10 @@ Map to `proactiveOffers: boolean`:
 | Yes / proactive / sure / offer them | `true` |
 | No / manual / I'll ask / on demand | `false` |
 
-If Q2 answered `"off"`, set `proactiveOffers: false` automatically (no need to
+If Q1 answered `"off"`, set `proactiveOffers: false` automatically (no need to
 ask).
 
-### Q4 — Quiz length (optional)
+### Q3 — Quiz length (optional)
 
 > "How many questions per quiz session — 3, 4, or 5? (default is 4)"
 
@@ -79,18 +68,18 @@ Once all answers are collected, call the MCP tool:
 
 ```
 save_config({
-  toolsLearning: [...],       // ToolId[], e.g. ["claude-code"]
   offerCadence: "...",        // "off" | "per_session" | "per_topic"
   proactiveOffers: true/false,
   quizLength: 3|4|5           // omit to use server default of 4
+  // toolsLearning is omitted — the server auto-detects the tool
 })
 ```
 
 On success (`{ ok: true }`) confirm to the user, for example:
 
-> "All set! vibe-hero is configured for [tool(s)]. Quizzes will be offered
-> [cadence summary]. You can re-run setup at any time to change these
-> preferences — your learning progress is never affected."
+> "All set! vibe-hero is configured. Quizzes will be offered [cadence summary].
+> You can re-run setup at any time to change these preferences — your learning
+> progress is never affected."
 
 ## Notes for the host agent
 

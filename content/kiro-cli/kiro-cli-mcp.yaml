@@ -1,0 +1,2771 @@
+# Topic: kiro-cli-mcp (kiro-cli)
+# MCP integration in the Kiro CLI — server config, local vs remote, auto-approval.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-cli-mcp
+class:
+  kind: tool
+  tool: kiro-cli
+title: Kiro CLI MCP
+summary: MCP integration in the Kiro CLI — server config, local vs remote, auto-approval.
+triggerSignals: []
+items:
+  - id: kcm-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: multiple_choice
+    prompt: |
+      What is the command/binary name used to launch Kiro's terminal agent?
+    choices:
+      - id: a
+        text: kiro
+      - id: b
+        text: kiro-cli
+      - id: c
+        text: kiroctl
+      - id: d
+        text: kc
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The command is `kiro-cli`. Running it with no arguments starts an interactive
+      chat session. `kiro` (without `-cli`) is a common misconception.
+  - id: kcm-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: |
+      Which company makes Kiro and the Kiro CLI?
+    choices:
+      - id: a
+        text: Anthropic
+      - id: b
+        text: GitHub
+      - id: c
+        text: AWS (Amazon Web Services)
+      - id: d
+        text: OpenAI
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro is an AWS product. Claims that Anthropic makes Kiro are wrong (Kiro uses
+      Claude models but is not an Anthropic product).
+  - id: kcm-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      Where is the WORKSPACE-level MCP configuration file stored for Kiro CLI?
+    choices:
+      - id: a
+        text: .kiro/settings/mcp.json
+      - id: b
+        text: .kiro/mcp.json
+      - id: c
+        text: ~/.aws/mcp.json
+      - id: d
+        text: mcp.json (at the workspace root)
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Workspace MCP config lives at `.kiro/settings/mcp.json` (note the `settings/`
+      subdirectory). The user-level equivalent is `~/.kiro/settings/mcp.json`.
+  - id: kcm-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      What is the root JSON key inside a Kiro `mcp.json` file that holds server definitions?
+    choices:
+      - id: a
+        text: servers
+      - id: b
+        text: providers
+      - id: c
+        text: mcp.servers
+      - id: d
+        text: mcpServers
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The root key is `mcpServers`, mapping each server name to its configuration object.
+  - id: kcm-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 125
+    type: multiple_choice
+    prompt: |
+      For a LOCAL (command-based) MCP server in Kiro, which field is required?
+    choices:
+      - id: a
+        text: url
+      - id: b
+        text: command
+      - id: c
+        text: endpoint
+      - id: d
+        text: transport
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Local servers require `command` (the executable). `args`, `env`, `disabled`,
+      `autoApprove`, and `disabledTools` are optional. `url` is for remote servers.
+  - id: kcm-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: >
+      Which `mcpServers` field accepts an array of tool names to auto-approve (with `"*"` meaning
+      all)?
+    choices:
+      - id: a
+        text: disabledTools
+      - id: b
+        text: trustTools
+      - id: c
+        text: autoApprove
+      - id: d
+        text: allowAll
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `autoApprove` is an allowlist of tool names; `"*"` auto-approves every tool from
+      that server. `disabledTools` is the opposite (a denylist that hides tools).
+  - id: kcm-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: |
+      In a Kiro chat session, which prefix runs a raw shell command WITHOUT AI processing?
+    choices:
+      - id: a
+        text: /
+      - id: b
+        text: '#'
+      - id: c
+        text: '!'
+      - id: d
+        text: '@'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Prefix input with `!` for shell passthrough (e.g. `!npm run build`); output streams in real
+      time. `/` starts a slash command (e.g. `/context`, `/mcp`). MCP tools are not invoked by a
+      chat prefix — the agent calls them itself.
+  - id: kcm-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: multiple_choice
+    prompt: |
+      In Kiro CLI config (agent tool lists, hook matchers), how is a specific tool from an
+      MCP server named?
+    choices:
+      - id: a
+        text: '#server/tool_name'
+      - id: b
+        text: '@server_name/tool_name'
+      - id: c
+        text: server_name.tool_name
+      - id: d
+        text: '!server_name:tool_name'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      MCP tools are namespaced as `@server_name/tool_name` (e.g. `@git/git_status`).
+      `@server_name` alone means all tools from that server. The `/mcp` slash command lists
+      which MCP servers are currently loaded.
+  - id: kcm-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: |
+      Which slash command switches a Kiro CLI session to the Plan agent for breaking a complex idea
+      into an implementation plan?
+    choices:
+      - id: a
+        text: /spec
+      - id: b
+        text: /design
+      - id: c
+        text: /plan
+      - id: d
+        text: /tasks
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `/plan` switches to the built-in Plan agent, which specializes in turning a complex idea into
+      an actionable implementation plan. Press `Shift+Tab` to return to your previous agent.
+  - id: kcm-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Where do Kiro workspace steering files live?
+    choices:
+      - id: a
+        text: .kiro/steering/
+      - id: b
+        text: .kiro/settings/
+      - id: c
+        text: .kiro/agents/
+      - id: d
+        text: ~/.config/kiro/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Workspace steering lives in `.kiro/steering/`; global steering in `~/.kiro/steering/`. Custom
+      agents go under `.kiro/agents/`; MCP config under `.kiro/settings/`.
+  - id: kcm-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 165
+    type: multiple_choice
+    prompt: |
+      Which three files are Kiro's default/foundational steering files?
+    choices:
+      - id: a
+        text: product.md, tech.md, structure.md
+      - id: b
+        text: overview.md, stack.md, layout.md
+      - id: c
+        text: README.md, CONTRIBUTING.md, AGENTS.md
+      - id: d
+        text: project.md, rules.md, context.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The foundational steering files are `product.md` (purpose/users/features),
+      `tech.md` (frameworks/constraints), and `structure.md` (org/conventions).
+  - id: kcm-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: multiple_choice
+    prompt: |
+      In the Kiro CLI, where are agent hooks defined?
+    choices:
+      - id: a
+        text: In the agent configuration JSON, under a "hooks" field
+      - id: b
+        text: In .git/hooks/ as shell scripts
+      - id: c
+        text: In .kiro/steering/ as Markdown
+      - id: d
+        text: In a top-level "hooks" key inside mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      In the Kiro CLI, hooks are defined inside the agent configuration file (the agent
+      JSON in `.kiro/agents/` or `~/.kiro/agents/`) under a `hooks` field. They are
+      event-driven agent hooks, not git hooks, and are not part of `mcp.json`.
+  - id: kcm-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: multiple_choice
+    prompt: |
+      What does the macOS/Linux Kiro CLI install command use?
+    choices:
+      - id: a
+        text: brew install kiro-cli
+      - id: b
+        text: npm install -g kiro-cli
+      - id: c
+        text: curl -fsSL https://cli.kiro.dev/install | bash
+      - id: d
+        text: pip install kiro-cli
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Install on macOS/Linux with `curl -fsSL https://cli.kiro.dev/install | bash`.
+      On Windows 11 use `irm 'https://cli.kiro.dev/install.ps1' | iex`.
+  - id: kcm-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: |
+      Name the two Kiro CLI MCP configuration file paths (workspace-level and user-level)
+      and state which one takes precedence on conflict.
+    guidance: |
+      Recall of the two canonical MCP config paths and the precedence rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: Gives the workspace path as .kiro/settings/mcp.json
+        - id: c2
+          text: Gives the user path as ~/.kiro/settings/mcp.json
+        - id: c3
+          text: States the workspace-level config takes precedence
+      referenceAnswer: |
+        Workspace: `.kiro/settings/mcp.json`. User/global: `~/.kiro/settings/mcp.json`.
+        The workspace-level configuration takes precedence when both define the same server.
+      passThreshold: 0.6
+  - id: kcm-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: free_form
+    prompt: |
+      Name the two file locations where Kiro CLI looks for custom agent configurations, and state
+      which one wins when both define an agent of the same name.
+    guidance: |
+      Recall of the workspace vs global agent directories and the precedence rule.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the workspace location .kiro/agents/
+        - id: c2
+          text: Names the global location ~/.kiro/agents/
+        - id: c3
+          text: States the local (workspace) agent takes precedence on a name conflict
+      referenceAnswer: |
+        Local/workspace agents live in `.kiro/agents/`; global agents in `~/.kiro/agents/`. Kiro
+        checks local first, then global; if both define an agent of the same name, the local
+        (workspace) agent takes precedence.
+      passThreshold: 0.6
+  - id: kcm-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: free_form
+    prompt: |
+      What does the `disabledTools` field in a Kiro MCP server config do, and how does it
+      differ from `autoApprove`?
+    guidance: |
+      Recall the purpose of each field; one is a denylist, the other an allowlist.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States disabledTools is a list of tool names hidden from/omitted for the agent (a
+            denylist)
+        - id: c2
+          text: States autoApprove is an allowlist of tools approved without prompting
+        - id: c3
+          text: Correctly contrasts the two as denylist vs allowlist
+      referenceAnswer: |
+        `disabledTools` is an array of tool names that are omitted from the agent's available
+        tools (a denylist). `autoApprove` is an allowlist of tool names that are run without an
+        approval prompt (with `"*"` meaning all). They serve opposite purposes.
+      passThreshold: 0.6
+  - id: kcm-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: free_form
+    prompt: |
+      What slash command lists which MCP servers are currently loaded in a Kiro chat session?
+    guidance: |
+      Recall the `/mcp` slash command.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies the /mcp slash command
+        - id: c2
+          text: States it shows/lists the currently loaded MCP servers
+      referenceAnswer: |
+        The `/mcp` slash command shows which MCP servers are currently loaded.
+      passThreshold: 0.6
+  - id: kcm-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: free_form
+    prompt: |
+      Name the environment variable Kiro CLI reads for headless API-key authentication.
+    guidance: |
+      Recall of the headless auth env var.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names KIRO_API_KEY
+        - id: c2
+          text: Associates it with headless / non-interactive authentication
+      referenceAnswer: |
+        `KIRO_API_KEY` — the environment variable used for headless (non-interactive)
+        API-key authentication.
+      passThreshold: 0.6
+  - id: kcm-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 170
+    type: free_form
+    prompt: |
+      Which two required fields define a local (command-based) MCP server in Kiro, and which
+      single field defines a remote server's endpoint?
+    guidance: |
+      Recall the schema split between local and remote servers.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names command (and typically args) for local servers
+        - id: c2
+          text: Names url for the remote server endpoint
+        - id: c3
+          text: Correctly attributes each field to local vs remote
+      referenceAnswer: |
+        Local servers use `command` (required) plus `args`; remote servers use `url` (the
+        HTTPS endpoint). `command` and `url` are mutually distinguishing.
+      passThreshold: 0.6
+  - id: kcm-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 155
+    type: multiple_choice
+    prompt: |
+      Which command re-authenticates the Kiro CLI?
+    choices:
+      - id: a
+        text: kiro-cli auth
+      - id: b
+        text: kiro-cli login
+      - id: c
+        text: kiro-cli signin
+      - id: d
+        text: kiro-cli connect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `kiro-cli login` re-authenticates. `kiro-cli doctor` diagnoses issues and
+      `kiro-cli issue` reports problems.
+  - id: kcm-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 225
+    type: multiple_choice
+    prompt: |
+      Why does Kiro CLI keep MCP config in `.kiro/settings/mcp.json` separately from
+      `.kiro/steering/` and `.kiro/agents/`?
+    choices:
+      - id: a
+        text: >-
+          Because MCP wiring, steering, and agents are distinct concerns kept in separate parts of
+          .kiro/
+      - id: b
+        text: Because MCP config must live outside any project directory
+      - id: c
+        text: Because steering and agents are stored under ~/.aws/ instead
+      - id: d
+        text: Because mcp.json is auto-generated and cannot be committed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Kiro organizes config by concern under `.kiro/`: external tool wiring (`settings/mcp.json`),
+      persistent project context (`steering/`), and custom agents (`agents/`). Keeping them separate
+      lets each concern be edited and reviewed independently. (Hooks live inside the agent config.)
+  - id: kcm-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: multiple_choice
+    prompt: |
+      What is the practical effect of setting `"autoApprove": ["*"]` on an MCP server?
+    choices:
+      - id: a
+        text: It disables the server entirely
+      - id: b
+        text: It auto-runs every tool from that server with no approval prompt
+      - id: c
+        text: It hides every tool from the agent
+      - id: d
+        text: It requires manual approval for every tool
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `"*"` in `autoApprove` matches all tools, so the agent invokes any tool from that
+      server without prompting. This trades safety for convenience and should be reserved
+      for trusted, low-risk servers.
+  - id: kcm-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      Why use `"${GITHUB_TOKEN}"` rather than a literal token string inside `env` in mcp.json?
+    choices:
+      - id: a
+        text: Kiro rejects any string longer than 20 characters
+      - id: b
+        text: It forces the server to run remotely
+      - id: c
+        text: Literal strings are not allowed in the env object
+      - id: d
+        text: It interpolates the value from the environment so the secret is not hardcoded/committed
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      The `${VARIABLE_NAME}` syntax pulls the value from the environment at load time, so the
+      secret stays out of the committed mcp.json file. This is the recommended way to wire
+      credentials into MCP servers.
+  - id: kcm-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: multiple_choice
+    prompt: |
+      How does a local MCP server differ from a remote MCP server in Kiro config terms?
+    choices:
+      - id: a
+        text: Local servers use command/args/env; remote servers use url/headers/oauth
+      - id: b
+        text: Local servers use url; remote servers use command
+      - id: c
+        text: Only remote servers support disabledTools
+      - id: d
+        text: Local servers cannot be auto-approved
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      A local server is launched as a child process (`command`, `args`, `env`); a remote server
+      is reached over HTTP (`url`, `headers`, `oauth`). Both share `disabled`, `autoApprove`,
+      and `disabledTools`.
+  - id: kcm-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: multiple_choice
+    prompt: |
+      Why does Kiro treat `autoApprove` and `disabledTools` as complementary rather than redundant?
+    choices:
+      - id: a
+        text: They are aliases for the same behavior
+      - id: b
+        text: disabledTools only works for remote servers
+      - id: c
+        text: >-
+          autoApprove controls which usable tools skip the prompt; disabledTools removes tools from
+          the toolset entirely
+      - id: d
+        text: autoApprove disables the server while disabledTools enables it
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `disabledTools` removes tools so the agent never sees them; `autoApprove` keeps tools
+      available but skips the human approval step for the listed ones. A tool can be available
+      but still prompt, or available and auto-approved, or removed outright.
+  - id: kcm-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: |
+      Why commit a project's workspace `.kiro/` tree (agents, steering, `settings/mcp.json`) to
+      version control?
+    choices:
+      - id: a
+        text: >-
+          So the agent/MCP/steering config travels with the code as reviewable, shared, durable team
+          configuration
+      - id: b
+        text: Because Kiro cannot read uncommitted files
+      - id: c
+        text: To prevent the agent from editing them
+      - id: d
+        text: Because the config is regenerated on every build and must be cached
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The workspace `.kiro/` tree (custom agents, steering, MCP config) is committed so the whole
+      team shares one source of truth, changes are reviewed in PRs, and history shows how the
+      project's agent setup evolved.
+  - id: kcm-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: |
+      In a Kiro CLI agent config, how do the `tools` and `allowedTools` fields differ?
+    choices:
+      - id: a
+        text: They are aliases for the same list
+      - id: b
+        text: >-
+          `tools` lists which tools the agent can use at all; `allowedTools` lists which of those
+          can run without an approval prompt
+      - id: c
+        text: '`allowedTools` removes tools; `tools` auto-approves them'
+      - id: d
+        text: Only `allowedTools` supports MCP tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      `tools` defines the agent's available toolset (built-in and `@server` MCP tools).
+      `allowedTools`
+
+      is the subset that may run without prompting for permission. A tool can be available yet still
+
+      prompt unless it is also in `allowedTools`.
+  - id: kcm-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: |
+      In Kiro CLI, how does the `/spawn` command differ from a subagent?
+    choices:
+      - id: a
+        text: >-
+          `/spawn` is a user-driven command that starts a fresh long-running parallel session;
+          subagents are spawned by the main agent to delegate focused work within a task
+      - id: b
+        text: They are the same thing
+      - id: c
+        text: '`/spawn` only works in headless mode'
+      - id: d
+        text: Subagents are user-driven; /spawn is fully automatic
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `/spawn` is user-driven: it launches a fresh long-running session that runs a task in parallel
+      with your conversation (monitor it with the crew monitor). Subagents, by contrast, are spawned
+      by the main agent itself to delegate focused work within a task.
+  - id: kcm-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: multiple_choice
+    prompt: |
+      In a Kiro CLI agent's `resources`, how does a `file://` resource differ from a `skill://`
+      resource in terms of when content loads?
+    choices:
+      - id: a
+        text: >-
+          file:// content loads into context at startup; skill:// loads only metadata at startup and
+          full content on demand
+      - id: b
+        text: Both load fully at startup; they are aliases
+      - id: c
+        text: skill:// loads everything at startup; file:// is never loaded
+      - id: d
+        text: file:// works only in headless mode; skill:// only in interactive
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      A `file://` resource is loaded directly into context when the agent starts (always present,
+      costs tokens). A `skill://` resource loads only its name/description at startup and pulls in
+      the full content on demand — keeping context lean until the skill is actually needed.
+  - id: kcm-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: |
+      Why reference an agent prompt as `"prompt": "file://./prompt.md"` instead of pasting the
+      prompt text inline into the agent JSON?
+    choices:
+      - id: a
+        text: It is required syntax for every agent
+      - id: b
+        text: It deletes the file after one use
+      - id: c
+        text: >-
+          It keeps long prompts in a separate, version-controlled file while the agent config stays
+          clean and reflects the current file contents
+      - id: d
+        text: It converts Markdown to JSON automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      The `prompt` field accepts a `file://` URI so a long/complex system prompt lives in its own
+      file (easier to maintain and review) while the agent config stays readable; the agent loads
+      the file's current contents rather than a stale pasted copy.
+  - id: kcm-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 275
+    type: multiple_choice
+    prompt: |
+      How does Kiro CLI treat an `AGENTS.md` file placed at the workspace root or in
+      `~/.kiro/steering/`?
+    choices:
+      - id: a
+        text: It only works in headless mode
+      - id: b
+        text: It must live under .kiro/settings/ to be read
+      - id: c
+        text: It is auto-discovered and always included as steering context
+      - id: d
+        text: It is ignored unless a custom agent lists it in resources
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Kiro supports the cross-tool `AGENTS.md` convention: a file at the workspace root or in the
+      global steering folder (`~/.kiro/steering/`) is picked up automatically and is always
+      included. (Custom agents inherit default resources like AGENTS.md unless that inheritance is
+      disabled.)
+  - id: kcm-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: |
+      Why is `--require-mcp-startup` useful in a CI/CD (headless) Kiro run?
+    choices:
+      - id: a
+        text: It silently skips MCP servers that fail to connect
+      - id: b
+        text: It fails the run immediately if MCP servers do not connect, preventing silent degradation
+      - id: c
+        text: It installs MCP servers automatically
+      - id: d
+        text: It disables MCP entirely in headless mode
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      In CI you want a hard failure if a required MCP server can't start, rather than the agent
+      silently proceeding without that tool. `--require-mcp-startup` enforces that.
+  - id: kcm-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 245
+    type: multiple_choice
+    prompt: |
+      How do you update the Kiro CLI to the latest version without an interactive confirmation
+      prompt (e.g. in a script)?
+    choices:
+      - id: a
+        text: kiro-cli doctor --update
+      - id: b
+        text: kiro-cli update --non-interactive
+      - id: c
+        text: kiro-cli upgrade --force
+      - id: d
+        text: kiro-cli login --update
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `kiro-cli update` updates the CLI; adding `--non-interactive` (`-y`) skips the confirmation
+      prompt, which is what you want in automation. `kiro-cli doctor` diagnoses install issues but
+      is not the update command.
+  - id: kcm-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: |
+      Explain why `disabledTools` and `autoApprove` are not redundant, using the idea of "available
+      vs. approved."
+    guidance: |
+      Looking for the distinction between removing a tool from the toolset vs. skipping its prompt.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains disabledTools removes tools from what the agent can call (availability)
+        - id: c2
+          text: Explains autoApprove governs whether an available tool prompts for approval
+        - id: c3
+          text: Concludes the two operate on different axes (availability vs approval), so not redundant
+      referenceAnswer: |
+        `disabledTools` controls availability: listed tools are removed from the agent's toolset
+        entirely. `autoApprove` controls approval: it keeps tools available but lets the listed ones
+        run without a human prompt. One is about whether the tool exists for the agent, the other
+        about whether using it needs confirmation — different axes, so they complement each other.
+      passThreshold: 0.6
+  - id: kcm-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 235
+    type: free_form
+    prompt: |
+      Compare a local MCP server and a remote MCP server in Kiro: how each connects and which
+      config fields each uses.
+    guidance: |
+      Looking for the process-vs-HTTP distinction and the matching field sets.
+    rubric:
+      criteria:
+        - id: c1
+          text: Describes local servers as launched processes using command/args/env
+        - id: c2
+          text: Describes remote servers as reached over HTTP using url/headers/oauth
+        - id: c3
+          text: Notes shared fields (disabled, autoApprove, disabledTools) apply to both
+      referenceAnswer: |
+        A local server is a child process: Kiro runs `command` with `args` and `env`. A remote
+        server is reached over HTTP at `url`, optionally with `headers` and `oauth` for auth. Both
+        kinds share the `disabled`, `autoApprove`, and `disabledTools` controls.
+      passThreshold: 0.6
+  - id: kcm-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 265
+    type: free_form
+    prompt: |
+      Kiro CLI offers several ways to give an agent context: persistent agent resources
+      (`file://`), skills (`skill://`), session context (`/context add`), and knowledge bases.
+      Explain how they differ in persistence and context-window cost, and when each is appropriate.
+    guidance: >
+      Looking for an accurate explanation of persistence vs on-demand loading and a sensible use
+      case.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains agent resources (file://) are persistent across sessions and always consume
+            context tokens
+        - id: c2
+          text: >-
+            Explains session context (/context add) is temporary to the current session, and
+            knowledge bases are searched on demand (no token cost until searched); skills load
+            metadata then full content on demand
+        - id: c3
+          text: >-
+            Gives a sensible use case for at least one (e.g. essential files as resources, large
+            docs as a knowledge base)
+      referenceAnswer: |
+        Agent `resources` (`file://`) are persistent across sessions and loaded into context at
+        startup, so they always cost tokens — good for essential project files/standards. `skill://`
+        resources load only metadata up front and full content on demand. Session context via
+        `/context add` is temporary (current session only) and also costs tokens while present —
+        good for quick, throwaway additions. Knowledge bases are indexed and only consume context
+        when searched — good for large codebases or doc sets too big to keep resident.
+      passThreshold: 0.6
+  - id: kcm-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 255
+    type: free_form
+    prompt: |
+      Why does headless mode (`kiro-cli chat --no-interactive`) require an initial prompt argument,
+      and what features become unavailable in that mode?
+    guidance: |
+      Looking for the no-mid-session-input reasoning and the unavailable feature list.
+    rubric:
+      criteria:
+        - id: c1
+          text: Explains there is no interactive input loop, so a prompt must be supplied up front
+        - id: c2
+          text: States slash commands and TUI features are unavailable
+        - id: c3
+          text: Notes no mid-session follow-up input is possible
+      referenceAnswer: >
+        Headless mode is meant for scripts/CI where there is no human at a terminal, so it cannot
+
+        read interactive input — the whole task must be given as the initial prompt argument. Slash
+
+        commands and TUI features are unavailable, and there is no way to add follow-up input
+        mid-run.
+      passThreshold: 0.6
+  - id: kcm-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: free_form
+    prompt: |
+      Explain what an "MCP server" provides to a Kiro agent and why MCP config is a registry of
+      servers rather than a list of individual tools.
+    guidance: |
+      Looking for the standardized-integration concept and the server-registry framing.
+    rubric:
+      criteria:
+        - id: c1
+          text: States MCP servers expose external tools/data to the agent via a standard protocol
+        - id: c2
+          text: >-
+            Explains each server can expose many tools, so registering the server registers its tool
+            set
+        - id: c3
+          text: >-
+            Notes the JSON config is a registry of servers (mcpServers map), with per-server
+            controls
+      referenceAnswer: >
+        An MCP server exposes external tools and data sources to the agent through the standardized
+
+        Model Context Protocol. Because one server typically provides many tools, the config
+        registers
+
+        servers (the `mcpServers` map) rather than enumerating tools; per-server fields like
+
+        `autoApprove` and `disabledTools` then control the tools within each server.
+      passThreshold: 0.6
+  - id: kcm-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: |
+      What does `--trust-tools=read,grep` express compared to `--trust-all-tools`?
+    choices:
+      - id: a
+        text: It auto-approves only the read and grep categories (least privilege)
+      - id: b
+        text: It trusts every tool, same as --trust-all-tools
+      - id: c
+        text: It disables read and grep tools
+      - id: d
+        text: It is invalid syntax
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `--trust-tools=<categories>` auto-approves only the named categories (least privilege),
+      whereas `--trust-all-tools` auto-approves everything. Use the narrow form in CI for safety.
+  - id: kcm-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 325
+    type: multiple_choice
+    prompt: |
+      You want a GitHub MCP server available only in your current project, reading its token from
+      the `GITHUB_TOKEN` env var. Which file and snippet is correct?
+    choices:
+      - id: a
+        text: |
+          ~/.kiro/settings/mcp.json with {"mcpServers": {"github": {"url": "${GITHUB_TOKEN}"}}}
+      - id: b
+        text: |
+          .kiro/mcp.json with {"servers": {"github": {"token": "ghp_hardcoded"}}}
+      - id: c
+        text: >
+          .kiro/settings/mcp.json with {"mcpServers": {"github": {"command": "github-mcp", "env":
+          {"GITHUB_TOKEN": "${GITHUB_TOKEN}"}}}}
+      - id: d
+        text: |
+          AGENTS.md with a "github" code block
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Project-only means the workspace file `.kiro/settings/mcp.json`. A local server uses
+      `command`, and the token is interpolated via `${GITHUB_TOKEN}` inside `env` so it is not
+      hardcoded.
+  - id: kcm-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: multiple_choice
+    prompt: |
+      A teammate's MCP server exposes `read_file` and `delete_repo`. You want `read_file` auto-run
+      but `delete_repo` to always require approval. What goes in that server's config?
+    choices:
+      - id: a
+        text: '"autoApprove": ["*"]'
+      - id: b
+        text: '"autoApprove": ["read_file"]'
+      - id: c
+        text: '"disabledTools": ["read_file"]'
+      - id: d
+        text: '"autoApprove": ["delete_repo"]'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Listing only `read_file` in `autoApprove` skips the prompt for it while `delete_repo` (not
+      listed) still requires approval. `"*"` would auto-approve the dangerous tool too.
+  - id: kcm-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      You never want the agent to even SEE a server's `force_push` tool. Which config achieves this?
+    choices:
+      - id: a
+        text: '"autoApprove": ["force_push"]'
+      - id: b
+        text: '"disabledTools": ["force_push"]'
+      - id: c
+        text: '"disabled": true'
+      - id: d
+        text: '"autoApprove": []'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `disabledTools: ["force_push"]` removes just that tool from the agent's toolset. `disabled:
+      true` would turn off the whole server; an empty `autoApprove` only changes prompting, not
+      availability.
+  - id: kcm-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: multiple_choice
+    prompt: |
+      A CI job runs `kiro-cli chat --no-interactive "run the migration"` and must hard-fail if the
+      database MCP server is down. Which extra flag should you add?
+    choices:
+      - id: a
+        text: '--resume-picker'
+      - id: b
+        text: '--editor'
+      - id: c
+        text: '--trust-all-tools'
+      - id: d
+        text: '--require-mcp-startup'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      `--require-mcp-startup` makes the run fail immediately if MCP servers fail to connect, so the
+      migration won't proceed without its database tool.
+  - id: kcm-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: |
+      You've added a Jira MCP server and want its `create_issue` tool to run without a per-use
+      approval prompt for an agent. Which agent-config field lists it?
+    choices:
+      - id: a
+        text: By typing /create_issue as a slash command
+      - id: b
+        text: In "allowedTools" as "@jira/create_issue"
+      - id: c
+        text: In "disabledTools" as "create_issue"
+      - id: d
+        text: As a slash command "/create_issue"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The agent calls MCP tools itself; to skip the approval prompt for a specific tool you list
+      it in the agent's `allowedTools` as `@jira/create_issue`. `disabledTools` (in mcp.json) would
+      instead remove the tool. You don't "mention" MCP tools with a prefix to invoke them.
+  - id: kcm-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: |
+      You want one MCP server available in every project on your machine without editing each repo.
+      Where do you configure it?
+    choices:
+      - id: a
+        text: .kiro/settings/mcp.json in each repo
+      - id: b
+        text: ~/.kiro/settings/mcp.json
+      - id: c
+        text: ~/.aws/mcp.json
+      - id: d
+        text: AGENTS.md at the workspace root
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      The user-level file `~/.kiro/settings/mcp.json` applies across all workspaces. Workspace
+      files would have to be repeated per repo.
+  - id: kcm-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      A remote MCP server requires OAuth with custom scopes. Which fields belong in its config?
+    choices:
+      - id: a
+        text: command, args, env
+      - id: b
+        text: url, oauth (clientId/redirectUri), oauthScopes
+      - id: c
+        text: url, command, disabledTools only
+      - id: d
+        text: token, secret, scopes
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Remote servers use `url` plus an `oauth` object (e.g. `clientId`, `redirectUri`) and
+      `oauthScopes`. `command/args/env` are for local process servers.
+  - id: kcm-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 340
+    type: multiple_choice
+    prompt: |
+      You want the agent's `write` tool to be allowed only under `src/` and `tests/`. Which
+      agent-config field expresses that?
+    choices:
+      - id: a
+        text: '"tools": ["write:src/**"]'
+      - id: b
+        text: '"toolsSettings": {"write": {"allowedPaths": ["src/**", "tests/**"]}}'
+      - id: c
+        text: '"disabledTools": ["write"]'
+      - id: d
+        text: '"allowedTools": ["src/**"]'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `toolsSettings` configures per-tool options; for the `write` tool, `allowedPaths` (a glob
+      list) restricts where it may write. `allowedTools` only controls which tools skip the prompt,
+      not path scoping.
+  - id: kcm-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: |
+      You want Kiro CLI to run your test suite automatically after the agent finishes responding
+      each turn. Which hook trigger should the hook use?
+    choices:
+      - id: a
+        text: stop
+      - id: b
+        text: agentSpawn
+      - id: c
+        text: userPromptSubmit
+      - id: d
+        text: preToolUse
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The `stop` hook fires when the assistant finishes responding (end of each turn) — the right
+      place for post-response tasks like running tests. `agentSpawn` runs at startup,
+      `userPromptSubmit` on input, and `preToolUse` before each tool call.
+  - id: kcm-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: |
+      You're starting a session and want to resume a specific past conversation by its id. Which
+      invocation is correct?
+    choices:
+      - id: a
+        text: kiro-cli chat --resume
+      - id: b
+        text: kiro-cli resume <SESSION_ID>
+      - id: c
+        text: kiro-cli chat --resume-picker <SESSION_ID>
+      - id: d
+        text: kiro-cli chat --resume-id <SESSION_ID>
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      `--resume-id <SESSION_ID>` resumes a specific session. `--resume` resumes the current dir's
+      session and `--resume-picker` opens an interactive chooser.
+  - id: kcm-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 375
+    type: multiple_choice
+    prompt: |
+      You want to start a session using a specific custom agent named `reviewer` defined in
+      `.kiro/agents/reviewer.json`. Which command is correct?
+    choices:
+      - id: a
+        text: kiro-cli chat --resume reviewer
+      - id: b
+        text: kiro-cli /agent reviewer
+      - id: c
+        text: kiro-cli --agent reviewer
+      - id: d
+        text: kiro-cli agent run reviewer
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `kiro-cli --agent <name>` starts with that custom agent. `/agent swap` switches agents
+      within an active session.
+  - id: kcm-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: |
+      During a session you realize the agent needs your `src/api/` directory in context. Which
+      command adds it?
+    choices:
+      - id: a
+        text: /context add "src/api/**"
+      - id: b
+        text: /context show src/api
+      - id: c
+        text: '!add src/api'
+      - id: d
+        text: '#src/api'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `/context add "<glob>"` adds files matching the glob to context. `/context show` lists current
+      context and `/context remove` drops a file.
+  - id: kcm-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 345
+    type: multiple_choice
+    prompt: |
+      You want to export the current conversation to a JSON file to share with a teammate. Which
+      command do you use?
+    choices:
+      - id: a
+        text: /chat save path.json
+      - id: b
+        text: /context add path.json
+      - id: c
+        text: /chat new
+      - id: d
+        text: '!export path.json'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `/chat save [path]` exports the conversation as JSON; `/chat load [path]` reloads it.
+  - id: kcm-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 355
+    type: free_form
+    prompt: |
+      Write a minimal `.kiro/settings/mcp.json` that registers a LOCAL server named "fs" launched
+      with the command `fs-mcp` and the single arg `./data`, and that auto-approves only its
+      `list_files` tool. Then say one sentence about why you scoped autoApprove this way.
+    guidance: >
+      Looking for correct structure (mcpServers, command, args, autoApprove) and least-privilege
+      reasoning.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses the mcpServers root key with a "fs" server entry
+        - id: c2
+          text: Sets command to fs-mcp and args to ["./data"]
+        - id: c3
+          text: >-
+            Sets autoApprove to ["list_files"] (not "*") and explains it limits auto-run to a safe
+            tool
+      referenceAnswer: |
+        {
+          "mcpServers": {
+            "fs": {
+              "command": "fs-mcp",
+              "args": ["./data"],
+              "autoApprove": ["list_files"]
+            }
+          }
+        }
+        Scoping `autoApprove` to just `list_files` (a read-only tool) avoids auto-running any
+        potentially destructive tool the server might also expose.
+      passThreshold: 0.6
+  - id: kcm-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 335
+    type: free_form
+    prompt: |
+      Describe the exact steps to make a brand-new MCP server appear in an already-running Kiro chat
+      session, and state whether you must restart.
+    guidance: |
+      Looking for editing the right file and the "applies on save" behavior.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Edit .kiro/settings/mcp.json (workspace) or ~/.kiro/settings/mcp.json (user) to add the
+            server under mcpServers
+        - id: c2
+          text: States changes apply on save (no full restart needed)
+        - id: c3
+          text: Mentions verifying with /mcp that the server is loaded
+      referenceAnswer: |
+        Add the server under `mcpServers` in `.kiro/settings/mcp.json` (or the user-level file) and
+        save. Kiro applies MCP config changes on save, so you do not need to restart the CLI; run
+        `/mcp` to confirm the new server is now loaded.
+      passThreshold: 0.6
+  - id: kcm-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >
+      A CI pipeline must run Kiro headlessly, use a Slack MCP server, auto-approve only read-type
+
+      tools, and fail if the Slack server can't connect. Sketch the command and the env/config
+      pieces
+
+      you'd set.
+    guidance: >
+      Looking for --no-interactive with a prompt, KIRO_API_KEY, --trust-tools narrowed, and
+      --require-mcp-startup.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses kiro-cli chat --no-interactive "<prompt>" with KIRO_API_KEY set in the environment
+        - id: c2
+          text: >-
+            Narrows trust with --trust-tools=read (or per-server autoApprove of read tools) rather
+            than --trust-all-tools
+        - id: c3
+          text: Adds --require-mcp-startup so a Slack connection failure fails the job
+      referenceAnswer: >
+        Set `KIRO_API_KEY` in the CI environment, then run:
+
+        `kiro-cli chat --no-interactive "post the build summary to #builds" --trust-tools=read
+        --require-mcp-startup`
+
+        Configure the Slack server in `.kiro/settings/mcp.json` (auto-approving only its read
+        tools).
+
+        `--require-mcp-startup` makes the job fail fast if Slack doesn't connect;
+        `--trust-tools=read`
+
+        keeps approvals least-privilege instead of `--trust-all-tools`.
+      passThreshold: 0.6
+  - id: kcm-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >
+      You added an MCP server but its destructive `drop_table` tool keeps getting auto-approved.
+      Walk
+
+      through the two-line config change that keeps the server but stops that tool from running
+
+      automatically (and ideally hides it).
+    guidance: |
+      Looking for removing the tool from autoApprove and/or adding it to disabledTools.
+    rubric:
+      criteria:
+        - id: c1
+          text: Removes drop_table from autoApprove (or removes a "*" wildcard) so it prompts again
+        - id: c2
+          text: Optionally adds drop_table to disabledTools to remove it from the toolset entirely
+        - id: c3
+          text: 'Keeps the server enabled (does not set disabled: true)'
+      referenceAnswer: >
+        Stop using `"autoApprove": ["*"]` (or drop `drop_table` from the autoApprove list) so the
+
+        tool prompts for approval again. To go further, add `"disabledTools": ["drop_table"]` so the
+
+        agent can't see or call it at all. Leave `disabled` unset so the rest of the server still
+        works.
+      passThreshold: 0.6
+  - id: kcm-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: free_form
+    prompt: |
+      You want a Kiro CLI hook that auto-formats code after the agent writes a file. Identify a
+      suitable trigger, the matcher you'd use, and the required field, and say where the hook is
+      defined.
+    guidance: >
+      Looking for a postToolUse trigger matching the write tool, the command field, and the
+      agent-config location.
+    rubric:
+      criteria:
+        - id: c1
+          text: Chooses the postToolUse trigger (runs after a tool executes)
+        - id: c2
+          text: >-
+            Uses a matcher for the write tool (fs_write / write) and the required command field
+            (e.g. a formatter)
+        - id: c3
+          text: >-
+            States the hook is defined in the agent configuration JSON (under hooks), not a separate
+            .kiro/hooks file
+      referenceAnswer: |
+        Use a `postToolUse` hook with `matcher` set to the write tool (`fs_write`) and a `command`
+        that runs the formatter (e.g. `cargo fmt --all` or `prettier -w`). Hooks are defined inside
+        the agent configuration JSON under the `hooks` field; each hook entry needs `command`
+        (required) and, for pre/postToolUse, an optional `matcher` on the tool name.
+      passThreshold: 0.6
+  - id: kcm-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: multiple_choice
+    prompt: |
+      You want to create a new custom agent and let the AI help draft it (rather than hand-editing
+      JSON). Which approach fits?
+    choices:
+      - id: a
+        text: /agent create my-agent (AI-assisted generation by default)
+      - id: b
+        text: kiro-cli --agent new --copy
+      - id: c
+        text: /context add agents/existing.json
+      - id: d
+        text: '!cp existing.json new.json'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      `/agent create <name>` uses AI-assisted generation by default (pass `--manual` for
+      editor-based
+
+      creation). `/agent generate` is an alias for `create`, and `/agent swap` switches the active
+
+      agent.
+  - id: kcm-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: |
+      A user reports the agent never uses an MCP server's `search` tool, even when asked directly.
+      Their `.kiro/settings/mcp.json` for that server has `"disabledTools": ["search"]`. What is the
+      actual cause?
+    choices:
+      - id: a
+        text: The tool just needs to be added to autoApprove to appear
+      - id: b
+        text: MCP tools can only run in headless mode
+      - id: c
+        text: >-
+          disabledTools removed the tool from the agent's available toolset, so the agent cannot
+          call it at all
+      - id: d
+        text: The server name must be prefixed with @ in mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `disabledTools` omits the tool from the agent's available tools entirely, so the agent has no
+      `search` tool to call. The fix is removing `search` from `disabledTools` — not adding it to
+      `autoApprove` (which only affects whether an available tool prompts for approval).
+  - id: kcm-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 435
+    type: multiple_choice
+    prompt: >
+      A server defined in both `~/.kiro/settings/mcp.json` and `.kiro/settings/mcp.json` behaves
+      with
+
+      the user-file's settings, not the workspace ones. What is wrong with that expectation?
+    choices:
+      - id: a
+        text: Nothing — user settings always win
+      - id: b
+        text: Precedence depends on alphabetical order
+      - id: c
+        text: The two files cannot define the same server name
+      - id: d
+        text: >-
+          Workspace config takes precedence, so the workspace settings should apply for the same
+          server
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Workspace settings take precedence over user settings on conflict. If the user-file values are
+      winning, the workspace file likely isn't being read (wrong path/cwd) or wasn't saved.
+  - id: kcm-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: >
+      A CI run uses `--trust-all-tools` and an MCP server that exposes a `deploy_prod` tool.
+      Reviewing
+
+      this for safety, what is the core risk?
+    choices:
+      - id: a
+        text: None; trust flags don't affect MCP tools
+      - id: b
+        text: >-
+          --trust-all-tools auto-approves deploy_prod with no human gate, so the agent could deploy
+          unprompted
+      - id: c
+        text: deploy_prod will be disabled automatically
+      - id: d
+        text: '--trust-all-tools only trusts built-in tools, never MCP tools'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      `--trust-all-tools` auto-approves everything including dangerous MCP tools like `deploy_prod`.
+      A safer design narrows to `--trust-tools=read,grep` or per-server `autoApprove` of only safe
+      tools, leaving high-impact tools gated.
+  - id: kcm-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: multiple_choice
+    prompt: |
+      Someone stores `mcp.json` directly at the repo root and Kiro ignores it. Why?
+    choices:
+      - id: a
+        text: Kiro only reads MCP config from .kiro/settings/mcp.json, not the repo root
+      - id: b
+        text: The file must be named mcpServers.json
+      - id: c
+        text: Root-level mcp.json is only read in headless mode
+      - id: d
+        text: Kiro reads it only after running kiro-cli doctor
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The workspace MCP file must be at `.kiro/settings/mcp.json` (under the `settings/`
+      subdirectory). A root-level `mcp.json` is not a path Kiro reads.
+  - id: kcm-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 465
+    type: multiple_choice
+    prompt: |
+      A headless pipeline calls `kiro-cli chat --no-interactive` but expects to issue `/context add`
+      partway through. It never works. Diagnose the misunderstanding.
+    choices:
+      - id: a
+        text: Headless mode disables only MCP, not slash commands
+      - id: b
+        text: /context add requires --trust-all-tools
+      - id: c
+        text: >-
+          Slash commands and mid-session input are unavailable in headless mode; everything must be
+          in the initial prompt
+      - id: d
+        text: The initial prompt argument was missing
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      Headless mode takes a single prompt argument and has no interactive loop, so slash commands
+      and
+
+      follow-up input simply don't exist there. Context must be supplied up front (via the prompt or
+
+      config), not mid-run.
+  - id: kcm-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: |
+      A remote MCP server config has `command` and `args` set but no `url`, and it fails to connect.
+      What does this reveal?
+    choices:
+      - id: a
+        text: Remote servers need url/headers/oauth; command/args are for local process servers
+      - id: b
+        text: Remote servers also require command
+      - id: c
+        text: The server should be moved to ~/.aws/
+      - id: d
+        text: args must be a string, not an array
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Mixing the schemas is the bug: a remote (HTTP) server is configured with `url` (and optionally
+
+      `headers`/`oauth`), not `command`/`args`, which only apply to locally launched process
+      servers.
+  - id: kcm-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: multiple_choice
+    prompt: >
+      A team wants their root `AGENTS.md` to load only on demand, but it always loads. In Kiro CLI,
+
+      why is that behavior expected, and what is the right way to make context load only when
+      needed?
+    choices:
+      - id: a
+        text: >-
+          AGENTS.md is always included by design; for on-demand context use a skill (skill://)
+          resource that loads full content only when relevant
+      - id: b
+        text: AGENTS.md must be under .kiro/settings/ to load
+      - id: c
+        text: AGENTS.md only loads in headless mode
+      - id: d
+        text: AGENTS.md must be valid JSON to be parsed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      `AGENTS.md` is auto-discovered and always included — there is no on-demand mode for it. For
+      context that should load only when relevant, use a skill (`skill://`) resource (metadata up
+      front, full content on demand) or a knowledge base (searched on demand).
+  - id: kcm-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: |
+      A custom agent lists a `git` MCP server under its `mcpServers`, but the developer also expects
+      the agent to see the servers from the workspace `mcp.json` and it doesn't. What is the cause?
+    choices:
+      - id: a
+        text: mcp.json servers are never available to custom agents
+      - id: b
+        text: >-
+          The agent's `includeMcpJson` is false, so it only gets its own `mcpServers`; set it true
+          to also inherit mcp.json servers
+      - id: c
+        text: mcp.json must be renamed to agents.json
+      - id: d
+        text: Custom agents can only use remote MCP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      A custom agent uses its own `mcpServers` by default. To also include the workspace/user
+      `mcp.json` servers, set `includeMcpJson: true`; otherwise the agent is limited to the servers
+      declared inline.
+  - id: kcm-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: |
+      An MCP server connects, but Kiro reports "tools have been excluded due to validation errors"
+      and one tool is missing. What is a likely cause?
+    choices:
+      - id: a
+        text: The mcp.json must be moved to ~/.aws/
+      - id: b
+        text: >-
+          The tool's name exceeds 64 characters (including server prefix), has invalid characters,
+          or its description is empty
+      - id: c
+        text: The server has too few tools
+      - id: d
+        text: autoApprove was not set, so the tool is hidden
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Kiro excludes tools that fail validation: a name over 64 chars (including the server prefix),
+      a
+
+      name not matching `^[a-zA-Z][a-zA-Z0-9_]*$`, or an empty description. The MCP server
+      maintainer
+
+      must fix the tool spec.
+  - id: kcm-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: |
+      A Kiro CLI `postToolUse` hook with `matcher: "fs_read"` never runs the author's formatter,
+      even though the agent edits files constantly. What is the real issue?
+    choices:
+      - id: a
+        text: postToolUse is not a valid trigger
+      - id: b
+        text: >-
+          The matcher targets the read tool, but file edits go through the write tool; it should
+          match fs_write
+      - id: c
+        text: Hook matchers can only match file extensions, not tools
+      - id: d
+        text: postToolUse hooks cannot run shell commands
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: |
+      Hook matchers match tool names, not files. `fs_read` matches the read tool, so the hook never
+      fires on edits; to run after writes the matcher should be `fs_write` (or `write`).
+  - id: kcm-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: |
+      A secret leaked because someone committed `"env": {"TOKEN": "ghp_real_value"}` in mcp.json.
+      Beyond rotating the token, what config change prevents recurrence?
+    choices:
+      - id: a
+        text: Move the server to the user file but keep the literal value
+      - id: b
+        text: Add the token to autoApprove
+      - id: c
+        text: 'Set disabled: true on the server'
+      - id: d
+        text: >-
+          Use "${TOKEN}" interpolation so the value comes from the environment, never the committed
+          file
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      Reference the secret with `${TOKEN}` so mcp.json holds only a placeholder and the real value
+      lives in the environment, keeping it out of version control.
+  - id: kcm-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: multiple_choice
+    prompt: |
+      An agent JSON sets `"resources": ["file://docs/spec.md"]` but the author claims that "loads an
+      MCP tool." What is the conceptual confusion?
+    choices:
+      - id: a
+        text: >-
+          resources point the agent at files/skills (file://, skill://), they are not MCP tool
+          invocations
+      - id: b
+        text: resources must use https:// for MCP
+      - id: c
+        text: file:// resources are MCP servers
+      - id: d
+        text: resources can only list tool names
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      The `resources` field gives an agent context resources via `file://` and `skill://` URIs. MCP
+      tools are a separate mechanism (registered in mcp.json, invoked via `#`), not the same as a
+      resource URI.
+  - id: kcm-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 455
+    type: free_form
+    prompt: >
+      A user says: "I put my GitHub MCP server in `.kiro/settings/mcp.json`, set `autoApprove:
+      ["*"]`,
+
+      and now it works, but security flagged it." Diagnose what's risky and what they likely
+      confused
+
+      about `autoApprove` vs `disabledTools`.
+    guidance: |
+      Looking for the wildcard-auto-approve risk and the availability-vs-approval distinction.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies "*" auto-approves every tool including destructive ones with no human gate
+        - id: c2
+          text: Notes autoApprove governs prompting, not which tools exist; disabledTools removes tools
+        - id: c3
+          text: >-
+            Recommends narrowing autoApprove to safe tools and/or using disabledTools for dangerous
+            ones
+      referenceAnswer: |
+        `autoApprove: ["*"]` skips the approval prompt for every tool the server exposes, so any
+        destructive tool runs unprompted — that's the security flag. They likely conflated approval
+        with availability: `autoApprove` only controls prompting, while `disabledTools` actually
+        removes tools. The fix is to auto-approve only safe (e.g. read) tools and/or add dangerous
+        tools to `disabledTools`.
+      passThreshold: 0.6
+  - id: kcm-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >
+      A teammate insists Kiro CLI's MCP servers, steering, and hooks all live in one file. Break
+      down
+
+      where each actually lives and why conflating them causes bugs.
+    guidance: >
+      Looking for the distinct locations/formats (mcp.json, steering dir, hooks in agent config) and
+      the consequence of conflation.
+    rubric:
+      criteria:
+        - id: c1
+          text: MCP -> .kiro/settings/mcp.json (JSON registry of servers under mcpServers)
+        - id: c2
+          text: >-
+            Steering -> Markdown in .kiro/steering/ (and AGENTS.md); hooks -> the agent
+            configuration JSON under a "hooks" field (not mcp.json or a separate hooks file)
+        - id: c3
+          text: >-
+            Explains conflation breaks because each has its own format/loader, so config in the
+            wrong place is ignored
+      referenceAnswer: |
+        They are separate concerns with separate homes: MCP config is JSON at
+        `.kiro/settings/mcp.json` (the `mcpServers` map); steering is Markdown in `.kiro/steering/`
+        (plus an auto-discovered `AGENTS.md`); hooks are defined inside the agent configuration JSON
+        (`.kiro/agents/<name>.json`) under a `hooks` field — not in mcp.json and not a standalone
+        hooks file. Each has its own format and loader, so a hook block dropped into mcp.json or
+        steering prose placed in an agent's hooks is simply ignored — hence the bugs.
+      passThreshold: 0.6
+  - id: kcm-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 440
+    type: free_form
+    prompt: >
+      A CI Kiro run "sometimes succeeds even though the database MCP server is unreachable,
+      producing
+
+      garbage." Diagnose the missing safeguard and the flag that fixes it.
+    guidance: |
+      Looking for the silent-degradation diagnosis and --require-mcp-startup.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that without enforcement the run proceeds even when the MCP server fails to
+            connect (silent degradation)
+        - id: c2
+          text: Recommends --require-mcp-startup to fail the run immediately on connection failure
+        - id: c3
+          text: Notes this makes failures deterministic/visible in CI rather than producing bad output
+      referenceAnswer: >
+        By default the run can proceed even if the database MCP server doesn't connect, so the agent
+
+        works without its tool and emits garbage — silent degradation. Adding
+        `--require-mcp-startup`
+
+        makes the run fail immediately when MCP servers don't connect, turning an intermittent
+        silent
+
+        failure into a deterministic, visible CI error.
+      passThreshold: 0.6
+  - id: kcm-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: free_form
+    prompt: |
+      A user added a large reference guide as a `skill://` resource in their agent, but the agent
+      never seems to use it. Walk through the likely causes related to how skills load and how a
+      skill differs from a plain `file://` resource.
+    guidance: >
+      Looking for the on-demand skill loading model (metadata then full content) and the role of the
+      description frontmatter.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes a skill loads only its name/description at startup, with full content loaded on
+            demand when the agent judges it relevant
+        - id: c2
+          text: >-
+            Distinguishes that from a file:// resource, which is loaded fully into context at
+            startup (always present)
+        - id: c3
+          text: >-
+            Identifies a plausible cause (skill frontmatter name/description missing or too vague,
+            so the agent never decides to load it)
+      referenceAnswer: >
+        A `skill://` resource loads only its YAML frontmatter (`name`/`description`) at startup; the
+
+        full content is pulled in on demand when the agent decides it is relevant. That differs from
+        a
+
+        `file://` resource, which is loaded fully into context at startup. The likely cause is a
+
+        missing or too-vague `description` in the skill frontmatter, so the agent can't tell when to
+
+        load it — write a specific description, or use a `file://` resource if it must always be
+        present.
+      passThreshold: 0.6
+  - id: kcm-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: free_form
+    prompt: |
+      A new hire assumes Kiro CLI "hooks" are git pre-commit hooks. Explain how Kiro CLI agent hooks
+      actually differ — where they are defined, which lifecycle events trigger them, and what a hook
+      runs.
+    guidance: >
+      Looking for the agent-config location, the agent-lifecycle trigger set, and that hooks run
+      shell commands.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains hooks are defined in the agent configuration JSON (under "hooks") and fire on
+            agent-lifecycle/tool events, not git commit events
+        - id: c2
+          text: Names valid triggers (agentSpawn, userPromptSubmit, preToolUse, postToolUse, stop)
+        - id: c3
+          text: >-
+            Notes a hook runs a shell command (and preToolUse can block a tool by exiting with code
+            2)
+      referenceAnswer: >
+        Kiro CLI agent hooks are defined in the agent configuration JSON under a `hooks` field and
+        are
+
+        triggered by agent-lifecycle and tool events — `agentSpawn`, `userPromptSubmit`,
+        `preToolUse`,
+
+        `postToolUse`, and `stop` — not git lifecycle events. Each hook runs a shell `command` (it
+        gets
+
+        the event as JSON on stdin); a `preToolUse` hook can even block the tool by exiting with
+        code 2.
+
+        So they are broader and more agent-aware than git hooks, but they execute shell commands.
+      passThreshold: 0.6
+  - id: kcm-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 475
+    type: multiple_choice
+    prompt: >
+      A reviewer sees `kiro-cli chat --resume-id abc123` fail with "no such session," yet the user
+      did
+
+      have a session. Which explanation is most consistent?
+    choices:
+      - id: a
+        text: '--resume-id is not a real flag; only --resume exists'
+      - id: b
+        text: >-
+          The provided SESSION_ID is wrong/mismatched; --resume (cwd) or --resume-picker would help
+          locate it
+      - id: c
+        text: Sessions can only be resumed in headless mode
+      - id: d
+        text: Resuming requires --trust-all-tools
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      `--resume-id` is valid but needs the correct id. If the id is wrong, `--resume` (current dir)
+      or
+
+      `--resume-picker` (interactive chooser) helps the user find and select the right session.
+  - id: kcm-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: |
+      A user claims "Kiro stores all its config under ~/.aws/ like other AWS tools." Why is this
+      incorrect, and what's the impact of believing it?
+    choices:
+      - id: a
+        text: It's correct; Kiro uses ~/.aws/
+      - id: b
+        text: >-
+          Kiro uses the .kiro/ tree (.kiro/settings, .kiro/steering, .kiro/agents); looking in
+          ~/.aws/ means edits never take effect
+      - id: c
+        text: Kiro only uses ~/.config/kiro/
+      - id: d
+        text: Config location is random per install
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Despite being an AWS product, Kiro CLI keeps config in the `.kiro/` tree (workspace and
+
+      `~/.kiro/`), e.g. `.kiro/settings/mcp.json`, `.kiro/steering/`, `.kiro/agents/` — not
+      `~/.aws/`.
+
+      Editing files under `~/.aws/` would have no effect on Kiro CLI behavior. (The `KIRO_HOME` env
+
+      var can override the `~/.kiro` location.)
+  - id: kcm-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: |
+      A team proposes committing `.kiro/settings/mcp.json` with `autoApprove: ["*"]` on every server
+      "so nobody gets prompted." Evaluate this policy.
+    choices:
+      - id: a
+        text: >-
+          Risky anti-pattern — it removes the human gate on destructive tools repo-wide; scope
+          autoApprove to safe tools per server
+      - id: b
+        text: Good — fewer prompts always improves productivity
+      - id: c
+        text: Fine because workspace config can't include dangerous tools
+      - id: d
+        text: Harmless because autoApprove also disables dangerous tools
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Blanket `"*"` auto-approval committed for everyone strips the approval gate from every tool,
+      including destructive ones, for the whole team. The better design auto-approves only read/safe
+      tools per server and leaves high-impact tools gated (or in `disabledTools`).
+  - id: kcm-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: multiple_choice
+    prompt: >
+      Two designs for limiting MCP risk in CI: (A) `--trust-all-tools` plus `disabledTools` for the
+
+      few dangerous tools; (B) `--trust-tools=read,grep` and no auto-approval of anything else.
+      Which
+
+      is the more defensible least-privilege design and why?
+    choices:
+      - id: a
+        text: >-
+          B, because it allowlists only known-safe categories; A trusts everything by default and
+          relies on remembering to deny each new dangerous tool
+      - id: b
+        text: A, because denylisting is always safer than allowlisting
+      - id: c
+        text: They are equivalent
+      - id: d
+        text: A, because --trust-all-tools is required in CI
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: |
+      Allowlisting (B) fails safe: anything not explicitly trusted still gates. Denylisting (A)
+      fails open — every newly added tool is trusted until someone remembers to add it to
+      `disabledTools`. Least privilege favors B.
+  - id: kcm-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 505
+    type: multiple_choice
+    prompt: >
+      A reviewer must judge whether to put a shared analytics MCP server in
+      `~/.kiro/settings/mcp.json`
+
+      or each repo's `.kiro/settings/mcp.json`. Which factor most justifies the user-level choice?
+    choices:
+      - id: a
+        text: The server is project-specific and must be code-reviewed per repo
+      - id: b
+        text: Workspace config is never committed
+      - id: c
+        text: >-
+          The server is a personal, machine-wide tool not tied to any one project, so user-level
+          avoids duplicating it in every repo
+      - id: d
+        text: User-level config takes precedence over workspace config
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      User-level config suits personal, cross-project tools. Project-specific servers that the team
+      must review belong in the committed workspace file (which also takes precedence on conflict).
+  - id: kcm-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: |
+      Critique this hook design: trigger `PreToolUse`, matcher `.*` (all tools), action = a shell
+      command that runs a full test suite. What's the main problem?
+    choices:
+      - id: a
+        text: PreToolUse can't have a matcher
+      - id: b
+        text: Tests should run on UserPromptSubmit only
+      - id: c
+        text: Shell actions are not allowed in hooks
+      - id: d
+        text: >-
+          Matching all tools makes every tool call block on a full test run, badly slowing the
+          agent; scope the matcher and/or pick a coarser trigger
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      A `.*` matcher on `PreToolUse` runs the test suite before every single tool call — enormous
+      overhead. Tests belong on a coarser event (e.g. file save or task completion) with a tight
+      matcher, not before each tool invocation.
+  - id: kcm-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: multiple_choice
+    prompt: >
+      A team wants their MCP setup to be reproducible and reviewable. Which combination best
+      achieves
+
+      that without leaking secrets?
+    choices:
+      - id: a
+        text: Commit mcp.json with literal tokens so everyone has working credentials
+      - id: b
+        text: >-
+          Commit .kiro/settings/mcp.json using ${ENV_VAR} interpolation for secrets, with per-server
+          autoApprove/disabledTools, and document required env vars
+      - id: c
+        text: Keep all servers only in ~/.kiro and never commit anything
+      - id: d
+        text: Put servers in AGENTS.md so they're always loaded
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Committing the workspace `mcp.json` makes the setup reviewable and reproducible; `${ENV_VAR}`
+
+      keeps secrets out of the file; per-server `autoApprove`/`disabledTools` encode the trust
+      policy.
+
+      Documenting required env vars completes the reproducibility. AGENTS.md is for steering, not
+      MCP.
+  - id: kcm-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: |
+      Evaluate: "We don't need steering or custom agents; we'll just put everything in `autoApprove`
+      and let the agent figure it out from the codebase." What's the strongest objection?
+    choices:
+      - id: a
+        text: autoApprove is required for the agent to read code
+      - id: b
+        text: Steering files must exist before any tool runs
+      - id: c
+        text: >-
+          It conflates a trust knob with project knowledge; steering and agent config capture
+          durable, reviewable conventions and scope that approval flags cannot
+      - id: d
+        text: autoApprove disables the codebase reader
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      `autoApprove` only governs whether tools prompt; it carries no project knowledge. Steering
+      encodes persistent rules/conventions and custom agents encode scoped tool/resource setups —
+      both reviewable and durable. Substituting blanket auto-approval for them confuses a trust knob
+      with planning and context.
+  - id: kcm-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >
+      A proposal pins all project context into a single huge always-loaded steering file containing
+
+      tech, product, structure, and a large reference guide. Critique it against Kiro CLI's context
+      model.
+    choices:
+      - id: a
+        text: Ideal — one file is simplest
+      - id: b
+        text: Steering must be one file by design
+      - id: c
+        text: Always-loaded steering files are not supported
+      - id: d
+        text: >-
+          It wastes context tokens on every interaction; split foundational rules into focused
+          product/tech/structure files and move large reference material to a skill or knowledge
+          base that loads on demand
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: |
+      A single giant always-loaded file injects irrelevant context into every interaction (token
+      cost, noise). Kiro CLI's model favors focused foundational steering files (product/tech/
+      structure) plus on-demand mechanisms — a `skill://` resource (loaded when relevant) or a
+      knowledge base (searched on demand) — so heavy reference material doesn't sit resident.
+  - id: kcm-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: multiple_choice
+    prompt: >
+      Two ways to give a CI agent a database tool: (A) a local MCP server launched with `command`
+      that
+
+      embeds the connection string in `args`; (B) a server reading the connection string from `env`
+
+      via `${DB_URL}`. Which is the better design and why?
+    choices:
+      - id: a
+        text: >-
+          B, because ${DB_URL} keeps the secret in the environment/secret store and out of the
+          committed config, unlike a hardcoded arg
+      - id: b
+        text: A, because args are not stored anywhere
+      - id: c
+        text: They are equally safe
+      - id: d
+        text: A, because env variables are always logged
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Embedding a connection string in `args` (A) commits the secret into the config. Reading it
+      from
+
+      `env` with `${DB_URL}` (B) keeps the secret in the CI secret store and out of version control
+      —
+
+      the safer, more reproducible design.
+  - id: kcm-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >
+      A reviewer questions whether MCP, hooks, and steering are interchangeable ways to "add
+      behavior."
+
+      Which judgment best respects their distinct roles?
+    choices:
+      - id: a
+        text: They are interchangeable; pick whichever
+      - id: b
+        text: >-
+          They are distinct: MCP adds external tools/data, hooks add event-triggered automation,
+          steering adds persistent context/rules — choose by the nature of the need
+      - id: c
+        text: Hooks are a subset of MCP
+      - id: d
+        text: Steering replaces both MCP and hooks
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Each addresses a different need: MCP integrates external tools/data, hooks automate responses
+      to
+
+      events, and steering supplies durable context/rules. Treating them as interchangeable leads to
+
+      misconfigured or duplicated behavior.
+  - id: kcm-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: |
+      A team wants Kiro behavior identical across the IDE and the CLI for the same repo. Which
+      approach is most robust?
+    choices:
+      - id: a
+        text: Maintain separate config for IDE and CLI and sync by hand
+      - id: b
+        text: Use only ~/.kiro/ so nothing is repo-specific
+      - id: c
+        text: >-
+          Commit the shared .kiro/ tree (specs, steering, settings/mcp.json, hooks) so both surfaces
+          read the same workspace config
+      - id: d
+        text: Put everything in AGENTS.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: |
+      Both the IDE and the CLI read the same workspace `.kiro/` tree. Committing specs, steering,
+      `settings/mcp.json`, and hooks gives both surfaces one source of truth, avoiding hand-syncing.
+  - id: kcm-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >
+      Critique this MCP trust policy for a shared repo: "Commit `autoApprove: ["*"]` on every server
+      so
+
+      the team is never interrupted." Propose a better policy and justify it in terms of fail-safe
+
+      design and the availability/approval distinction.
+    guidance: |
+      Looking for a clear critique plus a defensible least-privilege alternative.
+    rubric:
+      criteria:
+        - id: c1
+          text: Critiques "*" as removing the approval gate from destructive tools repo-wide (fail-open)
+        - id: c2
+          text: >-
+            Proposes scoping autoApprove to safe/read tools per server and/or disabledTools for
+            dangerous ones
+        - id: c3
+          text: >-
+            Justifies via fail-safe/least-privilege and distinguishes approval (autoApprove) from
+            availability (disabledTools)
+      referenceAnswer: >
+        Committing `autoApprove: ["*"]` repo-wide removes the human gate from every tool, including
+
+        destructive ones, for everyone — a fail-open policy. A better approach allowlists only safe
+
+        (e.g. read/grep) tools per server in `autoApprove`, leaves high-impact tools gated, and adds
+
+        truly dangerous tools to `disabledTools` so the agent can't even call them. This is
+        fail-safe
+
+        (anything not explicitly trusted still prompts) and correctly separates approval (does it
+
+        prompt) from availability (does the tool exist for the agent).
+      passThreshold: 0.6
+  - id: kcm-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 525
+    type: free_form
+    prompt: |
+      A lead argues "MCP servers, hooks, steering, and custom agents are all just ways to configure
+      the agent, so we'll dump everything into mcp.json and autoApprove." Evaluate this and explain
+      when each mechanism is the right tool.
+    guidance: |
+      Looking for a judgment that separates the concerns and assigns each its proper role/location.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Rejects the conflation; notes mcp.json is only a server/tool registry with approval
+            controls (autoApprove/disabledTools)
+        - id: c2
+          text: >-
+            Assigns steering (.kiro/steering/) = persistent context/rules, hooks (in the agent
+            config) = event-triggered shell automation, custom agents (.kiro/agents/) = scoped
+            tools/resources/prompt
+        - id: c3
+          text: >-
+            Concludes choosing the right mechanism per need yields reviewable, maintainable config
+            (different locations/formats)
+      referenceAnswer: >
+        The conflation is wrong: `mcp.json` only registers external tool/data servers and controls
+
+        their approval (`autoApprove`/`disabledTools`); it carries no rules or automation. Use
+        steering
+
+        (`.kiro/steering/`, plus AGENTS.md) for persistent project context and conventions, hooks
+
+        (defined in the agent config under `hooks`) for event-triggered shell automation, and custom
+
+        agents (`.kiro/agents/`) to scope an agent's tools, resources, and prompt. Each has its own
+
+        format, location, and lifecycle, so matching the mechanism to the need keeps config
+        reviewable
+
+        and maintainable rather than an opaque pile of auto-approved tools.
+      passThreshold: 0.6
+  - id: kcm-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 495
+    type: free_form
+    prompt: |
+      Evaluate whether a remote MCP server's secrets should be configured via `headers` with literal
+      values committed to `.kiro/settings/mcp.json`, versus env interpolation. Recommend a policy.
+    guidance: |
+      Looking for the secret-in-VCS critique and the env-interpolation recommendation.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies committing literal header secrets exposes them in version control
+        - id: c2
+          text: >-
+            Recommends ${ENV_VAR} interpolation (in headers/env) so the committed file holds only
+            placeholders
+        - id: c3
+          text: >-
+            Notes this preserves reviewable/reproducible config while keeping secrets in a secret
+            store
+      referenceAnswer: >
+        Committing literal secret values in `headers` puts credentials into version control, where
+        they
+
+        can leak and must be rotated. The better policy is to reference them with `${ENV_VAR}`
+
+        interpolation so the committed `mcp.json` holds only placeholders and the real values live
+        in
+
+        the environment or a secret store. That keeps the config reviewable and reproducible without
+
+        exposing credentials.
+      passThreshold: 0.6
+  - id: kcm-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 535
+    type: free_form
+    prompt: |
+      A team's CI Kiro runs are flaky and occasionally take destructive actions. Their config:
+      `--trust-all-tools`, no `--require-mcp-startup`, secrets hardcoded in mcp.json, and one giant
+      always-on steering file. Prioritize the fixes and justify the ordering.
+    guidance: >
+      Looking for a prioritized remediation that weighs safety/secrets first, then reliability, then
+      hygiene.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Prioritizes stopping destructive auto-approval first (replace --trust-all-tools with
+            --trust-tools/narrow autoApprove) and removing hardcoded secrets (use ${ENV_VAR},
+            rotate)
+        - id: c2
+          text: Adds --require-mcp-startup to fix silent-degradation flakiness
+        - id: c3
+          text: >-
+            Treats the giant always-loaded steering file as lower-priority hygiene (split by
+            concern; move heavy reference material to a skill/knowledge base) and justifies the
+            ordering by impact
+      referenceAnswer: >
+        Fix the highest-impact safety issues first: replace `--trust-all-tools` with
+
+        `--trust-tools=read,grep` (or per-server `autoApprove` of safe tools only) so destructive
+        tools
+
+        regain a gate, and remove hardcoded secrets from mcp.json by switching to `${ENV_VAR}` and
+
+        rotating the exposed values. Next, address reliability by adding `--require-mcp-startup` so
+        the
+
+        run fails fast instead of silently degrading (the source of the flakiness). Finally, as
+        hygiene,
+
+        split the giant always-loaded steering file into focused product/tech/structure files and
+        move
+
+        heavy reference material to a skill or knowledge base that loads on demand, to cut token
+        waste.
+
+        The order goes by blast radius: prevent destruction and leaks, then make failures
+        deterministic,
+
+        then optimize.
+      passThreshold: 0.6
+  - id: kcm-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 485
+    type: multiple_choice
+    prompt: |
+      Evaluate the value of a Kiro CLI `stop` hook that runs the test suite and, on failure, returns
+      `{"decision": "block", "reason": "..."}` on stdout. Why is this design powerful?
+    choices:
+      - id: a
+        text: It is decorative; stop hooks cannot affect the agent
+      - id: b
+        text: It forces the agent into headless mode
+      - id: c
+        text: >-
+          A block decision sends the reason back to the LLM as a new message, creating a feedback
+          loop that keeps the agent working until tests pass
+      - id: d
+        text: It permanently disables the agent after one failure
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >
+      When a `stop` hook returns `decision: block`, the `reason` is fed back to the LLM as a new
+      user
+
+      message instead of letting the agent stop — so a script can verify tests/lint and nudge the
+
+      agent to continue until the work actually passes. No block decision means it stops normally.
+  - id: kcm-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: multiple_choice
+    prompt: >
+      A team debates whether to drive all repeatable automation through hooks vs. asking the agent
+      each
+
+      time. Which evaluation best captures the tradeoff?
+    choices:
+      - id: a
+        text: >-
+          Use hooks for deterministic, event-bound repeatable actions (consistency, no reliance on
+          the agent remembering); reserve ad-hoc prompts for one-offs
+      - id: b
+        text: Always ask the agent; hooks are unnecessary overhead
+      - id: c
+        text: Hooks should replace every agent interaction
+      - id: d
+        text: Hooks can only run shell commands, so they can't replace prompts
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >
+      Hooks give deterministic, event-triggered behavior that doesn't depend on the agent (or human)
+
+      remembering to act — ideal for repeatable automation. One-off or judgment-heavy work is better
+      as
+
+      an ad-hoc prompt. Hook actions can be shell commands or agent prompts, so they are flexible.
+  - id: kcm-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >
+      Evaluate the claim: "Because Kiro CLI is headless-capable, we should run production deploys
+      via
+
+      `--no-interactive --trust-all-tools` with all MCP servers auto-approved." What is the soundest
+
+      critique?
+    choices:
+      - id: a
+        text: Headless mode can't run MCP servers, so it won't work at all
+      - id: b
+        text: >-
+          Combining no human gate (--trust-all-tools, blanket autoApprove) with production deploys
+          removes every safety checkpoint; narrow trust, gate destructive tools, and add
+          --require-mcp-startup
+      - id: c
+        text: It's fine because headless mode is inherently safe
+      - id: d
+        text: '--no-interactive forces manual approval anyway'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      Headless plus blanket trust means a production deploy can run any tool unprompted with no
+      human or
+
+      server-health checkpoint. A sound design narrows `--trust-tools`, gates destructive tools
+      (leave
+
+      them out of autoApprove or add to disabledTools), and uses `--require-mcp-startup` so the run
+
+      fails fast if a required server is down.
+  - id: kcm-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: |
+      Explain the difference between setting `"disabled": true` on an MCP server and deleting the
+      server's entry from the `mcpServers` map. Why might you prefer `disabled` temporarily?
+    guidance: |
+      Looking for the toggle-vs-removal distinction and the reason to keep the entry.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States disabled true keeps the entry/config but stops the server from loading (a
+            reversible toggle)
+        - id: c2
+          text: States deleting the entry removes the configuration entirely
+        - id: c3
+          text: >-
+            Gives a reason to prefer disabled temporarily (keep config to re-enable quickly without
+            re-authoring)
+      referenceAnswer: >
+        `"disabled": true` keeps the server's full configuration in the file but stops Kiro from
+        loading
+
+        it — a reversible toggle. Deleting the entry removes the configuration outright, so you'd
+        have to
+
+        re-author it later. You prefer `disabled` when temporarily turning a server off (e.g. while
+
+        debugging) so you can flip it back on without losing its command/args/env/auth settings.
+      passThreshold: 0.6
+  - id: kcm-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 365
+    type: free_form
+    prompt: >
+      You need to register a REMOTE MCP server named "weather" at https://mcp.example.com/weather
+      that
+
+      requires an `Authorization` header carrying a token from the `WEATHER_TOKEN` env var. Sketch
+      the
+
+      `mcpServers` entry and note which fields make it remote rather than local.
+    guidance: |
+      Looking for url + headers with env interpolation and the remote-vs-local field distinction.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses url (the HTTPS endpoint) which marks it as a remote server
+        - id: c2
+          text: >-
+            Supplies an Authorization header using ${WEATHER_TOKEN} interpolation rather than a
+            literal token
+        - id: c3
+          text: Notes the absence of command/args is what distinguishes remote from local
+      referenceAnswer: >
+        {
+          "mcpServers": {
+            "weather": {
+              "url": "https://mcp.example.com/weather",
+              "headers": { "Authorization": "Bearer ${WEATHER_TOKEN}" }
+            }
+          }
+        }
+
+        The `url` (and `headers`) make it a remote HTTP server; a local server would instead use
+
+        `command`/`args`. Interpolating `${WEATHER_TOKEN}` keeps the secret out of the committed
+        file.
+      passThreshold: 0.6
+  - id: kcm-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >
+      A local MCP server fails at startup with "command not found," yet the binary runs fine in the
+
+      user's shell. Diagnose the likely causes related to how Kiro launches the `command`, and
+      suggest
+
+      a robust fix.
+    guidance: |
+      Looking for PATH/environment differences and an absolute-path or env fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that Kiro launches the command in its own process environment, which may not
+            have the same PATH as the interactive shell
+        - id: c2
+          text: >-
+            Notes the command/args may need an absolute path or a runner (e.g. npx/node) the
+            environment can resolve
+        - id: c3
+          text: Suggests a robust fix (absolute path to the binary, or set PATH/env in the env field)
+      referenceAnswer: >
+        Kiro launches the `command` as a child process with its own environment, which often lacks
+        the
+
+        PATH customizations from the user's interactive shell, so a binary on the shell PATH isn't
+        found.
+
+        The fix is to give `command` an absolute path (or a resolvable runner like `npx`/`node`)
+        and/or
+
+        set the needed `PATH`/variables in the server's `env` so the executable resolves regardless
+        of
+
+        the parent shell.
+      passThreshold: 0.6
+  - id: kcm-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >
+      A team wants to document which MCP tools are safe to auto-approve so reviewers can reason
+      about it.
+
+      Where should that policy live for best reviewability?
+    choices:
+      - id: a
+        text: Only in each developer's ~/.kiro/settings/mcp.json so it stays personal
+      - id: b
+        text: >-
+          Encoded in the committed .kiro/settings/mcp.json via per-server autoApprove/disabledTools,
+          optionally explained in committed steering
+      - id: c
+        text: In an uncommitted scratch file
+      - id: d
+        text: In AGENTS.md as the authoritative MCP config
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >
+      The trust policy itself belongs in the committed workspace `mcp.json` (per-server
+      `autoApprove`/
+
+      `disabledTools`), which is what Kiro actually enforces and what reviewers diff. Steering can
+
+      explain the rationale, but AGENTS.md is for context, not MCP config, and personal/scratch
+      files
+
+      aren't reviewable.
+  - id: kcm-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: free_form
+    prompt: >
+      For an interactive day-to-day dev workflow, evaluate using per-server `autoApprove` lists
+      versus
+
+      launching every session with `--trust-all-tools`. Which gives a better balance of friction and
+
+      safety, and why?
+    guidance: |
+      Looking for a judgment favoring scoped per-server approval over blanket trust, with reasoning.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes --trust-all-tools removes all approval friction but also all gating, including
+            destructive tools
+        - id: c2
+          text: >-
+            Notes per-server autoApprove lets safe/common tools run silently while risky tools still
+            prompt
+        - id: c3
+          text: >-
+            Concludes per-server autoApprove gives the better friction/safety balance for daily
+            interactive work
+      referenceAnswer: >
+        `--trust-all-tools` eliminates approval friction but also removes every safety gate, so a
+
+        destructive tool could run unprompted from a mistaken plan. Per-server `autoApprove` lets
+        you
+
+        silence the common, safe tools (e.g. read/list) while leaving risky tools (writes, deletes,
+
+        deploys) prompting. For everyday interactive work that scoped approach is the better
+        balance:
+
+        low friction on routine actions, a human checkpoint on the dangerous ones.
+      passThreshold: 0.6
+  - id: kcm-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: free_form
+    prompt: >
+      A team keeps all their custom agents and steering only in `~/.kiro/` (global) and never
+      commits
+
+      anything under the repo's `.kiro/`. Critique this for collaboration and reproducibility, and
+
+      recommend a better split between global and workspace scope.
+    guidance: |
+      Looking for the not-shared/not-reviewable critique and a sensible global-vs-workspace split.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Critiques global-only as not shared with the team and not version-controlled with the
+            code (config is lost, not reviewable)
+        - id: c2
+          text: >-
+            Recommends committing project agents/steering under the repo's .kiro/ so they travel
+            with the code
+        - id: c3
+          text: >-
+            Reserves ~/.kiro/ for personal, cross-project preferences, and notes the local/workspace
+            config takes precedence on conflict
+      referenceAnswer: >
+        Keeping agents and steering only in `~/.kiro/` means they live on one machine: teammates
+        never
+
+        see them, they aren't reviewed in PRs, and the project's setup isn't captured in history —
+        bad
+
+        for collaboration and reproducibility. Project-specific agents and steering should be
+        committed
+
+        under the repo's `.kiro/` (e.g. `.kiro/agents/`, `.kiro/steering/`) so they travel with the
+
+        code and are reviewable. Reserve `~/.kiro/` for personal, cross-project preferences; on a
+
+        name conflict the local (workspace) config takes precedence.
+      passThreshold: 0.6

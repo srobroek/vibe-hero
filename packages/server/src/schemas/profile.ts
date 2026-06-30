@@ -23,7 +23,7 @@ const IsoDateTimeSchema = z.string().datetime();
  * on the root profile is the first-run setup gate (FR-032).
  */
 export const ConfigSchema = z.object({
-  toolsLearning: z.array(ToolIdSchema),
+  toolsLearning: z.array(ToolIdSchema).optional().default([]),
   offerCadence: z.enum(["off", "per_session", "per_topic"]),
   proactiveOffers: z.boolean(),
   quizLength: z.number().int().min(3).max(5).default(4),
@@ -166,6 +166,24 @@ export type ObservationEvent = z.infer<typeof ObservationEventSchema>;
 export const PROFILE_SCHEMA_VERSION = 1;
 
 /**
+ * One ability snapshot appended by `submit_answer` after each Elo update.
+ * Used by `get_dashboard` to render ability-over-time history graphs.
+ * Additive optional field — old profiles without `abilitySnapshots` default
+ * to `[]` via the `.default([])` on {@link ProfileSchema}; no migration step
+ * is needed (purely additive, forward-compatible with Zod defaults).
+ */
+export const AbilitySnapshotSchema = z.object({
+  /** ISO datetime this snapshot was recorded. */
+  ts: IsoDateTimeSchema,
+  /** The ability key (class|topic) this snapshot is for. */
+  key: AbilityKeySchema,
+  /** The learner's ability value after this graded item. */
+  ability: z.number(),
+});
+/** A single ability-over-time data point. */
+export type AbilitySnapshot = z.infer<typeof AbilitySnapshotSchema>;
+
+/**
  * The root learner profile document, persisted as a single JSON file. `config`
  * absent ⇒ first-run setup gate (FR-032). `abilities`/`graduations` are keyed
  * by {@link AbilityKeySchema} (`class|topic`).
@@ -181,6 +199,12 @@ export const ProfileSchema = z.object({
   quizHistory: z.array(QuizRecordSchema),
   offers: OfferLedgerSchema,
   backoff: OfferBackoffSchema,
+  /**
+   * Append-only log of ability snapshots (one per graded `submit_answer` call).
+   * Drives the history graphs in `get_dashboard`. Additive; old profiles without
+   * this field parse forward via `.default([])` — no migration step is needed.
+   */
+  abilitySnapshots: z.array(AbilitySnapshotSchema).default([]),
 });
 /** The root learner profile. */
 export type Profile = z.infer<typeof ProfileSchema>;
@@ -212,4 +236,5 @@ export const emptyProfile = (now: string = new Date().toISOString()): Profile =>
     consecutiveDeclines: 0,
     perTopicNextEligibleAt: {},
   },
+  abilitySnapshots: [],
 });

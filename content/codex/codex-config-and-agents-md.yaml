@@ -1,0 +1,2478 @@
+# Topic: codex-config-and-agents-md (codex)
+# Codex configuration (config.toml) and AGENTS.md project instructions — how Codex picks up project context and settings.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: codex-config-and-agents-md
+class:
+  kind: tool
+  tool: codex
+title: Codex Config & AGENTS.md
+summary: >-
+  Codex configuration (config.toml) and AGENTS.md project instructions — how Codex picks up project
+  context and settings.
+triggerSignals: []
+items:
+  - id: cca-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: In what file format does the Codex CLI store its configuration?
+    choices:
+      - id: a
+        text: JSON, in a file named config.json
+      - id: b
+        text: TOML, in a file named config.toml
+      - id: c
+        text: YAML, in a file named codex.yaml
+      - id: d
+        text: INI, in a file named codex.ini
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Codex reads TOML configuration from config.toml. A common misconception is that the config is
+      JSON or YAML; it is TOML. INI is not used either.
+  - id: cca-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: What is the default location of the Codex configuration file?
+    choices:
+      - id: a
+        text: ~/.config/codex/settings.toml
+      - id: b
+        text: ./.codexrc in the current working directory
+      - id: c
+        text: ~/.codex/config.toml
+      - id: d
+        text: /etc/codex/config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The default config path is ~/.codex/config.toml. The directory ~/.codex is the Codex home, and
+      the config lives directly inside it as config.toml.
+  - id: cca-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which environment variable names the Codex home directory (default ~/.codex)?
+    choices:
+      - id: a
+        text: CODEX_CONFIG_DIR
+      - id: b
+        text: XDG_CODEX_HOME
+      - id: c
+        text: CODEX_ROOT
+      - id: d
+        text: CODEX_HOME
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      CODEX_HOME points at the Codex home directory, which defaults to ~/.codex. config.toml and the
+      global AGENTS.md both live under this directory.
+  - id: cca-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 131
+    type: multiple_choice
+    prompt: What is the canonical name of the project instruction/memory file that Codex reads?
+    choices:
+      - id: a
+        text: AGENTS.md
+      - id: b
+        text: CODEX.md
+      - id: c
+        text: .codexrules
+      - id: d
+        text: INSTRUCTIONS.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Codex reads project guidance from AGENTS.md, a Markdown file. There is no CODEX.md convention,
+      and instructions are not stored in a TOML or dotfile-rules format.
+  - id: cca-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 135
+    type: free_form
+    prompt: Name the file format used by Codex's config file and the file format used by AGENTS.md.
+    rubric:
+      criteria:
+        - id: c1
+          text: States that the config file (config.toml) is TOML
+        - id: c2
+          text: States that AGENTS.md is Markdown
+      referenceAnswer: >-
+        The Codex configuration file config.toml is written in TOML. AGENTS.md is written in plain
+        Markdown with no required schema.
+      passThreshold: 0.6
+    guidance: >-
+      Two distinct formats: TOML for machine-read configuration (config.toml) and Markdown for
+      human-authored project instructions (AGENTS.md). Confusing the two is a common error.
+  - id: cca-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 138
+    type: multiple_choice
+    prompt: Which config key sets the model Codex uses?
+    choices:
+      - id: a
+        text: llm_name
+      - id: b
+        text: model
+      - id: c
+        text: engine
+      - id: d
+        text: default_model_id
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: The model key selects the model, e.g. model = "gpt-5.5". It is a top-level key in config.toml.
+  - id: cca-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 141
+    type: multiple_choice
+    prompt: What is the default value of the model_provider config key?
+    choices:
+      - id: a
+        text: anthropic
+      - id: b
+        text: azure
+      - id: c
+        text: openai
+      - id: d
+        text: local
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      model_provider defaults to "openai". It selects a provider id from the model_providers table
+      when you point Codex at a non-default endpoint.
+  - id: cca-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: Which config key controls how much reasoning effort the model applies?
+    choices:
+      - id: a
+        text: reasoning_budget
+      - id: b
+        text: thinking_level
+      - id: c
+        text: effort_tier
+      - id: d
+        text: model_reasoning_effort
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      model_reasoning_effort controls reasoning depth, with values such as minimal, low, medium,
+      high, and xhigh (xhigh being model-dependent).
+  - id: cca-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 147
+    type: multiple_choice
+    prompt: Which of these is a valid value for model_reasoning_effort?
+    choices:
+      - id: a
+        text: high
+      - id: b
+        text: maximum
+      - id: c
+        text: turbo
+      - id: d
+        text: aggressive
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Valid model_reasoning_effort values include minimal, low, medium, high, and xhigh. "maximum",
+      "turbo", and "aggressive" are not valid.
+  - id: cca-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: multiple_choice
+    prompt: Which config key enables outbound network access inside the workspace-write sandbox?
+    choices:
+      - id: a
+        text: allow_network = true
+      - id: b
+        text: sandbox_workspace_write.network_access
+      - id: c
+        text: sandbox.network.enabled
+      - id: d
+        text: workspace.allow_outbound
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The boolean sandbox_workspace_write.network_access enables outbound network in workspace-write
+      mode, which is otherwise off by default.
+  - id: cca-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 153
+    type: multiple_choice
+    prompt: Which CLI flag selects a named configuration profile?
+    choices:
+      - id: a
+        text: '--config-set'
+      - id: b
+        text: '--env'
+      - id: c
+        text: '--profile (short -p)'
+      - id: d
+        text: '--preset'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --profile (short form -p) selects a named profile defined in config.toml. Each profile bundles
+      a set of config values you can switch between.
+  - id: cca-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: Which CLI flag applies an ad-hoc single config override of the form key=value?
+    choices:
+      - id: a
+        text: '--set key=value'
+      - id: b
+        text: '--override key=value'
+      - id: c
+        text: '-D key=value'
+      - id: d
+        text: '-c key=value (or --config key=value)'
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      -c key=value (long form --config) applies an ad-hoc override and is repeatable. It takes
+      precedence over the value in config.toml for that run.
+  - id: cca-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: Where is the global, user-level AGENTS.md that Codex reads first located?
+    choices:
+      - id: a
+        text: ~/.codex/AGENTS.md
+      - id: b
+        text: /etc/agents/AGENTS.md
+      - id: c
+        text: ~/AGENTS.md
+      - id: d
+        text: ./.codex/AGENTS.md in the repo root
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The global instruction file lives at ~/.codex/AGENTS.md (inside CODEX_HOME) and is read before
+      any repository-level AGENTS.md files.
+  - id: cca-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 163
+    type: multiple_choice
+    prompt: What config key caps the combined size of merged AGENTS.md content?
+    choices:
+      - id: a
+        text: agents_md_limit
+      - id: b
+        text: project_doc_max_bytes
+      - id: c
+        text: max_instruction_size
+      - id: d
+        text: doc_byte_cap
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      project_doc_max_bytes caps the total bytes of merged AGENTS.md content. Its default is 32 KiB;
+      once reached, Codex stops adding more.
+  - id: cca-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: multiple_choice
+    prompt: What is the default value of project_doc_max_bytes?
+    choices:
+      - id: a
+        text: 8 KiB
+      - id: b
+        text: 16 KiB
+      - id: c
+        text: 32 KiB
+      - id: d
+        text: 128 KiB
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The default cap for merged AGENTS.md content is 32 KiB. Files are concatenated until this byte
+      threshold is reached.
+  - id: cca-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 169
+    type: multiple_choice
+    prompt: AGENTS.md is best described as which of the following?
+    choices:
+      - id: a
+        text: An OpenAI-proprietary file format only Codex understands
+      - id: b
+        text: A binary index of the repository's symbols
+      - id: c
+        text: A lockfile that pins agent tool versions
+      - id: d
+        text: A cross-vendor open standard adopted by many AI coding agents
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      AGENTS.md is a cross-vendor open standard used by many agents (Codex, Cursor, Aider, Jules, VS
+      Code, and others), not an OpenAI-proprietary format.
+  - id: cca-100-mc-q
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: Which CLI flag sets the working directory before Codex processes a request?
+    choices:
+      - id: a
+        text: '--cd (short -C)'
+      - id: b
+        text: '--workdir'
+      - id: c
+        text: '--root'
+      - id: d
+        text: '--chdir-to'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      --cd (short form -C) sets the working directory for the run. This affects which repository and
+      AGENTS.md files Codex discovers.
+  - id: cca-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 175
+    type: multiple_choice
+    prompt: Which slash command sets the active model from inside the Codex TUI?
+    choices:
+      - id: a
+        text: /switch-model
+      - id: b
+        text: /model
+      - id: c
+        text: /use
+      - id: d
+        text: /config model
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The /model slash command selects the model interactively in the TUI, complementing the -m flag
+      and the model config key.
+  - id: cca-100-ff-s
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: >-
+      Name three distinct ways to set the Codex model for a session (one CLI flag, one config key,
+      one interactive command).
+    rubric:
+      criteria:
+        - id: c1
+          text: Names the -m / --model CLI flag
+        - id: c2
+          text: Names the model config key in config.toml
+        - id: c3
+          text: Names the /model slash command in the TUI
+      referenceAnswer: >-
+        You can set the model with the -m (or --model) CLI flag for a single run, with the model key
+        in config.toml for a persistent default, or interactively with the /model slash command in
+        the TUI.
+      passThreshold: 0.6
+    guidance: >-
+      The three layers are: per-run flag (-m/--model), persistent config (model key), and
+      interactive (/model). They reflect Codex's general override precedence from most specific to
+      most general.
+  - id: cca-100-mc-t
+    tier: 100
+    bloom: remember
+    difficulty: 145
+    type: multiple_choice
+    prompt: Which config key holds the approval policy in config.toml?
+    choices:
+      - id: a
+        text: ask_for_approval
+      - id: b
+        text: approvals.mode
+      - id: c
+        text: approval_policy
+      - id: d
+        text: confirm_policy
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      approval_policy is the config key; its string values include untrusted, on-request, and never.
+      The matching CLI flag is --ask-for-approval / -a.
+  - id: cca-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 222
+    type: multiple_choice
+    prompt: >-
+      Why does Codex merge AGENTS.md files from the repo root down to the current directory rather
+      than reading only one file?
+    choices:
+      - id: a
+        text: Because TOML cannot express nested instructions, so Markdown files are split per directory
+      - id: b
+        text: >-
+          So broad project-wide rules can be set near the root while more specific subdirectory
+          rules layer on top, with the nearest file taking precedence
+      - id: c
+        text: To randomly sample one file per run for load balancing
+      - id: d
+        text: Because only the root file is allowed to contain prose; deeper files must be empty
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Merging from root to cwd lets general guidance live high in the tree and specific guidance
+      live near the code it governs; later (closer) files override earlier ones, which suits
+      monorepos.
+  - id: cca-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: How does a -c key=value override interact with the same key set in config.toml for that run?
+    choices:
+      - id: a
+        text: The config.toml value wins because files are authoritative
+      - id: b
+        text: Codex errors out on a conflict and refuses to run
+      - id: c
+        text: The -c override takes precedence over config.toml for that invocation
+      - id: d
+        text: The two values are concatenated
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Command-line overrides are more specific than the persisted file, so -c wins for that run.
+      This mirrors the general precedence: flags and -c overrides beat config.toml.
+  - id: cca-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: What is the purpose of grouping config values into a named profile?
+    choices:
+      - id: a
+        text: To encrypt secrets so they are not stored in plaintext
+      - id: b
+        text: To pin the Codex CLI to a specific released version
+      - id: c
+        text: To convert config.toml automatically into JSON
+      - id: d
+        text: To bundle a coherent set of config values you can select as a unit with --profile
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A profile is a reusable, named bundle of config values (model, sandbox, approval, etc.)
+      selected with --profile/-p, so you can switch whole setups without editing keys one by one.
+  - id: cca-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: Why is AGENTS.md described as having "no required schema"?
+    choices:
+      - id: a
+        text: Because it is plain Markdown, agents parse the prose you write with any headings you like
+      - id: b
+        text: Because it must validate against a published JSON Schema before loading
+      - id: c
+        text: Because it only accepts a fixed list of recognized section names
+      - id: d
+        text: Because Codex ignores its contents entirely and uses only config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      AGENTS.md is just Markdown; you use whatever headings and structure you want, and the agent
+      reads the text. There is no mandatory schema or fixed section list.
+  - id: cca-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: How do approval_policy and sandbox_mode relate conceptually?
+    choices:
+      - id: a
+        text: They are the same setting expressed two ways
+      - id: b
+        text: >-
+          They are orthogonal axes; sandbox limits what runs unattended, approval governs when Codex
+          pauses to ask
+      - id: c
+        text: approval_policy is ignored unless sandbox_mode is danger-full-access
+      - id: d
+        text: sandbox_mode only applies to network and approval_policy only applies to files
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Sandbox and approvals are independent axes. The sandbox bounds what Codex can do without
+      asking; the approval policy decides when it pauses to request escalation. Presets like Auto
+      pair specific values of each.
+  - id: cca-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 242
+    type: multiple_choice
+    prompt: Why might you set sandbox_workspace_write.writable_roots in config.toml?
+    choices:
+      - id: a
+        text: To list which files Codex is forbidden from reading
+      - id: b
+        text: To declare the repository's git root explicitly
+      - id: c
+        text: To add directories outside the workspace that Codex may write to under workspace-write
+      - id: d
+        text: To set environment variables for MCP servers
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      writable_roots extends the set of paths Codex may modify in workspace-write mode beyond the
+      workspace itself, e.g. a shared cache or sibling directory.
+  - id: cca-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: multiple_choice
+    prompt: Why does workspace-write disable network access by default?
+    choices:
+      - id: a
+        text: Because TOML cannot encode boolean values
+      - id: b
+        text: Because network access is only meaningful in read-only mode
+      - id: c
+        text: Because the npm install of Codex strips networking
+      - id: d
+        text: >-
+          To reduce the blast radius and supply-chain risk of running an agent that can edit files
+          and execute commands
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Defaulting network off limits exposure: a writable agent that can also reach the network is
+      far riskier. You opt in deliberately via sandbox_workspace_write.network_access = true.
+  - id: cca-200-ff-h
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: free_form
+    prompt: >-
+      Explain why config.toml uses TOML while AGENTS.md uses Markdown. What is each format good at
+      in this split of responsibilities?
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies config.toml as machine-readable structured settings (keys, values, tables)
+        - id: c2
+          text: Identifies AGENTS.md as human-authored natural-language instructions/context
+        - id: c3
+          text: Connects format choice to its purpose (structured config vs free prose)
+      referenceAnswer: >-
+        config.toml holds structured, machine-read settings such as model, sandbox_mode, and
+        approval_policy, where TOML's typed keys, values, and tables are a natural fit. AGENTS.md
+        holds free-form natural-language guidance for the agent (conventions, setup steps, norms),
+        so Markdown prose with arbitrary headings fits better than a rigid key-value format.
+      passThreshold: 0.6
+    guidance: >-
+      The split separates typed configuration (TOML) from narrative instruction (Markdown). Each
+      format matches its job: structured knobs vs human-readable context.
+  - id: cca-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: >-
+      When two AGENTS.md files apply, why does the one closer to the working directory override the
+      one nearer the root?
+    choices:
+      - id: a
+        text: >-
+          Because it appears later in the concatenated prompt, so its guidance is the most recent
+          and specific
+      - id: b
+        text: Because the root file is always truncated to zero bytes
+      - id: c
+        text: Because Codex reads files in random order
+      - id: d
+        text: Because only alphabetically last paths are kept
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Files concatenate from root downward, so the nearest file lands last in the combined prompt;
+      later guidance overrides earlier guidance, giving subdirectories the final say.
+  - id: cca-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: How does the Read Only preset map onto the underlying sandbox and approval axes?
+    choices:
+      - id: a
+        text: It sets approval to never and sandbox to danger-full-access
+      - id: b
+        text: >-
+          It sets the sandbox to read-only so edits, command execution, and network all require
+          approval
+      - id: c
+        text: It disables AGENTS.md loading
+      - id: d
+        text: It forces network access on but blocks file writes
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Read Only corresponds to --sandbox read-only: Codex can read and answer but must ask before
+      editing, running commands, or using the network.
+  - id: cca-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: Why does a project-scoped .codex/config.toml only take effect when the project is trusted?
+    choices:
+      - id: a
+        text: Because untrusted projects cannot contain TOML files
+      - id: b
+        text: Because project config is encrypted until trust is granted
+      - id: c
+        text: >-
+          To prevent an untrusted cloned repo from silently changing your model, sandbox, or
+          approval settings
+      - id: d
+        text: Because trust only affects AGENTS.md, not config
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Honoring project config only when trusted is a safety boundary: a malicious repo should not be
+      able to weaken your sandbox or approvals just because you opened it.
+  - id: cca-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
+    prompt: What does the model_reasoning_summary key influence?
+    choices:
+      - id: a
+        text: The maximum number of tokens in any response
+      - id: b
+        text: Whether AGENTS.md is summarized before loading
+      - id: c
+        text: The compression ratio of the config file
+      - id: d
+        text: How Codex surfaces a summary of the model's reasoning (e.g. auto, concise, detailed, none)
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      model_reasoning_summary controls how reasoning summaries are shown, with values such as auto,
+      concise, detailed, and none. It is distinct from model_reasoning_effort, which sets depth.
+  - id: cca-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: >-
+      Why is naming a profile useful when you frequently switch between, say, a cautious review
+      setup and an autonomous fixing setup?
+    choices:
+      - id: a
+        text: >-
+          One command (--profile) swaps a whole consistent bundle of model, sandbox, and approval
+          settings at once
+      - id: b
+        text: Profiles automatically commit your changes to git
+      - id: c
+        text: Profiles are the only way to load AGENTS.md
+      - id: d
+        text: Profiles disable the sandbox entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Profiles capture a coherent named configuration so you switch contexts atomically, avoiding
+      error-prone per-key edits between, e.g., a read-only review and a workspace-write autofix.
+  - id: cca-200-ff-n
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      Describe Codex's AGENTS.md discovery order from global to local, and explain what "nearest
+      wins" means for the final merged guidance.
+    rubric:
+      criteria:
+        - id: c1
+          text: States global ~/.codex/AGENTS.md is read first
+        - id: c2
+          text: States repo files are read from the git/repo root down to the current directory
+        - id: c3
+          text: Explains nearest-to-cwd file overrides earlier files because it is concatenated last
+      referenceAnswer: >-
+        Codex reads the global ~/.codex/AGENTS.md first, then walks from the repository (git) root
+        down toward the current working directory, concatenating each AGENTS.md it finds. Because
+        files closer to the cwd appear later in the combined prompt, their guidance overrides
+        earlier files: the nearest file wins on any conflict.
+      passThreshold: 0.6
+    guidance: >-
+      The order is global to local; later (nearer) files override earlier (farther) ones. This lets
+      a deep subdirectory tailor or contradict broader project-wide rules.
+  - id: cca-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: Why does Codex cap merged AGENTS.md content at project_doc_max_bytes (default 32 KiB)?
+    choices:
+      - id: a
+        text: Because Markdown files larger than 32 KiB are corrupt
+      - id: b
+        text: >-
+          To bound the prompt size so instruction files cannot grow unboundedly and crowd out the
+          actual task context
+      - id: c
+        text: Because TOML imposes that limit on all files
+      - id: d
+        text: To force exactly one AGENTS.md per repository
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The byte cap protects the context budget: without it, large or numerous AGENTS.md files could
+      consume the window. Codex stops concatenating once the cap is hit.
+  - id: cca-200-mc-p
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: What distinguishes model_reasoning_effort from model_reasoning_summary?
+    choices:
+      - id: a
+        text: They are aliases for the same setting
+      - id: b
+        text: effort is for AGENTS.md; summary is for config.toml
+      - id: c
+        text: effort sets how hard the model thinks; summary sets how that thinking is displayed
+      - id: d
+        text: summary sets the token budget; effort sets the temperature
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      model_reasoning_effort governs reasoning depth (minimal..xhigh); model_reasoning_summary
+      governs how the reasoning trace is summarized for the user (auto, concise, detailed, none).
+  - id: cca-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: multiple_choice
+    prompt: >-
+      A teammate puts secrets directly in AGENTS.md "so the agent always has them." Why is that a
+      poor fit for the file's purpose?
+    choices:
+      - id: a
+        text: AGENTS.md is encrypted, so the secrets become unreadable
+      - id: b
+        text: AGENTS.md only accepts numeric values
+      - id: c
+        text: Codex never reads AGENTS.md, so the secrets are wasted
+      - id: d
+        text: >-
+          AGENTS.md is committed guidance shared across the team and tools; it is not a secret store
+          and is sent into the prompt
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      AGENTS.md is shared, version-controlled, cross-vendor prose loaded into the prompt. Secrets
+      belong in environment variables or a secret manager, not in instruction files.
+  - id: cca-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: >-
+      Why does Codex store profiles as separate files (e.g. $CODEX_HOME/<name>.config.toml) layered
+      over the base config?
+    choices:
+      - id: a
+        text: So a selected profile overlays only the keys it defines on top of the base user config
+      - id: b
+        text: Because profiles must be in JSON while the base must be TOML
+      - id: c
+        text: To make profiles unreadable without --profile
+      - id: d
+        text: Because the base config cannot contain a model key
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A profile layers on top of the base config, overriding only the keys it sets. This composition
+      is why switching profiles changes a subset of behavior cleanly.
+  - id: cca-200-ff-s
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Explain the difference between using -c key=value and editing config.toml, and when you would
+      prefer each.
+    rubric:
+      criteria:
+        - id: c1
+          text: States -c is a per-invocation, ephemeral override
+        - id: c2
+          text: States config.toml is a persistent default across runs
+        - id: c3
+          text: Gives a reasonable when-to-use for each (e.g. one-off experiment vs durable setting)
+      referenceAnswer: >-
+        -c key=value applies an override for a single Codex invocation and is not persisted, so it
+        suits one-off experiments or CI runs that need a different value. Editing config.toml
+        changes the durable default for every future run, so it suits settings you always want. -c
+        also takes precedence over config.toml for that run.
+      passThreshold: 0.6
+    guidance: >-
+      -c is ephemeral and per-run; config.toml is persistent. Prefer -c for transient changes and
+      config.toml for stable defaults.
+  - id: cca-200-mc-t
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: How does setting model_provider to a non-openai value change Codex's behavior?
+    choices:
+      - id: a
+        text: It rewrites AGENTS.md to the provider's format
+      - id: b
+        text: >-
+          It routes requests through the matching entry in the model_providers table (e.g. a
+          different endpoint)
+      - id: c
+        text: It disables the sandbox
+      - id: d
+        text: It forces approval_policy to never
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      model_provider names a provider id; non-default values route to a configured entry in
+      model_providers, letting Codex target alternate endpoints. It does not touch sandbox or
+      AGENTS.md.
+  - id: cca-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 322
+    type: multiple_choice
+    prompt: >-
+      You want a single run to use a different model than your config default, without editing any
+      files. Which invocation does this?
+    choices:
+      - id: a
+        text: codex --set-model gpt-5-codex "refactor this module"
+      - id: b
+        text: codex -m gpt-5-codex "refactor this module"
+      - id: c
+        text: Edit config.toml then run codex
+      - id: d
+        text: codex --profile gpt-5-codex "refactor this module"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      -m (or --model) overrides the model for one run without persisting. --set-model is not a flag,
+      editing config.toml is persistent, and --profile selects a profile, not a bare model name.
+  - id: cca-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      In CI you must run Codex with workspace-write but force outbound network on for this run only.
+      Which command works?
+    choices:
+      - id: a
+        text: codex --network on exec "run the integration tests"
+      - id: b
+        text: codex -s danger-full-access exec "run the integration tests"
+      - id: c
+        text: >-
+          codex -s workspace-write -c sandbox_workspace_write.network_access=true exec "run the
+          integration tests"
+      - id: d
+        text: codex exec --allow-net "run the integration tests"
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Combine -s workspace-write with a -c override of sandbox_workspace_write.network_access=true.
+      There is no --network/--allow-net flag, and danger-full-access removes the sandbox entirely
+      rather than narrowly enabling network.
+  - id: cca-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      You maintain two setups: "review" (read-only, asks before acting) and "fix" (workspace-write,
+      auto). What is the cleanest way to switch between them per run?
+    choices:
+      - id: a
+        text: Keep two separate copies of config.toml and swap them manually
+      - id: b
+        text: Pass every key with separate -c flags each time
+      - id: c
+        text: Put both setups in AGENTS.md and let the model choose
+      - id: d
+        text: >-
+          Define two profiles in config.toml and select with codex --profile review or codex
+          --profile fix
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Profiles are designed for exactly this: define named bundles once, then switch with --profile.
+      Swapping files or repeating -c flags is error-prone, and AGENTS.md does not control sandbox or
+      approval policy.
+  - id: cca-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 334
+    type: multiple_choice
+    prompt: >-
+      You want a deep subdirectory packages/api to use stricter test commands than the rest of a
+      monorepo. Where should those instructions go so they take precedence there?
+    choices:
+      - id: a
+        text: >-
+          In packages/api/AGENTS.md, which overrides the root AGENTS.md when working inside
+          packages/api
+      - id: b
+        text: Only in the root AGENTS.md, because deeper files are ignored
+      - id: c
+        text: In ~/.codex/config.toml under a [packages.api] table
+      - id: d
+        text: In a packages/api/config.toml model key
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      AGENTS.md nearest the cwd wins, so packages/api/AGENTS.md overrides the root file when you
+      work in that directory. Config tables and the model key do not express per-directory
+      instructions.
+  - id: cca-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      You set model_reasoning_effort = "high" in config.toml but want one quick task to run with
+      minimal effort. What is the right one-off?
+    choices:
+      - id: a
+        text: codex --effort minimal "fix this typo"
+      - id: b
+        text: codex -c model_reasoning_effort=minimal "fix this typo"
+      - id: c
+        text: Permanently change config.toml to minimal
+      - id: d
+        text: codex -m minimal "fix this typo"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Use -c model_reasoning_effort=minimal to override just that key for one run. There is no
+      --effort flag, -m sets the model not effort, and editing config.toml would make the change
+      permanent.
+  - id: cca-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 342
+    type: multiple_choice
+    prompt: >-
+      A scripted job must run Codex against a repo located elsewhere on disk without first cd-ing
+      into it. Which flag accomplishes this?
+    choices:
+      - id: a
+        text: codex --repo /srv/work/myrepo exec "build and test"
+      - id: b
+        text: codex --root /srv/work/myrepo exec "build and test"
+      - id: c
+        text: codex --cd /srv/work/myrepo exec "build and test"
+      - id: d
+        text: codex --workspace /srv/work/myrepo exec "build and test"
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --cd (short -C) sets the working directory for the run, controlling repo and AGENTS.md
+      discovery. --repo, --root, and --workspace are not Codex flags.
+  - id: cca-300-ff-g
+    tier: 300
+    bloom: apply
+    difficulty: 346
+    type: free_form
+    prompt: >-
+      Write a config.toml profile named "ci" that uses workspace-write sandbox, on-request approval,
+      and enables network access in the workspace sandbox. Show the TOML and the command to run with
+      it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Defines a [profiles.ci] table (or equivalent) with sandbox_mode = "workspace-write"
+        - id: c2
+          text: Sets approval_policy = "on-request" and enables network access (network_access = true)
+        - id: c3
+          text: Shows invocation with --profile ci (or -p ci)
+      referenceAnswer: |
+        [profiles.ci]
+        sandbox_mode = "workspace-write"
+        approval_policy = "on-request"
+
+        [profiles.ci.sandbox_workspace_write]
+        network_access = true
+
+        Run it with: codex --profile ci exec "run the test suite"
+      passThreshold: 0.6
+    guidance: >-
+      The profile bundles sandbox_mode, approval_policy, and the nested network_access boolean.
+      Selecting it with --profile ci applies all three together for the run.
+  - id: cca-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      You cloned an unfamiliar repo and Codex did not apply its .codex/config.toml. What is the most
+      likely reason and fix?
+    choices:
+      - id: a
+        text: config.toml must be JSON; convert it
+      - id: b
+        text: The file must be named codex.config.toml; rename it
+      - id: c
+        text: Project config is never supported; only ~/.codex/config.toml is read
+      - id: d
+        text: The project is not trusted yet; trust the project so its project-scoped config is honored
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Project-scoped .codex/config.toml is only honored once the project is trusted, a safety gate.
+      Trusting the project enables it; renaming or reformatting is unnecessary and project config is
+      supported.
+  - id: cca-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      Your team wants every Codex session in this repo to follow the same lint-then-test workflow.
+      Where do you put that instruction so all teammates and the agent pick it up?
+    choices:
+      - id: a
+        text: In the repo's root AGENTS.md, committed to version control
+      - id: b
+        text: In each developer's ~/.codex/config.toml
+      - id: c
+        text: As a -c override they must remember to pass
+      - id: d
+        text: In a comment at the top of config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Shared, committed AGENTS.md at the repo root is the right home for team conventions: it
+      travels with the repo and is read by Codex and other AGENTS.md-aware agents. Per-user config
+      does not propagate.
+  - id: cca-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      You want to register a local MCP server and have its config shared by both the Codex CLI and
+      the IDE extension. What do you do?
+    choices:
+      - id: a
+        text: Add it only in the IDE settings; the CLI cannot read MCP config
+      - id: b
+        text: Run codex mcp add <name> -- <command> (or add an [mcp_servers.<id>] table in config.toml)
+      - id: c
+        text: Put the server command inside AGENTS.md
+      - id: d
+        text: Define it under [profiles.default] in config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      MCP servers are registered via codex mcp add or an [mcp_servers.<id>] table in config.toml,
+      and that config is shared between the CLI and IDE extension. AGENTS.md and profile tables are
+      not where servers are declared.
+  - id: cca-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      A single config.toml has model = "gpt-5.5" at top level and a [profiles.fast] with
+      model_reasoning_effort = "low". You run codex --profile fast. Which model and effort apply?
+    choices:
+      - id: a
+        text: No model is set because the profile did not specify one
+      - id: b
+        text: The profile fully replaces the base, so model is unset
+      - id: c
+        text: Model gpt-5.5 (from base) with effort low (from the fast profile)
+      - id: d
+        text: Effort defaults to high because profiles ignore base values
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A profile overlays only the keys it defines. The base model = "gpt-5.5" still applies because
+      the profile did not override it, while model_reasoning_effort comes from the profile.
+  - id: cca-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      You need Codex to be able to write to a sibling cache directory /data/cache while staying in
+      workspace-write. What config addition is correct?
+    choices:
+      - id: a
+        text: Switch sandbox_mode to danger-full-access
+      - id: b
+        text: Add /data/cache to AGENTS.md as "please write here"
+      - id: c
+        text: approval_policy = "never"
+      - id: d
+        text: sandbox_workspace_write.writable_roots = ["/data/cache"]
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      writable_roots adds extra writable paths under workspace-write without dropping the sandbox.
+      danger-full-access is overbroad, AGENTS.md cannot grant write access, and approval_policy is a
+      different axis.
+  - id: cca-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      You want Codex to ignore your usual global ~/.codex/AGENTS.md guidance for one experiment but
+      keep repo-level instructions. What is a reasonable approach?
+    choices:
+      - id: a
+        text: >-
+          Temporarily move or empty the global ~/.codex/AGENTS.md; repo AGENTS.md files are
+          discovered independently
+      - id: b
+        text: Delete config.toml; that disables global AGENTS.md
+      - id: c
+        text: Set approval_policy = "never"; that skips global instructions
+      - id: d
+        text: Rename the repo's .git directory
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The global file at ~/.codex/AGENTS.md is a distinct source from repo files; removing or
+      emptying it drops only global guidance. config.toml, approval_policy, and .git have nothing to
+      do with AGENTS.md selection.
+  - id: cca-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: free_form
+    prompt: >-
+      A monorepo has a root AGENTS.md saying "use yarn" and you are adding a Python service under
+      services/py. Describe what you would author and where so Codex uses uv inside that service
+      while the rest still uses yarn.
+    rubric:
+      criteria:
+        - id: c1
+          text: Places the Python-specific guidance in services/py/AGENTS.md
+        - id: c2
+          text: Explains it overrides/augments the root because nearest-to-cwd wins
+        - id: c3
+          text: Leaves the root AGENTS.md unchanged so other directories keep using yarn
+      referenceAnswer: >-
+        Add an AGENTS.md inside services/py stating that this service uses uv for dependency and
+        environment management. When Codex works under services/py it concatenates the root and the
+        services/py files, and because the nearer file comes last it overrides the root yarn
+        guidance for that subtree. The root AGENTS.md stays as-is, so other directories continue to
+        use yarn.
+      passThreshold: 0.6
+    guidance: >-
+      Per-directory AGENTS.md plus nearest-wins precedence is the idiomatic monorepo pattern: leave
+      broad rules at the root and place service-specific overrides next to the service.
+  - id: cca-300-mc-o
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      You want a read-only Codex session for code Q&A but with no model reasoning summary shown.
+      Which one-off command fits?
+    choices:
+      - id: a
+        text: codex --yolo -c summary=off "explain how auth works in this repo"
+      - id: b
+        text: codex -s read-only -c model_reasoning_summary=none "explain how auth works in this repo"
+      - id: c
+        text: codex -a never -c reasoning=hidden "explain how auth works in this repo"
+      - id: d
+        text: codex -s danger-full-access "explain how auth works in this repo"
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      -s read-only keeps it safe for Q&A and -c model_reasoning_summary=none suppresses the summary.
+      The other options misname keys, use --yolo (which removes the sandbox), or pick the wrong
+      sandbox.
+  - id: cca-300-mc-p
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You need to verify which MCP servers are active during a TUI session before running a task.
+      What do you do?
+    choices:
+      - id: a
+        text: Read config.toml's [profiles] table
+      - id: b
+        text: Run codex --list-servers
+      - id: c
+        text: Type /mcp in the TUI to list active MCP servers
+      - id: d
+        text: Check AGENTS.md for a servers section
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The /mcp slash command lists active MCP servers in the TUI. Profiles and AGENTS.md do not
+      enumerate runtime servers, and --list-servers is not a flag.
+  - id: cca-300-mc-q
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: multiple_choice
+    prompt: >-
+      You added an [mcp_servers.docs] table over HTTP and only want two of its tools exposed. Which
+      per-server key restricts the tool set?
+    choices:
+      - id: a
+        text: tool_whitelist = "*"
+      - id: b
+        text: There is no way to limit tools; servers are all-or-nothing
+      - id: c
+        text: approval_policy = "on-request"
+      - id: d
+        text: enabled_tools (list the allowed tools), or disabled_tools to block specific ones
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Per-server enabled_tools and disabled_tools control which tools a server exposes (alongside
+      enabled). There is no tool_whitelist key, and approval_policy is unrelated to tool gating.
+  - id: cca-300-mc-r
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: multiple_choice
+    prompt: >-
+      Your CI invokes Codex non-interactively and pipes the result to a file. Which entry point is
+      designed for this?
+    choices:
+      - id: a
+        text: codex exec "generate release notes from the diff"
+      - id: b
+        text: codex "generate release notes from the diff" (the interactive TUI)
+      - id: c
+        text: codex resume --last
+      - id: d
+        text: codex login
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      codex exec is the non-interactive automation entry point that writes results to stdout, ideal
+      for CI piping. Plain codex opens the TUI, resume continues a session, and login authenticates.
+  - id: cca-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 336
+    type: free_form
+    prompt: >-
+      You want every run in a repo to default to the gpt-5-codex model and medium reasoning effort,
+      but keep your global default model unchanged for other repos. Outline what you author and
+      where.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses a project-scoped .codex/config.toml in the repo (not the global config)
+        - id: c2
+          text: Sets model = "gpt-5-codex" and model_reasoning_effort = "medium"
+        - id: c3
+          text: Notes the project must be trusted for the project config to apply
+      referenceAnswer: >-
+        Add a project-scoped .codex/config.toml in the repo with model = "gpt-5-codex" and
+        model_reasoning_effort = "medium". Because it lives in the repo, it only affects runs in
+        that project and leaves your global ~/.codex/config.toml untouched for other repos. The
+        project must be trusted for Codex to honor its config.
+      passThreshold: 0.6
+    guidance: >-
+      Project-scoped config localizes settings to one repo. The trust gate is the catch: the values
+      apply only after the project is trusted.
+  - id: cca-300-mc-t
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You ran a long Codex session yesterday and want to continue the most recent one this morning.
+      Which command resumes it?
+    choices:
+      - id: a
+        text: codex exec --continue
+      - id: b
+        text: codex resume --last
+      - id: c
+        text: codex --reopen
+      - id: d
+        text: codex login --resume
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      codex resume --last continues the most recent session; codex resume <id> targets a specific
+      one. The other options are not valid resume mechanisms.
+  - id: cca-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A developer reports Codex "won't pick up" a setting they put in config.toml: model =
+      "gpt-5.5". They run with codex -m gpt-5-codex. Why does gpt-5-codex run instead?
+    choices:
+      - id: a
+        text: config.toml is being ignored entirely because it is malformed
+      - id: b
+        text: The -m flag overrides config.toml for that run; the flag is more specific than the file
+      - id: c
+        text: model in config.toml is deprecated in favor of -m only
+      - id: d
+        text: Codex randomly chooses between configured models
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Precedence: CLI flags beat config.toml. -m gpt-5-codex overrides the file's model for that
+      run. The file is not malformed or deprecated; the behavior is expected layering.
+  - id: cca-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      Two AGENTS.md files conflict: the repo root says "never run destructive git commands" and
+      tools/scratch/AGENTS.md says "feel free to reset --hard here." Working in tools/scratch, which
+      guidance wins and why?
+    choices:
+      - id: a
+        text: The root file always wins because it is authoritative
+      - id: b
+        text: Codex refuses to run when AGENTS.md files conflict
+      - id: c
+        text: The tools/scratch file wins because it is nearer the cwd and concatenated last
+      - id: d
+        text: Both are dropped because they contradict each other
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Nearest-to-cwd wins: tools/scratch/AGENTS.md is concatenated after the root, so its permissive
+      guidance overrides. This is precisely why scoping permissive rules to narrow directories is
+      risky.
+  - id: cca-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      A team set approval_policy = "on-failure" in config.toml. Codex runs without error, but the
+      behavior matches on-request rather than a distinct "only ask on failure" mode. What is
+      actually happening?
+    choices:
+      - id: a
+        text: on-failure requires danger-full-access to take effect
+      - id: b
+        text: approval_policy must be set only via the CLI, never in config.toml
+      - id: c
+        text: The key was renamed to failure_policy, so the value is dropped
+      - id: d
+        text: >-
+          on-failure is accepted as a backward-compatible alias for on-request, so Codex applies
+          on-request behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      In current Codex, on-failure is a compatibility alias that maps to on-request, so the config
+      loads and behaves as on-request. The first-class approval values are untrusted, on-request,
+      granular, and never. The key name and config-vs-flag placement are not the issue.
+  - id: cca-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      A user expected workspace-write to let Codex download a dependency, but the network call
+      failed. The config has sandbox_mode = "workspace-write" and no other sandbox keys. What
+      explains it?
+    choices:
+      - id: a
+        text: >-
+          Network is off by default in workspace-write; they must set
+          sandbox_workspace_write.network_access = true
+      - id: b
+        text: workspace-write blocks all file writes, so downloads fail
+      - id: c
+        text: workspace-write requires approval_policy = "never" to use the network
+      - id: d
+        text: Network only works in read-only mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      workspace-write permits file edits and command execution but disables outbound network by
+      default. Enabling network_access is the fix; it has nothing to do with file writes or
+      read-only.
+  - id: cca-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A large AGENTS.md tree exists, but Codex seems to ignore guidance in a deep subdirectory. The
+      combined files are well over 40 KiB. What is the most likely cause?
+    choices:
+      - id: a
+        text: Deep AGENTS.md files are never read
+      - id: b
+        text: project_doc_max_bytes (default 32 KiB) was hit, so later files were not appended
+      - id: c
+        text: TOML parsing of AGENTS.md failed
+      - id: d
+        text: AGENTS.md must be under 1 KiB each
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Once the 32 KiB cap is reached, Codex stops concatenating. Because nearest files are appended
+      last, a deep file can be the one dropped. Trim earlier files or raise project_doc_max_bytes.
+  - id: cca-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: multiple_choice
+    prompt: >-
+      Someone aliases their autonomous setup to --yolo "to skip the confirmation prompts." Why is
+      this riskier than they think?
+    choices:
+      - id: a
+        text: '--yolo only disables approvals but keeps the sandbox, so it is safe'
+      - id: b
+        text: '--yolo just hides the prompts but still blocks network and writes'
+      - id: c
+        text: >-
+          --yolo (--dangerously-bypass-approvals-and-sandbox) disables BOTH approvals and the
+          sandbox, granting full unsandboxed access
+      - id: d
+        text: '--yolo forces read-only mode'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      --yolo is the alias for --dangerously-bypass-approvals-and-sandbox: it removes the sandbox in
+      addition to approvals. It is full unsandboxed access, not merely quieter prompts.
+  - id: cca-400-ff-g
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A teammate insists "config.toml is the single source of truth, so my settings always win."
+      Walk through the actual precedence and give one concrete example where their config value does
+      not win.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the precedence order (CLI flags and -c overrides beat config.toml)
+        - id: c2
+          text: >-
+            Mentions profiles overlay base config and project-scoped config (when trusted) as
+            additional layers
+        - id: c3
+          text: Gives a concrete example where a flag/override beats config.toml
+      referenceAnswer: >-
+        config.toml is a default, not an absolute authority. Per-run CLI flags (like -m or -s) and
+        -c key=value overrides take precedence over config.toml for that invocation. Profiles
+        overlay the base config when selected with --profile, and a trusted project's
+        .codex/config.toml can also override the global file. Example: with model = "gpt-5.5" in
+        config.toml, running codex -m gpt-5-codex uses gpt-5-codex, so the config value does not
+        win.
+      passThreshold: 0.6
+    guidance: >-
+      Precedence runs from most specific (flags/-c) to least (global config.toml), with profiles and
+      trusted project config layered in. config.toml is the base layer, not the final word.
+  - id: cca-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      A profile [profiles.safe] sets sandbox_mode = "read-only", but a teammate runs codex --profile
+      safe -s workspace-write and edits happen. Why?
+    choices:
+      - id: a
+        text: Profiles cannot set sandbox_mode, so it was never read-only
+      - id: b
+        text: '--profile is ignored whenever -s is present, dropping all profile keys'
+      - id: c
+        text: read-only silently upgrades to workspace-write after the first edit
+      - id: d
+        text: The explicit -s flag overrides the profile's sandbox_mode for that run
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The CLI flag is more specific than the profile, so -s workspace-write overrides the profile's
+      read-only for that run. Other profile keys still apply; only the explicitly overridden key
+      changes.
+  - id: cca-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 454
+    type: multiple_choice
+    prompt: >-
+      A repo's root AGENTS.md is being ignored while a global one is honored. The dev confirms the
+      file exists and is valid Markdown. What is a plausible explanation tied to discovery?
+    choices:
+      - id: a
+        text: >-
+          Codex was launched with --cd pointing outside the repo, so the repo-root file was never in
+          the discovered path from root to cwd
+      - id: b
+        text: Root AGENTS.md files are deprecated in favor of global only
+      - id: c
+        text: AGENTS.md must be JSON to be read at the repo root
+      - id: d
+        text: The global file disables all repo files
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Discovery walks from the repo/git root toward the cwd. If --cd (or the launch directory) is
+      outside the repo, the repo-root AGENTS.md is not on that path. The global file is independent
+      and still loads.
+  - id: cca-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      A developer treats sandbox_mode and approval_policy as redundant and only sets approval_policy
+      = "never", expecting safety. Why is the result unsafe?
+    choices:
+      - id: a
+        text: approval_policy = "never" forces read-only, so it is actually too restrictive
+      - id: b
+        text: >-
+          With approval off and a permissive sandbox, Codex acts without ever pausing; safety comes
+          from the sandbox axis, which they left unconstrained
+      - id: c
+        text: never is an invalid value and is ignored
+      - id: d
+        text: The two settings are truly redundant, so nothing changes
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The axes are orthogonal. Setting approval to never removes the pause-to-ask safeguard; the
+      sandbox is what bounds capability. Leaving the sandbox permissive plus never approving is the
+      dangerous combination.
+  - id: cca-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      A nested services/web/AGENTS.md duplicates 90% of the root AGENTS.md and adds two lines. The
+      team notices the combined size keeps hitting project_doc_max_bytes. What is the cleanest
+      analysis-driven fix?
+    choices:
+      - id: a
+        text: Raise project_doc_max_bytes to 1 MiB permanently
+      - id: b
+        text: Delete the root AGENTS.md so only nested files load
+      - id: c
+        text: >-
+          Remove the duplicated content from the nested file and keep only the two new lines,
+          relying on root guidance to merge in
+      - id: d
+        text: Convert both files to TOML to save bytes
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Because files merge from root downward, the nested file need only carry its deltas. Removing
+      the duplication shrinks the merged size and keeps single-source-of-truth, better than
+      inflating the cap or deleting the root.
+  - id: cca-400-ff-l
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: free_form
+    prompt: >-
+      A CI run using a profile "auto" intermittently stalls waiting for input even though it should
+      be non-interactive. Diagnose the likely interaction between approval_policy, the chosen entry
+      point, and how you would make it reliably non-interactive.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that an approval policy that pauses (e.g. on-request/untrusted) will block in
+            CI
+        - id: c2
+          text: >-
+            Recommends using codex exec (non-interactive) and/or an approval policy that does not
+            prompt
+        - id: c3
+          text: Notes the sandbox choice should still be constrained (not blindly --yolo) for safety
+      referenceAnswer: >-
+        The stall comes from an approval policy that pauses for escalation (on-request or untrusted)
+        combined with an entry point that can prompt. For CI, use codex exec as the non-interactive
+        entry point and choose an approval policy that does not block, such as never, while keeping
+        the sandbox constrained (e.g. workspace-write with network enabled only if needed) rather
+        than removing the sandbox with --yolo. That makes runs deterministic without granting full
+        unsandboxed access.
+      passThreshold: 0.6
+    guidance: >-
+      The root cause is the approval axis blocking. The fix separates concerns: non-interactive
+      entry (exec) plus a non-prompting approval policy, while still bounding capability via the
+      sandbox axis.
+  - id: cca-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      After adding an [mcp_servers.payments] table, Codex shows the server in /mcp but none of its
+      tools are callable. The table has enabled = true and disabled_tools listing every tool name.
+      What is the bug?
+    choices:
+      - id: a
+        text: enabled = true forces all tools off
+      - id: b
+        text: HTTP servers cannot expose tools, only resources
+      - id: c
+        text: The server must be added via the CLI, never via config.toml
+      - id: d
+        text: >-
+          disabled_tools is blocking all tools; remove it or use enabled_tools to allow the intended
+          subset
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Listing every tool in disabled_tools blocks them all even though the server is enabled. Switch
+      to enabled_tools for an allowlist, or trim disabled_tools. config.toml tables are a valid way
+      to add servers.
+  - id: cca-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: >-
+      A junior dev claims "Codex is just the old 2021 Codex completion model with a wrapper, so
+      AGENTS.md must be a prompt-template format." Identify the conceptual error.
+    choices:
+      - id: a
+        text: >-
+          Modern Codex is an agentic Rust CLI, not the deprecated completion model; AGENTS.md is
+          open-standard Markdown guidance, not a prompt template
+      - id: b
+        text: They are correct; AGENTS.md is a Jinja prompt template
+      - id: c
+        text: The 2021 model is still the backend, so AGENTS.md compiles to API calls
+      - id: d
+        text: AGENTS.md is a binary produced from the completion model
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The 2021 Codex completion API is deprecated; modern Codex is an agentic CLI (codex-rs).
+      AGENTS.md is a cross-vendor open-standard Markdown file, unrelated to any prompt-template
+      compilation.
+  - id: cca-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: multiple_choice
+    prompt: >-
+      Two profiles both set model_reasoning_effort, and a run uses -c model_reasoning_effort=high in
+      addition to --profile fast (which sets it to low). Which value applies, and what general rule
+      does this illustrate?
+    choices:
+      - id: a
+        text: low applies because profiles are highest precedence
+      - id: b
+        text: high applies; -c overrides illustrate that explicit per-run overrides beat profile values
+      - id: c
+        text: They average to medium
+      - id: d
+        text: The run errors due to conflicting effort values
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Per-run -c overrides sit above profile values in precedence, so high wins. The general rule:
+      specificity increases from base config to profiles to explicit flags/overrides.
+  - id: cca-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A repo's AGENTS.md says "always run with full access for speed." Break down why an agent
+      shipping that instruction is an anti-pattern and what a safer instruction would convey
+      instead.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains AGENTS.md guides the agent but should not push toward removing the
+            sandbox/approvals
+        - id: c2
+          text: >-
+            Notes full access (danger-full-access / --yolo) removes safety boundaries and is
+            committed/shared to everyone
+        - id: c3
+          text: >-
+            Suggests a safer instruction (e.g. document the workflow, let the operator choose
+            sandbox/approval per context)
+      referenceAnswer: >-
+        AGENTS.md is committed, shared guidance read by Codex and other agents, so an instruction
+        telling the agent to use full access pressures every user toward danger-full-access or
+        --yolo, which removes both the sandbox and approval safeguards. Capability boundaries should
+        be an operator decision made per context via flags/profiles, not baked into shared prose. A
+        safer AGENTS.md documents the build/test workflow and conventions and leaves sandbox and
+        approval choices to the person running Codex.
+      passThreshold: 0.6
+    guidance: >-
+      The anti-pattern conflates instruction (AGENTS.md) with capability policy (sandbox/approval).
+      Keep safety knobs under operator control; use AGENTS.md for workflow and conventions.
+  - id: cca-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      A user sets sandbox_mode = "workspace-write" and writable_roots = ["/"]. Functionally, what
+      have they created, and why is it problematic?
+    choices:
+      - id: a
+        text: A read-only environment, because "/" is never writable
+      - id: b
+        text: A configuration error that disables Codex entirely
+      - id: c
+        text: >-
+          An effectively full-filesystem-writable sandbox that defeats the point of
+          workspace-write's containment
+      - id: d
+        text: A network-only sandbox with no file access
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Adding "/" as a writable root makes nearly the whole filesystem writable, collapsing
+      workspace-write toward danger-full-access. writable_roots should be narrow, specific paths.
+  - id: cca-400-mc-r
+    tier: 400
+    bloom: analyze
+    difficulty: 460
+    type: multiple_choice
+    prompt: >-
+      Codex behaves differently on two machines with identical repos. One sets model in a trusted
+      project .codex/config.toml; the other does not trust the project. What is the discrepancy?
+    choices:
+      - id: a
+        text: Trust only affects AGENTS.md, so models should match
+      - id: b
+        text: Project config never applies, so both should use the global model
+      - id: c
+        text: The untrusted machine errors and refuses to run
+      - id: d
+        text: >-
+          On the trusted machine the project config applies; on the other it is ignored, so the
+          global default model is used
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Project-scoped config is gated on trust. The trusted machine reads the project's model; the
+      untrusted one falls back to the global default, explaining the divergent behavior.
+  - id: cca-400-ff-s
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      Given the AGENTS.md global-to-local merge and the 32 KiB cap, explain a failure mode where
+      adding more documentation actually reduces the guidance Codex follows, and how to detect it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that exceeding project_doc_max_bytes causes later (nearer) files to be dropped
+            from the merge
+        - id: c2
+          text: >-
+            Notes the dropped guidance is often the most specific because nearest files concatenate
+            last
+        - id: c3
+          text: >-
+            Describes detection (check combined size, trim/raise cap, verify which files were
+            included)
+      referenceAnswer: >-
+        Because AGENTS.md files concatenate from root to cwd and stop at the 32 KiB
+        project_doc_max_bytes cap, adding more high-level documentation can push past the cap so the
+        nearest, most specific subdirectory files are never appended. The net effect is the agent
+        follows broad rules but loses the targeted local guidance. Detect it by measuring the
+        combined byte size of all applicable AGENTS.md files, checking which were actually included,
+        and either trimming duplicated content or raising project_doc_max_bytes.
+      passThreshold: 0.6
+    guidance: >-
+      The cap plus append-order interact: bloat at the top starves the specific bottom files.
+      Detection is a size audit; the fix is trimming or raising the cap deliberately.
+  - id: cca-400-mc-t
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      Under the Auto preset (workspace-write + on-request), Codex paused and asked permission to
+      write a file outside the workspace. A user thinks approvals are broken because "I am in
+      workspace-write." What actually happened?
+    choices:
+      - id: a
+        text: >-
+          on-request worked as designed: the sandbox blocks the out-of-workspace write, so Codex
+          escalated and asked the user to approve crossing that boundary
+      - id: b
+        text: workspace-write should silently allow writes anywhere, so this is a bug
+      - id: c
+        text: The pause means the model crashed mid-task
+      - id: d
+        text: on-request only ever prompts for network access, never for file writes
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The sandbox confines writes to the workspace; an out-of-workspace write exceeds that boundary,
+      so with on-request Codex escalates and asks. This is the intended interaction of the two axes,
+      not a bug. Granting writable_roots or approving the prompt are the ways forward.
+  - id: cca-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A team proposes committing a project .codex/config.toml that sets approval_policy = "never"
+      and sandbox_mode = "danger-full-access" so "CI never stalls." Evaluate this design.
+    choices:
+      - id: a
+        text: 'Ideal: it is the simplest way to make Codex fast everywhere'
+      - id: b
+        text: >-
+          Poor: it removes both safety axes for everyone who trusts the repo; constrain the sandbox
+          and use a non-prompting policy with codex exec instead
+      - id: c
+        text: Fine, because project config is never honored anyway
+      - id: d
+        text: Fine, because danger-full-access still keeps the network off
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Baking full access plus never-approve into shared, trusted config maximizes blast radius. The
+      better design keeps a bounded sandbox and uses codex exec with a non-prompting policy only
+      where automation truly needs it.
+  - id: cca-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 508
+    type: multiple_choice
+    prompt: >-
+      Two designs for monorepo guidance: (A) one giant root AGENTS.md covering every package, or (B)
+      a small root file plus per-package AGENTS.md. Which is better and why, given Codex's merge
+      rules?
+    choices:
+      - id: a
+        text: A, because a single file is always within project_doc_max_bytes
+      - id: b
+        text: A, because Codex only reads the root file
+      - id: c
+        text: >-
+          B, because nearest-wins merging lets each package own its specifics while shared rules
+          stay at the root, and it avoids hitting the byte cap
+      - id: d
+        text: They are equivalent since merge order is random
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Per-package files leverage nearest-wins precedence and keep the merged size lean, scaling
+      better than a monolith that risks exceeding the cap and mixes unrelated context.
+  - id: cca-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A reviewer wants to standardize the team on the Auto preset (--sandbox workspace-write
+      --ask-for-approval on-request) instead of --full-auto. Judge this recommendation.
+    choices:
+      - id: a
+        text: 'Unsound: --full-auto is the modern recommended way to run autonomously'
+      - id: b
+        text: Sound only if approval is set to never
+      - id: c
+        text: Unsound because workspace-write cannot run commands
+      - id: d
+        text: >-
+          Sound: --full-auto is deprecated, and Auto cleanly pairs a bounded sandbox with on-request
+          escalation
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      --full-auto is deprecated in favor of --sandbox workspace-write with an approval policy. The
+      Auto preset is exactly that pairing, giving bounded autonomy with the ability to escalate on
+      request.
+  - id: cca-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A proposal stores API tokens for an MCP HTTP server directly in the committed project
+      config.toml. Critique this versus the alternatives.
+    choices:
+      - id: a
+        text: >-
+          Risky: committed config leaks secrets; reference an env var or use the server's
+          OAuth/bearer flow instead of hardcoding tokens
+      - id: b
+        text: 'Best practice: config.toml encrypts all values automatically'
+      - id: c
+        text: Fine, because config.toml is never committed
+      - id: d
+        text: Fine, because MCP servers ignore tokens in config
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hardcoding tokens in committed config is a leak vector. Prefer environment-variable references
+      or the HTTP server's bearer/OAuth auth so secrets stay out of version control.
+  - id: cca-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 532
+    type: multiple_choice
+    prompt: >-
+      A team debates whether AGENTS.md or config.toml should encode "run pytest before committing."
+      Which placement is correct and why?
+    choices:
+      - id: a
+        text: config.toml, because workflows must be machine-validated TOML
+      - id: b
+        text: >-
+          AGENTS.md, because it is natural-language workflow guidance for the agent, not a typed
+          configuration knob
+      - id: c
+        text: Neither; such guidance cannot be expressed
+      - id: d
+        text: Both must contain it identically or Codex errors
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Workflow conventions are prose guidance and belong in AGENTS.md. config.toml holds typed
+      settings (model, sandbox, approval), not free-form process instructions.
+  - id: cca-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 502
+    type: free_form
+    prompt: >-
+      Critique this setup: a single shared profile "dev" used by everyone, hardcoding model,
+      danger-full-access sandbox, and approval never, justified as "consistency." Recommend a better
+      layering across global, profile, and per-run.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that danger-full-access + never in a shared profile removes safety for all
+            users
+        - id: c2
+          text: >-
+            Recommends bounding the sandbox (read-only/workspace-write) and choosing approval per
+            context
+        - id: c3
+          text: >-
+            Proposes a layering: durable defaults in config/profile, capability escalation per-run
+            via flags only when needed
+      referenceAnswer: >-
+        A shared dev profile that pins danger-full-access and approval never trades safety for a
+        thin notion of consistency: every user inherits full unsandboxed, never-approve behavior.
+        Better layering keeps durable, low-risk defaults in the base config or a conservative
+        profile (e.g. workspace-write with on-request, network off), and lets individuals escalate
+        capability per run via explicit flags (-s, -a, or --yolo) only when a specific task warrants
+        it. Consistency comes from shared safe defaults; risk stays opt-in and per-context rather
+        than baked into a profile everyone runs.
+      passThreshold: 0.6
+    guidance: >-
+      The critique targets shared maximal capability. The recommended pattern: conservative shared
+      defaults, with capability escalated explicitly and temporarily per run.
+  - id: cca-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      To stop a deep subdirectory's AGENTS.md from being dropped at the 32 KiB cap, a dev sets
+      project_doc_max_bytes = 1048576 (1 MiB) globally. Evaluate the tradeoff.
+    choices:
+      - id: a
+        text: It is strictly correct with no downside; bigger is always better
+      - id: b
+        text: It has no effect because the cap is fixed at 32 KiB
+      - id: c
+        text: >-
+          It fixes the drop but risks bloating the prompt with instructions; trimming duplicate
+          guidance is usually the better first move
+      - id: d
+        text: It disables AGENTS.md merging entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Raising the cap works but lets instruction files consume the context budget. The healthier
+      first move is to remove duplication so the merged set stays lean; raise the cap only when
+      genuinely needed.
+  - id: cca-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      A blog claims "set approval_policy and you do not need to think about sandbox_mode." Judge the
+      accuracy of this advice for someone hardening Codex.
+    choices:
+      - id: a
+        text: 'Accurate: approval_policy fully subsumes the sandbox'
+      - id: b
+        text: 'Accurate: sandbox_mode only matters for network'
+      - id: c
+        text: Misleading because approval_policy does not exist
+      - id: d
+        text: >-
+          Misleading: the two are orthogonal; capability containment comes from sandbox_mode while
+          approval governs prompting, so both must be set deliberately
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Treating one axis as sufficient is the classic misconception. Hardening requires choosing
+      both: a bounded sandbox for capability and an appropriate approval policy for when to pause.
+  - id: cca-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 514
+    type: multiple_choice
+    prompt: >-
+      Team A keeps secrets and per-developer paths in the committed root AGENTS.md "so Codex always
+      has context." Evaluate against AGENTS.md's role as a shared open-standard file.
+    choices:
+      - id: a
+        text: >-
+          Wrong fit: AGENTS.md is shared, committed, cross-vendor prose fed into prompts; secrets
+          and machine-specific paths belong in env/secret stores or per-user config
+      - id: b
+        text: 'Correct: AGENTS.md is the canonical secret store'
+      - id: c
+        text: 'Correct: AGENTS.md is per-user and never committed'
+      - id: d
+        text: 'Neutral: it makes no difference where secrets live'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      AGENTS.md is committed, shared, and consumed by many agents, so it is the wrong place for
+      secrets or machine-specific paths. Those belong in environment variables, secret managers, or
+      user-scoped config.
+  - id: cca-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A reviewer must choose between (A) a project .codex/config.toml pinning model and sandbox for
+      reproducibility, requiring trust, and (B) telling everyone to pass flags manually. Evaluate
+      for a shared open-source repo.
+    choices:
+      - id: a
+        text: B is strictly better because project config is a security hole with no benefit
+      - id: b
+        text: >-
+          A is generally better for reproducibility, but the trust gate and the fact contributors
+          must trust the repo are real tradeoffs to document
+      - id: c
+        text: A is unsafe because project config overrides the global silently even when untrusted
+      - id: d
+        text: They are identical in every respect
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Project config improves reproducibility but only applies once trusted, and asking contributors
+      to trust a repo is itself a decision. The honest evaluation weighs reproducibility against the
+      trust requirement rather than declaring one trivially superior.
+  - id: cca-500-ff-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      Assess the claim: "Because AGENTS.md is a cross-vendor open standard, anything we put there
+      will be interpreted identically by Codex, Cursor, and other agents." Where is this right and
+      where is it overstated?
+    rubric:
+      criteria:
+        - id: c1
+          text: Affirms the shared discovery convention and Markdown format are common across adopters
+        - id: c2
+          text: >-
+            Notes interpretation/behavior still varies by agent (no enforced schema or guaranteed
+            identical actions)
+        - id: c3
+          text: >-
+            Concludes guidance should be written portably but not assumed to produce identical
+            behavior everywhere
+      referenceAnswer: >-
+        The claim is partly right: AGENTS.md is a shared, open Markdown convention, so multiple
+        agents (Codex, Cursor, and others) know to look for it and read it as instructions. It is
+        overstated on identical interpretation: there is no enforced schema and each agent decides
+        how to weigh and act on the prose, so the same file can yield different behavior. The
+        practical conclusion is to write clear, portable, tool-neutral guidance while not assuming
+        byte-for-byte identical behavior across agents.
+      passThreshold: 0.6
+    guidance: >-
+      Shared format and discovery are real; guaranteed identical behavior is not. Treat AGENTS.md as
+      a portable convention, not a cross-agent behavioral contract.
+  - id: cca-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 526
+    type: multiple_choice
+    prompt: >-
+      A team wants AGENTS.override.md committed at the repo root to force-override the global file
+      for everyone. Evaluate whether this is appropriate use of the override mechanism.
+    choices:
+      - id: a
+        text: Never valid; override files do not exist
+      - id: b
+        text: Required for every repo to load AGENTS.md at all
+      - id: c
+        text: >-
+          Reasonable if the intent is to deliberately supersede broader guidance for this repo, but
+          it should be documented since it changes precedence
+      - id: d
+        text: It silently disables config.toml
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Override files intentionally take precedence over the plain AGENTS.md at the same scope. Using
+      one to supersede broader guidance is legitimate but should be documented, since it changes the
+      default merge behavior reviewers expect.
+  - id: cca-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      Evaluate this CI hardening: codex exec with -s read-only for a "summarize the diff" job,
+      versus using workspace-write "just in case." Which is the better default and why?
+    choices:
+      - id: a
+        text: workspace-write is better because read-only cannot read files
+      - id: b
+        text: Both require --yolo to function in CI
+      - id: c
+        text: read-only blocks codex exec, so workspace-write is required
+      - id: d
+        text: >-
+          read-only is better: the job only needs to read, so the least-privilege sandbox minimizes
+          risk while still allowing analysis
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A read-only summarization job needs no write capability, so least privilege (read-only) is the
+      correct default. Granting workspace-write "just in case" needlessly expands the blast radius.
+  - id: cca-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: multiple_choice
+    prompt: >-
+      A maintainer argues per-run -c overrides are bad practice and everything should live in
+      committed config.toml for auditability. Judge this stance for a mixed team.
+    choices:
+      - id: a
+        text: >-
+          Partly right for durable defaults, but overly rigid: -c is valuable for one-off
+          experiments and CI variations that should not be permanent defaults
+      - id: b
+        text: 'Fully correct: -c overrides should be banned outright'
+      - id: c
+        text: 'Fully wrong: config.toml should never be committed'
+      - id: d
+        text: Irrelevant because -c and config.toml never coexist
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Auditable committed defaults are good, but -c overrides exist precisely for ephemeral,
+      per-invocation needs. Banning them entirely forfeits useful flexibility; the balanced stance
+      keeps durable settings in config.toml and uses -c for transient cases.
+  - id: cca-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: free_form
+    prompt: >-
+      A reviewer proposes pinning model = "gpt-5.5" in the committed project config.toml for
+      reproducibility. Critique the durability of pinning an exact model id, and propose a more
+      robust policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes exact model ids change frequently, so a hard pin can go stale or break
+        - id: c2
+          text: Acknowledges the legitimate goal (reproducibility / consistent behavior across the team)
+        - id: c3
+          text: >-
+            Proposes a more durable approach (e.g. pin a family/alias, document the choice, revisit
+            periodically, allow per-run override)
+      referenceAnswer: >-
+        Pinning an exact id like gpt-5.5 aids reproducibility but is brittle because Codex model ids
+        evolve quickly, so a hard pin can become stale or invalid and silently degrade behavior. The
+        legitimate goal is consistent, predictable behavior across the team. A more robust policy
+        targets a stable family or recommended alias where available, documents the intended model
+        and the date of the decision, schedules periodic review, and still allows per-run -m or -c
+        overrides for testing newer models. That keeps consistency without freezing the team on an
+        id that may be retired.
+      passThreshold: 0.6
+    guidance: >-
+      Exact-id pinning trades durability for precision. The robust answer balances reproducibility
+      with the reality of fast-moving model ids: prefer durable references, document, and revisit.
+  - id: cca-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 536
+    type: multiple_choice
+    prompt: >-
+      Considering Codex can act as both an MCP client and an MCP server, evaluate a design that
+      exposes Codex as an MCP server to an untrusted upstream client with danger-full-access
+      locally.
+    choices:
+      - id: a
+        text: 'Safe: serving as an MCP server isolates Codex from any local capability'
+      - id: b
+        text: >-
+          Dangerous: an untrusted client could drive a full-access Codex; constrain the local
+          sandbox/approval and limit exposed capabilities before serving
+      - id: c
+        text: 'Impossible: Codex cannot act as an MCP server'
+      - id: d
+        text: Safe because MCP only allows read operations
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Codex can run as an MCP server, but exposing a full-access instance to an untrusted client
+      lets that client drive dangerous local actions. Bound the sandbox and approval policy and
+      limit exposed tools before serving.
+  - id: cca-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      A team standardizes by symlinking every repo's root AGENTS.md to one central file. Evaluate
+      this against the global ~/.codex/AGENTS.md mechanism.
+    choices:
+      - id: a
+        text: Strictly better because symlinks are committed and travel with the repo cleanly
+      - id: b
+        text: Required, since Codex ignores the global file
+      - id: c
+        text: >-
+          Redundant and brittle: the global ~/.codex/AGENTS.md already provides per-user shared
+          guidance; symlinks duplicate that and can break version control expectations
+      - id: d
+        text: Equivalent, since global and repo files never both load
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      For per-user cross-repo guidance, the global ~/.codex/AGENTS.md is the intended mechanism.
+      Symlinking a central file into every repo duplicates that, confuses version control, and is
+      more fragile than using the global layer plus repo-specific files.
+  - id: cca-500-ff-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 520
+    type: free_form
+    prompt: >-
+      Compare placing team-wide capability policy (sandbox/approval) in a committed project
+      config.toml versus leaving it to each operator's global config and per-run flags. Judge which
+      better serves a security-conscious open-source project and justify.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains committed project config gives consistent, reviewable defaults but requires
+            trust and applies to all contributors
+        - id: c2
+          text: >-
+            Explains operator-controlled config/flags preserve least-privilege and per-context
+            judgment but reduce consistency
+        - id: c3
+          text: >-
+            Reaches a justified position (e.g. commit conservative defaults; let operators escalate
+            per run) rather than an absolute
+      referenceAnswer: >-
+        Committing capability policy in project config.toml gives a single reviewable, consistent
+        default and improves reproducibility, but it only applies to contributors who trust the repo
+        and risks encoding more capability than some contexts need. Leaving sandbox/approval to each
+        operator's global config and per-run flags preserves least privilege and lets people match
+        capability to the task, at the cost of consistency and discoverability. For a
+        security-conscious open-source project the stronger design commits conservative,
+        least-privilege defaults (e.g. read-only or workspace-write with on-request) so newcomers
+        are safe by default, while documenting how operators escalate capability per run when a task
+        genuinely needs it. That captures consistency without forcing broad capability on everyone.
+      passThreshold: 0.6
+    guidance: >-
+      The judgment balances consistency/reviewability (committed config) against least-privilege and
+      context fit (operator control). A defensible answer commits safe defaults and keeps escalation
+      explicit and per-run.
+  - id: cca-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: >-
+      A proposal replaces all AGENTS.md guidance with equivalent keys jammed into config.toml "to
+      make it machine-validated." Evaluate the conceptual soundness.
+    choices:
+      - id: a
+        text: 'Sound: everything an agent needs should be typed TOML'
+      - id: b
+        text: Sound because config.toml is loaded into the prompt like AGENTS.md
+      - id: c
+        text: Unsound only because TOML files cannot exceed 32 KiB
+      - id: d
+        text: >-
+          Unsound: free-form workflow/context guidance does not map to typed config keys; AGENTS.md
+          exists precisely for prose the model reads, while config.toml is for typed settings
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The two files serve different layers: typed runtime settings (config.toml) versus narrative
+      guidance the model reads (AGENTS.md). Collapsing prose into typed keys loses expressiveness
+      and misuses each file's purpose.
+  - id: cca-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      Evaluate a workflow where developers run --yolo locally for speed but CI runs codex exec with
+      a bounded sandbox. Is this a coherent risk posture?
+    choices:
+      - id: a
+        text: >-
+          Partly: bounded CI is good, but routine local --yolo normalizes full unsandboxed access
+          and is a weak link; local runs should also be bounded by default
+      - id: b
+        text: 'Fully coherent: local machines are inherently safe so --yolo carries no risk'
+      - id: c
+        text: Incoherent only because CI cannot use codex exec
+      - id: d
+        text: Fully coherent because --yolo keeps the sandbox and only skips prompts
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Hardening CI while letting local runs default to --yolo leaves a soft spot: full unsandboxed
+      local access becomes habitual. A coherent posture bounds both, escalating capability
+      deliberately rather than by default.

@@ -1,0 +1,2439 @@
+# Topic: kiro-cli-specs-and-steering (kiro-cli)
+# Spec-driven workflows and steering files in the Kiro CLI.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: kiro-cli-specs-and-steering
+class:
+  kind: tool
+  tool: kiro-cli
+title: Kiro CLI Specs & Steering
+summary: Spec-driven workflows and steering files in the Kiro CLI.
+triggerSignals: []
+items:
+  - id: kss-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: How many files does a Kiro spec generate, and what are they?
+    choices:
+      - id: a
+        text: One monolithic spec.md file containing all sections
+      - id: b
+        text: Three files - requirements.md, design.md, and tasks.md
+      - id: c
+        text: Two files - spec.yaml and plan.yaml
+      - id: d
+        text: Four files - one per workflow phase plus a manifest
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A Kiro spec is made of three Markdown files: requirements.md, design.md, and tasks.md. It is
+      not a single monolithic document, nor a YAML pair. Treating it as one file is a common
+      misconception.
+  - id: kss-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: Where are Kiro specs stored in the repository?
+    choices:
+      - id: a
+        text: Under .kiro/specs/, one folder per feature
+      - id: b
+        text: Under ~/.aws/kiro/specs/ in the home directory
+      - id: c
+        text: At the workspace root as spec.md
+      - id: d
+        text: Under .kiro/settings/specs.json
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Specs live under .kiro/specs/, organized one folder per feature (for example
+      .kiro/specs/feature-name/), and are committed to version control alongside code. They are not
+      in ~/.aws/, not a root spec.md, and not a JSON settings file.
+  - id: kss-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: What are the three phases of the Kiro spec workflow, in order?
+    choices:
+      - id: a
+        text: Design, then Requirements, then Tasks
+      - id: b
+        text: Tasks, then Design, then Requirements
+      - id: c
+        text: Requirements (or Bug Analysis), then Design, then Tasks
+      - id: d
+        text: Planning, then Implementation, then Review
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The workflow runs Requirements (or Bug Analysis for bugfix specs) first, then Design, then
+      Tasks. Each phase builds on the prior one, so the order is fixed and cannot start with Design
+      or Tasks.
+  - id: kss-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: Which directory holds Kiro steering files at the workspace level?
+    choices:
+      - id: a
+        text: .kiro/steering/
+      - id: b
+        text: .kiro/settings/steering.json
+      - id: c
+        text: ~/.config/kiro/steering/
+      - id: d
+        text: .kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Workspace steering files live in .kiro/steering/. Global steering lives in ~/.kiro/steering/.
+      Hooks live in .kiro/hooks/ and MCP config in .kiro/settings/, so those are distinct trees.
+  - id: kss-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: What are the three default (foundational) steering files Kiro generates?
+    choices:
+      - id: a
+        text: product.md, tech.md, structure.md
+      - id: b
+        text: requirements.md, design.md, tasks.md
+      - id: c
+        text: README.md, CONTRIBUTING.md, AGENTS.md
+      - id: d
+        text: rules.md, context.md, style.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The three foundational steering files are product.md (purpose/users/features), tech.md
+      (frameworks/tools/constraints), and structure.md (file org/conventions/architecture).
+      requirements/design/tasks are spec files, not steering.
+  - id: kss-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: Which requirement-syntax convention does Kiro use to express acceptance criteria?
+    choices:
+      - id: a
+        text: Gherkin Given/When/Then
+      - id: b
+        text: EARS, e.g. WHEN [condition] THEN the system SHALL [behavior]
+      - id: c
+        text: BPMN swimlane notation
+      - id: d
+        text: RFC 2119 MUST/SHOULD prose only
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro uses EARS-style syntax such as "WHEN [condition] THEN the system SHALL [behavior]".
+      Gherkin and BPMN are different conventions, and while EARS uses the keyword SHALL it is a
+      structured template, not free RFC 2119 prose.
+  - id: kss-100-mc-g
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: multiple_choice
+    prompt: Which file in a spec folder holds the discrete, status-tracked, executable tasks?
+    choices:
+      - id: a
+        text: design.md
+      - id: b
+        text: requirements.md
+      - id: c
+        text: tasks.md
+      - id: d
+        text: plan.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      tasks.md holds the discrete, executable, status-tracked tasks. requirements.md captures EARS
+      requirements and design.md captures the technical design; there is no plan.md in a Kiro spec.
+  - id: kss-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: What does EARS stand for?
+    choices:
+      - id: a
+        text: Easy Approach to Requirements Syntax
+      - id: b
+        text: Executable Agent Requirement Schema
+      - id: c
+        text: Event-Action Response System
+      - id: d
+        text: Enterprise Architecture Requirement Standard
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      EARS is the Easy Approach to Requirements Syntax, a pre-existing industry convention (WHEN/IF/
+      WHILE/WHERE ... the system SHALL ...) that Kiro adopts. It is not a Kiro invention.
+  - id: kss-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: What is the syntax for referencing a live file from inside a steering file?
+    choices:
+      - id: a
+        text: '@import api/openapi.yaml'
+      - id: b
+        text: '#[[file:api/openapi.yaml]]'
+      - id: c
+        text: '{{include: api/openapi.yaml}}'
+      - id: d
+        text: <<file api/openapi.yaml>>
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Steering files reference live files with #[[file:<relative_path>]], e.g.
+      #[[file:api/openapi.yaml]]. The other forms are not Kiro syntax.
+  - id: kss-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: Which steering inclusion mode loads a file in every interaction by default?
+    choices:
+      - id: a
+        text: 'inclusion: manual'
+      - id: b
+        text: 'inclusion: fileMatch'
+      - id: c
+        text: 'inclusion: always'
+      - id: d
+        text: 'inclusion: onDemand'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      inclusion: always loads the file in every interaction. fileMatch loads conditionally on
+      matching files, manual is on-demand via a # mention, and onDemand is not a real mode name.
+  - id: kss-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 162
+    type: multiple_choice
+    prompt: In which YAML location is a steering file's inclusion mode declared?
+    choices:
+      - id: a
+        text: In the file's YAML front matter at the top
+      - id: b
+        text: In .kiro/settings/mcp.json
+      - id: c
+        text: As a CLI flag when starting kiro-cli
+      - id: d
+        text: In a separate inclusion.yaml sibling file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Inclusion mode is set in the steering file's own YAML front matter (e.g. inclusion: fileMatch
+      with fileMatchPattern). It is not in mcp.json, not a CLI flag, and not a sibling file.
+  - id: kss-100-mc-l
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: How is a manual-inclusion steering file pulled into a chat on demand?
+    choices:
+      - id: a
+        text: By passing --steering <name> on the command line
+      - id: b
+        text: By typing
+      - id: c
+        text: By renaming it to always.md
+      - id: d
+        text: By adding it to tasks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A manual steering file is invoked on demand by mentioning #steering-file-name in chat. There
+      is no --steering flag, and renaming or adding to tasks.md does not control inclusion.
+  - id: kss-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 174
+    type: multiple_choice
+    prompt: Which special file does Kiro always include and which does NOT support inclusion modes?
+    choices:
+      - id: a
+        text: AGENTS.md
+      - id: b
+        text: product.md
+      - id: c
+        text: mcp.json
+      - id: d
+        text: tasks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro recognizes AGENTS.md (workspace root or global); it is always included and does not
+      support inclusion modes. product.md is a steering file that does support inclusion modes; the
+      others are unrelated.
+  - id: kss-100-ff-a
+    tier: 100
+    bloom: remember
+    difficulty: 130
+    type: free_form
+    prompt: Name the three files a Kiro spec is composed of.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names requirements.md
+        - id: c2
+          text: Names design.md
+        - id: c3
+          text: Names tasks.md
+      referenceAnswer: >-
+        A Kiro spec is composed of requirements.md, design.md, and tasks.md, stored together in a
+        per-feature folder under .kiro/specs/.
+      passThreshold: 0.6
+    guidance: >-
+      The three spec files are requirements.md, design.md, and tasks.md. They are not a single file;
+      accept the answer only if all three are named.
+  - id: kss-100-ff-b
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: free_form
+    prompt: Name the three default Kiro steering files and one phrase describing what each covers.
+    rubric:
+      criteria:
+        - id: c1
+          text: product.md - purpose/users/features
+        - id: c2
+          text: tech.md - frameworks/tools/constraints
+        - id: c3
+          text: structure.md - file org/conventions/architecture
+      referenceAnswer: >-
+        product.md covers purpose, users, and features; tech.md covers frameworks, tools, and
+        constraints; structure.md covers file organization, conventions, and architecture. All three
+        are included in every interaction by default.
+      passThreshold: 0.6
+    guidance: >-
+      Accept if all three filenames are named with a roughly correct description. product=what/why,
+      tech=stack/constraints, structure=how code is organized.
+  - id: kss-100-ff-c
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: Name the steering inclusion modes Kiro supports and how each is triggered.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names always (loaded into every interaction)
+        - id: c2
+          text: Names fileMatch (loaded when an open/edited file matches fileMatchPattern)
+        - id: c3
+          text: Names manual (loaded on demand via a
+        - id: c4
+          text: Names auto (loaded when the request matches the file's description)
+      referenceAnswer: >-
+        Kiro supports four inclusion modes: always (loaded in every interaction, the default),
+        fileMatch (loaded when a file matches the fileMatchPattern glob), manual (loaded on demand
+        via a #name mention), and auto (loaded when your request matches the file's
+        name/description, like a skill).
+      passThreshold: 0.6
+    guidance: >-
+      Kiro currently has four inclusion modes: always, fileMatch (pairs with fileMatchPattern),
+      manual (# mention), and auto (description-matched). Accept naming the first three plus auto;
+      do not penalize a correct answer for naming auto.
+  - id: kss-100-ff-d
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: free_form
+    prompt: Write the EARS clause template Kiro uses for a triggered requirement.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses WHEN [condition]
+        - id: c2
+          text: Uses THEN the system SHALL [behavior]
+      referenceAnswer: >-
+        WHEN [condition] THEN the system SHALL [behavior]. Bugfix specs may also use "... SHALL
+        CONTINUE TO [existing behavior]" to assert preserved behavior.
+      passThreshold: 0.6
+    guidance: >-
+      The canonical EARS triggered form is WHEN [condition] THEN the system SHALL [behavior]. Accept
+      minor wording variation as long as WHEN/THEN/SHALL structure is present.
+  - id: kss-100-ff-e
+    tier: 100
+    bloom: remember
+    difficulty: 166
+    type: free_form
+    prompt: Give the exact syntax for embedding a live file reference inside a steering file.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses
+        - id: c2
+          text: Path is a relative path to the referenced file
+      referenceAnswer: >-
+        #[[file:<relative_path>]], for example #[[file:api/openapi.yaml]]. This pulls the live
+        file's content into the steering context.
+      passThreshold: 0.6
+    guidance: >-
+      Accept the #[[file:...]] form with a relative path. Reject @import, {{include}}, or other
+      non-Kiro syntaxes.
+  - id: kss-100-ff-f
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: free_form
+    prompt: Name the two spec families Kiro supports and the entry phase that distinguishes them.
+    rubric:
+      criteria:
+        - id: c1
+          text: Names Feature Specs (start with Requirements)
+        - id: c2
+          text: Names Bugfix Specs (start with Bug Analysis)
+      referenceAnswer: >-
+        Kiro supports Feature Specs (Requirements-First or Design-First) and Bugfix Specs. Feature
+        specs begin with a Requirements phase; bugfix specs begin with a Bug Analysis phase before
+        moving to design and tasks.
+      passThreshold: 0.6
+    guidance: >-
+      Accept Feature Specs vs Bugfix Specs. The distinguishing entry phase is Requirements vs Bug
+      Analysis.
+  - id: kss-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 178
+    type: free_form
+    prompt: >-
+      Where do global (user-level) steering files live, and which scope wins on a conflict with a
+      workspace file?
+    rubric:
+      criteria:
+        - id: c1
+          text: Global steering lives in ~/.kiro/steering/
+        - id: c2
+          text: Workspace (.kiro/steering/) takes priority on conflict
+      referenceAnswer: >-
+        Global steering lives in ~/.kiro/steering/ and workspace steering lives in .kiro/steering/.
+        When they conflict, the workspace file takes priority.
+      passThreshold: 0.6
+    guidance: >-
+      Global = ~/.kiro/steering/; workspace = .kiro/steering/; workspace wins on conflict. Accept if
+      both the path and the precedence direction are correct.
+  - id: kss-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 220
+    type: multiple_choice
+    prompt: Why does Kiro split a spec into requirements, design, and tasks rather than one document?
+    choices:
+      - id: a
+        text: >-
+          It separates the workflow into reviewable phases, so intent is agreed before design and
+          design is agreed before implementation tasks are generated
+      - id: b
+        text: Because Markdown files cannot exceed a fixed size limit
+      - id: c
+        text: To let each file use a different markup language
+      - id: d
+        text: Because version control cannot diff a single large file
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The three-file split mirrors the three workflow phases, creating explicit review gates: you
+      align on requirements, then design, then break design into tasks. The size, markup, and
+      diffing rationales are fabricated.
+  - id: kss-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: How does Kiro decide which tasks can run together in a "wave"?
+    choices:
+      - id: a
+        text: It runs tasks in the order they appear in tasks.md, one at a time
+      - id: b
+        text: >-
+          It analyzes the task dependency graph and runs tasks with no unmet dependencies
+          concurrently
+      - id: c
+        text: It runs every task in parallel regardless of dependencies
+      - id: d
+        text: It groups tasks by which steering file they reference
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro performs dependency-graph analysis: wave 1 is all tasks with no dependencies, run
+      concurrently, and later waves run once their prerequisites are satisfied. It is neither
+      strictly sequential nor fully unconditional parallelism.
+  - id: kss-200-mc-c
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: What is the practical difference between fileMatch and manual steering inclusion?
+    choices:
+      - id: a
+        text: >-
+          fileMatch loads automatically when the open/edited file matches a glob; manual loads only
+          when you
+      - id: b
+        text: fileMatch loads globally; manual loads only at the workspace level
+      - id: c
+        text: fileMatch is for specs; manual is for hooks
+      - id: d
+        text: They are aliases for the same behavior
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      fileMatch auto-includes when the context file matches its fileMatchPattern; manual is only
+      pulled in when explicitly mentioned with #name. They differ in trigger, not scope, and are not
+      aliases.
+  - id: kss-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: Why does Kiro recommend committing specs to version control alongside code?
+    choices:
+      - id: a
+        text: Because specs are encrypted and the repo holds the key
+      - id: b
+        text: >-
+          So requirements, design, and tasks evolve and review together with the implementation as
+          durable, shared project context
+      - id: c
+        text: Because Kiro deletes uncommitted specs on exit
+      - id: d
+        text: To prevent the spec from being included in the model context
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Specs are committed so the recorded intent and plan stay versioned with the code they
+      describe, giving the team durable shared context and reviewable history. The encryption,
+      deletion, and context-exclusion claims are false.
+  - id: kss-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: multiple_choice
+    prompt: How does an "always" steering file differ in effect from a "manual" one?
+    choices:
+      - id: a
+        text: >-
+          always is injected into every interaction's context; manual is only injected when you
+          reference it
+      - id: b
+        text: always can contain file references but manual cannot
+      - id: c
+        text: always is workspace-only; manual is global-only
+      - id: d
+        text: always overrides AGENTS.md while manual does not
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The difference is when content reaches the model: always is included in every interaction;
+      manual is only included on a # mention. Both can use #[[file:...]] references, and neither is
+      restricted by scope in this way.
+  - id: kss-200-mc-f
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: Why use
+    choices:
+      - id: a
+        text: Because steering files cannot contain code blocks
+      - id: b
+        text: So the reference stays live and reflects the current file rather than going stale on edits
+      - id: c
+        text: Because pasted content is ignored by the model
+      - id: d
+        text: To hide the file from version control
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A live reference always reflects the current contents of the referenced file, avoiding the
+      drift you get when you paste a snapshot that later changes. The other options misstate how
+      steering works.
+  - id: kss-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: multiple_choice
+    prompt: Why is EARS preferable to free-form prose for acceptance criteria in requirements.md?
+    choices:
+      - id: a
+        text: Its structured WHEN/THEN/SHALL form makes each requirement testable and unambiguous
+      - id: b
+        text: It is shorter than prose in all cases
+      - id: c
+        text: It is required for the file to be committed to git
+      - id: d
+        text: It lets requirements.md skip the design phase
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      EARS imposes a structured condition-then-behavior template, which makes each requirement
+      individually testable and reduces ambiguity. It is not always shorter, not a git requirement,
+      and does not bypass design.
+  - id: kss-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: How does a Bugfix Spec's flow differ from a Feature Spec's flow?
+    choices:
+      - id: a
+        text: Bugfix specs skip tasks entirely
+      - id: b
+        text: >-
+          Bugfix specs begin with Bug Analysis (diagnosis) instead of Requirements, then proceed to
+          design and fix-validation tasks
+      - id: c
+        text: Bugfix specs are stored outside .kiro/specs/
+      - id: d
+        text: Bugfix specs cannot use EARS syntax
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A bugfix spec starts from Bug Analysis (diagnosing the defect) rather than greenfield
+      requirements, then designs the fix and produces validation tasks. It still uses tasks, the
+      same storage, and can use EARS (including SHALL CONTINUE TO for preserved behavior).
+  - id: kss-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: multiple_choice
+    prompt: Why might workspace steering take priority over global steering on conflict?
+    choices:
+      - id: a
+        text: Because global files are read-only
+      - id: b
+        text: >-
+          Because project-specific context is more authoritative than a user's cross-project
+          defaults
+      - id: c
+        text: Because global steering is loaded after the session ends
+      - id: d
+        text: Because workspace files are always larger
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Workspace steering reflects the specific project and should override a user's general
+      cross-project defaults, so the more specific scope wins. The read-only, timing, and size
+      claims are invented.
+  - id: kss-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: multiple_choice
+    prompt: How does AGENTS.md relate to Kiro's own steering files?
+    choices:
+      - id: a
+        text: AGENTS.md replaces .kiro/steering/ entirely
+      - id: b
+        text: >-
+          AGENTS.md is a cross-tool convention Kiro also honors; it is always included and, unlike
+          steering files, has no inclusion modes
+      - id: c
+        text: AGENTS.md only works in headless mode
+      - id: d
+        text: AGENTS.md must be placed inside .kiro/specs/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      AGENTS.md is the cross-tool convention; Kiro recognizes it (workspace root or global), always
+      includes it, and it has no inclusion-mode controls. It complements rather than replaces
+      .kiro/steering/.
+  - id: kss-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: multiple_choice
+    prompt: Why does the spec workflow gate Design behind Requirements rather than running them together?
+    choices:
+      - id: a
+        text: So the agent designs against agreed, reviewed requirements instead of guessing at intent
+      - id: b
+        text: Because design.md cannot be created until requirements.md is deleted
+      - id: c
+        text: Because the two files share a filename
+      - id: d
+        text: Because Kiro can only open one Markdown file at a time
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Gating design behind reviewed requirements anchors the technical design to agreed intent,
+      reducing rework. The deletion, filename, and single-file claims are false.
+  - id: kss-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 254
+    type: multiple_choice
+    prompt: Why is one discrete trigger-behavior pair per EARS requirement preferred over compound ones?
+    choices:
+      - id: a
+        text: Because Kiro rejects requirements longer than one line
+      - id: b
+        text: Because compound requirements cannot use the word SHALL
+      - id: c
+        text: Because a single trigger and outcome maps cleanly to one verifiable test
+      - id: d
+        text: Because design.md can only reference one requirement at a time
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Keeping one condition and one behavior per requirement makes each map to a single, verifiable
+      test, which is the point of EARS. There is no line-length limit, SHALL is allowed in compound
+      statements, and the design-reference claim is invented.
+  - id: kss-200-mc-m
+    tier: 200
+    bloom: understand
+    difficulty: 272
+    type: multiple_choice
+    prompt: >-
+      How does committing specs to the repo change collaboration compared with a personal notes
+      file?
+    choices:
+      - id: a
+        text: It makes intent and plan visible, reviewable, and versioned for the whole team in PRs
+      - id: b
+        text: It prevents the agent from reading the spec
+      - id: c
+        text: It converts the spec into a hook automatically
+      - id: d
+        text: It hides the spec from code review
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Committed specs show up in pull requests and version history, so the team can review and track
+      the intent and plan together with the code. Personal notes are invisible to others. The other
+      options are false.
+  - id: kss-200-ff-a
+    tier: 200
+    bloom: understand
+    difficulty: 224
+    type: free_form
+    prompt: >-
+      Explain in your own words how Kiro's parallel task "waves" work and why this is faster than
+      sequential execution.
+    rubric:
+      criteria:
+        - id: c1
+          text: Notes Kiro analyzes a dependency graph among tasks
+        - id: c2
+          text: States independent tasks (no unmet deps) run concurrently in a wave
+        - id: c3
+          text: Explains later waves run once dependencies are satisfied, saving wall-clock time
+      referenceAnswer: >-
+        Kiro builds a dependency graph from tasks.md, then runs all tasks with no unmet dependencies
+        together as wave 1. When those finish, tasks whose dependencies are now satisfied form the
+        next wave. Running independent work concurrently instead of one-at-a-time reduces total
+        wall-clock time while still respecting ordering constraints.
+      passThreshold: 0.6
+    guidance: >-
+      Look for dependency-graph reasoning, concurrent execution of independent tasks, and the
+      wall-clock benefit. A pure "it runs everything at once" answer is wrong because dependencies
+      are respected.
+  - id: kss-200-ff-b
+    tier: 200
+    bloom: understand
+    difficulty: 236
+    type: free_form
+    prompt: >-
+      A teammate asks why your repo has both an always-on steering file and several fileMatch ones.
+      Explain the design intent behind mixing inclusion modes.
+    rubric:
+      criteria:
+        - id: c1
+          text: always-on files carry universally relevant context (e.g. product/tech/structure)
+        - id: c2
+          text: fileMatch files scope context to relevant files to avoid noise/token waste
+        - id: c3
+          text: Mixing keeps every prompt lean while still surfacing the right context when needed
+      referenceAnswer: >-
+        Always-on steering carries context that applies to every interaction, like product purpose
+        and core conventions. fileMatch steering is scoped so specialized guidance (for example,
+        test or API rules) only loads when you are working in matching files. Mixing modes keeps the
+        default context small while still injecting targeted rules exactly when they are relevant,
+        saving tokens and reducing distraction.
+      passThreshold: 0.6
+    guidance: >-
+      Reward the token-economy/relevance argument: universal context goes always-on; narrow context
+      goes fileMatch so it does not pollute unrelated prompts.
+  - id: kss-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: free_form
+    prompt: >-
+      Compare what belongs in a steering file versus what belongs in a spec, and why the two are
+      kept separate.
+    rubric:
+      criteria:
+        - id: c1
+          text: Steering = persistent, cross-feature project context/rules/conventions
+        - id: c2
+          text: Spec = a single feature's requirements/design/tasks
+        - id: c3
+          text: Separation keeps durable rules stable while features come and go
+      referenceAnswer: >-
+        Steering files hold persistent, project-wide context: product purpose, tech constraints,
+        conventions, and standing rules that apply across features. A spec captures one feature's
+        requirements, design, and tasks. Keeping them separate means the durable rules in steering
+        stay stable and reusable while individual specs are created, implemented, and archived per
+        feature.
+      passThreshold: 0.6
+    guidance: >-
+      Steering is durable and cross-cutting; specs are per-feature and transient. Accept answers
+      that capture this stability-vs-feature-lifecycle distinction.
+  - id: kss-200-ff-d
+    tier: 200
+    bloom: understand
+    difficulty: 260
+    type: free_form
+    prompt: >-
+      Why does AGENTS.md not support inclusion modes the way .kiro/steering/ files do? What does
+      that imply about how you should use it?
+    rubric:
+      criteria:
+        - id: c1
+          text: AGENTS.md is a cross-tool convention that is always included
+        - id: c2
+          text: It has no front-matter inclusion controls, so its content is unconditional
+        - id: c3
+          text: Implication - keep AGENTS.md lean/universal; put conditional context in steering files
+      referenceAnswer: >-
+        AGENTS.md follows a shared cross-tool convention where the file is always loaded, so it does
+        not expose Kiro's inclusion front matter. Because everything in it is unconditional context,
+        you should keep it lean and broadly applicable, and push narrow or file-specific guidance
+        into .kiro/steering/ files that can use fileMatch or manual inclusion.
+      passThreshold: 0.6
+    guidance: >-
+      Key insight: always-included means no conditional scoping, so AGENTS.md should stay small and
+      universal while scoped rules belong in steering.
+  - id: kss-200-ff-e
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: free_form
+    prompt: >-
+      Explain how the #[[file:...]] reference mechanism keeps steering accurate over time and one
+      risk if the referenced path moves.
+    rubric:
+      criteria:
+        - id: c1
+          text: The reference resolves to the live file, so edits propagate without re-editing steering
+        - id: c2
+          text: Risk - if the path moves/renames, the reference breaks or resolves to nothing
+      referenceAnswer: >-
+        #[[file:path]] embeds the current contents of the referenced file at use time, so editing
+        that file automatically updates what steering surfaces - no copy/paste drift. The risk is
+        that if the file is moved or renamed, the relative path no longer resolves, so the steering
+        silently loses that context and must be updated.
+      passThreshold: 0.6
+    guidance: >-
+      Reward the live-resolution benefit and the broken-path risk on rename/move. A static copy
+      would not have this drift problem but would go stale instead.
+  - id: kss-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 276
+    type: free_form
+    prompt: >-
+      Why does the spec workflow ask you to approve requirements before generating tasks, rather
+      than generating tasks directly from a prompt?
+    rubric:
+      criteria:
+        - id: c1
+          text: Tasks are derived from design, which is derived from agreed requirements
+        - id: c2
+          text: Early gates catch misunderstandings before code/tasks are produced
+        - id: c3
+          text: Reduces rework versus jumping straight to implementation
+      referenceAnswer: >-
+        The workflow derives design from agreed requirements and tasks from that design. Approving
+        requirements first means misunderstandings about intent are caught before any design or task
+        is generated, so you avoid implementing the wrong thing. Generating tasks straight from a
+        prompt skips those review gates and tends to produce more rework.
+      passThreshold: 0.6
+    guidance: Look for the phased-derivation chain and the rework-reduction rationale of early alignment.
+  - id: kss-200-ff-g
+    tier: 200
+    bloom: understand
+    difficulty: 280
+    type: free_form
+    prompt: >-
+      A bugfix spec's requirements include "the system SHALL CONTINUE TO export to CSV." Explain why
+      bugfix specs include such CONTINUE-TO clauses.
+    rubric:
+      criteria:
+        - id: c1
+          text: They pin existing behavior that must NOT regress while fixing the bug
+        - id: c2
+          text: They turn "do no harm" into a testable acceptance criterion
+      referenceAnswer: >-
+        CONTINUE TO clauses assert behavior that already works and must be preserved by the fix. In
+        a bugfix you are changing code around existing functionality, so explicitly pinning the
+        behaviors that must not regress turns "do no harm" into concrete, testable acceptance
+        criteria that guard against side effects.
+      passThreshold: 0.6
+    guidance: >-
+      Core idea: CONTINUE TO guards against regressions by making preserved behavior an explicit,
+      verifiable requirement during a fix.
+  - id: kss-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You want a steering file that only loads when you edit files under tests/. Which front matter
+      should you use?
+    choices:
+      - id: a
+        text: 'inclusion: always'
+      - id: b
+        text: 'inclusion: fileMatch with fileMatchPattern: "tests/**"'
+      - id: c
+        text: 'inclusion: manual'
+      - id: d
+        text: 'inclusion: fileMatch with command: "test"'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      fileMatch with a fileMatchPattern glob (e.g. tests/**) loads the file only when the matched
+      file is in scope. always would load everywhere, manual would require a # mention, and
+      "command" is not a fileMatch field.
+  - id: kss-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      Your steering doc must always reflect the current OpenAPI contract at api/openapi.yaml. What
+      do you put in the steering file?
+    choices:
+      - id: a
+        text: A copy-paste of the YAML contents
+      - id: b
+        text: '#[[file:api/openapi.yaml]]'
+      - id: c
+        text: 'link: api/openapi.yaml'
+      - id: d
+        text: A relative Markdown link [contract](api/openapi.yaml)
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Use the live reference #[[file:api/openapi.yaml]] so the steering always reflects the current
+      contract. A paste goes stale, a "link:" key is not Kiro syntax, and a Markdown link does not
+      embed the file's contents.
+  - id: kss-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You are fixing a defect, not building a feature. Which spec family and entry phase should you
+      choose?
+    choices:
+      - id: a
+        text: Feature Spec, starting at Requirements
+      - id: b
+        text: Bugfix Spec, starting at Bug Analysis
+      - id: c
+        text: Feature Spec, starting at Design
+      - id: d
+        text: A steering file in .kiro/steering/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A defect calls for a Bugfix Spec, which begins with Bug Analysis (diagnosis) before designing
+      and validating the fix. Feature specs and steering files are for different purposes.
+  - id: kss-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      A new engineer keeps writing code that ignores your monorepo's package layout. Where should
+      the layout conventions live so they apply to every interaction?
+    choices:
+      - id: a
+        text: In each feature's tasks.md
+      - id: b
+        text: In structure.md under .kiro/steering/ (always-included)
+      - id: c
+        text: In .kiro/settings/mcp.json
+      - id: d
+        text: As a one-off chat message
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      structure.md is the foundational steering file for file organization/conventions/architecture
+      and is included in every interaction, so it is the right home for durable layout rules.
+      tasks.md is per-feature, mcp.json is for MCP, and a chat message is not persistent.
+  - id: kss-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      You want a requirement that says when a payment fails, the system retries up to three times.
+      Write it in EARS.
+    choices:
+      - id: a
+        text: The system retries failed payments (best effort)
+      - id: b
+        text: Given a payment, when it fails, then retry thrice
+      - id: c
+        text: Payments must be reliable
+      - id: d
+        text: WHEN a payment fails THEN the system SHALL retry the payment up to three times
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The EARS triggered form is WHEN [condition] THEN the system SHALL [behavior], so "WHEN a
+      payment fails THEN the system SHALL retry the payment up to three times" is correct. Option b
+      is Gherkin; the others are vague prose.
+  - id: kss-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      Two specs touch the same module and you want their independent setup tasks to run together.
+      What should you ensure in tasks.md?
+    choices:
+      - id: a
+        text: Mark the tasks as having no dependency on each other so they land in the same wave
+      - id: b
+        text: Merge both specs into a single requirements.md
+      - id: c
+        text: 'Add an inclusion: always header to tasks.md'
+      - id: d
+        text: Move the tasks into .kiro/hooks/
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro runs tasks with no unmet dependencies concurrently, so leaving the two setup tasks
+      independent lets them share wave 1. Merging specs, adding steering headers, or moving to hooks
+      does not control wave grouping.
+  - id: kss-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 356
+    type: multiple_choice
+    prompt: >-
+      You have a rarely-needed "release checklist" you want to pull in only when you explicitly ask.
+      How should you configure it?
+    choices:
+      - id: a
+        text: 'inclusion: always so it is never forgotten'
+      - id: b
+        text: 'inclusion: manual, then reference it with #release-checklist when needed'
+      - id: c
+        text: 'inclusion: fileMatch with fileMatchPattern: "**/*"'
+      - id: d
+        text: Put it in AGENTS.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A rarely-needed doc fits inclusion: manual, invoked on demand via #release-checklist. always
+      and a catch-all fileMatch would load it constantly, and AGENTS.md is always-included with no
+      on-demand control.
+  - id: kss-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      Your global ~/.kiro/steering/ says "use tabs" but this repo uses spaces. How do you make the
+      repo win without touching your global file?
+    choices:
+      - id: a
+        text: Delete the global steering file
+      - id: b
+        text: >-
+          Add a workspace steering file in .kiro/steering/ stating spaces, since workspace overrides
+          global
+      - id: c
+        text: Rename the global file to spaces.md
+      - id: d
+        text: Move the rule into mcp.json
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Workspace steering takes priority over global on conflict, so adding a .kiro/steering/ rule
+      for spaces makes the repo win while leaving your global default intact. Deleting or renaming
+      the global file is unnecessary and broad.
+  - id: kss-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 368
+    type: multiple_choice
+    prompt: >-
+      You want to keep specs reviewable in pull requests. What is the correct handling of the
+      .kiro/specs/ folder?
+    choices:
+      - id: a
+        text: Add .kiro/specs/ to .gitignore so it stays local
+      - id: b
+        text: >-
+          Commit .kiro/specs/ to version control so requirements/design/tasks are reviewed with the
+          code
+      - id: c
+        text: Store specs in ~/.kiro/specs/ instead
+      - id: d
+        text: Convert each spec into a single hook JSON
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Specs are meant to be committed alongside code so they appear in PRs and stay versioned.
+      Ignoring them, moving them to a home directory, or converting to hooks defeats the reviewable,
+      shared-context goal.
+  - id: kss-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      A requirement must preserve an existing CSV export while you fix a related bug. How do you
+      encode the preservation in EARS?
+    choices:
+      - id: a
+        text: WHEN the bug is fixed THEN the system SHALL CONTINUE TO export to CSV
+      - id: b
+        text: The CSV export probably still works
+      - id: c
+        text: IF CSV THEN delete the export
+      - id: d
+        text: Leave it out; preserved behavior is assumed
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Bugfix specs use SHALL CONTINUE TO to pin preserved behavior, e.g. "... THEN the system SHALL
+      CONTINUE TO export to CSV." Leaving it implicit removes the regression guard; the other
+      options are vague or wrong.
+  - id: kss-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      You want steering that guides only frontend work to load when editing *.tsx files. What
+      front-matter keys do you set?
+    choices:
+      - id: a
+        text: 'inclusion: fileMatch and fileMatchPattern: "**/*.tsx"'
+      - id: b
+        text: 'inclusion: manual and trigger: "tsx"'
+      - id: c
+        text: 'inclusion: always and scope: "frontend"'
+      - id: d
+        text: 'matcher: "*.tsx" inside .kiro/hooks/'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      For file-scoped steering you set inclusion: fileMatch with a fileMatchPattern glob like
+      **/*.tsx. trigger/scope are not steering keys, and matcher belongs to hooks, not steering.
+  - id: kss-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 330
+    type: multiple_choice
+    prompt: >-
+      Where do you place a project-wide testing convention so it reaches the agent in every
+      interaction without re-typing it?
+    choices:
+      - id: a
+        text: In a one-off chat message at the start of each session
+      - id: b
+        text: As a comment in the most recent tasks.md
+      - id: c
+        text: In an always-included steering file under .kiro/steering/
+      - id: d
+        text: In .kiro/settings/mcp.json under mcpServers
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Durable, universally relevant rules belong in an always-included steering file in
+      .kiro/steering/. A chat message is not persistent, tasks.md is per-feature, and mcp.json is
+      for MCP servers.
+  - id: kss-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      You want a security checklist that loads when editing auth code AND can also be pulled in by
+      name elsewhere. Which is the simplest single configuration?
+    choices:
+      - id: a
+        text: Two duplicate files, one always and one manual
+      - id: b
+        text: 'inclusion: always so it is everywhere'
+      - id: c
+        text: >-
+          inclusion: fileMatch over auth code, and reference its filename with a # mention when
+          needed elsewhere
+      - id: d
+        text: Put it in AGENTS.md and delete the steering file
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A single fileMatch file auto-loads on the auth files and can still be #-mentioned by name in
+      other contexts, covering both needs without duplication. always loads everywhere, AGENTS.md
+      cannot be scoped, and duplicate files invite drift.
+  - id: kss-300-mc-n
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: multiple_choice
+    prompt: >-
+      You are reorganizing a repo and move api/openapi.yaml to contracts/openapi.yaml. What must you
+      update in a steering file that referenced it?
+    choices:
+      - id: a
+        text: 'Nothing; #[[file:...]] resolves by filename anywhere in the repo'
+      - id: b
+        text: 'The reference path, e.g. to #[[file:contracts/openapi.yaml]], so it resolves again'
+      - id: c
+        text: The inclusion mode from fileMatch to always
+      - id: d
+        text: The passThreshold in the rubric
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A #[[file:...]] reference uses a relative path, so moving the file breaks it until you update
+      the path to the new location. It does not resolve by bare filename, the inclusion mode is
+      unrelated, and rubrics belong to quiz items, not steering.
+  - id: kss-300-ff-a
+    tier: 300
+    bloom: apply
+    difficulty: 324
+    type: free_form
+    prompt: >-
+      Write a complete YAML front matter block for a steering file named api-conventions.md that
+      should load only when working on files under src/api/.
+    rubric:
+      criteria:
+        - id: c1
+          text: Uses inclusion - fileMatch
+        - id: c2
+          text: Provides a fileMatchPattern glob covering src/api/ (e.g. src/api/**)
+        - id: c3
+          text: Valid YAML front matter delimited by --- lines
+      referenceAnswer: |-
+        ---
+        inclusion: fileMatch
+        fileMatchPattern: "src/api/**"
+        ---
+      passThreshold: 0.6
+    guidance: >-
+      Accept any valid front matter using inclusion: fileMatch plus a fileMatchPattern that covers
+      src/api/ (src/api/**, src/api/*.ts, etc.). Reject always/manual or a missing pattern.
+  - id: kss-300-ff-b
+    tier: 300
+    bloom: apply
+    difficulty: 336
+    type: free_form
+    prompt: >-
+      Write two EARS-style requirements for a login feature: one for a successful login and one for
+      a lockout after five failed attempts.
+    rubric:
+      criteria:
+        - id: c1
+          text: Both use the WHEN/THEN ... SHALL structure
+        - id: c2
+          text: Success case describes the post-login behavior
+        - id: c3
+          text: Lockout case ties the trigger to five failed attempts
+      referenceAnswer: >-
+        WHEN a user submits valid credentials THEN the system SHALL establish an authenticated
+        session and redirect to the dashboard. WHEN a user submits invalid credentials five
+        consecutive times THEN the system SHALL lock the account and require a reset.
+      passThreshold: 0.6
+    guidance: >-
+      Both requirements must follow WHEN [condition] THEN the system SHALL [behavior], with the
+      lockout tied to the five-failed-attempts trigger. Vague prose or Gherkin fails.
+  - id: kss-300-ff-c
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      You inherited a repo with no specs. Describe the concrete steps to drive a new feature through
+      Kiro's spec workflow, naming each artifact you produce.
+    rubric:
+      criteria:
+        - id: c1
+          text: Create a per-feature folder under .kiro/specs/ and produce requirements.md (EARS)
+        - id: c2
+          text: Produce design.md after requirements are agreed
+        - id: c3
+          text: Produce tasks.md and execute tasks (noting parallel waves where independent)
+      referenceAnswer: >-
+        Start a spec for the feature, creating .kiro/specs/<feature>/. First produce requirements.md
+        with EARS acceptance criteria and review it. Once agreed, generate design.md capturing
+        architecture and data flow. Then generate tasks.md with discrete executable tasks; Kiro can
+        run independent tasks concurrently in waves. Commit all three files so the work is
+        reviewable.
+      passThreshold: 0.6
+    guidance: >-
+      Look for the ordered three-phase flow with correctly named artifacts under
+      .kiro/specs/<feature>/ and awareness that tasks can run in parallel waves.
+  - id: kss-300-ff-d
+    tier: 300
+    bloom: apply
+    difficulty: 360
+    type: free_form
+    prompt: >-
+      Your team wants product context shared everywhere but database-migration rules to appear only
+      when touching migrations/. Describe how you would set up the two steering files.
+    rubric:
+      criteria:
+        - id: c1
+          text: Product context goes in an always-included file (e.g. product.md, inclusion always)
+        - id: c2
+          text: Migration rules go in a fileMatch file with a fileMatchPattern over migrations/
+        - id: c3
+          text: Both live under .kiro/steering/
+      referenceAnswer: >-
+        Put the shared product context in product.md (or another always-included steering file) so
+        it loads in every interaction. Create a second steering file under .kiro/steering/ with
+        inclusion: fileMatch and fileMatchPattern: "migrations/**" so the migration rules only load
+        when working under migrations/. Both files live in .kiro/steering/.
+      passThreshold: 0.6
+    guidance: >-
+      Reward the always-vs-fileMatch split with a correct pattern over migrations/ and both files
+      placed in .kiro/steering/.
+  - id: kss-300-ff-e
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: free_form
+    prompt: >-
+      A tasks.md has tasks A (no deps), B (no deps), C (depends on A), D (depends on A and B).
+      Describe the wave schedule Kiro would run.
+    rubric:
+      criteria:
+        - id: c1
+          text: Wave 1 = A and B concurrently (no dependencies)
+        - id: c2
+          text: C can run once A is done; D needs both A and B
+        - id: c3
+          text: Wave 2 = C and D after their deps complete
+      referenceAnswer: >-
+        Wave 1 runs A and B concurrently because neither has dependencies. Once wave 1 completes, C
+        (needs A) and D (needs A and B) both have satisfied dependencies, so wave 2 runs C and D
+        concurrently. Total depth is two waves rather than four sequential steps.
+      passThreshold: 0.6
+    guidance: >-
+      Correct schedule: wave 1 = {A,B}, wave 2 = {C,D}. Accept answers that correctly place C and D
+      after their dependencies complete.
+  - id: kss-300-ff-f
+    tier: 300
+    bloom: apply
+    difficulty: 376
+    type: free_form
+    prompt: >-
+      You keep pasting the same coding-style block into chats. Describe how to convert it into
+      durable steering, including which inclusion mode to pick and why.
+    rubric:
+      criteria:
+        - id: c1
+          text: Create a steering .md file under .kiro/steering/
+        - id: c2
+          text: Choose inclusion - always (or fileMatch if style is file-type-specific)
+        - id: c3
+          text: Justify the choice (universal style = always; scoped style = fileMatch)
+      referenceAnswer: >-
+        Move the style block into a Markdown file under .kiro/steering/. If the style applies to all
+        code, set inclusion: always so it is injected into every interaction and you never paste it
+        again. If it only applies to a language or area, use inclusion: fileMatch with a matching
+        pattern so it loads only when relevant, keeping other prompts lean.
+      passThreshold: 0.6
+    guidance: >-
+      Reward placing it in .kiro/steering/ and a justified inclusion choice: always for universal,
+      fileMatch for scoped style.
+  - id: kss-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 420
+    type: multiple_choice
+    prompt: >-
+      A steering file with inclusion: fileMatch and fileMatchPattern "**/*.py" never seems to load
+      when you work in Jupyter notebooks. What is the most likely cause?
+    choices:
+      - id: a
+        text: fileMatch is broken and you must switch to inclusion always
+      - id: b
+        text: Notebook files are .ipynb, so the *.py pattern never matches them
+      - id: c
+        text: Steering files cannot use fileMatch with Python at all
+      - id: d
+        text: The file is in .kiro/specs/ instead of .kiro/steering/
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      fileMatch only fires when the in-scope file matches the glob. Notebooks are .ipynb, which
+      **/*.py never matches, so the steering correctly does not load. The mode is not broken, and
+      Python patterns are allowed.
+  - id: kss-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 426
+    type: multiple_choice
+    prompt: >-
+      Your global and workspace steering both define a "naming convention" rule and the agent
+      follows the workspace one. A teammate insists the global rule should win. Who is correct and
+      why?
+    choices:
+      - id: a
+        text: The teammate; global always wins because it is loaded first
+      - id: b
+        text: The current behavior is correct; on conflict the workspace file takes priority over global
+      - id: c
+        text: Neither; conflicting steering files are both ignored
+      - id: d
+        text: The teammate; whichever file is larger wins
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro resolves conflicts in favor of the more specific workspace scope, so the workspace rule
+      correctly wins. Load order, mutual ignoring, and file size are not the resolution rule.
+  - id: kss-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 432
+    type: multiple_choice
+    prompt: >-
+      Tasks that should run in parallel are instead running one at a time. Which tasks.md problem
+      most likely explains this?
+    choices:
+      - id: a
+        text: The tasks were written with each depending on the previous, forming a chain
+      - id: b
+        text: 'tasks.md is missing an inclusion: always header'
+      - id: c
+        text: The spec folder is committed to git
+      - id: d
+        text: EARS syntax is used in requirements.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Kiro only parallelizes tasks with no unmet dependencies. If every task declares a dependency
+      on its predecessor, the dependency graph is a chain and waves collapse to sequential. Steering
+      headers, git, and EARS are unrelated.
+  - id: kss-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A steering doc embeds #[[file:config/schema.json]] but the agent acts on outdated schema
+      fields. What is the most plausible explanation?
+    choices:
+      - id: a
+        text: >-
+          The referenced schema.json file itself is stale or the path now points at an old/wrong
+          file
+      - id: b
+        text: '#[[file:...]] caches a snapshot from when the steering file was created'
+      - id: c
+        text: Live references only work in headless mode
+      - id: d
+        text: The agent ignores all JSON files
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A live reference reflects whatever the file currently contains, so outdated behavior points to
+      a stale or misdirected schema.json, not to caching. The reference does not snapshot, is not
+      headless-only, and JSON is not ignored.
+  - id: kss-400-mc-e
+    tier: 400
+    bloom: analyze
+    difficulty: 444
+    type: multiple_choice
+    prompt: >-
+      Reviewers complain that requirements.md is ambiguous and untestable despite using SHALL
+      statements. Which anti-pattern most likely explains it?
+    choices:
+      - id: a
+        text: >-
+          Requirements bundle multiple conditions and behaviors per line instead of one
+          WHEN/THEN/SHALL each
+      - id: b
+        text: Requirements were committed to git
+      - id: c
+        text: The file references a steering file
+      - id: d
+        text: The requirements use the word SHALL too often
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      EARS gains testability from one discrete trigger-behavior pair per requirement. Cramming
+      multiple conditions and outcomes into one statement reintroduces ambiguity even with SHALL.
+      Committing, referencing steering, or using SHALL is not the problem.
+  - id: kss-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 450
+    type: multiple_choice
+    prompt: >-
+      Your AGENTS.md is huge and slows every prompt, but you only need most of it occasionally. What
+      is the cleanest fix?
+    choices:
+      - id: a
+        text: 'Add inclusion: manual front matter to AGENTS.md'
+      - id: b
+        text: >-
+          Move the occasional content into a .kiro/steering/ file with manual or fileMatch
+          inclusion, leaving AGENTS.md lean
+      - id: c
+        text: Delete AGENTS.md entirely
+      - id: d
+        text: Rename AGENTS.md to product.md
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      AGENTS.md is always included and cannot take inclusion modes, so the right move is to relocate
+      occasional content into steering files that support manual/fileMatch inclusion and keep
+      AGENTS.md small. Adding front matter to it has no effect; deleting or renaming loses content.
+  - id: kss-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A bugfix spec fixed the reported crash but broke an adjacent feature. Which spec practice
+      would most likely have prevented this?
+    choices:
+      - id: a
+        text: >-
+          Adding SHALL CONTINUE TO requirements pinning the adjacent feature's behavior, then
+          validating them
+      - id: b
+        text: Storing the spec in ~/.kiro/ instead of the repo
+      - id: c
+        text: Converting the spec into a hook
+      - id: d
+        text: Skipping the design phase to move faster
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Bugfix specs use SHALL CONTINUE TO to pin behavior that must not regress and then validate it,
+      catching collateral breakage. Relocating, converting to a hook, or skipping design would not
+      guard adjacent behavior.
+  - id: kss-400-mc-h
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      A manual steering file (#sec-rules) is never applied even though it is well written. What
+      should you check first?
+    choices:
+      - id: a
+        text: Whether anyone actually
+      - id: b
+        text: Whether tasks.md imports it
+      - id: c
+        text: Whether it is over the file-size limit
+      - id: d
+        text: Whether it is committed to git
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      inclusion: manual means the file is only loaded when explicitly referenced with its # mention.
+      If no one mentions it, it never applies. tasks.md imports, size limits, and git status do not
+      govern this.
+  - id: kss-400-mc-i
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: multiple_choice
+    prompt: >-
+      Two engineers put overlapping rules in product.md and structure.md and now get contradictory
+      guidance. What is the core design problem?
+    choices:
+      - id: a
+        text: >-
+          Both files are always included, so overlapping rules create conflicting always-on context
+          with no clear owner
+      - id: b
+        text: structure.md cannot contain rules
+      - id: c
+        text: product.md is loaded only in headless mode
+      - id: d
+        text: The conflict is impossible; Kiro merges them automatically
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      product.md and structure.md are both foundational always-included files, so duplicating rules
+      across them yields conflicting context with no precedence to resolve it. The fix is single
+      ownership per concern. The other options are false.
+  - id: kss-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: multiple_choice
+    prompt: >-
+      A reviewer says your steering tree mixes concerns by putting MCP server config in
+      .kiro/steering/. Why is that a problem?
+    choices:
+      - id: a
+        text: >-
+          MCP config belongs in .kiro/settings/mcp.json; steering is for project context, not server
+          registration
+      - id: b
+        text: Steering files cannot be JSON, so it simply will not parse
+      - id: c
+        text: It is fine; steering and MCP config are interchangeable
+      - id: d
+        text: MCP config must live in tasks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The .kiro tree separates concerns: steering in .kiro/steering/, MCP servers in
+      .kiro/settings/mcp.json, hooks in .kiro/hooks/. Putting server config in steering conflates
+      two distinct mechanisms even if a file technically sits there.
+  - id: kss-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      A spec's tasks.md and the actual code have diverged - tasks claim work that was never done.
+      Which workflow habit most directly prevents this drift?
+    choices:
+      - id: a
+        text: >-
+          Committing the spec alongside the code so task status is reviewed in the same PR as the
+          changes
+      - id: b
+        text: Storing the spec in ~/.kiro/specs/
+      - id: c
+        text: 'Setting inclusion: always on tasks.md'
+      - id: d
+        text: Increasing the hook timeout
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Reviewing the spec and code in the same PR keeps task status honest against what actually
+      changed. A home-dir spec is unreviewable, tasks.md is not a steering file, and hook timeouts
+      are unrelated.
+  - id: kss-400-mc-l
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: multiple_choice
+    prompt: >-
+      A fileMatch steering file with fileMatchPattern "src/**" also loads when editing src/vendor/
+      third-party code you do not want it to govern. What is the cleanest fix?
+    choices:
+      - id: a
+        text: 'Switch to inclusion: always'
+      - id: b
+        text: Narrow or anchor the pattern (e.g. exclude vendor) so it matches only your own source
+      - id: c
+        text: Move the file to .kiro/specs/
+      - id: d
+        text: Delete the steering file
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The over-broad src/** glob is the cause, so the fix is to tighten the pattern to exclude
+      src/vendor. always would make it worse, .kiro/specs/ is the wrong tree, and deleting loses the
+      rule entirely.
+  - id: kss-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 466
+    type: multiple_choice
+    prompt: >-
+      The agent applies a rule from a steering file you thought was manual-only. What most likely
+      explains the rule still being active?
+    choices:
+      - id: a
+        text: Manual files always load regardless of front matter
+      - id: b
+        text: The same rule also lives in an always-included file (or AGENTS.md), so it loads from there
+      - id: c
+        text: fileMatch and manual are the same mode
+      - id: d
+        text: Steering files are ignored entirely
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      If a "manual" rule is always active, the most likely cause is duplication - the rule also
+      lives in an always-on file or AGENTS.md. Manual files do not auto-load, the modes are
+      distinct, and steering is not ignored.
+  - id: kss-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 474
+    type: multiple_choice
+    prompt: >-
+      A reviewer says your requirements.md and design.md contradict each other on error handling.
+      Which workflow discipline would have surfaced this earliest?
+    choices:
+      - id: a
+        text: >-
+          Reviewing and approving requirements before design is generated, so design is built on
+          agreed intent
+      - id: b
+        text: Putting both files in AGENTS.md
+      - id: c
+        text: Running tasks in a single wave
+      - id: d
+        text: Using more SHALL keywords
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The phased gate - approve requirements, then derive design - is where intent contradictions
+      are cheapest to catch. AGENTS.md placement, wave count, and SHALL frequency do not address the
+      requirements-design conflict.
+  - id: kss-400-ff-a
+    tier: 400
+    bloom: analyze
+    difficulty: 424
+    type: free_form
+    prompt: >-
+      A new fileMatch steering file loads on the wrong files (too many). Walk through how you would
+      diagnose and narrow it.
+    rubric:
+      criteria:
+        - id: c1
+          text: Inspect the fileMatchPattern glob for over-broad matching (e.g. ** or **/*)
+        - id: c2
+          text: Tighten the pattern to the intended directory/extension
+        - id: c3
+          text: Re-verify it loads only for intended files
+      referenceAnswer: >-
+        Open the steering file and inspect its fileMatchPattern. An over-broad glob such as ** or
+        **/* matches nearly everything, which explains the over-loading. Tighten the pattern to the
+        intended scope (for example src/api/** or **/*.sql), save, and confirm the file now loads
+        only when you open matching files and not others.
+      passThreshold: 0.6
+    guidance: >-
+      Look for diagnosing an over-broad glob and narrowing the fileMatchPattern, then verifying
+      scoped loading. Switching to always would make it worse.
+  - id: kss-400-ff-b
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: free_form
+    prompt: >-
+      Your team's specs and steering are drifting from the code. Identify the likely root causes and
+      how Kiro's mechanisms can keep them aligned.
+    rubric:
+      criteria:
+        - id: c1
+          text: Identifies that pasted/static content goes stale vs using live
+        - id: c2
+          text: Notes specs should be committed and reviewed with the code, not edited out of band
+        - id: c3
+          text: Suggests scoping/ownership so docs are maintained where they belong
+      referenceAnswer: >-
+        Drift usually comes from static copies that nobody updates and from editing docs outside the
+        normal review flow. Replace pasted snippets with live #[[file:...]] references so they
+        always reflect current files. Keep specs committed under .kiro/specs/ so they are reviewed
+        in PRs together with code. Assign clear ownership per steering file and scope them (always
+        vs fileMatch) so the right people maintain the right docs.
+      passThreshold: 0.6
+    guidance: >-
+      Reward live references over snapshots, committing/reviewing specs with code, and ownership/
+      scoping as the alignment mechanisms.
+  - id: kss-400-ff-c
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: free_form
+    prompt: >-
+      A spec's tasks.md runs everything sequentially even though several tasks are independent.
+      Diagnose why and describe the fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: Diagnoses spurious/over-declared dependencies forcing a chain in the dependency graph
+        - id: c2
+          text: Fix - remove unnecessary dependencies so independent tasks have none
+        - id: c3
+          text: Result - independent tasks collapse into the same wave and run concurrently
+      referenceAnswer: >-
+        Kiro only parallelizes tasks with no unmet dependencies. If the tasks were authored so each
+        depends on the previous (or share a needless common dependency), the graph is effectively a
+        chain and every wave holds one task. Remove the spurious dependencies so the genuinely
+        independent tasks declare none; they will then fall into the same wave and run concurrently.
+      passThreshold: 0.6
+    guidance: >-
+      Core diagnosis: over-declared dependencies serialize the graph. Fix is to drop unnecessary
+      deps so independent tasks share a wave.
+  - id: kss-400-ff-d
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: free_form
+    prompt: >-
+      Critique this setup - a single 2,000-line AGENTS.md holds product vision, every coding rule,
+      the DB schema, and release steps. What problems does it create and how would you restructure
+      it?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes AGENTS.md is always included, so a giant file inflates every prompt's
+            context/tokens
+        - id: c2
+          text: Notes no scoping/conditional inclusion is possible in AGENTS.md
+        - id: c3
+          text: Proposes splitting into steering files with always/fileMatch/manual + live
+      referenceAnswer: >-
+        Because AGENTS.md is always included, a 2,000-line file is injected into every interaction,
+        wasting tokens and burying relevant guidance. AGENTS.md has no inclusion modes, so you
+        cannot scope any of it. Restructure by keeping only truly universal context in AGENTS.md,
+        moving coding rules to steering files (always for universal, fileMatch for
+        language/area-specific), putting release steps in a manual steering file invoked on demand,
+        and referencing the DB schema with #[[file:...]] so it stays live without bloating the
+        prompt.
+      passThreshold: 0.6
+    guidance: >-
+      Reward recognizing the always-on token cost, the lack of scoping, and a concrete split across
+      steering inclusion modes plus a live schema reference.
+  - id: kss-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: >-
+      The same rule appears in product.md, AGENTS.md, and an always-on custom steering file, and
+      they have started to disagree. Analyze the failure mode and recommend a fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: All three are always-included, so duplication creates conflicting unconditional context
+        - id: c2
+          text: There is no single source of truth, so updates diverge over time
+        - id: c3
+          text: Fix - consolidate the rule to one owner/file and reference it elsewhere rather than copy
+      referenceAnswer: >-
+        product.md, AGENTS.md, and an always-on steering file are all injected every interaction, so
+        duplicating a rule across them produces three always-on copies that drift apart when only
+        one is updated. The failure mode is the absence of a single source of truth. Consolidate the
+        rule into one owning file, delete the duplicates, and if other docs must mention it,
+        reference the canonical location (e.g. via a live file reference) rather than re-stating it.
+      passThreshold: 0.6
+    guidance: >-
+      Reward the always-on-duplication / no-single-source-of-truth analysis and consolidation to one
+      owner with references instead of copies.
+  - id: kss-400-ff-f
+    tier: 400
+    bloom: analyze
+    difficulty: 446
+    type: free_form
+    prompt: >-
+      A teammate stores feature specs in ~/.kiro/specs/ "to keep the repo clean." Explain what
+      breaks and why the in-repo .kiro/specs/ location matters.
+    rubric:
+      criteria:
+        - id: c1
+          text: Specs in a home dir are not shared/reviewed - they vanish from PRs and teammates
+        - id: c2
+          text: >-
+            In-repo .kiro/specs/ keeps requirements/design/tasks versioned with the code they
+            describe
+        - id: c3
+          text: Loss of traceability between intent and implementation
+      referenceAnswer: >-
+        Putting specs in ~/.kiro/specs/ makes them local to one machine: teammates cannot see them,
+        they never appear in pull requests, and they are not versioned with the code. The intended
+        .kiro/specs/ location keeps each feature's requirements, design, and tasks committed
+        alongside the implementation, preserving shared review and the traceability between recorded
+        intent and the code that fulfills it.
+      passThreshold: 0.6
+    guidance: >-
+      Reward the loss-of-sharing/review and loss-of-traceability points and the value of in-repo,
+      versioned specs.
+  - id: kss-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      Which steering design best balances completeness against per-prompt token cost for a large
+      codebase?
+    choices:
+      - id: a
+        text: Put everything in always-included files so nothing is ever missed
+      - id: b
+        text: >-
+          Lean always-on foundations (product/tech/structure) plus fileMatch for area-specific rules
+          and manual for rare playbooks
+      - id: c
+        text: Use only manual files so every prompt starts empty
+      - id: d
+        text: Move all rules into AGENTS.md for simplicity
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The strongest design keeps universal context always-on but lean, scopes area rules with
+      fileMatch, and reserves manual for rarely needed playbooks. All-always or all-AGENTS.md bloats
+      every prompt; all-manual loses durable context.
+  - id: kss-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
+    prompt: >-
+      Two teams debate whether to keep specs in the repo or in a separate wiki. Which judgment is
+      best supported by how Kiro specs are designed to work?
+    choices:
+      - id: a
+        text: A wiki is better because specs are documentation, not code
+      - id: b
+        text: It does not matter where specs live
+      - id: c
+        text: Specs should be deleted after implementation to avoid clutter
+      - id: d
+        text: >-
+          Keep specs in-repo under .kiro/specs/ so they version, review, and travel with the code
+          they describe
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Kiro specs are designed to be committed alongside code so they are versioned and reviewed
+      together, preserving traceability. A detached wiki breaks that coupling; deleting specs
+      discards the recorded intent; "does not matter" ignores the review/versioning benefit.
+  - id: kss-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
+    type: multiple_choice
+    prompt: >-
+      A team proposes writing all requirements as free prose and dropping EARS "because it reads
+      more naturally." Evaluate this.
+    choices:
+      - id: a
+        text: Reasonable; readability outweighs structure for requirements
+      - id: b
+        text: Fine, because Kiro converts prose to EARS automatically anyway
+      - id: c
+        text: >-
+          Risky; free prose tends to be ambiguous and hard to test, which is exactly what EARS's
+          WHEN/THEN/SHALL structure prevents
+      - id: d
+        text: Required, because EARS is not allowed in requirements.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Dropping EARS trades testability for prose readability and tends to reintroduce ambiguity.
+      EARS exists to make each requirement a discrete, verifiable trigger-behavior pair. Kiro does
+      not auto-convert prose, and EARS is encouraged, not banned.
+  - id: kss-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
+    type: multiple_choice
+    prompt: >-
+      Evaluate this rule of thumb - "If context applies to every file, make it always; if it applies
+      to a subset, make it fileMatch; if it is rarely needed, make it manual."
+    choices:
+      - id: a
+        text: Sound; it maps the inclusion modes to how broadly and often the context is relevant
+      - id: b
+        text: Flawed; always should be reserved for security rules only
+      - id: c
+        text: Flawed; manual files load automatically anyway
+      - id: d
+        text: Sound only in headless mode
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The heuristic correctly matches inclusion modes to relevance and frequency: always for
+      universal, fileMatch for scoped, manual for rare. always is not security-only, manual does not
+      auto-load, and the rule is not mode-specific to headless.
+  - id: kss-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 506
+    type: multiple_choice
+    prompt: >-
+      A spec author writes tasks.md with every task depending on a single "setup" task to "be safe."
+      Critique the impact on parallelism.
+    choices:
+      - id: a
+        text: Good practice; a shared setup dependency guarantees correctness
+      - id: b
+        text: >-
+          It needlessly serializes the first wave to one task and can over-constrain later waves,
+          losing parallelism Kiro would otherwise exploit
+      - id: c
+        text: No impact; Kiro ignores declared dependencies
+      - id: d
+        text: It forces all tasks into a single wave run at once
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Making everything depend on one setup task forces a serial first wave and can cascade
+      constraints, suppressing the concurrency Kiro derives from the dependency graph. Dependencies
+      should reflect real ordering only; Kiro honors them rather than ignoring them.
+  - id: kss-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 512
+    type: multiple_choice
+    prompt: Which approach to keeping a steering file's API contract current is most maintainable?
+    choices:
+      - id: a
+        text: Paste the contract into the steering file and update it whenever the API changes
+      - id: b
+        text: Describe the contract in prose from memory
+      - id: c
+        text: Link to an external URL in a comment
+      - id: d
+        text: Reference the contract with
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A live #[[file:...]] reference eliminates manual sync because the steering always reflects the
+      current file. Pasting and prose go stale, and an external URL is not embedded as context the
+      way a file reference is.
+  - id: kss-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 518
+    type: multiple_choice
+    prompt: >-
+      A team wants to encode "never log secrets" so it applies in every interaction with the least
+      risk of being forgotten. What is the best placement?
+    choices:
+      - id: a
+        text: A manual steering file they remember to
+      - id: b
+        text: An always-included steering file (or AGENTS.md), since both are loaded unconditionally
+      - id: c
+        text: A comment inside one feature's tasks.md
+      - id: d
+        text: Only in the PR description
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A safety-critical rule should be unconditional, so an always-included steering file or
+      AGENTS.md is right. A manual file can be forgotten, a per-feature tasks.md is scoped, and a PR
+      description is not steering context.
+  - id: kss-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      Evaluate the claim - "Since AGENTS.md and steering both inject context, we can put everything
+      in AGENTS.md and delete .kiro/steering/."
+    choices:
+      - id: a
+        text: True; they are functionally identical
+      - id: b
+        text: >-
+          False; AGENTS.md is always included with no inclusion modes, so you lose fileMatch/manual
+          scoping and bloat every prompt
+      - id: c
+        text: True, as long as the file is under 500 lines
+      - id: d
+        text: False; AGENTS.md is never read by Kiro
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Collapsing everything into AGENTS.md loses the conditional scoping (fileMatch/manual) that
+      steering provides and forces all content into every prompt. They are not identical; AGENTS.md
+      is read, but it cannot scope context.
+  - id: kss-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A bugfix spec defines a thorough Bug Analysis and fix tasks but no SHALL CONTINUE TO
+      requirements. What is the strongest critique?
+    choices:
+      - id: a
+        text: It is complete; preservation requirements are optional noise
+      - id: b
+        text: >-
+          It lacks explicit regression guards, so the validation cannot prove the fix preserved
+          existing behavior
+      - id: c
+        text: Bug Analysis makes preservation requirements redundant
+      - id: d
+        text: SHALL CONTINUE TO only applies to feature specs
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Without CONTINUE-TO requirements there is nothing to validate that the fix left adjacent
+      behavior intact, so regressions can slip through. Bug Analysis explains the defect but does
+      not itself pin preserved behavior, and CONTINUE TO is specifically a bugfix-spec tool.
+  - id: kss-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 538
+    type: multiple_choice
+    prompt: >-
+      Two reviewers disagree on whether a 12-line "scratch idea" justifies a full requirements ->
+      design -> tasks spec. Which judgment best fits Kiro's intended use of specs?
+    choices:
+      - id: a
+        text: Always run the full three-phase spec, regardless of size, for consistency
+      - id: b
+        text: >-
+          Reserve the full spec workflow for work whose intent and design benefit from explicit,
+          reviewed phases; trivial throwaways need not be over-specced
+      - id: c
+        text: Never use specs; steering covers everything
+      - id: d
+        text: Use a hook instead of a spec for any small change
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Specs add the most value when intent and design warrant explicit, reviewed phases; forcing the
+      full workflow on a trivial throwaway is overhead. Specs and steering serve different purposes,
+      and hooks are not a spec substitute.
+  - id: kss-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 486
+    type: free_form
+    prompt: >-
+      Propose a steering architecture for a 40-engineer monorepo (backend, web, infra). Justify your
+      inclusion-mode choices against token cost and relevance.
+    rubric:
+      criteria:
+        - id: c1
+          text: Lean always-on foundations (product/tech/structure) for universal context
+        - id: c2
+          text: fileMatch steering scoped per area (backend/web/infra) so rules load only when relevant
+        - id: c3
+          text: manual steering for rare playbooks; justifies choices via token cost vs relevance
+      referenceAnswer: >-
+        Keep product.md, tech.md, and structure.md always-on but lean so every prompt has core
+        context without bloat. Add fileMatch steering per area - e.g. patterns over services/**,
+        web/**, and infra/** - so backend, web, and infra rules load only when someone works there,
+        keeping unrelated prompts small. Put rarely needed runbooks (incident response, release) in
+        manual steering invoked on demand. This matches inclusion mode to how broadly and how often
+        each rule is relevant, minimizing per-prompt tokens while ensuring the right context
+        appears.
+      passThreshold: 0.6
+    guidance: >-
+      Reward a lean always-on core, fileMatch scoping per area, and manual for rare content, all
+      justified by relevance/token tradeoffs.
+  - id: kss-500-ff-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: free_form
+    prompt: >-
+      Critique an EARS requirement that reads - "WHEN the user does something wrong THEN the system
+      SHALL handle it appropriately." Rewrite it to be testable.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the condition and behavior as vague/untestable ("something wrong",
+            "appropriately")
+        - id: c2
+          text: Rewrites with a concrete trigger and a concrete, observable behavior
+        - id: c3
+          text: Keeps proper WHEN/THEN/SHALL structure
+      referenceAnswer: >-
+        The requirement uses the EARS shape but its condition ("does something wrong") and behavior
+        ("handle it appropriately") are undefined, so it cannot be tested. Rewrite with concrete
+        terms, for example - "WHEN the user submits a form with an invalid email THEN the system
+        SHALL reject the submission and display an inline 'enter a valid email' message." Now both
+        the trigger and the observable outcome are specific and verifiable.
+      passThreshold: 0.6
+    guidance: >-
+      Reward identifying the vague trigger/behavior and a rewrite with concrete, observable terms in
+      proper EARS form.
+  - id: kss-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: free_form
+    prompt: >-
+      A team treats steering files as a dumping ground - every rule is inclusion: always. Evaluate
+      the consequences and recommend a healthier policy.
+    rubric:
+      criteria:
+        - id: c1
+          text: All-always inflates every prompt's context/tokens and dilutes signal
+        - id: c2
+          text: Conflicts/duplication become likely with many always-on files
+        - id: c3
+          text: Recommends scoping (fileMatch/manual), single ownership, and lean foundations
+      referenceAnswer: >-
+        Making every file always-on injects all of it into every interaction, inflating token cost
+        and burying the rules that matter for the current task. With many always-on files,
+        contradictory or duplicated rules become likely and there is no precedence to resolve them.
+        A healthier policy keeps a lean always-on core, scopes area-specific rules with fileMatch,
+        reserves manual for rare playbooks, and assigns single ownership per concern to prevent
+        duplication.
+      passThreshold: 0.6
+    guidance: Reward the token-bloat and conflict/dilution consequences and a scoping + ownership remedy.
+  - id: kss-500-ff-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      Compare driving a change through a full spec (requirements/design/tasks) versus a single
+      ad-hoc chat prompt. When is each justified?
+    rubric:
+      criteria:
+        - id: c1
+          text: Specs add value for non-trivial work - shared intent, reviewed design, traceable tasks
+        - id: c2
+          text: Ad-hoc prompts fit small/throwaway changes where spec overhead is not worth it
+        - id: c3
+          text: Judgment based on risk, collaboration needs, and longevity of the work
+      referenceAnswer: >-
+        A full spec is justified when the work is non-trivial, collaborative, or long-lived: writing
+        requirements forces shared intent, design enables review before coding, and tasks give a
+        traceable, parallelizable plan committed with the code. An ad-hoc chat prompt is fine for
+        small, low-risk, throwaway changes where the overhead of three reviewed artifacts would slow
+        you down without adding safety. The decision hinges on risk, the need for collaboration and
+        review, and how long the change must be maintained.
+      passThreshold: 0.6
+    guidance: >-
+      Reward a balanced judgment: specs for non-trivial/collaborative/durable work; ad-hoc for small
+      throwaways, decided by risk and longevity.
+  - id: kss-500-ff-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 534
+    type: free_form
+    prompt: >-
+      Assess this workflow - the team writes specs but never reviews requirements before generating
+      design and tasks, "to move faster." What risk does this create and is the speed gain real?
+    rubric:
+      criteria:
+        - id: c1
+          text: Skipping the requirements review removes the early alignment gate
+        - id: c2
+          text: Misunderstood intent propagates into design and tasks, causing expensive rework
+        - id: c3
+          text: Concludes the apparent speedup is often a net loss once rework is counted
+      referenceAnswer: >-
+        The spec workflow's value is in its review gates - agreeing on requirements before design
+        and design before tasks. Skipping the requirements review removes the cheapest place to
+        catch a wrong intent, so misunderstandings flow into design and into generated tasks and
+        code, where they are far more expensive to undo. The speed gain is usually illusory: you
+        save a short review now and pay for it later in rework, so over the change's life the
+        "faster" path is often slower and riskier.
+      passThreshold: 0.6
+    guidance: >-
+      Reward recognizing the lost early-alignment gate, downstream rework cost, and the conclusion
+      that the speedup is typically a false economy.
+  - id: kss-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: free_form
+    prompt: >-
+      Design a policy for what belongs in AGENTS.md versus .kiro/steering/ versus .kiro/specs/ in a
+      shared repo, and defend the boundaries.
+    rubric:
+      criteria:
+        - id: c1
+          text: AGENTS.md - small, universal, always-on context (no scoping available)
+        - id: c2
+          text: >-
+            .kiro/steering/ - durable project rules/context with scoped inclusion
+            (always/fileMatch/manual)
+        - id: c3
+          text: .kiro/specs/ - per-feature requirements/design/tasks, committed and reviewed
+      referenceAnswer: >-
+        Put only small, universal, must-always-apply context in AGENTS.md, since it is always
+        included and cannot be scoped. Use .kiro/steering/ for durable project rules and context
+        that benefit from scoping - always-on foundations like product/tech/structure, fileMatch for
+        area-specific rules, and manual for rare playbooks. Use .kiro/specs/ for per-feature
+        requirements, design, and tasks, committed and reviewed with the code. The boundaries follow
+        from each mechanism's properties: AGENTS.md is unconditional so it must stay lean; steering
+        supports conditional relevance; specs are feature-scoped, reviewable units of work.
+      passThreshold: 0.6
+    guidance: >-
+      Reward correctly assigning universal-always content to AGENTS.md, scoped durable rules to
+      steering, and per-feature work to specs, defended by each mechanism's inclusion/lifecycle
+      properties.
+  - id: kss-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 490
+    type: multiple_choice
+    prompt: >-
+      A team encodes the DB schema by pasting it into three different always-on steering files "so
+      no one misses it." Judge this approach.
+    choices:
+      - id: a
+        text: Excellent; redundancy guarantees the schema is always available
+      - id: b
+        text: Acceptable, since always-on files never conflict
+      - id: c
+        text: >-
+          Poor; three always-on copies bloat every prompt and drift apart - reference one live file
+          instead
+      - id: d
+        text: Poor only because the schema should be in tasks.md
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Three always-on copies multiply token cost and inevitably diverge when one is updated. The
+      durable fix is a single live #[[file:...]] reference to the schema. Redundancy is not a virtue
+      here, and the schema does not belong in tasks.md.
+  - id: kss-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      Which is the better default - "every task in tasks.md declares no dependencies and we trust
+      the agent to order them" or "tasks declare only their real dependencies"?
+    choices:
+      - id: a
+        text: No dependencies; it maximizes parallelism unconditionally
+      - id: b
+        text: >-
+          Declare only real dependencies, so Kiro parallelizes safely while respecting genuine
+          ordering
+      - id: c
+        text: It makes no difference to how Kiro schedules
+      - id: d
+        text: Always chain every task to be safe
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Declaring only genuine dependencies lets Kiro maximize concurrency where safe while still
+      ordering work that truly depends on prior steps. Declaring none risks running order-sensitive
+      work too early; chaining everything kills parallelism.
+  - id: kss-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 516
+    type: multiple_choice
+    prompt: >-
+      A reviewer proposes putting a rarely used incident-response runbook as inclusion: always so
+      "it is there in an emergency." Evaluate this.
+    choices:
+      - id: a
+        text: Wise; emergencies justify always-on context
+      - id: b
+        text: >-
+          Wasteful; it bloats every normal prompt - inclusion: manual, invoked on demand, fits a
+          rare runbook better
+      - id: c
+        text: Required, because runbooks cannot be manual
+      - id: d
+        text: Fine, because always-on files are free
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A rarely needed runbook does not justify paying its token cost on every prompt; manual
+      inclusion pulled in when an incident occurs is the better fit. Runbooks can be manual, and
+      always-on context is not free.
+  - id: kss-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: multiple_choice
+    prompt: >-
+      Two designs for the .kiro tree are proposed - (A) one big steering file holding steering, MCP
+      config, and hooks; (B) steering in .kiro/steering/, MCP in .kiro/settings/mcp.json, hooks in
+      .kiro/hooks/. Which is sounder and why?
+    choices:
+      - id: a
+        text: A; fewer files are always easier to maintain
+      - id: b
+        text: >-
+          B; separating concerns into their designated locations is how Kiro actually loads each
+          mechanism
+      - id: c
+        text: A; Kiro reads any file in .kiro regardless of location
+      - id: d
+        text: Neither; all config must live at the repo root
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Kiro loads steering, MCP config, and hooks from distinct designated paths, so design B aligns
+      with how the tool works and keeps concerns separated. A single catch-all file is not how Kiro
+      discovers MCP servers or hooks, and config is not required at the repo root.

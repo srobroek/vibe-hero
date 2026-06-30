@@ -39,8 +39,9 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && pnpm run copy-assets",
-    "copy-assets": "node -e \"const{cpSync,existsSync,mkdirSync}=require('node:fs');const path=require('node:path');function cp(s,d){if(existsSync(s)){mkdirSync(d,{recursive:true});cpSync(s,d,{recursive:true,filter:p=>!p.endsWith('.ts')});}}cp('src/catalog/bundled','dist/catalog/bundled');const root=path.resolve('../..');['claude-code','general'].forEach(cls=>{const s=path.join(root,'content',cls);const d=path.join('dist','catalog','bundled',cls);if(existsSync(s)){mkdirSync(d,{recursive:true});cpSync(s,d,{recursive:true});}});\"",
+    "build": "pnpm run gen-manifest && tsc -p tsconfig.json && pnpm run copy-assets",
+    "gen-manifest": "node scripts/gen-manifest.mjs",
+    "copy-assets": "node -e \"const{cpSync,existsSync,mkdirSync,readdirSync}=require('node:fs');const path=require('node:path');function cp(s,d){if(existsSync(s)){mkdirSync(d,{recursive:true});cpSync(s,d,{recursive:true,filter:p=>!p.endsWith('.ts')});}}cp('src/catalog/bundled','dist/catalog/bundled');const root=path.resolve('../..');const contentRoot=path.join(root,'content');if(existsSync(contentRoot)){readdirSync(contentRoot,{withFileTypes:true}).filter(e=>e.isDirectory()).map(e=>e.name).forEach(cls=>{const s=path.join(contentRoot,cls);const dDist=path.join('dist','catalog','bundled',cls);mkdirSync(dDist,{recursive:true});cpSync(s,dDist,{recursive:true});const dSrc=path.join('src','catalog','bundled',cls);mkdirSync(dSrc,{recursive:true});cpSync(s,dSrc,{recursive:true});});}\"",
     "prepublishOnly": "pnpm run build",
     "test": "vitest run",
     "test:watch": "vitest",

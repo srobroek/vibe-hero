@@ -47,7 +47,7 @@
 import { randomUUID } from "node:crypto";
 
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { loadBundledCatalog } from "../catalog/bundled/index.js";
+import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
 import { selectItems } from "../engine/selection.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
@@ -130,23 +130,33 @@ const toPresentedItem = (item: ContentItem): PresentedItem => {
 };
 
 /**
- * A catalog source: returns the loaded topics (+ any per-file errors). Defaults
- * to {@link loadBundledCatalog}; tests inject a fixture-dir loader so the US-1
- * loop can exercise a topic with ≥5 deterministic items without disturbing the
- * shared bundled snapshot.
+ * Sync catalog loader (test seam): returns topics synchronously from a fixture
+ * dir. Tests inject this form; production uses {@link CatalogResolver}.
+ * The optional arg is unused by sync loaders but makes the type compatible with
+ * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
  */
-export type CatalogLoader = () => CatalogLoadResult;
+export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
+
+/**
+ * Async catalog resolver (production path): resolves via fresh-fetch → cache →
+ * bundled. Mirrors {@link resolveCatalog}'s signature so the seam is compatible
+ * with both the production resolver and test fakes.
+ */
+export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /**
  * Build the `start_quiz` tool module (US-1).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
- * @param catalogLoader - Catalog source override (test seam); defaults to the
- *   bundled snapshot {@link loadBundledCatalog}.
+ * @param loaderOrResolver - Catalog source seam (test seam); accepts a sync
+ *   {@link CatalogLoader} (test fixtures) or an async {@link CatalogResolver}
+ *   (production). Defaults to {@link resolveCatalog} (fresh-fetch → cache →
+ *   bundled). With no `VIBE_HERO_CONTENT_URL` set, resolver falls back to
+ *   bundled — identical to the prior behavior offline.
  */
 export const makeStartQuizTool = (
   dirOverride?: string,
-  catalogLoader: CatalogLoader = loadBundledCatalog,
+  loaderOrResolver: CatalogLoader | CatalogResolver = resolveCatalog,
 ): AnyToolModule =>
   defineTool({
     name: "start_quiz",
@@ -159,7 +169,9 @@ export const makeStartQuizTool = (
       parseAbilityKey(key);
 
       const profile = await loadProfile(dirOverride);
-      const { topics } = catalogLoader();
+      // Normalize: sync loader (tests) vs async resolver (production).
+      const rawResult = loaderOrResolver(dirOverride);
+      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
 
       const topic = findTopicByKey(topics, key);
       if (topic === undefined) {

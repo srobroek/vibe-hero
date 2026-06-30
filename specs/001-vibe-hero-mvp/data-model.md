@@ -87,7 +87,7 @@ Matching is **trigger-only** (selects which topic to *offer*); it never scores.
 
 | Field | Type | Notes |
 |---|---|---|
-| `toolsLearning` | `ToolId[]` | which tools the user is learning |
+| `toolsLearning` | `ToolId[]` | optional/derived — auto-detected from MCP `clientInfo.name`; may be set explicitly but setup does not ask for it |
 | `offerCadence` | `"off" | "per_session" | "per_topic"` | FR-020a |
 | `proactiveOffers` | boolean | master switch for Story 1 |
 | `quizLength` | int (default 4, range 3–5) | items per session (FR-008a) |

@@ -3,9 +3,9 @@
  *
  * Bootstraps a stdio MCP server (`@modelcontextprotocol/sdk`) named `vibe-hero`
  * with a `tools` capability, then registers all 10 tools from
- * {@link TOOL_REGISTRY}. Each tool's handler is wrapped with the first-run setup
- * gate (T021, {@link withSetupGate}) and adapted from its plain-JSON result into
- * the SDK's `CallToolResult` shape ({@link toCallToolResult}).
+ * {@link TOOL_REGISTRY}. Each tool's handler is wrapped with both gates
+ * ({@link withGates}: setup gate + tool gate) and adapted from its plain-JSON
+ * result into the SDK's `CallToolResult` shape ({@link toCallToolResult}).
  *
  * The SDK idiom (sdk 1.29.0): construct {@link McpServer}, then call
  * `registerTool(name, { description, inputSchema }, cb)`. `registerTool` expects
@@ -27,8 +27,16 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 import { TOOL_REGISTRY } from "./tools/placeholders.js";
-import { withSetupGate } from "./tools/gate.js";
+import { withGates } from "./tools/gate.js";
 import { toCallToolResult, type AnyToolModule } from "./tools/types.js";
+import {
+  detectToolFromClientName,
+  setDetectedTool,
+  setRawClientName,
+} from "./detection.js";
+
+// Re-export detection helpers so callers that import from "index.ts" still work.
+export { detectToolFromClientName, getDetectedTool } from "./detection.js";
 
 /** Server name advertised to MCP hosts. Matches the product/skill namespace. */
 export const SERVER_NAME = "vibe-hero";
@@ -51,7 +59,7 @@ export const registerToolModule = (
   tool: AnyToolModule,
   dirOverride?: string,
 ): void => {
-  const gated = withSetupGate(tool.name, tool.handler, dirOverride);
+  const gated = withGates(tool.name, tool.handler, dirOverride);
   server.registerTool(
     tool.name,
     {
@@ -82,12 +90,35 @@ export const createServer = (dirOverride?: string): McpServer => {
 };
 
 /**
- * Start the server over stdio. Connects a {@link StdioServerTransport} and
- * resolves once connected; the process then stays alive serving tool calls.
+ * Start the server over stdio. Connects a {@link StdioServerTransport},
+ * resolves once connected, and then reads the client's `clientInfo.name`
+ * from the completed MCP handshake to populate {@link _detectedTool}.
+ *
+ * Detection is best-effort: if the client provides no name or the name
+ * does not map to a known {@link ToolId}, `_detectedTool` stays `undefined`
+ * and tools degrade gracefully (no crash, no forced config).
  */
 export const main = async (): Promise<void> => {
   const server = createServer();
   const transport = new StdioServerTransport();
+
+  // Read clientInfo.name from the COMPLETED handshake to map it to a ToolId.
+  // This MUST run in `oninitialized` (fires after the MCP `initialize` round-trip),
+  // NOT immediately after `connect()` — over stdio `connect()` resolves before the
+  // handshake completes, so reading `getClientVersion()` there races and returns
+  // undefined (which would wrongly mark every host UNSUPPORTED_TOOL).
+  // Both the raw name and the mapped ToolId are stored so the tool gate can surface
+  // the raw name in UNSUPPORTED_TOOL messages even when it does not map. If the
+  // client provides no name, both stay undefined and the tool gate returns
+  // UNSUPPORTED_TOOL unless toolsLearning provides a valid configured tool.
+  server.server.oninitialized = (): void => {
+    const clientVersion = server.server.getClientVersion();
+    if (clientVersion?.name !== undefined) {
+      setRawClientName(clientVersion.name);
+      setDetectedTool(detectToolFromClientName(clientVersion.name));
+    }
+  };
+
   await server.connect(transport);
 };
 

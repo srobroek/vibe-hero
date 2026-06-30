@@ -245,6 +245,8 @@ export const CatalogManifestTopicSchema = z.object({
   file: z.string().min(1),
   itemCount: z.number().int().nonnegative(),
   tiers: z.array(TierSchema),
+  /** SHA-256 hex digest of the raw topic YAML file (additive, optional). */
+  sha256: z.string().regex(/^[0-9a-f]{64}$/).optional(),
 });
 /** A topic index entry in the catalog manifest. */
 export type CatalogManifestTopic = z.infer<typeof CatalogManifestTopicSchema>;

@@ -1,0 +1,3014 @@
+# Topic: slash-commands-and-skills (claude-code)
+# Authoring and using Claude Code skills and slash commands — SKILL.md, progressive disclosure, triggering, scoped skills, references and scripts.
+# 100 items, 20/tier (100-500). Authored + adversarially reviewed for correctness, recency, calibration, dedup.
+
+id: slash-commands-and-skills
+class:
+  kind: tool
+  tool: claude-code
+title: Slash Commands & Skills
+summary: >-
+  Authoring and using Claude Code skills and slash commands — SKILL.md, progressive disclosure,
+  triggering, scoped skills, references and scripts.
+triggerSignals: []
+items:
+  - id: scas-100-mc-a
+    tier: 100
+    bloom: remember
+    difficulty: 120
+    type: multiple_choice
+    prompt: In Claude Code, what is a skill?
+    choices:
+      - id: a
+        text: A directory whose required entrypoint is a file named SKILL.md
+      - id: b
+        text: A single Markdown file named after the command it creates
+      - id: c
+        text: A JSON object stored inside .claude/settings.json
+      - id: d
+        text: A built-in CLI command compiled into the Claude Code binary
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A skill is a directory whose entrypoint is a file named SKILL.md; the directory name (not a
+      .md filename) is the unit. It is not a lone Markdown file, a settings entry, or a compiled
+      built-in command.
+  - id: scas-100-mc-b
+    tier: 100
+    bloom: remember
+    difficulty: 124
+    type: multiple_choice
+    prompt: A SKILL.md file is made up of which two parts?
+    choices:
+      - id: a
+        text: A JSON header and an embedded shell script
+      - id: b
+        text: A YAML frontmatter block between --- markers and a Markdown body of instructions
+      - id: c
+        text: An import section and a list of allowed tools
+      - id: d
+        text: A title line and a base64-encoded payload
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      SKILL.md has YAML frontmatter delimited by --- markers followed by a Markdown body of
+      instructions. There is no JSON header, embedded script section, or encoded payload required.
+  - id: scas-100-mc-c
+    tier: 100
+    bloom: remember
+    difficulty: 128
+    type: multiple_choice
+    prompt: Which frontmatter field does Claude match against to decide when to auto-load a skill?
+    choices:
+      - id: a
+        text: name
+      - id: b
+        text: model
+      - id: c
+        text: description
+      - id: d
+        text: argument-hint
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      The description (combined with when_to_use) is the text Claude matches against to decide when
+      to auto-load a skill. name only sets the display name, model overrides the turn model, and
+      argument-hint only drives autocomplete display.
+  - id: scas-100-mc-d
+    tier: 100
+    bloom: remember
+    difficulty: 132
+    type: multiple_choice
+    prompt: >-
+      Which frontmatter field, set to true, prevents Claude from auto-loading a skill so it can only
+      be run manually via /name?
+    choices:
+      - id: a
+        text: user-invocable
+      - id: b
+        text: disable-model-invocation
+      - id: c
+        text: disallowed-tools
+      - id: d
+        text: context
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      disable-model-invocation: true blocks Claude from auto-loading a skill, leaving only manual
+      /name invocation. user-invocable: false hides it from the / menu while still letting Claude
+      invoke it, so it is the wrong field for blocking the model.
+  - id: scas-100-mc-e
+    tier: 100
+    bloom: remember
+    difficulty: 136
+    type: multiple_choice
+    prompt: What does the $ARGUMENTS placeholder expand to in a skill or command body?
+    choices:
+      - id: a
+        text: Only the first whitespace-separated argument
+      - id: b
+        text: The path of the directory containing SKILL.md
+      - id: c
+        text: The current Claude session ID
+      - id: d
+        text: The full argument string exactly as the user typed it after the command name
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      $ARGUMENTS expands to the entire argument string as typed. The first argument alone is $0 (or
+      $ARGUMENTS[0]); the skill directory is ${CLAUDE_SKILL_DIR}; the session ID is
+      ${CLAUDE_SESSION_ID}.
+  - id: scas-100-mc-f
+    tier: 100
+    bloom: remember
+    difficulty: 140
+    type: multiple_choice
+    prompt: When a skill and a custom command share the same name, which one takes precedence?
+    choices:
+      - id: a
+        text: The command
+      - id: b
+        text: Whichever was created most recently
+      - id: c
+        text: The skill
+      - id: d
+        text: Neither; Claude Code refuses to load either one
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      If a skill and a command share a name, the skill takes precedence. Commands have been merged
+      into skills, and .claude/commands/*.md is now the legacy form; Claude Code does not refuse the
+      collision or pick by date.
+  - id: scas-100-ff-g
+    tier: 100
+    bloom: remember
+    difficulty: 144
+    type: free_form
+    prompt: >-
+      Name the three levels of progressive disclosure that govern how a skill's content reaches
+      Claude's context.
+    rubric:
+      criteria:
+        - id: c1
+          text: States the skill name is always available
+        - id: c2
+          text: States the description is loaded into context so Claude knows the skill exists
+        - id: c3
+          text: States the full body loads only when the skill is invoked
+      referenceAnswer: >-
+        Progressive disclosure has three levels: (1) the skill name is always available; (2) the
+        description is loaded into context so Claude knows the skill exists; (3) the full SKILL.md
+        body loads only when the skill is invoked. Supporting files load on demand beyond that.
+      passThreshold: 0.6
+    guidance: >-
+      Progressive disclosure keeps context lean: name (always), description (in context so Claude
+      knows it exists), and full body (only on invocation). Supporting files load on demand. This is
+      why a vague description either misses or over-triggers.
+  - id: scas-100-mc-h
+    tier: 100
+    bloom: remember
+    difficulty: 148
+    type: multiple_choice
+    prompt: In a SKILL.md body, what does the inline form !`command` do?
+    choices:
+      - id: a
+        text: It instructs Claude to call the Bash tool with that command during the turn
+      - id: b
+        text: >-
+          Claude Code runs the shell command before the content reaches Claude and replaces the
+          placeholder with its output
+      - id: c
+        text: It declares a tool that the skill is allowed to use
+      - id: d
+        text: It comments out the line so Claude ignores it
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      !`command` is preprocessing: Claude Code runs the shell command before the skill content
+      reaches Claude and inlines the output as plain text. Claude does not see or execute the
+      command itself; it is not a Bash tool call or an allowed-tools declaration.
+  - id: scas-100-mc-i
+    tier: 100
+    bloom: remember
+    difficulty: 152
+    type: multiple_choice
+    prompt: >-
+      What does listing a tool under allowed-tools in a skill's frontmatter do while the skill is
+      active?
+    choices:
+      - id: a
+        text: Restricts the skill to using only the tools in that list
+      - id: b
+        text: Permanently grants the tool for all future sessions
+      - id: c
+        text: Disables the tool for the rest of the conversation
+      - id: d
+        text: Pre-approves that tool so its use does not trigger a permission prompt
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      allowed-tools pre-approves the listed tools (no per-use prompt) while the skill is active;
+      every other tool stays callable. It does not restrict the tool set. To remove tools, use
+      disallowed-tools.
+  - id: scas-100-mc-j
+    tier: 100
+    bloom: remember
+    difficulty: 156
+    type: multiple_choice
+    prompt: 'Setting user-invocable: false on a skill has which effect?'
+    choices:
+      - id: a
+        text: It stops Claude from ever invoking the skill
+      - id: b
+        text: It hides the skill from the / menu, though Claude can still invoke it
+      - id: c
+        text: It deletes the skill from the listing budget entirely
+      - id: d
+        text: It forces the skill to run in a forked subagent
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      user-invocable: false hides the skill from the / menu but Claude can still invoke it; it is
+      for non-actionable background knowledge. To block Claude itself, use disable-model-invocation:
+      true.
+  - id: scas-100-mc-k
+    tier: 100
+    bloom: remember
+    difficulty: 160
+    type: multiple_choice
+    prompt: >-
+      Which frontmatter field gates a skill to auto-load only when working with files matching glob
+      patterns (a "scoped skill")?
+    choices:
+      - id: a
+        text: when_to_use
+      - id: b
+        text: paths
+      - id: c
+        text: agent
+      - id: d
+        text: effort
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The paths field takes glob patterns and scopes auto-loading to matching files, using the same
+      format as path-specific memory rules. when_to_use adds trigger phrases, agent picks a subagent
+      type, and effort overrides the turn effort.
+  - id: scas-100-ff-l
+    tier: 100
+    bloom: remember
+    difficulty: 164
+    type: free_form
+    prompt: >-
+      Where does the personal-scope skill location live, and where does a project-scope skill live?
+      Give the directory path for each.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States personal skills live at ~/.claude/skills/<name>/SKILL.md (the home .claude/skills
+            dir)
+        - id: c2
+          text: States project skills live at .claude/skills/<name>/SKILL.md inside the repo
+      referenceAnswer: >-
+        Personal skills live at ~/.claude/skills/<name>/SKILL.md and apply across all projects.
+        Project skills live at .claude/skills/<name>/SKILL.md inside that repository and apply only
+        there.
+      passThreshold: 0.6
+    guidance: >-
+      Personal skills (~/.claude/skills/) apply everywhere; project skills (.claude/skills/ in the
+      repo) apply to that repo. Same-name precedence runs enterprise > personal > project, and any
+      of these overrides a same-named bundled skill.
+  - id: scas-100-mc-m
+    tier: 100
+    bloom: remember
+    difficulty: 168
+    type: multiple_choice
+    prompt: What does the ${CLAUDE_SKILL_DIR} substitution expand to in a skill body?
+    choices:
+      - id: a
+        text: The user's home directory
+      - id: b
+        text: The repository root
+      - id: c
+        text: The directory that contains the SKILL.md file
+      - id: d
+        text: The full argument string passed to the skill
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      ${CLAUDE_SKILL_DIR} expands to the directory containing SKILL.md (for plugin skills, the skill
+      subdir), so it can reference bundled scripts regardless of cwd. It is not the home dir, repo
+      root, or argument string ($ARGUMENTS).
+  - id: scas-100-mc-n
+    tier: 100
+    bloom: remember
+    difficulty: 172
+    type: multiple_choice
+    prompt: >-
+      For a custom command defined at .claude/commands/deploy.md, where does the /deploy name come
+      from?
+    choices:
+      - id: a
+        text: The frontmatter name field
+      - id: b
+        text: The file's basename (deploy)
+      - id: c
+        text: The first heading in the Markdown body
+      - id: d
+        text: A randomly generated identifier
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For .claude/commands/*.md the command name is the file basename, so deploy.md becomes /deploy.
+      For skills it is the directory name; the frontmatter name only sets the command name in the
+      one special case of a plugin-root SKILL.md.
+  - id: scas-100-mc-o
+    tier: 100
+    bloom: remember
+    difficulty: 134
+    type: multiple_choice
+    prompt: A command name is recognized only in which position within a message?
+    choices:
+      - id: a
+        text: Anywhere in the message
+      - id: b
+        text: At the end of the message
+      - id: c
+        text: At the very start of the message
+      - id: d
+        text: Only inside a fenced code block
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A command is recognized only at the start of a message; any text after the name is passed as
+      arguments. It is not detected mid-message, at the end, or inside code blocks.
+  - id: scas-100-mc-p
+    tier: 100
+    bloom: remember
+    difficulty: 142
+    type: multiple_choice
+    prompt: Scripts that ship inside a skill directory are handled how, compared to reference docs?
+    choices:
+      - id: a
+        text: Both scripts and reference docs are always loaded fully into context
+      - id: b
+        text: Scripts are executed, not loaded into context, while reference docs are loaded when needed
+      - id: c
+        text: Scripts are loaded into context and reference docs are executed
+      - id: d
+        text: Neither scripts nor reference docs are ever made available to the skill
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Scripts in a skill are executed, not loaded into context; reference docs are loaded only when
+      needed. This keeps SKILL.md lean (recommended under 500 lines) so token cost stays low until
+      something is actually used.
+  - id: scas-100-ff-q
+    tier: 100
+    bloom: remember
+    difficulty: 150
+    type: free_form
+    prompt: >-
+      Custom slash commands have been merged into skills. State what file layout, besides a SKILL.md
+      directory, still creates a working /deploy command, and which form is now recommended.
+    rubric:
+      criteria:
+        - id: c1
+          text: States a .claude/commands/deploy.md file still creates /deploy
+        - id: c2
+          text: States skills (the SKILL.md directory form) are the recommended form
+      referenceAnswer: >-
+        Both .claude/commands/deploy.md and .claude/skills/deploy/SKILL.md create /deploy and work
+        the same way. The .claude/commands/*.md form still works and supports the same frontmatter,
+        but skills are the recommended form because they add supporting files and auto-loading.
+      passThreshold: 0.6
+    guidance: >-
+      Commands and skills are one system: a .claude/commands/*.md file and a skill directory both
+      produce the same /name with the same frontmatter. The legacy commands form still works, but
+      skills are recommended for supporting files and auto-loading.
+  - id: scas-100-mc-r
+    tier: 100
+    bloom: remember
+    difficulty: 158
+    type: multiple_choice
+    prompt: How do MCP-server prompts appear as slash commands in Claude Code?
+    choices:
+      - id: a
+        text: As /<server>.<prompt>, hardcoded in settings.json
+      - id: b
+        text: As /mcp-<prompt>, with the server name omitted
+      - id: c
+        text: As /mcp__<server>__<prompt>, discovered dynamically from connected servers
+      - id: d
+        text: They never appear as slash commands
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      MCP-server prompts surface as commands in the form /mcp__<server>__<prompt>, discovered
+      dynamically from connected servers. They are not hardcoded in settings, and the server name is
+      part of the name.
+  - id: scas-100-mc-s
+    tier: 100
+    bloom: remember
+    difficulty: 176
+    type: multiple_choice
+    prompt: Which command lists installed skills and lets you press t to sort by token count?
+    choices:
+      - id: a
+        text: /context
+      - id: b
+        text: /mcp
+      - id: c
+        text: /doctor
+      - id: d
+        text: /skills
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      /skills lists skills and supports pressing t to sort by token count. /context shows context
+      usage, /mcp manages MCP servers, and /doctor reports diagnostics such as shortened or dropped
+      skill descriptions.
+  - id: scas-100-ff-t
+    tier: 100
+    bloom: remember
+    difficulty: 180
+    type: free_form
+    prompt: >-
+      Distinguish a built-in slash command from a bundled skill in Claude Code. Give one example of
+      each.
+    rubric:
+      criteria:
+        - id: c1
+          text: States built-in commands execute fixed CLI logic (e.g. /help, /compact, /clear, /model)
+        - id: c2
+          text: >-
+            States bundled skills are prompt-based, with Claude orchestrating tools (e.g.
+            /code-review, /debug, /loop)
+      referenceAnswer: >-
+        Built-in commands run fixed CLI logic and are not prompts; examples include /help, /compact,
+        /clear, and /model. Bundled skills are prompt-based, meaning Claude orchestrates the work
+        with tools, and are marked Skill in the commands reference; examples include /code-review,
+        /debug, and /loop.
+      passThreshold: 0.6
+    guidance: >-
+      Built-in commands (/help, /compact, /clear, /model, etc.) execute fixed CLI logic. Bundled
+      skills (/code-review, /debug, /loop, etc.) are prompt-based, with Claude orchestrating tools,
+      and are marked Skill in the commands reference. A same-named user/project/plugin skill
+      overrides a bundled one.
+  - id: scas-200-mc-a
+    tier: 200
+    bloom: understand
+    difficulty: 221
+    type: multiple_choice
+    prompt: Why is a skill described as a directory rather than a single Markdown file?
+    choices:
+      - id: a
+        text: >-
+          Because Claude Code requires every skill to ship with at least one script file alongside
+          SKILL.md.
+      - id: b
+        text: >-
+          Because the unit is a directory whose required entrypoint is a file named SKILL.md, and it
+          can also hold optional supporting files (references, scripts, templates).
+      - id: c
+        text: >-
+          Because the directory name is ignored and only the .md file inside determines the skill's
+          behavior.
+      - id: d
+        text: Because skills must be zipped into a directory archive before Claude Code can load them.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A skill is a directory; its required entrypoint is SKILL.md. The directory can also contain
+      optional supporting files like reference.md or scripts/helper.py that load on demand. Scripts
+      are not required, and the directory name (not the .md filename) is the unit.
+  - id: scas-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 226
+    type: multiple_choice
+    prompt: Why does the `description` field matter even when a user never types the skill's `/name`?
+    choices:
+      - id: a
+        text: >-
+          It is the text Claude matches against to decide when to auto-load the skill, so a poor
+          description means Claude never invokes it on its own.
+      - id: b
+        text: It is displayed as the command's autocomplete hint in the slash menu.
+      - id: c
+        text: It sets the /command name that the user must type to run the skill.
+      - id: d
+        text: It is only used by the /doctor command and has no effect on triggering.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The description (plus when_to_use) is the matching text Claude reads to decide whether to
+      auto-load a skill. Autocomplete display comes from argument-hint; the command name comes from
+      the directory name (not description) in nearly all layouts.
+  - id: scas-200-ff-c
+    tier: 200
+    bloom: understand
+    difficulty: 248
+    type: free_form
+    prompt: >-
+      Explain the three levels of progressive disclosure for a skill in a normal session, and state
+      what is and is not in context before the skill is invoked.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies the three levels as name (always available), description (loaded so Claude
+            knows the skill exists), and full body (loads only on invocation).
+        - id: c2
+          text: >-
+            States that in a normal session descriptions are in context but full bodies are not
+            until the skill is invoked.
+        - id: c3
+          text: Notes that supporting files load on demand beyond the body.
+      referenceAnswer: >-
+        Progressive disclosure has three effective levels. First, the skill name is always
+        available. Second, the skill description is loaded into context so Claude knows the skill
+        exists and can decide to use it. Third, the full SKILL.md body loads only when the skill is
+        invoked (manually or by Claude). So in a normal session the descriptions are present in
+        context but the full bodies are not until invocation. Supporting files (reference docs,
+        scripts) load on demand beyond that, keeping standing token cost low.
+      passThreshold: 0.6
+    guidance: >-
+      The point of progressive disclosure is that only lightweight description text is standing in
+      context; the heavyweight body and supporting files load on demand. This is why a long
+      procedure is cheaper as a skill than as permanent CLAUDE.md content.
+  - id: scas-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 232
+    type: multiple_choice
+    prompt: >-
+      A teammate says "`allowed-tools` restricts a skill to only the tools listed there." Why is
+      this wrong?
+    choices:
+      - id: a
+        text: Because allowed-tools is ignored unless disable-model-invocation is also set to true.
+      - id: b
+        text: >-
+          Because allowed-tools only pre-approves the listed tools (skipping the per-use prompt);
+          every other tool stays callable. To remove tools you use disallowed-tools.
+      - id: c
+        text: Because allowed-tools only applies to plugin skills, not project skills.
+      - id: d
+        text: >-
+          Because allowed-tools restricts tools but only for the very first message after the skill
+          loads.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      allowed-tools is a pre-approval list (it skips prompts for those tools) and does not shrink
+      the tool set; baseline permissions still apply. The restricting field is disallowed-tools,
+      which removes tools from the pool while the skill is active.
+  - id: scas-200-mc-e
+    tier: 200
+    bloom: understand
+    difficulty: 244
+    type: multiple_choice
+    prompt: >-
+      `user-invocable: false` and `disable-model-invocation: true` are sometimes confused. How do
+      their effects differ?
+    choices:
+      - id: a
+        text: They are aliases for the same behavior and either one blocks both the user and Claude.
+      - id: b
+        text: >-
+          user-invocable: false blocks Claude; disable-model-invocation: true hides it from the /
+          menu.
+      - id: c
+        text: >-
+          user-invocable: false hides the skill from the / menu but Claude can still invoke it;
+          disable-model-invocation: true stops Claude from auto-loading it (manual /name only).
+      - id: d
+        text: Both fields only affect plugin skills and are ignored for personal or project skills.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      user-invocable: false hides the skill from the / menu but Claude can still auto-invoke it
+      (good for background knowledge). disable-model-invocation: true does the opposite: it blocks
+      Claude's auto-loading, leaving manual /name only, and also drops the description from context.
+  - id: scas-200-ff-f
+    tier: 200
+    bloom: understand
+    difficulty: 256
+    type: free_form
+    prompt: >-
+      Custom slash commands and skills were merged. Explain what that means for
+      `.claude/commands/deploy.md` versus `.claude/skills/deploy/SKILL.md`, and what happens if both
+      exist with the same name.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that both layouts create the same /deploy command and support the same
+            frontmatter / behavior.
+        - id: c2
+          text: >-
+            States that .claude/commands/*.md still works but is the legacy form; skills are
+            recommended (supporting files, auto-loading).
+        - id: c3
+          text: States that if a skill and command share a name, the skill takes precedence.
+      referenceAnswer: >-
+        Commands and skills are now one system. A file at .claude/commands/deploy.md and a directory
+        .claude/skills/deploy/SKILL.md both create /deploy and work the same way, and the commands
+        file supports the same frontmatter. The .claude/commands/ form still functions but is the
+        legacy approach; skills are recommended because they support supporting files, auto-loading,
+        and the rest. If a skill and a command share the same name, the skill takes precedence.
+      passThreshold: 0.6
+    guidance: >-
+      The big misconception is that commands and skills are separate systems. They were merged: same
+      /name, same frontmatter. Legacy commands/*.md still works, but skills win on a name clash and
+      add capabilities commands lack.
+  - id: scas-200-mc-g
+    tier: 200
+    bloom: understand
+    difficulty: 238
+    type: multiple_choice
+    prompt: >-
+      Built-in commands like `/compact` and bundled skills like `/code-review` both appear in the
+      commands reference. How do they fundamentally differ?
+    choices:
+      - id: a
+        text: Built-in commands can take arguments but bundled skills cannot.
+      - id: b
+        text: Bundled skills run faster because they execute compiled CLI logic directly.
+      - id: c
+        text: >-
+          Built-in commands execute fixed CLI logic, while bundled skills are prompt-based (Claude
+          orchestrates with tools), which is why bundled ones are marked "Skill."
+      - id: d
+        text: There is no difference; both are just prompts that Claude interprets.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Built-in commands (/compact, /clear, /model, /help) run fixed CLI logic. Bundled skills
+      (/code-review, /debug, /loop) are prompt-based, with Claude orchestrating tools, which is why
+      the reference marks them "Skill." A same-named user/project/plugin skill can override a
+      bundled one.
+  - id: scas-200-mc-h
+    tier: 200
+    bloom: understand
+    difficulty: 262
+    type: multiple_choice
+    prompt: >-
+      For a plugin that bundles `skills/deploy/SKILL.md`, the command becomes `/<plugin>:deploy`.
+      Why doesn't the frontmatter `name` field change the command you type here, even though `name`
+      can set the command for a plugin-root SKILL.md?
+    choices:
+      - id: a
+        text: Because plugin skills ignore all frontmatter fields by design.
+      - id: b
+        text: >-
+          Because the name field only sets the display name, which is never used anywhere as a
+          command.
+      - id: c
+        text: Because plugin commands are always derived from the description's first word.
+      - id: d
+        text: >-
+          Because for skills under a skills/ directory the command comes from the directory name;
+          only a plugin-root SKILL.md is the special case where frontmatter name sets the command
+          name.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      For directory-based skills the /command comes from the directory name; name only sets the
+      display label. The single exception is a plugin-root SKILL.md, where frontmatter name sets the
+      invocation name (with the install-dir name as fallback) - important because that fallback can
+      be a changing version string.
+  - id: scas-200-ff-i
+    tier: 200
+    bloom: understand
+    difficulty: 268
+    type: free_form
+    prompt: >-
+      Two skills are both named `deploy`: one at the repo root (`.claude/skills/deploy/`) and one
+      nested at `apps/web/.claude/skills/deploy/`. Explain why both remain available and how you
+      address each, contrasting this with a same-scope name clash.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a nested clash keeps BOTH skills; the nested one gets a directory-qualified
+            name like /apps/web:deploy.
+        - id: c2
+          text: >-
+            States that typing /deploy runs the project-root variant and the qualified name runs the
+            nested one.
+        - id: c3
+          text: >-
+            Contrasts this with a same-scope (e.g. enterprise > personal > project) clash, where one
+            overrides the other instead of both surviving.
+      referenceAnswer: >-
+        Nested same-name skills do not override each other. Both stay available: the nested one is
+        given a directory-qualified name relative to the working directory, e.g. /apps/web:deploy,
+        while typing plain /deploy runs the project-root variant. This differs from a same-scope
+        clash, where the precedence chain (enterprise > personal > project) means the
+        higher-priority skill simply overrides the same-named lower one and only one survives. So
+        nested = both kept under distinct names; same-scope = one wins.
+      passThreshold: 0.6
+    guidance: >-
+      The misconception is that nested clashes behave like same-scope overrides. They don't: a
+      nested clash keeps both, disambiguating the nested skill with a directory-qualified name. Only
+      same-scope name collisions are resolved by overriding.
+  - id: scas-200-mc-j
+    tier: 200
+    bloom: understand
+    difficulty: 234
+    type: multiple_choice
+    prompt: >-
+      When two skills with the same name exist in different scopes, which order determines the
+      winner, and what does this mean for a bundled skill of that name?
+    choices:
+      - id: a
+        text: Project > personal > enterprise, because the most local definition always wins.
+      - id: b
+        text: Enterprise > personal > project, and any of those overrides a same-named bundled skill.
+      - id: c
+        text: Bundled skills always win because they ship with Claude Code.
+      - id: d
+        text: Plugin skills always win over all other scopes because they are namespaced.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Same-name precedence is enterprise > personal > project, and any of those overrides a
+      same-named bundled skill (e.g. a project code-review replaces the bundled /code-review).
+      Plugin skills are namespaced plugin:skill, so they cannot collide rather than always winning.
+  - id: scas-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 252
+    type: multiple_choice
+    prompt: >-
+      What is the difference between `$ARGUMENTS` and `$0` (i.e. `$ARGUMENTS[0]`) when a user runs
+      `/note "hello world" second`?
+    choices:
+      - id: a
+        text: $ARGUMENTS is the first argument and $0 is the full string; they are reversed.
+      - id: b
+        text: >-
+          $ARGUMENTS is the full argument string ("hello world" second) while $0 is the first
+          shell-quoted argument (hello world).
+      - id: c
+        text: Both expand to the entire raw string; $0 is just an alias.
+      - id: d
+        text: $0 expands to the command name (/note) and $ARGUMENTS to everything after it.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      $ARGUMENTS is the full argument string as typed. Indexed access ($ARGUMENTS[N] / shorthand $N,
+      0-based) uses shell-style quoting, so $0 is "hello world" and $1 is second. $0 is not the
+      command name.
+  - id: scas-200-mc-l
+    tier: 200
+    bloom: understand
+    difficulty: 264
+    type: multiple_choice
+    prompt: >-
+      A skill body contains `` !`git status` ``. Why is it inaccurate to say "Claude runs git status
+      as a tool when the skill loads"?
+    choices:
+      - id: a
+        text: >-
+          Because Claude Code runs the command during preprocessing and replaces the placeholder
+          with the output before the content ever reaches Claude; Claude only sees the final
+          rendered text.
+      - id: b
+        text: >-
+          Because the command runs only after Claude explicitly approves it via the permission
+          prompt.
+      - id: c
+        text: Because !`...` is always left literal and never executed in skills.
+      - id: d
+        text: >-
+          Because the output is re-scanned for further placeholders, so the command may run multiple
+          times as a tool.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Inline !`cmd` is preprocessing done by Claude Code: it runs the shell command, substitutes the
+      output, and only then passes the rendered text to Claude. Claude is not invoking a tool.
+      Substitution runs once and injected output is not re-scanned.
+  - id: scas-200-ff-m
+    tier: 200
+    bloom: understand
+    difficulty: 246
+    type: free_form
+    prompt: >-
+      Why does Claude Code recommend keeping large reference docs and scripts as supporting files in
+      a skill directory rather than inlining everything into SKILL.md? Address both how reference
+      docs and scripts are handled.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that supporting reference docs are loaded only when needed, keeping SKILL.md lean
+            and standing token cost low.
+        - id: c2
+          text: States that scripts are executed, not loaded into context.
+        - id: c3
+          text: >-
+            Connects this to keeping SKILL.md small (e.g. the under-500-line guidance) / progressive
+            disclosure.
+      referenceAnswer: >-
+        Supporting files keep SKILL.md lean. Reference docs (reference.md, examples.md) are loaded
+        only when needed, so they cost nothing in context until Claude actually consults them.
+        Scripts are executed rather than loaded into context at all, so their code never bloats the
+        conversation. Inlining everything would put it all into context the moment the skill is
+        invoked. Keeping SKILL.md small (guidance suggests under ~500 lines) and pushing detail into
+        on-demand files is the progressive-disclosure pattern that minimizes standing token cost.
+      passThreshold: 0.6
+    guidance: >-
+      The key distinction: reference docs load on demand; scripts are executed, not loaded. Both
+      keep SKILL.md lean. Inlining a large API spec means it sits in context every turn once
+      invoked; a supporting file loads only when consulted.
+  - id: scas-200-mc-n
+    tier: 200
+    bloom: understand
+    difficulty: 258
+    type: multiple_choice
+    prompt: >-
+      Once a skill is invoked, why is it best to write standing instructions rather than one-time
+      steps in its body?
+    choices:
+      - id: a
+        text: >-
+          Because the rendered SKILL.md enters the conversation as one message and stays for the
+          rest of the session; Claude Code does not re-read the file on later turns.
+      - id: b
+        text: >-
+          Because Claude re-reads SKILL.md from disk on every turn, so step ordering would
+          constantly reset.
+      - id: c
+        text: Because one-time steps are stripped from the body before it loads.
+      - id: d
+        text: Because the body is discarded immediately after the first response completes.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      On invocation the rendered SKILL.md is injected once as a message and persists for the
+      session; Claude Code does not re-read the file each turn. So instructions phrased as one-time
+      steps read oddly later - standing instructions ("when writing tests, ...") age better.
+  - id: scas-200-mc-o
+    tier: 200
+    bloom: understand
+    difficulty: 240
+    type: multiple_choice
+    prompt: What does setting `paths` glob patterns on a skill (a "scoped skill") accomplish?
+    choices:
+      - id: a
+        text: It restricts which files the skill's scripts are allowed to read or write.
+      - id: b
+        text: It permanently disables auto-invocation and forces manual /name use.
+      - id: c
+        text: >-
+          Claude auto-loads the skill only when working with files matching those glob patterns,
+          reducing noise and false triggers.
+      - id: d
+        text: It lists the supporting files inside the skill directory that should load on invocation.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      paths gates auto-loading to files matching the globs (same format as path-specific memory
+      rules), so the skill only fires in relevant contexts. A tradeoff: too-narrow a glob means it
+      silently never fires, and there is no error for a glob that never matches.
+  - id: scas-200-ff-p
+    tier: 200
+    bloom: understand
+    difficulty: 274
+    type: free_form
+    prompt: >-
+      Compare when you should encode behavior as a skill versus as a hook. Explain why a skill is
+      the wrong tool when some behavior must always happen.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that skills are probabilistic - the model decides whether to invoke and whether
+            to keep following them.
+        - id: c2
+          text: >-
+            States that hooks provide deterministic enforcement that does not depend on the model's
+            choice.
+        - id: c3
+          text: >-
+            Concludes that behavior which must always happen belongs in a hook, while reusable
+            on-demand procedures/reference fit a skill.
+      referenceAnswer: >-
+        Skills are probabilistic: Claude decides whether to invoke a skill and whether to keep
+        following its instructions, and it may drift to another approach. That makes skills ideal
+        for reusable procedures or reference material loaded on demand. Hooks, by contrast, are
+        deterministic - the harness runs them regardless of what the model decides. So if some
+        behavior must always happen (e.g. blocking a commit, formatting on save), a skill is the
+        wrong tool because it can be ignored or dropped; encode it as a hook for guaranteed
+        enforcement. Reserve skills for guidance you want the model to apply when relevant.
+      passThreshold: 0.6
+    guidance: >-
+      The decisive axis is determinism. Skills depend on the model choosing to invoke and keep
+      applying them; hooks run no matter what. "Must always happen" implies a hook. Skills shine for
+      on-demand procedure and reference, not for hard guarantees.
+  - id: scas-200-mc-q
+    tier: 200
+    bloom: understand
+    difficulty: 270
+    type: multiple_choice
+    prompt: >-
+      With `context: fork`, a skill runs in a forked subagent. Why might a pure
+      "guidelines/reference" skill with no actionable task be a poor candidate for `context: fork`?
+    choices:
+      - id: a
+        text: Because forked subagents cannot read any supporting files in the skill directory.
+      - id: b
+        text: >-
+          Because the subagent does not see the conversation history, so it receives the guidelines
+          but no concrete task and returns nothing useful.
+      - id: c
+        text: >-
+          Because context: fork silently disables the skill's description so it can never be
+          matched.
+      - id: d
+        text: Because forking always doubles the model cost regardless of the task.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A fork runs the SKILL.md content as the subagent's prompt without conversation history. A pure
+      reference skill gives the subagent guidelines but no actionable task, so it has nothing
+      concrete to do and returns nothing useful. Fork suits self-contained tasks with explicit
+      instructions.
+  - id: scas-200-mc-r
+    tier: 200
+    bloom: understand
+    difficulty: 250
+    type: multiple_choice
+    prompt: Why can't a plugin skill collide with a personal or project skill of the same base name?
+    choices:
+      - id: a
+        text: Because plugin skills are loaded last and any earlier same-named skill blocks them.
+      - id: b
+        text: Because Claude Code refuses to load a plugin whose skill name matches an existing skill.
+      - id: c
+        text: >-
+          Because plugin skills can only be invoked by Claude, never by the user, so names never
+          overlap.
+      - id: d
+        text: >-
+          Because plugin skills are namespaced as plugin-name:skill-name, so their invocation name
+          is always distinct.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Plugin skills live under a plugin-name:skill-name namespace, so their command is always
+      qualified and distinct from a bare personal/project skill name. That namespacing is precisely
+      why they cannot conflict - not a loading order or a refusal to load.
+  - id: scas-200-mc-s
+    tier: 200
+    bloom: understand
+    difficulty: 230
+    type: multiple_choice
+    prompt: >-
+      Why must a slash command appear at the start of a message, with anything after the name
+      treated as arguments?
+    choices:
+      - id: a
+        text: >-
+          Because Claude scans the whole message for any /name token and runs the first one it finds
+          anywhere.
+      - id: b
+        text: Because commands can appear anywhere, but only the last one in the message executes.
+      - id: c
+        text: >-
+          Because a command is only recognized at the start of a message; trailing text is passed to
+          the command as its arguments.
+      - id: d
+        text: Because arguments must precede the command name, not follow it.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A command is recognized only at the very start of a message, and any text after the name
+      becomes the argument string. A /name buried mid-sentence is just literal text, which is why
+      placement matters.
+  - id: scas-200-ff-t
+    tier: 200
+    bloom: understand
+    difficulty: 278
+    type: free_form
+    prompt: >-
+      A plugin ships a single skill as a SKILL.md at the plugin root with no `name` in its
+      frontmatter, installed from a marketplace. Explain why its `/command` name can silently change
+      across updates, and what fixes it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that for a plugin-root SKILL.md the invocation name falls back to the
+            install-directory name when frontmatter name is absent.
+        - id: c2
+          text: >-
+            States that for marketplace installs that install-dir name is a version string that
+            changes each update, so the command name changes.
+        - id: c3
+          text: States that setting frontmatter name gives a stable, fixed command name.
+      referenceAnswer: >-
+        A plugin-root SKILL.md is the special case where frontmatter name sets the command name.
+        When name is omitted, the invocation name falls back to the install-directory name. For a
+        marketplace install, that directory name is a version string that changes on every update,
+        so the /command the user types silently changes from version to version. The fix is to set
+        the frontmatter name field, which pins a stable command name regardless of how the install
+        directory is named - effectively mandatory for a stable plugin-root skill.
+      passThreshold: 0.6
+    guidance: >-
+      Plugin-root SKILL.md uniquely lets frontmatter name set the command. Without it the name falls
+      back to the install dir, which is a changing version string for marketplace installs - so the
+      command name drifts across updates. Setting name pins it.
+  - id: scas-300-mc-a
+    tier: 300
+    bloom: apply
+    difficulty: 320
+    type: multiple_choice
+    prompt: >-
+      You want a reusable "deploy" skill that bundles a helper script and a checklist file. You
+      start by creating the directory .claude/skills/deploy/. What single file MUST exist inside it
+      for Claude Code to recognize this as a skill?
+    choices:
+      - id: a
+        text: deploy.md
+      - id: b
+        text: SKILL.md
+      - id: c
+        text: index.md
+      - id: d
+        text: skill.json
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      A skill is a directory whose required entrypoint is a file named SKILL.md; the directory name
+      is the unit. A bare deploy.md would be a legacy .claude/commands/ command, not a skill, and
+      there is no skill.json or index.md convention.
+  - id: scas-300-mc-b
+    tier: 300
+    bloom: apply
+    difficulty: 326
+    type: multiple_choice
+    prompt: >-
+      You have a /commit skill that runs git commit. You do NOT want Claude to auto-fire it on its
+      own — only when you explicitly type /commit. Which frontmatter field accomplishes this?
+    choices:
+      - id: a
+        text: 'disable-model-invocation: true'
+      - id: b
+        text: 'user-invocable: false'
+      - id: c
+        text: 'allowed-tools: []'
+      - id: d
+        text: 'context: fork'
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      disable-model-invocation true makes the skill manual-only (/commit), preventing Claude from
+      auto-loading it. user-invocable false does the opposite — it hides the skill from the / menu
+      while still letting Claude invoke it. allowed-tools and context:fork do not control who may
+      invoke.
+  - id: scas-300-mc-c
+    tier: 300
+    bloom: apply
+    difficulty: 332
+    type: multiple_choice
+    prompt: >-
+      You wrote a skill that holds background reference knowledge Claude should consult
+      automatically, but it has no actionable steps and you do not want it cluttering the / slash
+      menu for humans. Which setting achieves "Claude can still use it, humans do not see it in the
+      menu"?
+    choices:
+      - id: a
+        text: 'disable-model-invocation: true'
+      - id: b
+        text: 'user-invocable: false'
+      - id: c
+        text: 'paths: []'
+      - id: d
+        text: 'description: (omit it entirely)'
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      user-invocable false hides the skill from the / menu but Claude can still auto-invoke it —
+      exactly the case for non-actionable background knowledge. disable-model-invocation true would
+      do the reverse and block Claude's auto-use. Omitting description hurts auto-matching rather
+      than hiding the menu entry.
+  - id: scas-300-mc-d
+    tier: 300
+    bloom: apply
+    difficulty: 338
+    type: multiple_choice
+    prompt: >-
+      Your skill needs to run git status and gh pr view without prompting you each time, but you do
+      not want to forbid any other tools. You add "allowed-tools: [Bash]". A teammate says this also
+      locks the skill down to ONLY Bash. Are they right, and what does allowed-tools actually do?
+    choices:
+      - id: a
+        text: >-
+          They are right — allowed-tools is an allowlist that restricts the skill to only those
+          tools.
+      - id: b
+        text: >-
+          They are wrong — allowed-tools only pre-approves (skips the prompt) for those tools; every
+          other tool stays callable.
+      - id: c
+        text: They are right, but only while the workspace trust dialog is unaccepted.
+      - id: d
+        text: They are wrong — allowed-tools has no effect unless context is fork.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      allowed-tools pre-approves the listed tools (no per-use prompt) but does NOT restrict the tool
+      set; every tool stays callable and baseline permissions still apply. To actually remove tools
+      you use disallowed-tools or deny rules.
+  - id: scas-300-mc-e
+    tier: 300
+    bloom: apply
+    difficulty: 344
+    type: multiple_choice
+    prompt: >-
+      A skill at .claude/skills/release/SKILL.md sets frontmatter "name: ship-it". A teammate types
+      /ship-it expecting it to run and nothing happens, but /release works. Why?
+    choices:
+      - id: a
+        text: The name field is invalid YAML and was ignored.
+      - id: b
+        text: >-
+          name only sets the display name in listings; the command is the directory name (release)
+          unless this is a plugin-root SKILL.md.
+      - id: c
+        text: name must match the description's first word or it is dropped.
+      - id: d
+        text: Custom command names require disable-model-invocation to be set first.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      For a normal skill, name only changes the display name in listings; the /command comes from
+      the directory name (release). The single exception is a plugin-root SKILL.md, where
+      frontmatter name does set the invocation name.
+  - id: scas-300-mc-f
+    tier: 300
+    bloom: apply
+    difficulty: 350
+    type: multiple_choice
+    prompt: >-
+      Inside SKILL.md you write a line that should embed the current git branch when the skill
+      loads, so Claude sees the actual branch as plain text. Which form does Claude Code preprocess
+      and inline BEFORE Claude reads the content?
+    choices:
+      - id: a
+        text: BRANCH=!`git branch --show-current`
+      - id: b
+        text: $ARGUMENTS{git branch --show-current}
+      - id: c
+        text: ${git branch --show-current}
+      - id: d
+        text: A line beginning with !`git branch --show-current`
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      The inline form !`command` is recognized only when ! is at line start or right after
+      whitespace; Claude Code runs it as preprocessing and replaces the placeholder with the output
+      before Claude sees anything. KEY=!`...` is left literal, and ${...} is for env-style vars, not
+      arbitrary shell.
+  - id: scas-300-mc-g
+    tier: 300
+    bloom: apply
+    difficulty: 354
+    type: multiple_choice
+    prompt: >-
+      You ship a skill that should activate automatically only when Claude is working on Terraform
+      files, and stay silent otherwise. Which frontmatter field gates activation to matching files?
+    choices:
+      - id: a
+        text: 'allowed-tools: ["**/*.tf"]'
+      - id: b
+        text: 'when_to_use: "**/*.tf"'
+      - id: c
+        text: 'paths: ["**/*.tf"]'
+      - id: d
+        text: 'argument-hint: "**/*.tf"'
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      paths takes glob patterns and is the "scoped skills" feature: Claude auto-loads the skill only
+      when working with files matching those globs (same format as path-specific memory rules).
+      when_to_use adds trigger phrases, argument-hint only drives autocomplete, and allowed-tools is
+      about permissions.
+  - id: scas-300-mc-h
+    tier: 300
+    bloom: apply
+    difficulty: 358
+    type: multiple_choice
+    prompt: >-
+      A repo has a project skill named code-review at .claude/skills/code-review/SKILL.md. You type
+      /code-review. Given Claude Code also bundles a /code-review skill, which one runs?
+    choices:
+      - id: a
+        text: The bundled /code-review, because built-in components always take precedence.
+      - id: b
+        text: Neither — the name collision disables both until renamed.
+      - id: c
+        text: >-
+          The project code-review skill, because a user/project/plugin skill of the same name
+          overrides a bundled skill.
+      - id: d
+        text: Both run in sequence, bundled first then project.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A user, project, or plugin skill of the same name overrides a same-named bundled skill, so the
+      project code-review replaces the bundled one. Bundled skills are the lowest-priority layer
+      here (and can also be turned off via disableBundledSkills).
+  - id: scas-300-mc-i
+    tier: 300
+    bloom: apply
+    difficulty: 362
+    type: multiple_choice
+    prompt: >-
+      In a monorepo you have .claude/skills/deploy/SKILL.md at the repo root AND
+      apps/web/.claude/skills/deploy/SKILL.md. You are at the repo root and type /deploy. What runs,
+      and how do you reach the other one?
+    choices:
+      - id: a
+        text: /deploy runs the root variant; the nested one is reachable as /apps/web:deploy.
+      - id: b
+        text: /deploy runs the nested variant because nearer skills win; the root one is unreachable.
+      - id: c
+        text: The collision overrides one of them, so only the root /deploy exists.
+      - id: d
+        text: /deploy is ambiguous and Claude Code refuses to run either until you disambiguate.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Nested skills that clash with another keep BOTH available: the root /deploy runs the root
+      variant, and the nested one gets a directory-qualified name like /apps/web:deploy. Unlike
+      same-scope clashes, nested clashes are not overridden.
+  - id: scas-300-mc-j
+    tier: 300
+    bloom: apply
+    difficulty: 366
+    type: multiple_choice
+    prompt: >-
+      Your skill body contains the line: run the migration named "$0" against "$1". A user types
+      /migrate "add users" prod. What does Claude receive after substitution?
+    choices:
+      - id: a
+        text: run the migration named "add" against "users"
+      - id: b
+        text: run the migration named "add users" against "prod"
+      - id: c
+        text: run the migration named "$ARGUMENTS" against "prod"
+      - id: d
+        text: run the migration named "add users prod" against ""
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      $N is shorthand for $ARGUMENTS[N], a 0-based index, and indexed args use shell-style quoting.
+      So "add users" (quoted) is $0 and prod is $1. $ARGUMENTS would be the whole string, which is
+      not what $0/$1 select.
+  - id: scas-300-mc-k
+    tier: 300
+    bloom: apply
+    difficulty: 370
+    type: multiple_choice
+    prompt: >-
+      A skill bundles a helper at scripts/sync.py inside its own directory and calls it from
+      SKILL.md. You want the call to resolve no matter the user's current working directory. Which
+      variable points at the directory containing SKILL.md?
+    choices:
+      - id: a
+        text: ${CLAUDE_PROJECT_DIR}
+      - id: b
+        text: ${CLAUDE_SESSION_ID}
+      - id: c
+        text: ${CLAUDE_SKILL_DIR}
+      - id: d
+        text: $ARGUMENTS[0]
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      ${CLAUDE_SKILL_DIR} expands to the directory containing SKILL.md (for plugin skills, the skill
+      subdir), so ${CLAUDE_SKILL_DIR}/scripts/sync.py resolves regardless of cwd. CLAUDE_SESSION_ID
+      and the arguments placeholders carry unrelated data.
+  - id: scas-300-mc-l
+    tier: 300
+    bloom: apply
+    difficulty: 374
+    type: multiple_choice
+    prompt: >-
+      You package a plugin that bundles a skill, a hook, and an agent. You place plugin.json plus
+      the skills/, hooks/, and agents/ directories all inside .claude-plugin/. The skill never
+      loads. What is the fix?
+    choices:
+      - id: a
+        text: Rename .claude-plugin/ to .claude/ so Claude Code scans it.
+      - id: b
+        text: Add a "skills" array to plugin.json listing every SKILL.md by absolute path.
+      - id: c
+        text: Set disable-model-invocation:false on each skill so the loader picks them up.
+      - id: d
+        text: >-
+          Move skills/, hooks/, and agents/ to the plugin root; only plugin.json belongs inside
+          .claude-plugin/.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Plugin components (skills/, commands/, hooks/, agents/) must sit at the plugin root, NOT
+      inside .claude-plugin/, which holds only plugin.json. Putting components inside
+      .claude-plugin/ hides them from the loader.
+  - id: scas-300-mc-m
+    tier: 300
+    bloom: apply
+    difficulty: 378
+    type: multiple_choice
+    prompt: >-
+      You want to permission-allow a skill named deploy so it can be invoked with any arguments
+      without a prompt, but NOT bare with no args. Which Skill permission entry matches "deploy
+      followed by arguments"?
+    choices:
+      - id: a
+        text: Skill(deploy)
+      - id: b
+        text: Skill(deploy *)
+      - id: c
+        text: Skill(deploy.*)
+      - id: d
+        text: Skill(deploy:args)
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Skill(name *) is the prefix-match form that matches the skill invoked with any arguments.
+      Skill(deploy) is an exact match (no args), and Skill permission patterns are not regex, so
+      deploy.* and deploy:args are not valid match forms.
+  - id: scas-300-ff-n
+    tier: 300
+    bloom: apply
+    difficulty: 324
+    type: free_form
+    prompt: >-
+      You have a long deployment procedure currently living in CLAUDE.md that only matters during
+      releases. Argue why moving it into a skill reduces standing context cost, and describe what
+      stays in context before the skill is invoked.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that a skill's full body loads only when invoked, so the procedure costs ~nothing
+            until needed (unlike CLAUDE.md which is always in context).
+        - id: c2
+          text: >-
+            States that before invocation only the skill's name and description are in context (so
+            Claude knows it exists and can match it).
+      referenceAnswer: >-
+        In CLAUDE.md the whole procedure is always in context, paying token cost every turn. As a
+        skill it uses progressive disclosure: before invocation only the skill name and its
+        description are loaded so Claude knows it exists and can auto-match it; the full SKILL.md
+        body loads only when the skill is actually invoked. So a release-only procedure costs almost
+        nothing during normal work and is pulled in just for releases.
+      passThreshold: 0.6
+    guidance: >-
+      Progressive disclosure means name + description are in context while the body loads on
+      invocation. Bloating CLAUDE.md with a long procedure pays its token cost every turn; a skill
+      defers that cost to when it is actually used.
+  - id: scas-300-ff-o
+    tier: 300
+    bloom: apply
+    difficulty: 336
+    type: free_form
+    prompt: >-
+      A teammate created .claude/commands/changelog.md and insists it cannot work because "commands
+      and skills are separate systems now and only skills get a /name." Correct them: what does
+      .claude/commands/changelog.md produce, and which form is recommended going forward?
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States commands were merged into skills — .claude/commands/changelog.md still works and
+            creates /changelog (same as a skill would).
+        - id: c2
+          text: >-
+            States skills are the recommended form (e.g. for supporting files, auto-loading) while
+            .claude/commands/ is the legacy form.
+      referenceAnswer: >-
+        Custom commands were merged into skills: .claude/commands/changelog.md still works and
+        produces /changelog, exactly as .claude/skills/changelog/SKILL.md would, and it supports the
+        same frontmatter. They are not separate systems. The .claude/commands/ file is the legacy
+        form; skills are recommended because they add supporting files, auto-loading, and other
+        features.
+      passThreshold: 0.6
+    guidance: >-
+      Commands merged into skills: same /name, same frontmatter. .claude/commands/*.md is the legacy
+      form that still works, but skills are recommended for supporting files and auto-loading.
+  - id: scas-300-ff-p
+    tier: 300
+    bloom: apply
+    difficulty: 348
+    type: free_form
+    prompt: >-
+      You invoked a /standards skill on your first message and it shaped Claude's first reply. Three
+      replies later Claude seems to ignore it, and you assume the skill was unloaded so you keep
+      re-typing /standards every turn. Explain what actually happens to invoked SKILL.md content
+      over a session, and the better fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that once invoked, the rendered SKILL.md enters the conversation as a message and
+            STAYS for the rest of the session (Claude does not re-read the file each turn).
+        - id: c2
+          text: >-
+            States the content is usually still present; the model simply chose other approaches, so
+            re-typing every turn is unnecessary.
+        - id: c3
+          text: >-
+            (optional) Suggests strengthening the description/instructions (standing instructions)
+            or using a hook for deterministic enforcement.
+      referenceAnswer: >-
+        Once invoked, the rendered SKILL.md enters the conversation as a single message and stays
+        for the rest of the session; Claude Code does not re-read the file on later turns. So the
+        content is still present — the model just chose other approaches, not because the skill
+        "unloaded." Re-typing /standards every turn is unnecessary; instead strengthen the
+        description and write standing instructions, and if the behavior must always happen, enforce
+        it with a hook rather than relying on the skill.
+      passThreshold: 0.6
+    guidance: >-
+      Invoked skill content persists as a message; it is not re-read each turn. If behavior must be
+      deterministic, a hook is the right tool — skills are probabilistic.
+  - id: scas-300-ff-q
+    tier: 300
+    bloom: apply
+    difficulty: 352
+    type: free_form
+    prompt: >-
+      You are deciding between three homes for "always run the test suite before any commit":
+      CLAUDE.md, a skill, or a hook. The requirement is that this MUST happen every time, not just
+      usually. Which do you choose and why are the other two wrong for a guaranteed gate?
+    rubric:
+      criteria:
+        - id: c1
+          text: Chooses a hook for deterministic, must-always-happen enforcement.
+        - id: c2
+          text: >-
+            Explains skills (and CLAUDE.md guidance) are probabilistic — the model decides whether
+            to follow them, so they cannot guarantee the behavior.
+      referenceAnswer: >-
+        Use a hook. A hook executes deterministically (e.g. a PreToolUse/Stop hook gating the
+        commit) and does not depend on the model choosing to comply. A skill and CLAUDE.md guidance
+        are both probabilistic: the model decides whether and how to apply them, so they can be
+        ignored and cannot guarantee the test suite runs every time. Facts belong in CLAUDE.md,
+        reusable procedures in a skill, but a hard gate needs a hook.
+      passThreshold: 0.6
+    guidance: >-
+      Skill vs CLAUDE.md vs hook: facts to CLAUDE.md, reusable procedure to a skill, deterministic
+      must-happen enforcement to a hook. Skills are probabilistic, so they are the wrong tool for a
+      hard guarantee.
+  - id: scas-300-ff-r
+    tier: 300
+    bloom: apply
+    difficulty: 364
+    type: free_form
+    prompt: >-
+      You want a skill that does a self-contained codebase exploration in isolation, returning a
+      summary without polluting the main conversation, using read-only tools. Which two frontmatter
+      fields do you set and to what, and what does the subagent NOT see as a result?
+    rubric:
+      criteria:
+        - id: c1
+          text: Sets context to fork (runs the skill in a forked subagent).
+        - id: c2
+          text: >-
+            Sets agent to an appropriate type such as Explore (read-only) — or general-purpose /
+            Plan / a custom agent.
+        - id: c3
+          text: >-
+            Notes the subagent does NOT see conversation history (and for Explore/Plan, also skips
+            CLAUDE.md and git status).
+      referenceAnswer: >-
+        Set context: fork to run the skill in a forked subagent, and agent: Explore to use the
+        read-only exploration agent (general-purpose is the default if unset). The forked subagent's
+        prompt becomes the SKILL.md content and it does NOT see the conversation history; with
+        Explore/Plan it also skips CLAUDE.md and git status. That keeps the main context clean while
+        the subagent returns a summary.
+      passThreshold: 0.6
+    guidance: >-
+      context: fork plus agent picks the subagent type; the fork loses conversation history
+      (Explore/Plan also skip CLAUDE.md and git status). Good for self-contained tasks with explicit
+      instructions.
+  - id: scas-300-ff-s
+    tier: 300
+    bloom: apply
+    difficulty: 372
+    type: free_form
+    prompt: >-
+      You publish a single-skill plugin as one SKILL.md at the plugin root, omitting frontmatter
+      name. Users report the /command name keeps changing every time they update the plugin from the
+      marketplace. Diagnose the cause and give the one-line fix.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that without frontmatter name, a plugin-root SKILL.md falls back to the
+            install-directory name, which for marketplace installs is a version string that changes
+            each update.
+        - id: c2
+          text: >-
+            Fix — set a frontmatter name on the plugin-root SKILL.md (the one case where name sets
+            the invocation/command name) to give it a stable command name.
+      referenceAnswer: >-
+        A plugin-root SKILL.md with no frontmatter name falls back to the install-directory name.
+        For marketplace installs that directory is a version string that changes on every update, so
+        the /command name silently changes each version. The fix: set a frontmatter name on the
+        plugin-root SKILL.md — the one case where name actually sets the invocation/command name —
+        so it has a stable command name across versions.
+      passThreshold: 0.6
+    guidance: >-
+      Plugin-root SKILL.md is the single case where frontmatter name sets the command name. Without
+      it the name defaults to the install dir (a changing version string for marketplace installs),
+      so setting name is effectively mandatory for stable plugin-root skills.
+  - id: scas-300-ff-t
+    tier: 300
+    bloom: apply
+    difficulty: 380
+    type: free_form
+    prompt: >-
+      You added a project skill at .claude/skills/audit/ and you want it to also be available when
+      you run Claude with --add-dir pointing at a sibling repo, where that repo has its own
+      .claude/skills/. A colleague suggests just adding the sibling path to
+      permissions.additionalDirectories instead. Explain why that suggestion fails to load the
+      sibling's skills and what actually does.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States permissions.additionalDirectories grants file access only and does NOT load that
+            directory's skills.
+        - id: c2
+          text: States --add-dir (or /add-dir) is what loads .claude/skills/ from the added directory.
+        - id: c3
+          text: (optional) Notes commands and output-styles are NOT loaded from add-dirs — only skills.
+      referenceAnswer: >-
+        permissions.additionalDirectories only grants file access to that directory; it does not
+        load any skills from it. To pull in the sibling repo's .claude/skills/, you must use
+        --add-dir (or /add-dir) on that path, which is the exception that loads skills from an added
+        directory. Note that even --add-dir loads only skills — commands and output-styles are not
+        loaded from add-dirs.
+      passThreshold: 0.6
+    guidance: >-
+      --add-dir / /add-dir loads .claude/skills/ from the added directory; the
+      permissions.additionalDirectories setting grants file access only and loads no skills.
+      Commands and output-styles are not loaded from add-dirs.
+  - id: scas-400-mc-a
+    tier: 400
+    bloom: analyze
+    difficulty: 422
+    type: multiple_choice
+    prompt: >-
+      A team needs a coding convention to ALWAYS be applied on every commit, with no dependence on
+      whether the model decides it is relevant. They package it as a skill with a strong
+      description, but it is sometimes ignored on later turns. What is the correct diagnosis of why
+      a skill is the wrong tool here?
+    choices:
+      - id: a
+        text: >-
+          The skill body was unloaded after the first reply, so its instructions are no longer in
+          context and must be re-read every turn.
+      - id: b
+        text: >-
+          Skills are probabilistic — the model decides whether to invoke and whether to keep
+          following them; deterministic, must-always-happen enforcement belongs in a hook.
+      - id: c
+        text: >-
+          Skills cannot contain coding conventions; only CLAUDE.md may hold standing rules, so the
+          content was silently discarded.
+      - id: d
+        text: >-
+          The description exceeded the 1,536-char cap and was dropped, so the skill never loaded at
+          all on any turn.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Skills are model-mediated: triggering and continued adherence are both choices the model
+      makes. For behavior that must be guaranteed, a hook provides deterministic enforcement. The
+      body is NOT unloaded after the first reply (a) — it persists; the model simply chose other
+      approaches.
+  - id: scas-400-mc-b
+    tier: 400
+    bloom: analyze
+    difficulty: 430
+    type: multiple_choice
+    prompt: >-
+      An author sets `allowed-tools: [Bash]` on a project skill expecting that, while the skill is
+      active, Claude can ONLY use Bash and nothing else. During use, Claude still calls Edit and
+      Write freely. Why?
+    choices:
+      - id: a
+        text: >-
+          `allowed-tools` is ignored in project-scope skills entirely; it only works in personal
+          `~/.claude/skills/`.
+      - id: b
+        text: >-
+          The list must be a comma string, not a YAML array; because it failed to parse, all tools
+          were allowed by default.
+      - id: c
+        text: >-
+          `allowed-tools` only pre-approves the listed tools (skips their prompt); it does not
+          restrict the tool set. Every tool stays callable. Restricting requires `disallowed-tools`
+          or deny rules.
+      - id: d
+        text: >-
+          `allowed-tools` applies only to subagents spawned with `context: fork`, never to the main
+          session.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      `allowed-tools` is an allowlist for skipping permission prompts, not a restriction. To remove
+      tools from the pool you use `disallowed-tools` (clears on the next message) or deny rules.
+      This is one of the most common misconceptions about skill permissions.
+  - id: scas-400-mc-c
+    tier: 400
+    bloom: analyze
+    difficulty: 438
+    type: multiple_choice
+    prompt: >-
+      A plugin ships a single skill as a root `SKILL.md` with NO frontmatter `name`, installed from
+      a marketplace. Users report that the `/command` they invoke it by keeps changing after every
+      plugin update. What is the cause?
+    choices:
+      - id: a
+        text: >-
+          With no `name`, a plugin-root SKILL.md falls back to the install-directory name, which for
+          marketplace installs is a version string that changes each update.
+      - id: b
+        text: >-
+          Marketplace plugins rotate command names for cache-busting; setting
+          `disable-model-invocation` pins the name.
+      - id: c
+        text: >-
+          The command name is derived from the plugin.json `version` field, so any version bump
+          renames it; removing `version` fixes it.
+      - id: d
+        text: >-
+          Root SKILL.md skills always use a random UUID as their command name unless placed under a
+          `skills/` directory.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The plugin-root SKILL.md is the one case where frontmatter `name` sets the command name.
+      Without it, the fallback is the install-directory name — a version string for marketplace
+      installs — so the name silently drifts. Setting `name` is effectively mandatory for stable
+      plugin-root skills.
+  - id: scas-400-mc-d
+    tier: 400
+    bloom: analyze
+    difficulty: 445
+    type: multiple_choice
+    prompt: >-
+      Both `.claude/commands/deploy.md` and `.claude/skills/deploy/SKILL.md` exist in a repo, each
+      with different bodies. A user types `/deploy`. Which runs, and why does the merge behave this
+      way?
+    choices:
+      - id: a
+        text: >-
+          The command runs, because `.claude/commands/` is the legacy path and legacy paths always
+          win for backward compatibility.
+      - id: b
+        text: >-
+          Neither runs — a name collision between a command and a skill raises an ambiguity error
+          until one is renamed.
+      - id: c
+        text: >-
+          Both run in sequence (command first, then skill), concatenating their bodies into one
+          message.
+      - id: d
+        text: >-
+          The skill runs. Custom commands were merged into skills, and when a skill and a command
+          share a name the skill takes precedence.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Commands and skills are one merged system sharing the `/name` space. `.claude/commands/*.md`
+      still works but is legacy; on a name clash the skill wins. There is no ambiguity error and no
+      concatenation.
+  - id: scas-400-ff-e
+    tier: 400
+    bloom: analyze
+    difficulty: 452
+    type: free_form
+    prompt: >-
+      A skill contains the line `` !`git status --short` `` and the author expects Claude to decide
+      whether to run it. They observe the git output already inlined as plain text before Claude
+      appears to do anything, and disabling the Bash tool does not stop it. Explain what mechanism
+      is actually at work and one policy lever that WOULD stop it.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that `` !`cmd` `` is preprocessing done by Claude Code before the content
+            reaches Claude — not Claude calling a tool.
+        - id: c2
+          text: >-
+            States that Claude only sees the final rendered text, so disabling/denying the Bash tool
+            does not affect it.
+        - id: c3
+          text: >-
+            Names `disableSkillShellExecution: true` (ideally in managed settings) as the lever that
+            replaces the command with a disabled-by-policy placeholder.
+      referenceAnswer: >-
+        The `` !`cmd` `` form is preprocessing: Claude Code runs the shell command and substitutes
+        its output into the skill text BEFORE that text is shown to Claude. Claude never sees the
+        command, only the inlined result, which is why it appears before Claude acts and why denying
+        the Bash tool has no effect — the Bash permission system governs Claude's tool calls, not
+        preprocessing. To stop it, set `disableSkillShellExecution: true` (best in managed
+        settings); it replaces each command with `[shell command execution disabled by policy]`.
+        Bundled/managed skills are exempt.
+      passThreshold: 0.6
+    guidance: >-
+      The key insight is that inline `` !`...` `` is a Claude Code preprocessing step, decoupled
+      from Claude's tool permissions. This is why it is also a trust-surface concern for checked-in
+      project skills, gated by the workspace trust dialog.
+  - id: scas-400-mc-f
+    tier: 400
+    bloom: analyze
+    difficulty: 458
+    type: multiple_choice
+    prompt: >-
+      A monorepo has `.claude/skills/deploy/SKILL.md` at the repo root AND
+      `apps/web/.claude/skills/deploy/SKILL.md`. A developer working in `apps/web` wants the web
+      variant but typing `/deploy` keeps running the root one. What is happening and how do they
+      reach the web variant?
+    choices:
+      - id: a
+        text: >-
+          The nested skill overrode the root one, so `/deploy` should already be the web variant —
+          the developer must `/reload-skills` to apply it.
+      - id: b
+        text: >-
+          Nested same-name skills both stay available; the nested one gets a directory-qualified
+          name. `/deploy` runs the root variant; `/apps/web:deploy` runs the nested one.
+      - id: c
+        text: >-
+          Only one `deploy` skill can exist per repo; the second is ignored, so the web variant must
+          be renamed before it loads.
+      - id: d
+        text: >-
+          The deeper path always wins, so `/deploy` is the web variant and the root one is shadowed
+          and unreachable.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Unlike same-scope clashes (which are overridden), nested same-name clashes keep BOTH skills:
+      the nested one is exposed under a directory-qualified name relative to the working dir. Typing
+      the bare `/deploy` runs the project-root variant.
+  - id: scas-400-mc-g
+    tier: 400
+    bloom: analyze
+    difficulty: 462
+    type: multiple_choice
+    prompt: >-
+      An org has 60 skills installed. Users report that some skills that used to auto-trigger on the
+      right keywords now silently fail to fire, with no error. `/doctor` shows shortened and dropped
+      descriptions. Which explanation best fits, and which lever is the WRONG fix?
+    choices:
+      - id: a
+        text: >-
+          Each skill body grew past 500 lines, so listings were truncated. Wrong fix - front-loading
+          the key use case in the description.
+      - id: b
+        text: >-
+          `disableBundledSkills` was enabled, removing third-party skills. Wrong fix - setting low-
+          priority skills to `name-only` in `skillOverrides`.
+      - id: c
+        text: >-
+          The skill listing budget (about 1% of context) overflowed, dropping least-used
+          descriptions and stripping trigger keywords. Wrong fix - lowering
+          `skillListingBudgetFraction`.
+      - id: d
+        text: >-
+          The 1,536-char per-skill cap deleted the whole skill. Wrong fix - raising
+          `SLASH_COMMAND_TOOL_CHAR_BUDGET`.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      When many skills overflow the listing budget, least-used descriptions are dropped first,
+      silently removing trigger keywords; `/doctor` reports this. Valid levers RAISE budget
+      (`skillListingBudgetFraction` / `SLASH_COMMAND_TOOL_CHAR_BUDGET`), set low-priority skills to
+      `name-only`, front-load use cases, or split skills — so LOWERING the budget fraction is the
+      wrong fix.
+  - id: scas-400-ff-h
+    tier: 400
+    bloom: analyze
+    difficulty: 468
+    type: free_form
+    prompt: >-
+      A reviewer ran a new skill once and saw it auto-trigger correctly, then declared it "working"
+      and shipped it. Explain why this evaluation is incomplete, and describe the
+      baseline-comparison method that actually validates a skill.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that triggering (the skill loading) is not the same as producing correct output —
+            both must be measured.
+        - id: c2
+          text: >-
+            Describes comparing results WITH the skill enabled vs WITHOUT it (disabled) in
+            fresh/isolated sessions to isolate the skill's effect.
+        - id: c3
+          text: >-
+            Mentions that a single run is not enough — multiple test cases / repeated runs are
+            needed to judge invocation rate and output quality.
+      referenceAnswer: >-
+        Auto-triggering only proves the description matched; it says nothing about whether the body
+        produced a correct result. A proper evaluation measures two things: invocation rate (does it
+        fire when it should and stay quiet otherwise) and output quality (is the result actually
+        better). The baseline method runs the same test cases in fresh sessions WITH the skill
+        enabled and WITH it disabled, then compares — the skill-creator tooling automates this with
+        isolated subagent runs and a with-skill-vs-without benchmark. One lucky run is not evidence.
+      passThreshold: 0.6
+    guidance: >-
+      "If it triggered, it works" is a classic anti-pattern. Triggering and correctness are
+      independent; only a baseline comparison (skill on vs off, across cases) separates the skill's
+      contribution from what the model would have done anyway.
+  - id: scas-400-ff-i
+    tier: 400
+    bloom: analyze
+    difficulty: 425
+    type: free_form
+    prompt: >-
+      An author wants a skill that holds background domain knowledge Claude should draw on
+      automatically but that should NOT clutter the user's `/` menu. They set `user-invocable:
+      false`, then complain Claude no longer uses the knowledge at all. Explain why setting
+      `user-invocable: false` was actually correct, and where the real cause of the non-use lies.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that `user-invocable: false` only hides the skill from the `/` menu and that
+            Claude can still auto-invoke it — so it was the right field for the stated goal.
+        - id: c2
+          text: >-
+            Identifies that the non-use must come from elsewhere — most likely a weak/mismatched
+            `description` (or `when_to_use`) so Claude never matches and auto-loads it.
+        - id: c3
+          text: >-
+            Contrasts with `disable-model-invocation: true`, which is the flag that would actually
+            block Claude from invoking the skill.
+      referenceAnswer: >-
+        `user-invocable: false` only removes the skill from the `/` menu; Claude can still invoke it
+        automatically, so it is exactly the right field for background knowledge you do not want as
+        a runnable command. The reason Claude is not drawing on it is something else — most likely
+        the `description`/`when_to_use` text does not match the situations where the knowledge is
+        needed, so it never auto-loads. The flag that WOULD stop Claude invoking it is
+        `disable-model-invocation: true`, which is the opposite of what this author wants.
+      passThreshold: 0.6
+    guidance: >-
+      Two different flags are easy to confuse: `user-invocable: false` hides from the menu but keeps
+      auto-invocation; `disable-model-invocation: true` blocks Claude's auto-loading. The fix here
+      is to strengthen the description's triggers, not change the menu flag.
+  - id: scas-400-mc-j
+    tier: 400
+    bloom: analyze
+    difficulty: 472
+    type: multiple_choice
+    prompt: >-
+      A side-effecting `/deploy` skill should never auto-fire — only run when the user explicitly
+      types it. The author sets `disable-model-invocation: true`. A teammate objects that this has a
+      real downside for OTHER agents. What is that tradeoff?
+    choices:
+      - id: a
+        text: >-
+          It forces the skill to run with `context: fork`, so the deploy loses conversation history
+          it may need.
+      - id: b
+        text: >-
+          It also keeps the skill's description out of context and prevents preloading the skill
+          into subagents, so other agents can no longer know it exists.
+      - id: c
+        text: It strips `allowed-tools`, so every deploy step now triggers a permission prompt.
+      - id: d
+        text: >-
+          It lowers the skill's listing-budget priority, so its description is the first to be
+          dropped under pressure.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `disable-model-invocation: true` is the right call for controlled side-effecting actions, but
+      it removes the description from context and blocks subagent preloading. If other agents should
+      know the skill exists, that is a genuine cost to weigh.
+  - id: scas-400-mc-k
+    tier: 400
+    bloom: analyze
+    difficulty: 448
+    type: multiple_choice
+    prompt: >-
+      A developer adds `permissions.additionalDirectories: ["../shared"]` to settings expecting the
+      skills in `../shared/.claude/skills/` to become available. They never appear. They then run
+      `claude --add-dir ../shared` and the skills load. What distinction explains this?
+    choices:
+      - id: a
+        text: >-
+          `permissions.additionalDirectories` grants file access only; only `--add-dir` / `/add-dir`
+          actually loads `.claude/skills/` from the added directory.
+      - id: b
+        text: >-
+          `additionalDirectories` loads skills but only after a restart, while `--add-dir` loads
+          them immediately; the developer simply did not restart.
+      - id: c
+        text: >-
+          Both load skills, but `additionalDirectories` requires the dir to be inside the repo root,
+          which `../shared` is not.
+      - id: d
+        text: >-
+          Neither loads skills; the developer must symlink the skills into `.claude/skills/` for
+          them to appear.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The `permissions.additionalDirectories` setting grants file access but does NOT load skills.
+      `--add-dir`/`/add-dir` is the exception that loads `.claude/skills/` from the added directory
+      (commands and output-styles are still not loaded from add-dirs).
+  - id: scas-400-ff-l
+    tier: 400
+    bloom: analyze
+    difficulty: 476
+    type: free_form
+    prompt: >-
+      In a long session a critical project skill was invoked early. After auto-compaction, the agent
+      stops following it, even though several other skills were invoked more recently and still seem
+      to apply. Diagnose the most likely cause in terms of the compaction re-attach mechanism, and
+      state the expert remedy.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that after compaction the most recent invocation of each skill is re-attached,
+            but under a bounded combined token budget filled most-recent-first (exact numbers not
+            required).
+        - id: c2
+          text: >-
+            Concludes that the older critical skill was dropped because newer skills consumed the
+            budget (budget is finite; older entries can fall off).
+        - id: c3
+          text: >-
+            States the remedy is to re-invoke the critical skill after compaction rather than assume
+            it persisted.
+      referenceAnswer: >-
+        Through auto-compaction, the most recent invocation of each skill is re-attached after the
+        summary, but they share a bounded combined token budget that is filled most-recent-first.
+        With several more-recent skills, the early critical skill's re-attached content can be
+        pushed out of that finite budget and dropped, which is why it stops influencing behavior.
+        The expert remedy is to re-invoke the critical skill after compaction rather than assuming
+        its content persisted. (The docs state specific per-skill and combined token caps, but the
+        durable point is the bounded, most-recent-first budget that evicts older invocations.)
+      passThreshold: 0.6
+    guidance: >-
+      Skill content normally persists, but compaction is the exception: re-attachment is
+      most-recent-first under a finite, bounded budget, so older invocations can be evicted.
+      Re-invoking after compaction is the durable fix. A correct answer needs the mechanism
+      (bounded, most-recent-first, older entries dropped), not the exact doc-stated token caps,
+      which can shift across releases.
+  - id: scas-400-mc-m
+    tier: 400
+    bloom: analyze
+    difficulty: 434
+    type: multiple_choice
+    prompt: >-
+      An author wraps a pure reference/guidelines skill (no task, just standards) with `context:
+      fork` to "keep the main context clean." Reviewers find the forked run returns nothing useful.
+      Why is forking the wrong choice for THIS skill?
+    choices:
+      - id: a
+        text: Forked subagents cannot read reference files, so the guidelines never load.
+      - id: b
+        text: '`context: fork` is incompatible with `user-invocable: true`, so the skill silently no-ops.'
+      - id: c
+        text: >-
+          With `context: fork` the SKILL.md becomes the subagent's prompt and it loses conversation
+          history; a guidelines-only skill gives the subagent standards but no actionable task, so
+          it returns nothing useful.
+      - id: d
+        text: >-
+          Forking duplicates the guidelines into both contexts, causing the subagent to reject the
+          run as redundant.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Forking is for self-contained TASKS: the body becomes the subagent's prompt and history is not
+      shared. A reference/guidelines skill has no actionable instruction, so the forked agent has
+      nothing to do. Keep pure-reference skills inline (auto-loadable) instead.
+  - id: scas-400-mc-n
+    tier: 400
+    bloom: analyze
+    difficulty: 442
+    type: multiple_choice
+    prompt: >-
+      A `paths`-scoped skill (`paths: ["**/*.tsx"]`) is meant to fire when editing React components,
+      but the author actually works in files like `src/components/Button.ts` and the skill never
+      fires — with no error shown. What is the precise diagnosis?
+    choices:
+      - id: a
+        text: '`paths` requires absolute paths; relative globs are ignored, which is why nothing fired.'
+      - id: b
+        text: >-
+          The glob never matches the touched files, so the skill never auto-loads; a `paths` glob
+          that never matches produces no error — the skill simply stays silent.
+      - id: c
+        text: >-
+          Scoped skills must also set `disable-model-invocation: false` or they are treated as
+          manual-only and never auto-fire.
+      - id: d
+        text: >-
+          The skill fired but its description was dropped from the listing budget, so it had no
+          effect.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      `paths` gates auto-loading to files matching the globs. A too-narrow glob (`*.tsx` while
+      editing `*.ts`) means it silently never fires, and there is no error for a glob that never
+      matches — the core tradeoff of scoped skills. Widen the glob to cover the real file types.
+  - id: scas-400-mc-o
+    tier: 400
+    bloom: analyze
+    difficulty: 456
+    type: multiple_choice
+    prompt: >-
+      A skill body declares no `$ARGUMENTS` placeholder, but the user invokes it as `/summarize the
+      Q3 report`. The author assumed the extra text would be ignored. What actually happens, and
+      what does it imply about argument handling?
+    choices:
+      - id: a
+        text: >-
+          The invocation fails to parse because a skill without `$ARGUMENTS` rejects any trailing
+          text.
+      - id: b
+        text: >-
+          The trailing text is silently discarded, so the skill runs with no knowledge of "the Q3
+          report."
+      - id: c
+        text: >-
+          Because the body lacks `$ARGUMENTS` but args were passed, Claude Code appends `ARGUMENTS:
+          the Q3 report` to the content, so the args still reach the skill.
+      - id: d
+        text: The text after the name is treated as a second command and routed to `/the`.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      If the body omits `$ARGUMENTS` but arguments were passed, Claude Code appends `ARGUMENTS:
+      <value>` to the content so they are not lost. Authors who assume "no placeholder means args
+      are dropped" misdiagnose this — the args are still surfaced.
+  - id: scas-400-ff-p
+    tier: 400
+    bloom: analyze
+    difficulty: 464
+    type: free_form
+    prompt: >-
+      A skill declares `arguments: [issue, branch]` in frontmatter and its body references `$issue`
+      and `$branch`. A teammate, used to positional `$0`/`$1`, claims `$issue` cannot work because
+      Claude Code "only supports numeric argument placeholders." Explain what the `arguments` field
+      does, how `$issue` and `$branch` resolve for `/fix-issue 42 hotfix`, and how this relates to
+      `$0`/`$1`.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that the `arguments` frontmatter field declares named positional arguments that
+            map to positions in order (so `$issue` is the first argument, `$branch` the second).
+        - id: c2
+          text: 'Resolves the example: `$issue` becomes 42 and `$branch` becomes hotfix.'
+        - id: c3
+          text: >-
+            Notes that `$name` is an alias for the same positional slot as `$0`/`$1`/`$ARGUMENTS[N]`
+            (a readability convenience), not a separate mechanism, so the teammate is wrong.
+      referenceAnswer: >-
+        The `arguments` frontmatter field declares named positional arguments. The names map to
+        argument positions in order, so with `arguments: [issue, branch]` the placeholder `$issue`
+        expands to the first argument and `$branch` to the second. For `/fix-issue 42 hotfix`,
+        `$issue` resolves to 42 and `$branch` to hotfix. The named form is just a readable alias for
+        the same positional slot you could reach with `$0`/`$1` (or
+        `$ARGUMENTS[0]`/`$ARGUMENTS[1]`); it is not a separate or numeric-only mechanism, so the
+        teammate is wrong. `$ARGUMENTS` still holds the full raw string.
+      passThreshold: 0.6
+    guidance: >-
+      `arguments: [issue, branch]` names positional slots in order, so `$issue`/`$branch` are
+      readable aliases for `$0`/`$1` (= `$ARGUMENTS[0]`/`$ARGUMENTS[1]`), not a distinct system.
+      `$ARGUMENTS` remains the full string. Naming arguments makes a skill body self-documenting
+      without changing how positions resolve.
+  - id: scas-400-mc-q
+    tier: 400
+    bloom: analyze
+    difficulty: 480
+    type: multiple_choice
+    prompt: >-
+      A subagent definition lists `skills: [release-checklist]` to preload that skill, but the
+      `release-checklist` skill has `disable-model-invocation: true`. At startup the subagent does
+      NOT receive the skill content. What is the causal link being tested?
+    choices:
+      - id: a
+        text: >-
+          Subagent `skills` only accepts plugin-namespaced skills; an unnamespaced project skill is
+          ignored.
+      - id: b
+        text: >-
+          Preloading requires `context: fork` on the skill; without it the `skills` field is a
+          no-op.
+      - id: c
+        text: >-
+          The subagent loads the skill but only its description, never the body, regardless of
+          flags.
+      - id: d
+        text: >-
+          `disable-model-invocation: true` keeps the skill's content from being preloaded into
+          subagents, so it cannot be injected via the subagent's `skills` field.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      A subagent's `skills` field preloads FULL skill content at startup — but a skill marked
+      `disable-model-invocation: true` cannot be preloaded (that flag also keeps it out of context
+      and out of subagent preloading). The interaction of these two features is the trap here.
+  - id: scas-400-ff-r
+    tier: 400
+    bloom: analyze
+    difficulty: 428
+    type: free_form
+    prompt: >-
+      A developer edits the body text of `~/.claude/skills/triage/SKILL.md` mid-session and the
+      change takes effect with no restart. Encouraged, they create a brand-new top-level skills
+      directory and separately add hook files to a plugin — neither change applies until they act
+      further. Explain why the first change applied live but the other two did not, naming the
+      action each of the latter two needs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            States that text edits to SKILL.md under an already-watched skill dir apply live
+            mid-session without restart.
+        - id: c2
+          text: >-
+            States that a brand-new top-level skills directory was not being watched, so it requires
+            a restart to be picked up.
+        - id: c3
+          text: >-
+            States that non-SKILL.md plugin components (hooks/, .mcp.json, agents/) need
+            `/reload-plugins` (and notes `/reload-skills` re-scans skills on demand).
+      referenceAnswer: >-
+        Edits to SKILL.md text inside an already-watched skill directory (here `~/.claude/skills/`)
+        are detected and applied mid-session with no restart. A brand-new top-level skills directory
+        was not being watched when the session started, so it is not discovered until a restart. And
+        non-SKILL.md plugin components — `hooks/`, `.mcp.json`, `agents/` — are not part of the live
+        skill watch; they require `/reload-plugins`. (`/reload-skills` re-scans skills on demand.)
+      passThreshold: 0.6
+    guidance: >-
+      Three different reload behaviors: live text edits to watched SKILL.md files apply instantly; a
+      new top-level skills directory needs a restart; plugin hooks/MCP/agents need
+      `/reload-plugins`. Knowing which is which avoids both "why didn't it apply" and needless
+      restarts.
+  - id: scas-400-mc-s
+    tier: 400
+    bloom: analyze
+    difficulty: 470
+    type: multiple_choice
+    prompt: >-
+      A project-scope `@skills-dir` plugin lives at `apps/api/.claude/skills/migrator/`. A developer
+      launches Claude from the repo root and the plugin's skills do not load, even though plain
+      skills elsewhere in the repo load fine when files are touched. What asymmetry is at play?
+    choices:
+      - id: a
+        text: >-
+          `@skills-dir` plugins require a marketplace install step, so an in-place folder never
+          loads.
+      - id: b
+        text: >-
+          The plugin must be placed under `.claude-plugin/` rather than `.claude/skills/`; its
+          location is invalid.
+      - id: c
+        text: >-
+          Project-scope `@skills-dir` plugins load ONLY from the `.claude/skills/` of the starting
+          directory; they do not walk up/around like plain project skills. Launch from `apps/api` or
+          `/reload-plugins`.
+      - id: d
+        text: >-
+          `@skills-dir` plugins only load when a `version` is set in plugin.json; the missing
+          version suppressed them.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Plain project skills load from the start dir and parents (plus nested on demand), but a
+      project-scope `@skills-dir` plugin loads ONLY from the start directory's `.claude/skills/`.
+      From the repo root, a plugin nested in `apps/api` is not discovered — launch from there or
+      `/reload-plugins`.
+  - id: scas-400-ff-t
+    tier: 400
+    bloom: analyze
+    difficulty: 478
+    type: free_form
+    prompt: >-
+      A teammate argues "checked-in project skills are safe because Claude asks before running
+      tools." Break down two ways a malicious project skill could act on load BEFORE any such
+      prompt, and name the two controls (one user-level, one org-level) that actually gate this
+      risk.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Identifies that a project skill can declare broad `allowed-tools` that pre-approve tools
+            (skipping prompts) once active.
+        - id: c2
+          text: >-
+            Identifies that `` !`cmd` `` preprocessing runs shell commands as the skill content is
+            rendered/loaded, before Claude (and thus any tool prompt) is involved.
+        - id: c3
+          text: >-
+            Names the workspace trust dialog as the user-level gate (both behaviors only take effect
+            after trusting the repo) AND `disableSkillShellExecution` in managed settings as the
+            org-level mitigation.
+      referenceAnswer: >-
+        Two pre-prompt vectors: (1) a project skill can set broad `allowed-tools`, which
+        pre-approves those tools and skips the per-use permission prompt while the skill is active;
+        (2) inline `` !`cmd` `` preprocessing executes shell commands when the skill content is
+        rendered on load — before Claude sees anything and before any tool prompt — so it is not
+        gated by Claude's tool permissions at all. Both are gated by the workspace trust dialog
+        (they only take effect once you trust the repo), which is why reviewing project skills
+        before trusting a repo is a real security judgment. The org-level mitigation is
+        `disableSkillShellExecution: true` in managed settings, which neutralizes the preprocessing
+        vector.
+      passThreshold: 0.6
+    guidance: >-
+      The "Claude always asks first" assumption misses two load-time vectors: pre-approved
+      `allowed-tools` and `` !`cmd` `` preprocessing that bypasses the tool-permission path
+      entirely. The workspace trust dialog is the user gate; `disableSkillShellExecution` (managed)
+      is the org gate.
+  - id: scas-500-mc-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
+    prompt: >-
+      A team wants Claude to ALWAYS append a "DO NOT MERGE" banner to every PR description it
+      drafts, with zero exceptions, regardless of what the model decides in the moment. An engineer
+      proposes shipping this as a project skill with a strong description so Claude auto-loads it.
+      Critique this design choice.
+    choices:
+      - id: a
+        text: >-
+          Sound: a well-described skill is the canonical way to enforce mandatory, always-on
+          behavior in Claude Code.
+      - id: b
+        text: >-
+          Flawed: skills are probabilistic (the model decides whether to follow them), so a
+          guarantee of "always" should be enforced with a deterministic hook, not a skill.
+      - id: c
+        text: >-
+          Flawed only because the description is too short; raising skillListingBudgetFraction would
+          make the behavior reliable.
+      - id: d
+        text: >-
+          Sound, provided disable-model-invocation is set so the skill cannot be skipped by the
+          model.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      Skills influence the model probabilistically; even a loaded skill can be ignored on a given
+      turn. For behavior that must ALWAYS happen independent of model choice, a hook (deterministic
+      enforcement) is the right tool. Budget tuning (c) and disable-model-invocation (d) affect
+      discovery/invocation, not the guarantee that the model obeys once invoked.
+  - id: scas-500-mc-b
+    tier: 500
+    bloom: evaluate
+    difficulty: 489
+    type: multiple_choice
+    prompt: >-
+      A reviewer sees a project skill that declares allowed-tools to "lock the skill down to only
+      Read and Grep so it can't run destructive Bash." Evaluate whether this achieves the stated
+      security goal.
+    choices:
+      - id: a
+        text: >-
+          It does not: allowed-tools only PRE-APPROVES the listed tools (skips prompts); every other
+          tool stays callable. Restricting the set requires disallowed-tools or deny rules.
+      - id: b
+        text: >-
+          It does: allowed-tools is an allowlist that removes every tool not listed for the skill's
+          duration.
+      - id: c
+        text: >-
+          It does, but only after the workspace trust dialog is accepted; before that the skill has
+          no tool access at all.
+      - id: d
+        text: >-
+          It partially does: allowed-tools blocks write tools but still permits all read tools by
+          default.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      allowed-tools is a pre-approval list, not a restriction list: listed tools skip the permission
+      prompt while the skill is active, but Bash and everything else remain fully callable subject
+      to baseline settings. To actually remove tools from the pool you use disallowed-tools (or deny
+      permission rules). The trust dialog (c) gates whether project allowed-tools takes effect, not
+      the allowlist semantics.
+  - id: scas-500-ff-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 496
+    type: free_form
+    prompt: >-
+      Your repo has ~60 skills and /doctor reports that several skill descriptions are being
+      shortened or dropped. A teammate proposes "just make every description shorter and vaguer so
+      they all fit." Critique that proposal and give a better strategy that weighs the competing
+      costs.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that vague descriptions hurt triggering — they miss (no keyword match) or
+            over-trigger, so shortening to vagueness is the wrong fix.
+        - id: c2
+          text: >-
+            Names a real lever such as front-loading the key use case within the 1,536-char cap,
+            setting low-priority skills to name-only via skillOverrides, raising
+            skillListingBudgetFraction / SLASH_COMMAND_TOOL_CHAR_BUDGET, or splitting skills.
+        - id: c3
+          text: >-
+            Identifies the tradeoff that a larger listing budget increases standing token cost every
+            turn.
+      referenceAnswer: >-
+        Making descriptions vague does not solve the budget problem and degrades matching: the
+        description is what Claude matches on, so stripping trigger keywords causes misses or
+        over-triggering. Better: front-load each skill's key use case first (the listing truncates
+        at 1,536 chars), demote rarely used skills to "name-only" via skillOverrides so their
+        descriptions stop consuming budget, and/or raise skillListingBudgetFraction or
+        SLASH_COMMAND_TOOL_CHAR_BUDGET — accepting that a bigger budget costs more standing tokens
+        every turn. Splitting or consolidating skills is also valid.
+      passThreshold: 0.6
+    guidance: >-
+      The listing budget defaults to ~1% of the context window and drops least-used descriptions on
+      overflow, silently stripping trigger keywords. Vagueness makes matching worse, not better. The
+      expert move is to prioritize budget (front-load, name-only, raise the budget) while
+      recognizing that more budget means more standing token cost.
+  - id: scas-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 501
+    type: multiple_choice
+    prompt: >-
+      An author wraps a pure "Python style guidelines" reference skill (no task, just conventions)
+      with context: fork and agent: Explore so it "runs in isolation and keeps the main context
+      clean." Evaluate this design.
+    choices:
+      - id: a
+        text: >-
+          Good design: forking a reference skill is the recommended way to avoid polluting the main
+          context with guidelines.
+      - id: b
+        text: >-
+          Poor design: a forked subagent receives the guidelines but no actionable prompt and loses
+          conversation history, so it returns nothing useful — fork suits self-contained tasks, not
+          passive reference.
+      - id: c
+        text: >-
+          Poor design only because Explore is read-only; switching agent to general-purpose makes it
+          correct.
+      - id: d
+        text: Good design as long as user-invocable is also false so the model cannot trigger it twice.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      context: fork makes the SKILL.md body the subagent's prompt and the subagent does not see
+      conversation history (Explore/Plan also skip CLAUDE.md). A guidelines-only skill gives the
+      subagent rules but no task to act on, so the fork returns nothing useful. Fork is for
+      self-contained tasks with explicit instructions, not standing reference material that should
+      simply stay inline.
+  - id: scas-500-mc-e
+    tier: 500
+    bloom: evaluate
+    difficulty: 507
+    type: multiple_choice
+    prompt: >-
+      A maintainer publishes a plugin as a single root SKILL.md and does NOT set the frontmatter
+      `name` field, reasoning "the directory name is fine as the command name." Users install it
+      from a marketplace. Judge the main risk.
+    choices:
+      - id: a
+        text: >-
+          No risk: a root SKILL.md always derives its command name from the plugin.json id, which is
+          stable across versions.
+      - id: b
+        text: >-
+          Real risk, but only that the skill won't load at all until "skills": ["./"] is added to
+          the manifest.
+      - id: c
+        text: >-
+          Real risk: without `name`, the command name falls back to the install-directory name,
+          which for marketplace installs is a version string that changes each update — so the
+          /command silently changes across versions.
+      - id: d
+        text: >-
+          No risk: marketplace installs ignore the directory name and always use the first heading
+          of the markdown body as the command name.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      A plugin-root SKILL.md is the one case where frontmatter `name` sets the command name; if
+      omitted it falls back to the install-dir name. For marketplace installs that directory is a
+      version string that changes every update, so the /command name silently changes per release.
+      Setting `name` is effectively mandatory for a stable plugin-root skill. A single-skill root
+      layout auto-loads, so the manifest field in c isn't the blocker either.
+  - id: scas-500-ff-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 513
+    type: free_form
+    prompt: >-
+      Two engineers disagree about a /deploy action. One wants it as an auto-loadable skill so
+      Claude can invoke it whenever a deploy seems relevant; the other wants
+      disable-model-invocation: true. Weigh the tradeoff and recommend a default for a
+      side-effecting action like deploy, naming a real cost of your choice.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends disable-model-invocation: true (manual /deploy only) for a side-effecting
+            action so the human controls timing.
+        - id: c2
+          text: >-
+            Names a concrete cost of disabling model invocation: the skill's description is dropped
+            from context AND it cannot be preloaded into subagents, so other agents won't know it
+            exists.
+        - id: c3
+          text: >-
+            Frames the general principle: auto-invocation suits reference/context; manual-only suits
+            actions with side effects where timing matters.
+      referenceAnswer: >-
+        For a side-effecting action like deploy, prefer disable-model-invocation: true so the model
+        cannot fire it autonomously and the human chooses when to run /deploy. The real cost is that
+        this also drops the skill's description from context and prevents preloading it into
+        subagents — so other agents lose awareness that the capability exists. The principle:
+        auto-invoke reference/context skills; gate actions with consequences to manual invocation.
+      passThreshold: 0.6
+    guidance: >-
+      Auto-invocation is good for reference material the model should weigh in on its own; for
+      actions with side effects you usually want the human to control timing, which
+      disable-model-invocation provides. But it isn't free — it removes the description from context
+      and blocks subagent preloading, which is a real loss if other agents should know the action
+      exists.
+  - id: scas-500-mc-g
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
+    type: multiple_choice
+    prompt: >-
+      A skill author reports a bug: "My skill says to run the test suite ONCE at the start, but
+      Claude keeps re-running it on later turns." Reviewing the SKILL.md, you see it is written as a
+      sequence of one-time steps. What is the best diagnosis and fix?
+    choices:
+      - id: a
+        text: >-
+          The rendered SKILL.md enters the conversation once and persists as a standing instruction,
+          so one-time imperative steps keep re-applying. Rewrite it as standing instructions (or
+          move the one-shot action to a script/hook).
+      - id: b
+        text: >-
+          Claude Code re-reads SKILL.md every turn; add a guard variable to the file so the steps
+          only run once.
+      - id: c
+        text: >-
+          The skill is being re-invoked because user-invocable defaults to true; set it false to
+          stop re-triggering.
+      - id: d
+        text: >-
+          Auto-compaction re-attaches the skill on every turn; disable compaction for the session to
+          stop the steps from re-running.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      Once invoked, SKILL.md is injected as a single message that stays for the rest of the session;
+      Claude Code does not re-read the file each turn. Imperative "do this once" steps therefore
+      read as standing instructions and keep being honored. The fix is to author standing
+      instructions, or move a genuinely one-shot action into a script the body invokes or a hook.
+      Compaction re-attachment (d) concerns surviving a summary, not per-turn re-running.
+  - id: scas-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 524
+    type: multiple_choice
+    prompt: >-
+      A platform team wants org-wide assurance that checked-in project skills cannot silently run
+      shell commands via inline preprocessing when a developer first opens an untrusted repo. Which
+      mitigation is the most appropriate, and why?
+    choices:
+      - id: a
+        text: >-
+          Rely on the workspace trust dialog alone — it already blocks all !`cmd` preprocessing
+          until the repo is trusted, so no org-level setting is needed.
+      - id: b
+        text: >-
+          Set disableSkillShellExecution: true in MANAGED settings; it replaces each inline command
+          with a disabled-by-policy placeholder org-wide, while bundled/managed skills remain
+          exempt.
+      - id: c
+        text: 'Add disallowed-tools: Bash to every project skill, which prevents !`cmd` from executing.'
+      - id: d
+        text: >-
+          Set disable-model-invocation: true so the skills never load and their preprocessing never
+          runs.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      disableSkillShellExecution in managed settings is the org-level control: each inline shell
+      command is replaced with "[shell command execution disabled by policy]", and bundled/managed
+      skills are exempt. The trust dialog is per-developer judgment, not an org guarantee.
+      disallowed-tools governs the model's tool pool, not the preprocessing that Claude Code
+      performs before the model sees anything; and disable-model-invocation only affects
+      auto-loading, not manual runs.
+  - id: scas-500-ff-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 528
+    type: free_form
+    prompt: >-
+      A developer adds a scoped skill with paths: "src/payments/**/*.ts" and reports "it never
+      fires, but I get no error." Critique the use of paths gating here and explain the
+      silent-failure tradeoff an author must judge when choosing a glob.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that paths auto-loads the skill only when Claude works with files matching the
+            glob, so a too-narrow or mistyped glob means the skill silently never activates.
+        - id: c2
+          text: >-
+            States that there is NO error emitted for a glob that never matches — the failure is
+            silent.
+        - id: c3
+          text: >-
+            Frames the tradeoff: narrow globs reduce noise/false triggers but risk never firing;
+            broad globs defeat the purpose of scoping.
+      referenceAnswer: >-
+        paths gating means the skill auto-loads only while Claude touches files matching the glob.
+        If the glob is too narrow or wrong (e.g. the code lives in src/billing, not src/payments, or
+        files lack the .ts pattern), the skill simply never activates — and crucially Claude Code
+        emits no error for a glob that matches nothing. The author must balance: a narrow glob cuts
+        false triggers and noise but can silently go dead, while a broad glob defeats the point of
+        scoping. Verify the glob against the real paths and widen it just enough to cover the
+        intended files.
+      passThreshold: 0.6
+    guidance: >-
+      Scoped skills trade selectivity for the risk of silent non-activation: there is no error when
+      a glob matches no files. The judgment is to make the glob exactly broad enough to catch the
+      intended files without over-triggering, and to verify it against real paths rather than assume
+      it fires.
+  - id: scas-500-mc-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 484
+    type: multiple_choice
+    prompt: >-
+      An author sets user-invocable: false on a /commit skill so "Claude can no longer commit on its
+      own." Evaluate whether this accomplishes the goal.
+    choices:
+      - id: a
+        text: >-
+          Yes: user-invocable: false removes the skill from both the / menu and Claude's available
+          actions.
+      - id: b
+        text: >-
+          No: user-invocable: false only hides the skill from the / menu; Claude can still invoke
+          it. To block the model, use disable-model-invocation: true.
+      - id: c
+        text: Yes, but only if combined with disallowed-tools to remove the commit tool.
+      - id: d
+        text: >-
+          No: user-invocable: false disables the skill entirely, so neither the user nor Claude can
+          run it.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      user-invocable: false hides a skill from the / menu (useful for non-actionable background
+      knowledge), but Claude can still invoke it. The two flags address opposite directions:
+      user-invocable controls the human menu, disable-model-invocation controls model auto-loading.
+      To stop the model from committing, you want disable-model-invocation: true (or a deny
+      permission rule).
+  - id: scas-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 491
+    type: multiple_choice
+    prompt: >-
+      A team has a large 1,200-line API reference embedded directly inside a frequently-invoked
+      skill's SKILL.md body "so Claude always has it." Critique this against moving the reference
+      into a supporting file the body points to.
+    choices:
+      - id: a
+        text: >-
+          Keep it inline: supporting files are only loaded on the first turn, so inlining is
+          strictly cheaper.
+      - id: b
+        text: 'Keep it inline: supporting files cannot contain API specs, only scripts and templates.'
+      - id: c
+        text: >-
+          Move it to a supporting file because inline bodies over 500 lines are rejected and the
+          skill won't load.
+      - id: d
+        text: >-
+          Move it to a supporting file: inline content stays in context every turn once invoked
+          (recurring token cost), whereas a referenced file loads only when needed — better for
+          large specs, at the cost of an extra navigation step.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Once a skill is invoked its body persists in context for the session, so a 1,200-line inline
+      spec is a recurring per-turn token cost. Supporting files load on demand only when needed,
+      trading a small navigation/indirection step for big context savings — the right call for large
+      API specs. Short standing conventions are fine inline. The 500-line guidance (d) is a
+      recommendation, not a hard rejection.
+  - id: scas-500-ff-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 533
+    type: free_form
+    prompt: >-
+      A skill author argues: "When I QA'd my skill, it triggered every time I gave a matching
+      request, so the skill is done." Critique this evaluation standard and describe a more rigorous
+      approach using the tooling Claude Code provides.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Explains that triggering does not equal correct output — invocation rate and output
+            quality are distinct and both must be evaluated.
+        - id: c2
+          text: >-
+            Describes a baseline comparison: run the same tasks WITH the skill vs WITHOUT it
+            (disabled) in fresh sessions and compare results.
+        - id: c3
+          text: >-
+            References real eval tooling such as the skill-creator plugin (evals.json test cases,
+            isolated subagent runs, grading.json, benchmark.json with-skill vs without, A/B version
+            comparison).
+      referenceAnswer: >-
+        "It triggered" only validates that the description matched; it says nothing about whether
+        the output was correct. A rigorous eval measures both invocation rate AND output quality,
+        and uses a baseline: run the same task set in fresh sessions with the skill enabled versus
+        disabled and compare. The skill-creator plugin automates this — test cases in
+        evals/evals.json run in isolated subagents, grading.json scores output, benchmark.json
+        compares with-skill vs without, and you can A/B compare description versions to tune
+        triggering separately from quality.
+      passThreshold: 0.6
+    guidance: >-
+      Triggering and correctness are orthogonal. A skill can fire reliably and still produce worse
+      output than no skill at all, so you must measure output quality against a no-skill baseline in
+      fresh sessions. The official skill-creator plugin operationalizes this with
+      eval/grading/benchmark files and A/B version comparison.
+  - id: scas-500-mc-m
+    tier: 500
+    bloom: evaluate
+    difficulty: 497
+    type: multiple_choice
+    prompt: >-
+      In a monorepo, both apps/web/.claude/skills/deploy/ and the repo-root .claude/skills/deploy/
+      exist. A developer assumes "the nested one overrides the root one, like a same-scope name
+      clash." Evaluate this assumption.
+    choices:
+      - id: a
+        text: >-
+          Correct: the closer (nested) skill always overrides the farther one by directory
+          proximity.
+      - id: b
+        text: >-
+          Incorrect: the nested skill is ignored entirely because project skills only load from the
+          repo root.
+      - id: c
+        text: Correct, but only after /reload-skills is run to register the override.
+      - id: d
+        text: >-
+          Incorrect: nested clashes keep BOTH — the nested one gets a directory-qualified name like
+          /apps/web:deploy, while /deploy still runs the root variant. Only same-scope clashes are
+          overridden.
+    answerKey:
+      kind: choice
+      correctChoiceId: d
+    guidance: >-
+      Same-scope same-name skills override (enterprise > personal > project), but a nested skill
+      that clashes with another keeps BOTH available: the nested one becomes a directory-qualified
+      command (/apps/web:deploy) while typing /deploy still runs the root-level variant. This is
+      monorepo-friendly, unlike the override behavior the developer assumed.
+  - id: scas-500-mc-n
+    tier: 500
+    bloom: evaluate
+    difficulty: 504
+    type: multiple_choice
+    prompt: >-
+      A developer needs Claude to read AND use the skills from a sibling repo checked out elsewhere.
+      They add that path to permissions.additionalDirectories in settings and are surprised its
+      skills never appear. What is the correct judgment of their setup?
+    choices:
+      - id: a
+        text: Bug in Claude Code — additionalDirectories should load skills; file a report.
+      - id: b
+        text: >-
+          Expected: skills only ever load from ~/.claude/skills or the current repo; no external
+          directory can contribute skills.
+      - id: c
+        text: >-
+          Expected: permissions.additionalDirectories grants file ACCESS only and does not load
+          skills. Use --add-dir / /add-dir, which is the exception that loads that directory's
+          .claude/skills/.
+      - id: d
+        text: >-
+          Expected: additionalDirectories loads skills but only after they are also listed in the
+          skills manifest field of a plugin.json.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      permissions.additionalDirectories is purely a file-access grant. The mechanism that loads an
+      external directory's skills is --add-dir / /add-dir, which is the documented exception (it
+      loads .claude/skills/ from the added dir, though notably NOT commands or output-styles).
+      Choosing the right one is the judgment being tested.
+  - id: scas-500-ff-o
+    tier: 500
+    bloom: evaluate
+    difficulty: 537
+    type: free_form
+    prompt: >-
+      A team is deciding where a 40-line "how we name and structure database migrations" procedure
+      should live: in CLAUDE.md, in a skill, or enforced by a hook. Make a recommendation and
+      justify it by contrasting all three placements on the dimensions that matter at this tier.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Recommends a skill for a reusable procedure/reference, because the body loads only on
+            demand so it costs ~nothing in context until used (unlike bloating CLAUDE.md).
+        - id: c2
+          text: >-
+            Notes CLAUDE.md is for always-relevant facts but a 40-line procedure there is a per-turn
+            standing token cost / steering bloat.
+        - id: c3
+          text: >-
+            Notes a hook is the right tool only if the behavior must be deterministically ENFORCED
+            regardless of model choice — but a hook can't carry nuanced procedural guidance the way
+            a skill can.
+      referenceAnswer: >-
+        Put it in a skill. A skill body loads only when the migration work is actually happening, so
+        the 40-line procedure costs essentially nothing in context until needed — whereas placing it
+        in CLAUDE.md pays that token cost on every turn and bloats steering for a topic that's only
+        sometimes relevant. A hook is appropriate only if some part must be enforced
+        deterministically no matter what the model decides (e.g. block a commit that violates the
+        naming rule), but hooks run fixed logic and can't convey nuanced "how we structure
+        migrations" guidance. So: skill for the procedure, optionally backed by a hook for any
+        non-negotiable gate.
+      passThreshold: 0.6
+    guidance: >-
+      The placement heuristic: always-true facts to CLAUDE.md, on-demand reusable
+      procedure/reference to a skill, deterministic must-always-happen enforcement to a hook. A
+      40-line procedure is a classic skill — progressive disclosure keeps it out of context until
+      invoked, avoiding CLAUDE.md bloat, while a hook would only cover a hard gate, not the
+      guidance.
+  - id: scas-500-mc-p
+    tier: 500
+    bloom: evaluate
+    difficulty: 510
+    type: multiple_choice
+    prompt: >-
+      During a long session a critical "release-checklist" skill was invoked early, but after
+      several later skill invocations and an auto-compaction, the developer notices Claude no longer
+      reflects the checklist. What is the most accurate expert read of the situation and response?
+    choices:
+      - id: a
+        text: The skill file was edited mid-session and unloaded; run /reload-skills to bring it back.
+      - id: b
+        text: >-
+          The skill was permanently removed because skills only persist until the first model reply,
+          then unload.
+      - id: c
+        text: >-
+          Compaction re-attaches the most-recent invocation of each skill under a shared
+          most-recent-first budget, so an older skill can be dropped after summarization; re-invoke
+          the checklist post-compaction.
+      - id: d
+        text: >-
+          user-invocable: true caused the skill to expire; set disable-model-invocation: true to
+          make it persist through compaction.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
+    guidance: >-
+      Through auto-compaction the most recent invocation of each skill is re-attached after the
+      summary under a shared, most-recent-first budget, so in a long session with many invoked
+      skills an earlier one can be dropped. The expert move is to re-invoke the critical skill after
+      compaction rather than assume persistence. Skills do persist within a session (c is the
+      "unloaded after first reply" misconception), and the flags in d don't govern compaction
+      survival.
+  - id: scas-500-mc-q
+    tier: 500
+    bloom: evaluate
+    difficulty: 515
+    type: multiple_choice
+    prompt: >-
+      A project ships its own code-review skill named "code-review" and a developer worries it will
+      collide with the bundled /code-review skill and with a teammate's plugin that also exposes
+      code-review. Evaluate the collision behavior.
+    choices:
+      - id: a
+        text: >-
+          The project skill overrides the bundled /code-review, and the plugin's skill is namespaced
+          (plugin-name:code-review) so it cannot collide with either.
+      - id: b
+        text: All three collide on /code-review and Claude Code errors until two are renamed.
+      - id: c
+        text: >-
+          The bundled skill always wins over project skills; the project must rename its skill to
+          take effect.
+      - id: d
+        text: The plugin skill overrides both because plugins have the highest precedence of all scopes.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      A same-named user/project/plugin skill overrides a bundled skill, so the project's code-review
+      replaces bundled /code-review. Plugin skills live under a plugin-name:skill-name namespace, so
+      they never collide with personal/project skills. There's no error and no
+      plugin-wins-everything rule; the namespace is precisely what prevents the third collision the
+      developer feared.
+  - id: scas-500-ff-r
+    tier: 500
+    bloom: evaluate
+    difficulty: 522
+    type: free_form
+    prompt: >-
+      A reviewer skims a checked-in project skill and approves trusting the repo. The skill declares
+      broad allowed-tools and contains several inline !`...` blocks that run on load. Argue why this
+      is a genuine security judgment and what specifically the reviewer should have weighed before
+      accepting the trust dialog.
+    rubric:
+      criteria:
+        - id: c1
+          text: >-
+            Notes that project allowed-tools and inline !`cmd` preprocessing are gated by the
+            workspace trust dialog, so accepting trust activates both.
+        - id: c2
+          text: >-
+            Explains the concrete risks: broad allowed-tools pre-approves powerful tools (skipping
+            prompts) and !`cmd` runs shell commands at load time before Claude even sees the
+            content.
+        - id: c3
+          text: >-
+            Recommends reviewing the skill content before trusting and/or an org-level mitigation
+            (disableSkillShellExecution in managed settings).
+      referenceAnswer: >-
+        Accepting the trust dialog is what activates a project skill's allowed-tools rules and its
+        inline !`...` preprocessing, so it is a real security decision. Broad allowed-tools
+        pre-approves powerful tools so they run without prompting, and !`cmd` blocks execute shell
+        commands at load time — before Claude sees any content — meaning a malicious checked-in
+        skill can run code the moment you trust the repo. The reviewer should read project skills
+        (not just skim) before trusting, scope down allowed-tools, and for org-wide protection set
+        disableSkillShellExecution: true in managed settings, which neutralizes inline shell
+        execution while exempting bundled/managed skills.
+      passThreshold: 0.6
+    guidance: >-
+      Project skills are an attack surface precisely because allowed-tools (prompt pre-approval) and
+      inline shell preprocessing both activate on trust. The judgment is to actually review
+      checked-in skill content before trusting a repo and to use managed-settings controls like
+      disableSkillShellExecution as the org-level mitigation.
+  - id: scas-500-mc-s
+    tier: 500
+    bloom: evaluate
+    difficulty: 530
+    type: multiple_choice
+    prompt: >-
+      A plugin author declares a version in plugin.json, then pushes several commits to the same
+      version and complains that installed copies keep the old behavior even though the source
+      changed. What is the correct evaluation of the version-pinning behavior?
+    choices:
+      - id: a
+        text: >-
+          Expected: a declared version pins what installs use — they keep the cached copy until the
+          declared version is bumped, so re-pushing under the same version ships nothing to existing
+          installs.
+      - id: b
+        text: >-
+          Bug: pushing any commit should always invalidate the cached copy regardless of version;
+          report it.
+      - id: c
+        text: >-
+          Expected: a declared version is ignored entirely; installs always pull the latest commit
+          on the branch, so the stale behavior must be a network cache.
+      - id: d
+        text: >-
+          Expected: the declared version only sets a display label; installs auto-update on every
+          push and the author is seeing a UI caching glitch.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      The durable behavior: when plugin.json declares a version, installs treat that version as the
+      pinned identity and keep the cached copy until the version is bumped — so repeatedly pushing
+      under the same version ships nothing to existing installs. To deliver the change, bump the
+      declared version. The other options invert this (b/c/d all assume pushes auto-propagate),
+      which is the misconception being tested.
+  - id: scas-500-mc-t
+    tier: 500
+    bloom: evaluate
+    difficulty: 540
+    type: multiple_choice
+    prompt: >-
+      A subagent definition lists a skill in its `skills` field to preload it. The skill also sets
+      disable-model-invocation: true because it performs a side-effecting action. The author expects
+      the subagent to start with the skill's full body loaded. Evaluate this configuration.
+    choices:
+      - id: a
+        text: >-
+          Contradictory: disable-model-invocation: true keeps the description out of context and
+          PREVENTS preloading into subagents, so the skill cannot be preloaded as the author
+          expects.
+      - id: b
+        text: >-
+          Consistent: disable-model-invocation only blocks the / menu, so preloading into the
+          subagent still works.
+      - id: c
+        text: >-
+          Consistent: the subagent's skills field overrides disable-model-invocation and force-loads
+          the body.
+      - id: d
+        text: >-
+          Contradictory only because the subagent must also set context: fork; with fork, preloading
+          a disable-model-invocation skill works.
+    answerKey:
+      kind: choice
+      correctChoiceId: a
+    guidance: >-
+      disable-model-invocation: true not only forces manual-only invocation but also drops the
+      description from context and prevents the skill from being preloaded into subagents. So a
+      subagent's skills field cannot preload a disable-model-invocation skill — the two settings are
+      at odds. There is no override via the skills field or context: fork; the author must drop
+      disable-model-invocation or choose a different mechanism.

@@ -5,8 +5,9 @@ description: Run when the user asks "where am I with vibe-hero", "what's my prog
 
 # vibe-hero Status
 
-This skill shows the user's current learning standing for a tool (or all tools)
-by calling `get_status`. It is pull-based and read-only — no quiz is started.
+This skill shows the user's full progress dashboard by calling `get_dashboard`
+(and optionally `get_status` for a quick text summary). It is pull-based and
+read-only — no quiz is started.
 
 ## When to invoke
 
@@ -14,19 +15,19 @@ by calling `get_status`. It is pull-based and read-only — no quiz is started.
 - The user asks about their status on a specific tool (e.g. "how am I doing with
   Claude Code?").
 - The user asks which topics are weak, stale, or due for review.
+- The user asks for a progress dashboard or overview.
 
 ## Steps
 
 ### 1. Check for a named tool
 
 If the user names a specific tool in their request, pass it as the `tool`
-argument. If no tool is named, omit the argument and the server returns status
-for all configured tools.
+argument. If no tool is named, omit the argument.
 
-### 2. Call `get_status`
+### 2. Call `get_dashboard`
 
 ```
-get_status({ tool?: ToolId })
+get_dashboard({ tool?: ToolId })
 ```
 
 ### 3. Handle SETUP_REQUIRED
@@ -38,24 +39,76 @@ If the response is `{ "status": "SETUP_REQUIRED" }`, stop and tell the user:
 
 Do not proceed further until setup completes.
 
-### 4. Render the status
+### 4. Render the dashboard
 
-Present the per-topic results clearly. For each topic in `topics`:
+Render the result using EXACTLY this template (fixed-width, aligned):
 
-- Show the **title**, current **tier** (or "not started"), and **status**
-  (`current`, `due_for_review`, or `not_started`).
-- If `status` is `due_for_review`, flag it visibly (e.g. "review due").
-- Show the **ability** value if it adds context.
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🚀  vibe-hero Progress Dashboard                            ║
+╚══════════════════════════════════════════════════════════════╝
 
-Then call out:
+Legend:
+  ⬜ not started   🟥 100   🟧 200   🟨 300   🟩 400   🟢 500
+  ▲ graduated   ⚠ due   ▽ in review
+```
 
-- **Due for review**: list any topics from `dueForReview` by name.
-- **Suggestions**: summarize any entries in `suggestions` — each carries a
-  `reason` explaining why the server is surfacing that topic.
+#### 4a. Matrix table
+
+Emit one header row listing all scopes and one data row per topic.
+Left-align the topic title column (pad to 24 chars). Each cell shows:
+- The tier emoji (`⬜`/`🟥`/`🟧`/`🟨`/`🟩`/`🟢`) — use `⬜` for tier 0.
+- The 3-digit ability score (e.g. `312`) — `000` if ability ≤ 0 or topic not
+  started, `—` (em-dash) if `status === "not_in_scope"`.
+- A text marker immediately after the score: `▲` if `markers` contains
+  `"graduated"`, `⚠` if it contains `"due"`, `▽` if it contains `"in_review"`,
+  blank otherwise.
+
+Example (with two scopes):
+
+```
+Topic                    | General        | claude-code
+-------------------------|----------------|----------------
+Placeholder Topic        | 🟥 180 ⚠      | 🟥 180 ⚠
+```
+
+#### 4b. Summary block
+
+```
+Items answered : <itemsAnswered>
+Graduated      : <graduated>
+Due for review : <dueForReview>
+Streak         : <streak> correct in a row
+Strongest      : <strongest topic title or "—">
+Weakest        : <weakest topic title or "—">
+Next suggested : <next topic title or "—">
+```
+
+#### 4c. History graphs
+
+For each entry in `history` (General first, then tools), emit a single-line
+ASCII sparkline graph — ONE per scope, stacked vertically, FULL-WIDTH.
+
+- y-axis range: 200–600 (ability), quantized to 8 levels using block chars
+  `▁▂▃▄▅▆▇█`.
+- x-axis: ISO dates of snapshots, shown beneath the line.
+- Label each line with the scope name.
+
+Example:
+
+```
+General     ▁▂▃▄▃▄▅▆
+claude-code ▁▁▂▃▄▄▅▅
+```
+
+If `history` is empty (no quizzes completed yet), print:
+```
+No history yet — complete a quiz to start tracking ability over time.
+```
 
 ### 5. Offer a next action
 
-After the summary, offer the user a natural next step. For example:
+After the dashboard, offer the user a natural next step. For example:
 
 > "Want guidance on one of these topics, or shall I quiz you on something? You
 > can also ask 'what should I learn next?' for a recommendation."
@@ -64,8 +117,9 @@ After the summary, offer the user a natural next step. For example:
 
 - This skill is read-only. Do not call `start_quiz` or `get_guidance` unless the
   user explicitly asks for that next step.
-- If the user names a tool that has no content yet, the server may return an
-  empty `topics` array — surface that clearly rather than showing a blank
-  response.
+- If `matrix` is empty, the user has no content for the requested scope — surface
+  that clearly.
 - Keep the tone informational and encouraging; the user is checking in on their
   own growth.
+- The history graph is a single sparkline per scope (one text line each), not a
+  multi-line chart. Keep it compact.

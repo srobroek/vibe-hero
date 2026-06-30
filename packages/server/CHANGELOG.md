@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/srobroek/vibe-hero/compare/v0.3.2...v0.4.0) (2026-06-30)
+
+
+### Features
+
+* server-rendered progress dashboard and a silent, throttled quiz-offer hook ([#15](https://github.com/srobroek/vibe-hero/issues/15)) ([4992b88](https://github.com/srobroek/vibe-hero/commit/4992b883482c7e5ac6cad2bc5b77a73b0cadb1ee))
+
 ## [0.3.2](https://github.com/srobroek/vibe-hero/compare/v0.3.1...v0.3.2) (2026-06-30)
 
 

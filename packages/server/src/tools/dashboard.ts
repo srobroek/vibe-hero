@@ -373,6 +373,259 @@ const buildHistory = (
 };
 
 // ---------------------------------------------------------------------------
+// Dashboard renderer (server-side — the agent prints rendered verbatim)
+// ---------------------------------------------------------------------------
+
+/**
+ * Map a tier number to the emoji shown in the matrix cell.
+ * Tier 0 → ⬜ (not started), 100→🟥, 200→🟧, 300→🟨, 400→🟩, 500→🟢.
+ */
+const tierEmoji = (tier: number): string => {
+  if (tier >= 500) return "🟢";
+  if (tier >= 400) return "🟩";
+  if (tier >= 300) return "🟨";
+  if (tier >= 200) return "🟧";
+  if (tier >= 100) return "🟥";
+  return "⬜";
+};
+
+/**
+ * Map a normalized value in [0,1] to one of 8 block-element chars.
+ * 0 → ▁, 1 → █.
+ */
+const BLOCKS = "▁▂▃▄▅▆▇█";
+const toBlock = (v: number): string => {
+  const idx = Math.min(7, Math.max(0, Math.round(v * 7)));
+  return BLOCKS[idx]!;
+};
+
+/**
+ * Build a single-line sparkline string (no label) from an array of ability
+ * values.  y-range is clamped to [200, 600] and quantised to 8 levels.
+ */
+const sparkline = (abilities: readonly number[]): string => {
+  if (abilities.length === 0) return "";
+  return abilities
+    .map((a) => toBlock((Math.max(200, Math.min(600, a)) - 200) / 400))
+    .join("");
+};
+
+/**
+ * Pad a string to `width` chars using trailing spaces.
+ * If the string is already at or wider than `width`, return it unchanged.
+ *
+ * Note: emoji in topic titles are typically 2 grapheme-columns wide.  We
+ * intentionally use `.length` (code-unit count) for simplicity — the fixed
+ * column widths are chosen conservatively so alignment stays close enough in
+ * monospace environments even if a title contains an emoji.
+ */
+const padEnd = (s: string, width: number): string =>
+  s.length >= width ? s : s + " ".repeat(width - s.length);
+
+/**
+ * Return true if a row has any activity (non-not_started, non-not_in_scope cell).
+ */
+const rowHasActivity = (row: DashboardRow): boolean =>
+  row.cells.some(
+    (c) => c.status !== "not_started" && c.status !== "not_in_scope",
+  );
+
+/**
+ * Render the complete dashboard as a fixed-width string.
+ *
+ * Sections:
+ *  1. Header box
+ *  2. Legend
+ *  3. Matrix table  (topics × scopes — active rows only + not-started summary)
+ *  4. Summary block
+ *  5. History sparklines (one per scope that has data; general first)
+ *
+ * All data come from the three fields already computed by the handler.
+ * The `topicTitleMap` argument allows resolving topic IDs to titles for the
+ * strongest/weakest/next cells in the summary block.
+ */
+export const renderDashboard = (
+  matrix: DashboardRow[],
+  summary: DashboardSummary,
+  history: DashboardHistoryEntry[],
+  topicTitleMap: Map<string, string>,
+): string => {
+  const lines: string[] = [];
+
+  // ---------------------------------------------------------------------------
+  // 1. Header box
+  // ---------------------------------------------------------------------------
+  lines.push("╔══════════════════════════════════════════════════════════════╗");
+  lines.push("║  🚀  vibe-hero — Your Progress                               ║");
+  lines.push("╚══════════════════════════════════════════════════════════════╝");
+  lines.push("");
+
+  // ---------------------------------------------------------------------------
+  // 2. Legend
+  // ---------------------------------------------------------------------------
+  lines.push("Legend:");
+  lines.push("  ⬜ not started   🟥 100   🟧 200   🟨 300   🟩 400   🟢 500");
+  lines.push("  ▲ graduated   ⚠ due   ▽ in review");
+  lines.push("");
+
+  // ---------------------------------------------------------------------------
+  // 3. Matrix table
+  // ---------------------------------------------------------------------------
+  if (matrix.length > 0) {
+    // Derive ordered scope list from the first row's cells.
+    const scopes = matrix[0]!.cells.map((c) => c.scope);
+
+    // Split rows into active (any started/graduated/due cell) and not-started.
+    const activeRows = matrix.filter(rowHasActivity);
+    const idleRows = matrix.filter((r) => !rowHasActivity(r));
+
+    // Auto-size title column: widest active-row title, min 5 ("Topic"), max 34.
+    const MAX_TITLE_WIDTH = 34;
+    const titleWidth = Math.min(
+      MAX_TITLE_WIDTH,
+      Math.max(
+        5,
+        ...activeRows.map((r) => r.title.length),
+      ),
+    );
+
+    // Each scope cell renders: "<emoji> <3-digit-score> <marker-or-space>"
+    // Cell content is 7 code-units: emoji(1) + " " + 3-digit + " " + marker(1).
+    // CELL_WIDTH must also fit the longest scope name (header row), so we take
+    // the max of 8 (comfortable content minimum) and the longest scope name + 1.
+    const MIN_CELL_CONTENT = 8;
+    const CELL_WIDTH = Math.max(
+      MIN_CELL_CONTENT,
+      ...scopes.map((s) => s.length + 1),
+    );
+
+    // Header row.
+    const headerCells = scopes.map((s) => padEnd(s, CELL_WIDTH));
+    lines.push(
+      padEnd("Topic", titleWidth) + " | " + headerCells.join(" | "),
+    );
+
+    // Separator row.
+    const sep =
+      "-".repeat(titleWidth) +
+      "-|-" +
+      scopes.map(() => "-".repeat(CELL_WIDTH)).join("-|-");
+    lines.push(sep);
+
+    // Render a data cell string.
+    const renderCell = (cell: DashboardCell): string => {
+      if (cell.status === "not_in_scope") {
+        return padEnd("—", CELL_WIDTH);
+      }
+      const emoji = tierEmoji(cell.tier);
+      const score =
+        cell.status === "not_started" || cell.ability <= 0
+          ? "000"
+          : String(Math.round(cell.ability)).padStart(3, "0");
+      const marker = cell.markers.includes("graduated")
+        ? "▲"
+        : cell.markers.includes("due")
+          ? "⚠"
+          : cell.markers.includes("in_review")
+            ? "▽"
+            : " "; // pad to keep columns aligned when no marker
+      return padEnd(`${emoji} ${score} ${marker}`, CELL_WIDTH);
+    };
+
+    if (activeRows.length === 0) {
+      // Brand-new user: no activity at all — skip data rows, show guidance.
+      // Count idle topics per scope for the informational line.
+      const scopeCounts = scopes
+        .map((s) => {
+          const count = idleRows.filter((r) =>
+            r.cells.some((c) => c.scope === s && c.status !== "not_in_scope"),
+          ).length;
+          return count > 0 ? `${s}: ${count}` : null;
+        })
+        .filter((x): x is string => x !== null)
+        .join(", ");
+      lines.push(
+        "No topics started yet — say 'quiz me on <topic>' to begin.",
+      );
+      if (scopeCounts) {
+        lines.push(`Available topics — ${scopeCounts}`);
+      }
+    } else {
+      // Active rows — render in full.
+      for (const row of activeRows) {
+        const titleCell = padEnd(row.title, titleWidth);
+        const dataCells = row.cells.map(renderCell);
+        lines.push(titleCell + " | " + dataCells.join(" | "));
+      }
+
+      // Not-started summary line (skip if zero idle rows).
+      if (idleRows.length > 0) {
+        // Count per scope (topics that are in-scope for that scope but not started).
+        const scopeCounts = scopes
+          .map((s) => {
+            const count = idleRows.filter((r) =>
+              r.cells.some(
+                (c) => c.scope === s && c.status === "not_started",
+              ),
+            ).length;
+            return count > 0 ? `${s}: ${count}` : null;
+          })
+          .filter((x): x is string => x !== null)
+          .join(", ");
+        const countLabel =
+          scopeCounts ? ` (${scopeCounts})` : "";
+        lines.push(
+          `+ ${idleRows.length} topic${idleRows.length === 1 ? "" : "s"} not yet started${countLabel}`,
+        );
+      }
+    }
+    lines.push("");
+  }
+
+  // ---------------------------------------------------------------------------
+  // 4. Summary block
+  // ---------------------------------------------------------------------------
+  const resolveTitle = (key: string | undefined): string => {
+    if (key === undefined) return "—";
+    // key format: "general::topicId" or "tool::toolId::topicId"
+    // topicTitleMap is indexed by topicId (the last segment)
+    const parts = key.split("::");
+    const id = parts[parts.length - 1] ?? key;
+    return topicTitleMap.get(id) ?? id;
+  };
+
+  lines.push("Summary");
+  lines.push("───────────────────────────────────");
+  lines.push(`Items answered : ${summary.itemsAnswered}`);
+  lines.push(`Graduated      : ${summary.graduated}`);
+  lines.push(`Due for review : ${summary.dueForReview}`);
+  lines.push(`Streak         : ${summary.streak} correct in a row`);
+  lines.push(`Strongest      : ${resolveTitle(summary.strongest)}`);
+  lines.push(`Weakest        : ${resolveTitle(summary.weakest)}`);
+  lines.push(`Next suggested : ${resolveTitle(summary.next)}`);
+  lines.push("");
+
+  // ---------------------------------------------------------------------------
+  // 5. History sparklines
+  // ---------------------------------------------------------------------------
+  lines.push("Ability over time");
+  lines.push("───────────────────────────────────");
+  if (history.length === 0) {
+    lines.push("No history yet — complete a quiz to start tracking ability over time.");
+  } else {
+    // Label width = max scope name length, at least 11.
+    const labelWidth = Math.max(11, ...history.map((h) => h.scope.length));
+    for (const entry of history) {
+      const label = padEnd(entry.scope, labelWidth);
+      const spark = sparkline(entry.points.map((p) => p.meanAbility));
+      lines.push(`${label}  ${spark}`);
+    }
+  }
+
+  return lines.join("\n");
+};
+
+// ---------------------------------------------------------------------------
 // Tool factory
 // ---------------------------------------------------------------------------
 
@@ -432,7 +685,15 @@ export const makeGetDashboardTool = (
       // Build history from ability snapshots.
       const history = buildHistory(profile.abilitySnapshots ?? []);
 
-      return { matrix, summary, history };
+      // Build the topic-title lookup used by the renderer.
+      const topicTitleMap = new Map<string, string>(
+        topics.map((t) => [t.id, t.title]),
+      );
+
+      // Server-side render: the agent prints this verbatim.
+      const rendered = renderDashboard(matrix, summary, history, topicTitleMap);
+
+      return { matrix, summary, history, rendered };
     },
   });
 

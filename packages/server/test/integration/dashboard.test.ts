@@ -21,7 +21,7 @@ import { readFile } from "node:fs/promises";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { loadBundledCatalog } from "../../src/catalog/bundled/index.js";
-import { makeGetDashboardTool } from "../../src/tools/dashboard.js";
+import { makeGetDashboardTool, renderDashboard } from "../../src/tools/dashboard.js";
 import { makeGetOfferTool } from "../../src/tools/offers.js";
 import { makeSubmitAnswerTool } from "../../src/tools/submitAnswer.js";
 import { makeGetStatusTool } from "../../src/tools/status.js";
@@ -590,6 +590,187 @@ describe("get_offer: due-for-review priority", () => {
 
     expect(result.suppressed).toBe("cadence");
     expect(result.offer).toBeUndefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// rendered field — server-side dashboard rendering
+// ---------------------------------------------------------------------------
+
+describe("get_dashboard — rendered field", () => {
+  let home: string;
+
+  beforeEach(async () => {
+    home = await mkdtemp(path.join(tmpdir(), "vibe-hero-rendered-"));
+  });
+
+  afterEach(async () => {
+    await rm(home, { recursive: true, force: true });
+  });
+
+  it("result includes a non-empty rendered string", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(typeof result.rendered).toBe("string");
+    expect(result.rendered.length).toBeGreaterThan(0);
+  });
+
+  it("rendered contains the header box", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(result.rendered).toContain("vibe-hero");
+    expect(result.rendered).toContain("╔");
+    expect(result.rendered).toContain("╚");
+  });
+
+  it("rendered contains the legend line", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(result.rendered).toContain("Legend:");
+    expect(result.rendered).toContain("not started");
+    expect(result.rendered).toContain("graduated");
+  });
+
+  it("rendered contains a known topic row from the bundled catalog (or not-started summary for fresh profile)", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+    const { topics } = loadBundledCatalog();
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    // With no activity, the new layout collapses idle rows into a summary line
+    // rather than printing 28+ empty rows.  Accept either:
+    //   (a) at least one topic title is visible (if any topic has been started), OR
+    //   (b) the not-started summary line appears (fresh profile path).
+    const hasTopicRow = topics.some((t) => result.rendered.includes(t.title));
+    const hasNotStartedSummary =
+      result.rendered.includes("not yet started") ||
+      result.rendered.includes("No topics started yet");
+    expect(hasTopicRow || hasNotStartedSummary).toBe(true);
+  });
+
+  it("rendered contains dynamic scope columns (general + claude-code at minimum)", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(result.rendered).toContain("general");
+    expect(result.rendered).toContain("claude-code");
+  });
+
+  it("rendered contains the summary block", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(result.rendered).toContain("Items answered");
+    expect(result.rendered).toContain("Graduated");
+    expect(result.rendered).toContain("Streak");
+  });
+
+  it("rendered shows 'no history' line when no snapshots exist", async () => {
+    await updateProfile((p) => ({ ...p, config: seedConfig() }), home);
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    expect(result.history).toEqual([]);
+    expect(result.rendered).toContain("No history yet");
+  });
+
+  it("rendered contains a sparkline graph line when snapshots exist", async () => {
+    const ts1 = "2025-12-01T10:00:00.000Z";
+    const ts2 = "2025-12-02T10:00:00.000Z";
+    await updateProfile(
+      (p) => ({
+        ...p,
+        config: seedConfig(),
+        abilitySnapshots: [
+          { ts: ts1, key: PLACEHOLDER_KEY, ability: 300 },
+          { ts: ts2, key: PLACEHOLDER_KEY, ability: 380 },
+        ],
+      }),
+      home,
+    );
+    const getDashboard = makeGetDashboardTool(home).handler;
+
+    const result = (await getDashboard({})) as GetDashboardResult;
+
+    // History should have a general scope entry.
+    expect(result.history.length).toBeGreaterThan(0);
+    // The rendered output should contain block characters from the sparkline.
+    expect(result.rendered).toMatch(/[▁▂▃▄▅▆▇█]/u);
+    // And the scope label should appear.
+    expect(result.rendered).toContain("general");
+  });
+});
+
+describe("renderDashboard — unit tests", () => {
+  it("produces header, legend, summary, and no-history message for empty input", () => {
+    const output = renderDashboard([], {
+      itemsAnswered: 0,
+      graduated: 0,
+      dueForReview: 0,
+      streak: 0,
+    }, [], new Map());
+
+    expect(output).toContain("vibe-hero");
+    expect(output).toContain("Legend:");
+    expect(output).toContain("Items answered");
+    expect(output).toContain("No history yet");
+  });
+
+  it("includes sparkline characters for history points", () => {
+    const history = [
+      { scope: "general", points: [{ ts: "t1", meanAbility: 250 }, { ts: "t2", meanAbility: 450 }] },
+    ];
+    const output = renderDashboard([], {
+      itemsAnswered: 5,
+      graduated: 1,
+      dueForReview: 0,
+      streak: 2,
+    }, history, new Map());
+
+    expect(output).toMatch(/[▁▂▃▄▅▆▇█]/u);
+    expect(output).toContain("general");
+  });
+
+  it("resolves topic title from map in summary strongest/weakest/next", () => {
+    const titleMap = new Map([["task-decomposition", "Task Decomposition"]]);
+    const output = renderDashboard([], {
+      itemsAnswered: 10,
+      graduated: 0,
+      dueForReview: 0,
+      streak: 0,
+      strongest: "general::task-decomposition",
+      weakest: "general::task-decomposition",
+      next: "general::task-decomposition",
+    }, [], titleMap);
+
+    expect(output).toContain("Task Decomposition");
+  });
+
+  it("shows '—' em-dash for unknown keys in summary", () => {
+    const output = renderDashboard([], {
+      itemsAnswered: 0,
+      graduated: 0,
+      dueForReview: 0,
+      streak: 0,
+    }, [], new Map());
+
+    // No strongest/weakest/next → should show em-dash placeholder.
+    expect(output).toContain("—");
   });
 });
 

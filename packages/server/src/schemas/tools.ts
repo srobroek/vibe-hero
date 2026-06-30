@@ -484,6 +484,11 @@ export const GetDashboardResultSchema = z.object({
   matrix: z.array(DashboardRowSchema),
   summary: DashboardSummarySchema,
   history: z.array(DashboardHistoryEntrySchema),
+  /**
+   * Server-rendered fixed-width dashboard text.  The agent MUST output this
+   * verbatim inside a code block — no reformatting, no improvisation.
+   */
+  rendered: z.string(),
 });
 export type GetDashboardResult = z.infer<typeof GetDashboardResultSchema>;
 

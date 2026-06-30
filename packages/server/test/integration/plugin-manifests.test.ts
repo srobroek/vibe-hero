@@ -80,19 +80,20 @@ describe("distribution manifests (spec 002)", () => {
     }
   });
 
-  it("ships a Claude-discoverable hooks/hooks.json that uses ${PLUGIN_ROOT} (FR-007)", () => {
+  it("ships a Claude-discoverable hooks/hooks.json that uses ${CLAUDE_PLUGIN_ROOT} (FR-007)", () => {
     // Claude Code discovers plugin hooks at `hooks/hooks.json` (NOT APM's
-    // `.apm/hooks/` source). Without this committed file the Stop hook never
-    // registers and the plugin fails to load. The command uses `${PLUGIN_ROOT}`
-    // — the token APM rewrites to the install path (NOT ${CLAUDE_PLUGIN_ROOT}).
+    // `.apm/hooks/` source). The command MUST use `${CLAUDE_PLUGIN_ROOT}` — the
+    // token the NATIVE Claude Code plugin loader substitutes for the install
+    // path. (`${PLUGIN_ROOT}` is the APM-only token; under `claude plugin
+    // install` it stays unexpanded, so the command resolves to `/hooks/...` and
+    // the Stop hook fails with a non-blocking error — observed in the wild.)
     const hooks = readJson("packages/vibe-hero-plugin/hooks/hooks.json") as {
       hooks: { Stop?: Array<{ hooks: Array<{ type: string; command: string }> }> };
     };
     const stop = hooks.hooks?.Stop?.[0]?.hooks?.[0];
     expect(stop, "hooks/hooks.json must register a Stop hook").toBeDefined();
     expect(stop?.type).toBe("command");
-    expect(stop?.command).toContain("${PLUGIN_ROOT}");
-    expect(stop?.command).not.toContain("CLAUDE_PLUGIN_ROOT");
+    expect(stop?.command).toContain("${CLAUDE_PLUGIN_ROOT}");
     expect(stop?.command).toContain("hooks/claude-code/stop-offer.sh");
     // the referenced script must actually ship + be executable
     const script = resolve(

@@ -25,7 +25,7 @@ How to prove the packaging + release works. References `data-model.md` and `cont
 2. **Expect**: ≥3 real topics available offline (not the placeholder).
 
 ### V4 — Plugin install wiring (FR-005/006/007/008, SC-001) — manifest-level
-1. Generate the plugin artifacts (`apm pack` or the repo's generate step) → `.mcp.json` has `mcpServers.vibe-hero` = `npx -y @vibe-hero/server`; `hooks/hooks.json` has a `Stop` hook with a `${PLUGIN_ROOT}` command; `plugin.json` carries identity + skills path, NO `mcpServers` block, and NO name-only deps.
+1. Generate the plugin artifacts (`apm pack` or the repo's generate step) → `.mcp.json` has `mcpServers.vibe-hero` = `npx -y @vibe-hero/server`; `hooks/hooks.json` has a `Stop` hook with a `${CLAUDE_PLUGIN_ROOT}` command; `plugin.json` carries identity + skills path, NO `mcpServers` block, and NO name-only deps.
 2. **Expect**: manifests are generated (not hand-authored), wire MCP + hook + skills, and contain no `{name:...}`-only dependency entries.
 3. (Full end-to-end install in a real Claude Code is a manual acceptance step — confirm: add marketplace → install → MCP tools present, skills present, Stop hook fires at end of work, all with zero config edits.)
 

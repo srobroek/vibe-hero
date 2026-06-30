@@ -3,7 +3,7 @@
 How to exercise every part of vibe-hero yourself: install it, get quizzed, **level
 up**, get **advice/guidance**, see your **progress dashboard** (ranking / score /
 level), watch the **Stop hook** offer reviews, and verify the **remote catalog**.
-Every step below was verified against the live MCP server.
+The steps below map natural-language prompts to what vibe-hero does.
 
 > **One paragraph.** vibe-hero ships as a Claude Code plugin that registers an
 > **MCP server** (11 tools), four **skills** (setup, quiz, status, learn), and a
@@ -15,7 +15,10 @@ Every step below was verified against the live MCP server.
 
 ---
 
-## 1. Install (the real path)
+## 1. Install
+
+For real use, install globally (see the README). For testing in one repo without
+touching your global config, use `--scope project`:
 
 ```bash
 cd your-project              # any git repo
@@ -23,14 +26,14 @@ claude plugin marketplace add srobroek/vibe-hero --scope project
 claude plugin install vibe-hero@vibe-hero --scope project
 ```
 
-`--scope project` keeps it local to this repo. The plugin's `.mcp.json` launches the
-server via `npx -y @vibe-hero/server` (first run downloads it once, then cached).
-Remove later with `claude plugin uninstall vibe-hero --scope project` +
+Either way your profile is the same (`~/.vibe-hero/profile.json`); scope only
+controls where the plugin is enabled. The plugin's `.mcp.json` launches the server
+via `npx -y @vibe-hero/server` (first run downloads it once, then cached). Remove
+later with `claude plugin uninstall vibe-hero --scope project` +
 `claude plugin marketplace remove vibe-hero`.
 
-**Supported hosts:** Claude Code, Codex, Kiro CLI, Kiro IDE. On any other host
-(Cursor, Windsurf, …) vibe-hero deliberately returns a clear
-`UNSUPPORTED_TOOL` message rather than guessing — those tools aren't supported yet.
+Supported hosts: Claude Code, Codex, Kiro CLI, Kiro IDE. On any other host (Cursor,
+Windsurf, …) vibe-hero returns an `UNSUPPORTED_TOOL` message rather than guessing.
 
 ## 2. First-run setup (clears the gate)
 
@@ -113,7 +116,7 @@ export VIBE_HERO_CONTENT_URL="https://your-host/content"   # serves manifest.jso
 ```
 
 - **Unset** → bundled only (offline).
-- **Set** → fetch → validate → cache, with two safeguards:
+- **Set** → fetch → validate → cache, with two checks:
   - **ETag** revalidation: a `304` reuses the cache (cheap "did it change?").
   - **sha256 integrity**: every fetched topic's bytes are checked against the
     manifest hash; a mismatch rejects the catalog (no corrupt/tampered content

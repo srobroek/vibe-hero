@@ -62,9 +62,9 @@ Generated identity manifest (name/version/description/author/license + `skills` 
 
 ```json
 { "hooks": { "Stop": [ { "hooks": [
-  { "type": "command", "command": "${PLUGIN_ROOT}/hooks/claude-code/stop-offer.sh" } ] } ] } }
+  { "type": "command", "command": "${CLAUDE_PLUGIN_ROOT}/hooks/claude-code/stop-offer.sh" } ] } ] } }
 ```
-Uses `${PLUGIN_ROOT}` — the token APM rewrites to the plugin's install path inside hook `command` strings at install time (the convention every agentic-packages hook package uses). The hook manifest is the APM source; `apm compile` generates the Claude-discovered `hooks/hooks.json` from it, which must be committed so it ships via the marketplace `source`. Auto-registers on install (FR-007), retiring the manual README.
+Uses `${CLAUDE_PLUGIN_ROOT}` — the token the native Claude Code plugin loader substitutes for the plugin's install path in hook `command` strings (every native Claude plugin uses it). The `.apm/hooks/` manifest is the source; the committed `hooks/hooks.json` is what Claude Code discovers and must ship via the marketplace `source`. (`${PLUGIN_ROOT}` is the APM-only token and stays unexpanded under `claude plugin install`, so it must NOT be used here.) Auto-registers on install (FR-007), retiring the manual README.
 
 ## Stop hook script — `hooks/claude-code/stop-offer.sh` (REWRITTEN, agent-mediated — FR-011)
 

@@ -39,72 +39,20 @@ If the response is `{ "status": "SETUP_REQUIRED" }`, stop and tell the user:
 
 Do not proceed further until setup completes.
 
-### 4. Render the dashboard
+### 4. Output the dashboard
 
-Render the result using EXACTLY this template (fixed-width, aligned):
+The `get_dashboard` result contains a `rendered` field — the complete,
+server-rendered fixed-width dashboard string.  Output it **verbatim** inside a
+fenced code block.  Do NOT reformat, summarise, or add anything to it.
 
+````
 ```
-╔══════════════════════════════════════════════════════════════╗
-║  🚀  vibe-hero Progress Dashboard                            ║
-╚══════════════════════════════════════════════════════════════╝
-
-Legend:
-  ⬜ not started   🟥 100   🟧 200   🟨 300   🟩 400   🟢 500
-  ▲ graduated   ⚠ due   ▽ in review
+<result.rendered>
 ```
+````
 
-#### 4a. Matrix table
-
-Emit one header row listing all scopes and one data row per topic.
-Left-align the topic title column (pad to 24 chars). Each cell shows:
-- The tier emoji (`⬜`/`🟥`/`🟧`/`🟨`/`🟩`/`🟢`) — use `⬜` for tier 0.
-- The 3-digit ability score (e.g. `312`) — `000` if ability ≤ 0 or topic not
-  started, `—` (em-dash) if `status === "not_in_scope"`.
-- A text marker immediately after the score: `▲` if `markers` contains
-  `"graduated"`, `⚠` if it contains `"due"`, `▽` if it contains `"in_review"`,
-  blank otherwise.
-
-Example (with two scopes):
-
-```
-Topic                    | General        | claude-code
--------------------------|----------------|----------------
-Placeholder Topic        | 🟥 180 ⚠      | 🟥 180 ⚠
-```
-
-#### 4b. Summary block
-
-```
-Items answered : <itemsAnswered>
-Graduated      : <graduated>
-Due for review : <dueForReview>
-Streak         : <streak> correct in a row
-Strongest      : <strongest topic title or "—">
-Weakest        : <weakest topic title or "—">
-Next suggested : <next topic title or "—">
-```
-
-#### 4c. History graphs
-
-For each entry in `history` (General first, then tools), emit a single-line
-ASCII sparkline graph — ONE per scope, stacked vertically, FULL-WIDTH.
-
-- y-axis range: 200–600 (ability), quantized to 8 levels using block chars
-  `▁▂▃▄▅▆▇█`.
-- x-axis: ISO dates of snapshots, shown beneath the line.
-- Label each line with the scope name.
-
-Example:
-
-```
-General     ▁▂▃▄▃▄▅▆
-claude-code ▁▁▂▃▄▄▅▅
-```
-
-If `history` is empty (no quizzes completed yet), print:
-```
-No history yet — complete a quiz to start tracking ability over time.
-```
+(Note: acceptance/quiz flows are separate — do not start a quiz here unless the
+user explicitly asks.)
 
 ### 5. Offer a next action
 
@@ -121,5 +69,3 @@ After the dashboard, offer the user a natural next step. For example:
   that clearly.
 - Keep the tone informational and encouraging; the user is checking in on their
   own growth.
-- The history graph is a single sparkline per scope (one text line each), not a
-  multi-line chart. Keep it compact.

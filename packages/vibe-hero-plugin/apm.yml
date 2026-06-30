@@ -1,5 +1,5 @@
 name: vibe-hero
-version: 0.3.0  # x-release-please-version
+version: 0.3.1  # x-release-please-version
 description: >-
   vibe-hero adaptive-learning plugin: MCP server + skills + end-of-work quiz hook.
   Bundles four skills (setup, quiz, status, learn), an agent-mediated Stop hook,

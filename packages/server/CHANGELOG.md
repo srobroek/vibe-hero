@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/srobroek/vibe-hero/compare/v0.3.0...v0.3.1) (2026-06-30)
+
+
+### Bug Fixes
+
+* plugin fails to load — ship hooks/hooks.json and declare MCP once ([#11](https://github.com/srobroek/vibe-hero/issues/11)) ([e4eba0c](https://github.com/srobroek/vibe-hero/commit/e4eba0c3710ef26faf8b371d979c590907231bdd))
+
 ## [0.3.0](https://github.com/srobroek/vibe-hero/compare/v0.2.1...v0.3.0) (2026-06-30)
 
 

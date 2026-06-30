@@ -4,23 +4,21 @@ Adaptive learning for agentic coding tools.
 
 ## What it is
 
-vibe-hero helps a developer genuinely learn the agentic coding tool they use
-every day. Most users touch only a fraction of a tool's capability surface and
-never discover the rest. vibe-hero maintains a per-user **competence profile**,
-periodically **checks knowledge** with short quizzes at natural end-of-work
-breakpoints, **awards progress only for demonstrated knowledge** (answering
-correctly — never for the agent merely invoking a tool), and **guides** the
-user toward the next thing worth learning.
+vibe-hero helps a developer learn the agentic coding tool they use every day.
+Most users touch only a fraction of a tool's features and never discover the
+rest. vibe-hero maintains a per-user competence profile, checks knowledge with
+short quizzes at end-of-work breakpoints, awards progress only for demonstrated
+knowledge (answering correctly, never for the agent merely invoking a tool), and
+guides the user toward the next thing worth learning.
 
 Because the host model is stateless, all learning state lives outside the model
 in a profile the MCP server owns. The user interacts in natural language with
-their existing coding agent; lightweight skills and a Stop hook tell the agent
-when and how to consult vibe-hero.
+their existing coding agent; skills and a Stop hook tell the agent when and how
+to consult vibe-hero.
 
-v1 proves the full adaptive loop on **Claude Code** for a small set of real
-topics. The architecture already supports multiple tools and a
-general/tool-specific content split; Codex and Kiro are architecture-ready but
-have no v1 content.
+The adaptive loop runs on Claude Code with a general/tool-specific content split.
+Content ships for Claude Code, Codex, Kiro CLI, and Kiro IDE, plus general
+software-engineering topics.
 
 ## How it works
 
@@ -68,63 +66,52 @@ packages/server/          @vibe-hero/server — the MCP server (TypeScript)
     tools/                One module per MCP tool (thin wrappers over engine/store)
   test/                   vitest: unit / integration / e2e
 
-content/                  Curriculum (YAML, one file per topic × class)
-  claude-code/            subagents.yaml, context-management.yaml, planning.yaml
-  general/                task-decomposition.yaml
+content/                  Curriculum (YAML, one file per topic × class) — ~2,800
+  claude-code/            items across 29 topics: 8 claude-code topics
+  general/                + 5 general + 4 codex + 6 kiro-cli + 6 kiro-ide
+  codex/                  manifest.json   generated index with per-topic sha256
+  kiro-cli/
+  kiro-ide/
 
-skills/                   Portable Agent Skills (the user-facing surface)
-  vibe-hero-setup/        Required first-run setup Q&A
-  vibe-hero-quiz/         Quiz driver (start_quiz + submit_answer loop)
-  vibe-hero-status/       Standing overview (get_status)
-  vibe-hero-learn/        Guidance and what-to-study-next (get_guidance)
-
-hooks/claude-code/        Claude Code-specific additive glue
-  stop-offer.sh           Stop hook — surfaces end-of-work quiz offers
-  README.md               Hook registration instructions
+packages/vibe-hero-plugin/   The Claude Code plugin (the distribution unit)
+  .claude-plugin/plugin.json identity + skills path (no mcpServers)
+  .mcp.json                  launches @vibe-hero/server via npx
+  hooks/hooks.json           Stop hook registration (${CLAUDE_PLUGIN_ROOT})
+  hooks/claude-code/         stop-offer.sh — surfaces end-of-work quiz offers
+  .apm/skills/               the four skills (setup, quiz, status, learn)
 ```
 
 ## Setup
 
-### 1. Build the server
+### 1. Install the plugin
+
+```sh
+claude plugin marketplace add srobroek/vibe-hero
+claude plugin install vibe-hero@vibe-hero
+```
+
+This installs the MCP server, the four skills, and the Stop hook together. The
+plugin's `.mcp.json` launches the server via `npx -y @vibe-hero/server` (no local
+build), and `hooks/hooks.json` registers the Stop hook automatically.
+
+### 2. Run setup
+
+The first time, or any time a vibe-hero tool returns `SETUP_REQUIRED`, ask the
+agent to "set up vibe-hero". The vibe-hero-setup skill runs a short Q&A (quiz
+offer cadence, proactive offers, quiz length) and calls `save_config` to clear
+the gate. The tool being learned is auto-detected from the host; it is not asked.
+Every other vibe-hero action is blocked until setup completes once.
+
+### From source (development)
+
+To run against a local build instead of the published package:
 
 ```sh
 pnpm install
 pnpm --filter @vibe-hero/server build
 ```
 
-### 2. Wire the MCP server into Claude Code
-
-Add to `.claude/settings.json` (project) or `~/.claude/settings.json` (global):
-
-```jsonc
-{
-  "mcpServers": {
-    "vibe-hero": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/vibe-hero/packages/server/dist/index.js"]
-    }
-  }
-}
-```
-
-### 3. Install the Stop hook (optional — enables proactive offers)
-
-See `hooks/claude-code/README.md`. Requires `jq` on `PATH`. The hook is
-advisory-only and exits 0 silently on any error.
-
-### 4. Install the skills
-
-Make the four skill files in `skills/` available to your host agent. In Claude
-Code, reference or copy them into your agent skill path.
-
-### 5. Run setup
-
-The first time, or any time a vibe-hero tool returns `SETUP_REQUIRED`, ask the
-agent to run the **vibe-hero-setup** skill. It conducts a short Q&A (which
-tools you are learning, quiz offer cadence, quiz length) and calls `save_config`
-to clear the gate. Every other vibe-hero action is blocked until setup completes
-once.
+Then point an `.mcp.json` entry at `node packages/server/dist/cli/index.js`.
 
 ## The setup gate
 
@@ -210,8 +197,8 @@ Parameters are in `packages/server/src/config.ts`.
 ## Privacy
 
 vibe-hero never stores or transmits raw prompts, tool inputs, tool outputs, or
-any content from the user's session. The observation layer extracts only:
-`{ tool_name, topicKeys, success, timestamp, tool_use_id }`. The profile
+any content from the user's session. The observation layer persists only derived
+signals — `{ tool, topicKeys, success, timestamp, correlationId }`. The profile
 contains ability estimates, scores, timestamps, and configuration only.
 
 Network activity is limited to downloading the public curriculum catalog
@@ -227,9 +214,11 @@ machine.
 
 ## Distribution
 
-npm publishing and Claude Code plugin/marketplace bundling are planned as a
-follow-up (spec 002). Currently the server is set up manually as described
-above.
+The server is published to npm as `@vibe-hero/server`, and the plugin is
+distributed through the `srobroek/vibe-hero` Claude Code marketplace
+(`.claude-plugin/marketplace.json`). `claude plugin install vibe-hero@vibe-hero`
+pulls the plugin, which launches the published server via npx. Releases are cut
+by release-please and published to npm via OIDC (spec 002).
 
 ## Spec and architecture references
 

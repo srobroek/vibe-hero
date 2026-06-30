@@ -7,18 +7,18 @@ and plan.
 ## Installing vibe-hero (users)
 
 vibe-hero ships as a single Claude Code plugin from this repo's marketplace.
-Installing it wires up everything — the MCP server, the four skills, and the
-end-of-work quiz hook — with no manual config-file edits.
+Installing it wires up the MCP server, the four skills, and the end-of-work quiz
+hook — with no manual config-file edits.
 
 ```sh
 # 1. Add the vibe-hero marketplace (this repo is its own marketplace)
-apm marketplace add srobroek/vibe-hero
+claude plugin marketplace add srobroek/vibe-hero
 
-# 2. Install the plugin
-apm install vibe-hero@srobroek/vibe-hero --target claude   # or your host's plugin-install gesture
+# 2. Install the plugin (default user scope = global)
+claude plugin install vibe-hero@vibe-hero
 
-# 3. In your agent, run the first-time setup (it gates everything until done)
-#    e.g. ask the agent to "set up vibe-hero" → the vibe-hero-setup skill runs a short Q&A
+# 3. In your agent, run the first-time setup (it gates vibe-hero until done)
+#    ask the agent to "set up vibe-hero" → the vibe-hero-setup skill runs a short Q&A
 ```
 
 What you get after install:

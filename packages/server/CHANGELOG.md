@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/srobroek/vibe-hero/compare/v0.3.1...v0.3.2) (2026-06-30)
+
+
+### Bug Fixes
+
+* MCP server silently does nothing when launched via npx ([#13](https://github.com/srobroek/vibe-hero/issues/13)) ([092332b](https://github.com/srobroek/vibe-hero/commit/092332b72694d5d2131bca1c582f7e37ae445060))
+
 ## [0.3.1](https://github.com/srobroek/vibe-hero/compare/v0.3.0...v0.3.1) (2026-06-30)
 
 

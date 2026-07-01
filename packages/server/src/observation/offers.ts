@@ -217,6 +217,8 @@ export const isArmExpired = (arm: OfferArm, now: Date): boolean => {
  * Pure: `lastOfferAt` absent ⇒ false (cooldown not running).
  */
 export const isWithinCooldown = (arm: OfferArm, now: Date): boolean => {
+  // No throttle configured (cooldown 0) ⇒ never within a cooldown window.
+  if (isThrottleDisabled()) return false;
   const { lastOfferAt } = arm;
   if (lastOfferAt === undefined) return false;
   const windowMs = cooldownSeconds() * 1_000;

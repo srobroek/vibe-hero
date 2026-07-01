@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run release-please
-        uses: googleapis/release-please-action@v4
+        uses: googleapis/release-please-action@v5
         with:
           # Default GITHUB_TOKEN is sufficient for a public single-package repo.
           # (No artifact-sync-on-PR step is needed: the only version-derived

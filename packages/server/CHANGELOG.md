@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/srobroek/vibe-hero/compare/v0.5.0...v0.6.0) (2026-07-01)
+
+
+### Features
+
+* **server:** clamp offer cooldown to a 7-day maximum ([#24](https://github.com/srobroek/vibe-hero/issues/24)) ([9f6d736](https://github.com/srobroek/vibe-hero/commit/9f6d736bc8236ab7c10674478259612835e997bf))
+
 ## [0.5.0](https://github.com/srobroek/vibe-hero/compare/v0.4.1...v0.5.0) (2026-07-01)
 
 

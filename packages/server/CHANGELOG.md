@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0](https://github.com/srobroek/vibe-hero/compare/v0.9.0...v0.10.0) (2026-07-01)
+
+
+### Features
+
+* **server:** short-circuit isWithinCooldown when the throttle is disabled ([#38](https://github.com/srobroek/vibe-hero/issues/38)) ([e8a255f](https://github.com/srobroek/vibe-hero/commit/e8a255fa613caaa97b65a2fe59a68061b459832e))
+
+
+### Bug Fixes
+
+* **ci:** publish npm in the release-please job (GITHUB_TOKEN can't trigger on:release) ([#36](https://github.com/srobroek/vibe-hero/issues/36)) ([346fdce](https://github.com/srobroek/vibe-hero/commit/346fdce233d72e4b32704ac94e9ba64d69b4dc93))
+
 ## [0.9.0](https://github.com/srobroek/vibe-hero/compare/v0.8.0...v0.9.0) (2026-07-01)
 
 

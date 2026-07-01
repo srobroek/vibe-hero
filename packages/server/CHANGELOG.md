@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/srobroek/vibe-hero/compare/v0.11.0...v0.12.0) (2026-07-01)
+
+
+### Features
+
+* **server:** add describeCooldown() to report resolved offer-throttle config ([#43](https://github.com/srobroek/vibe-hero/issues/43)) ([129a1e7](https://github.com/srobroek/vibe-hero/commit/129a1e7edaf08e5cc62f88b147d6021a9a859b84))
+
 ## [0.11.0](https://github.com/srobroek/vibe-hero/compare/v0.10.0...v0.11.0) (2026-07-01)
 
 

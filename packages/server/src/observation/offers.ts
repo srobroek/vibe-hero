@@ -53,21 +53,21 @@ import type { OfferCandidate } from "../schemas/tools.js";
 // ---------------------------------------------------------------------------
 
 /** Default cooldown window in seconds (matches the legacy Stop-hook default). */
-const DEFAULT_COOLDOWN_SECONDS = 900;
+export const DEFAULT_COOLDOWN_SECONDS = 900;
 
 /**
  * Upper bound on the cooldown window (7 days). Guards against an absurd value
  * (e.g. a typo like `9999999999999999999`) silently muting offers effectively
  * forever — the arm would never expire and no new offer could ever surface.
  */
-const MAX_COOLDOWN_SECONDS = 7 * 24 * 60 * 60;
+export const MAX_COOLDOWN_SECONDS = 7 * 24 * 60 * 60;
 
 /**
  * Lower bound on a POSITIVE cooldown window (60 s). A tiny positive typo (e.g.
  * `1`) would let offers surface almost every turn — spammy. `0` is left
  * untouched: it is the explicit "no throttle" sentinel the hook/tests rely on.
  */
-const MIN_COOLDOWN_SECONDS = 60;
+export const MIN_COOLDOWN_SECONDS = 60;
 
 /**
  * Read the configured cooldown window in seconds from the environment

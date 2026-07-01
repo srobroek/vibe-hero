@@ -34,6 +34,9 @@ import {
   isArmExpired,
   isWithinCooldown,
   cooldownSeconds,
+  DEFAULT_COOLDOWN_SECONDS,
+  MAX_COOLDOWN_SECONDS,
+  MIN_COOLDOWN_SECONDS,
 } from "../../src/observation/offers.js";
 import { makeGetOfferTool, makeRecordOfferResponseTool, armCachePath } from "../../src/tools/offers.js";
 import { makeStartQuizTool } from "../../src/tools/startQuiz.js";
@@ -223,11 +226,11 @@ describe("isWithinCooldown (pure)", () => {
 });
 
 describe("cooldownSeconds (env)", () => {
-  it("returns 900 when env var is unset", () => {
+  it("returns the default when env var is unset", () => {
     const orig = process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     try {
-      expect(cooldownSeconds()).toBe(900);
+      expect(cooldownSeconds()).toBe(DEFAULT_COOLDOWN_SECONDS);
     } finally {
       if (orig !== undefined) process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = orig;
     }
@@ -253,20 +256,19 @@ describe("cooldownSeconds (env)", () => {
     }
   });
 
-  it("clamps an outsized value to the 7-day maximum (never mutes offers forever)", () => {
-    const MAX = 7 * 24 * 60 * 60;
+  it("clamps an outsized value to the maximum (never mutes offers forever)", () => {
     process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "9999999999999999999";
     try {
-      expect(cooldownSeconds()).toBe(MAX);
+      expect(cooldownSeconds()).toBe(MAX_COOLDOWN_SECONDS);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }
   });
 
-  it("floors a tiny positive value to the 60s minimum (no offer spam)", () => {
+  it("floors a tiny positive value to the minimum (no offer spam)", () => {
     process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "1";
     try {
-      expect(cooldownSeconds()).toBe(60);
+      expect(cooldownSeconds()).toBe(MIN_COOLDOWN_SECONDS);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }

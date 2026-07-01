@@ -57,8 +57,10 @@ describe("release pipeline workflows (spec 002, US2)", () => {
 
     it("gates publish on release-please's release_created output (not on:release)", () => {
       // A GITHUB_TOKEN-created release does not fire `on: release: published`,
-      // so publishing must be gated on the action output in the same job.
-      expect(release).toMatch(/steps\.release\.outputs\.release_created/);
+      // so publishing must be gated on the action output in the same job. In
+      // manifest/component mode the output is path-prefixed
+      // (`packages/server--release_created`), accessed via JS property syntax.
+      expect(release).toMatch(/steps\.release\.outputs\['packages\/server--release_created'\]/);
       // Must NOT depend on a separate on:release trigger.
       expect(release).not.toMatch(/release:\s*\n\s*types:\s*\[\s*published\s*\]/);
     });
@@ -81,7 +83,7 @@ describe("release pipeline workflows (spec 002, US2)", () => {
     it("F3: checks out the release tag (not main) for the build+publish steps", () => {
       // The build checkout must use the release-please tag_name output, not
       // 'main', so the built+attested artifact is exactly the tagged commit.
-      expect(release).toMatch(/ref:\s*\$\{\{\s*steps\.release\.outputs\.tag_name\s*\}\}/);
+      expect(release).toMatch(/ref:\s*\$\{\{\s*steps\.release\.outputs\['packages\/server--tag_name'\]\s*\}\}/);
       // 'ref: main' must NOT appear as a checkout ref (the safe push step uses
       // 'git checkout -B main origin/main' in a shell script, not a checkout action).
       expect(release).not.toMatch(/ref:\s*main/);
@@ -98,7 +100,7 @@ describe("release pipeline workflows (spec 002, US2)", () => {
 
     it("F7: publish is gated on the canonical repo and non-prerelease", () => {
       expect(release).toMatch(/github\.repository\s*==\s*['"]srobroek\/vibe-hero['"]/);
-      expect(release).toMatch(/!steps\.release\.outputs\.prerelease/);
+      expect(release).toMatch(/!steps\.release\.outputs\['packages\/server--prerelease'\]/);
     });
   });
 

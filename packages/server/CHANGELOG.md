@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/srobroek/vibe-hero/compare/v0.7.0...v0.8.0) (2026-07-01)
+
+
+### Features
+
+* **server:** export offer-cooldown bound constants ([#31](https://github.com/srobroek/vibe-hero/issues/31)) ([c4cf51b](https://github.com/srobroek/vibe-hero/commit/c4cf51b9b4c4a7062cef7a6a6fb52453d8280905))
+
 ## [0.7.0](https://github.com/srobroek/vibe-hero/compare/v0.6.0...v0.7.0) (2026-07-01)
 
 

@@ -234,9 +234,11 @@ describe("cooldownSeconds (env)", () => {
   });
 
   it("returns the parsed value when env var is set", () => {
-    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "42";
+    // Use a value above MIN_COOLDOWN_SECONDS (60) so this exercises pass-through,
+    // not the floor (the floor has its own dedicated test below).
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "120";
     try {
-      expect(cooldownSeconds()).toBe(42);
+      expect(cooldownSeconds()).toBe(120);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }
@@ -256,6 +258,24 @@ describe("cooldownSeconds (env)", () => {
     process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "9999999999999999999";
     try {
       expect(cooldownSeconds()).toBe(MAX);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+
+  it("floors a tiny positive value to the 60s minimum (no offer spam)", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "1";
+    try {
+      expect(cooldownSeconds()).toBe(60);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+
+  it("preserves 0 as the explicit no-throttle value (not floored)", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "0";
+    try {
+      expect(cooldownSeconds()).toBe(0);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }
@@ -526,7 +546,7 @@ describe("cooldown stamping", () => {
   });
 
   it("arm cache file includes cooldownSeconds from env", async () => {
-    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "42";
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "120";
     const fixtureLoader = () => loadCatalogFromDir(catalogDir);
     const recordObservation = makeRecordObservationTool(home, fixtureLoader).handler;
     const getOffer = makeGetOfferTool(home, fixtureLoader).handler;
@@ -537,7 +557,7 @@ describe("cooldown stamping", () => {
     const cacheFile = armCachePath("session-cd");
     const cache = JSON.parse(await readFile(cacheFile, "utf8")) as { cooldownSeconds: number; sessionId: string };
     expect(cache.sessionId).toBe("session-cd");
-    expect(cache.cooldownSeconds).toBe(42);
+    expect(cache.cooldownSeconds).toBe(120);
   });
 });
 

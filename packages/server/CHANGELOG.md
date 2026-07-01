@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/srobroek/vibe-hero/compare/v0.6.0...v0.7.0) (2026-07-01)
+
+
+### Features
+
+* **server:** floor a positive offer cooldown to 60s (preserve 0 = no throttle) ([#27](https://github.com/srobroek/vibe-hero/issues/27)) ([971f3ab](https://github.com/srobroek/vibe-hero/commit/971f3ab5c1d3e5f9000b82b60ae75b87f0b2e634))
+
 ## [0.6.0](https://github.com/srobroek/vibe-hero/compare/v0.5.0...v0.6.0) (2026-07-01)
 
 

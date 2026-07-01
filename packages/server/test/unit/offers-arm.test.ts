@@ -34,6 +34,7 @@ import {
   isArmExpired,
   isWithinCooldown,
   cooldownSeconds,
+  isThrottleDisabled,
   DEFAULT_COOLDOWN_SECONDS,
   MAX_COOLDOWN_SECONDS,
   MIN_COOLDOWN_SECONDS,
@@ -278,6 +279,26 @@ describe("cooldownSeconds (env)", () => {
     process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "0";
     try {
       expect(cooldownSeconds()).toBe(0);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+});
+
+describe("isThrottleDisabled", () => {
+  it("is true only when the resolved cooldown is 0", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "0";
+    try {
+      expect(isThrottleDisabled()).toBe(true);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+
+  it("is false for a positive cooldown", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "120";
+    try {
+      expect(isThrottleDisabled()).toBe(false);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }

@@ -56,8 +56,17 @@ import type { OfferCandidate } from "../schemas/tools.js";
 const DEFAULT_COOLDOWN_SECONDS = 900;
 
 /**
+ * Upper bound on the cooldown window (7 days). Guards against an absurd value
+ * (e.g. a typo like `9999999999999999999`) silently muting offers effectively
+ * forever — the arm would never expire and no new offer could ever surface.
+ */
+const MAX_COOLDOWN_SECONDS = 7 * 24 * 60 * 60;
+
+/**
  * Read the configured cooldown window in seconds from the environment
- * (`VIBE_HERO_OFFER_COOLDOWN_SECONDS`). Falls back to 900 s (15 min). Pure.
+ * (`VIBE_HERO_OFFER_COOLDOWN_SECONDS`). Falls back to 900 s (15 min), and clamps
+ * to {@link MAX_COOLDOWN_SECONDS} so an outsized value cannot mute offers
+ * indefinitely. Pure.
  */
 export const cooldownSeconds = (): number => {
   const raw = process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
@@ -66,7 +75,8 @@ export const cooldownSeconds = (): number => {
   // Math.trunc so fractional values (e.g. 900.5) never reach the cache JSON as
   // a float — the hook does POSIX integer arithmetic on cooldownSeconds and
   // `$((900.5 * 1))` crashes under set -eu on every prompt.
-  return Number.isFinite(n) && n >= 0 ? Math.trunc(n) : DEFAULT_COOLDOWN_SECONDS;
+  if (!Number.isFinite(n) || n < 0) return DEFAULT_COOLDOWN_SECONDS;
+  return Math.min(Math.trunc(n), MAX_COOLDOWN_SECONDS);
 };
 
 // ---------------------------------------------------------------------------

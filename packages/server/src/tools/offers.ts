@@ -118,9 +118,16 @@ import { defineTool, type AnyToolModule } from "./types.js";
 const sanitiseSessionId = (sessionId: string): string =>
   sessionId.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64) || "default";
 
+/**
+ * Filename prefix for the per-session offer-arm cache in the temp dir. Exported
+ * as the single source of truth for the convention the UserPromptSubmit hook
+ * mirrors (`<tmp>/vibe-hero-offer-<sessionId>.json`).
+ */
+export const ARM_CACHE_PREFIX = "vibe-hero-offer-";
+
 /** Resolve the /tmp cache path for a session (mirrors the hook convention). */
 export const armCachePath = (sessionId: string): string =>
-  path.join(os.tmpdir(), `vibe-hero-offer-${sanitiseSessionId(sessionId)}.json`);
+  path.join(os.tmpdir(), `${ARM_CACHE_PREFIX}${sanitiseSessionId(sessionId)}.json`);
 
 /**
  * The shape written to and read from the /tmp cache file. Embedding `sessionId`

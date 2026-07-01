@@ -16,6 +16,14 @@ name: Release Please
 on:
   push:
     branches: [main]
+  # Allow the `release-please:force-run` recovery label to re-invoke the action
+  # on the release PR. The action only runs when the workflow is triggered, so a
+  # push-only trigger means labels are never observed; the `labeled`/`reopened`
+  # pull_request events give the label a way to fire a run. `workflow_dispatch`
+  # allows a manual on-demand run (e.g. to re-attempt a skipped release).
+  pull_request:
+    types: [labeled, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: write

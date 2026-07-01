@@ -31,8 +31,12 @@ const readWorkflow = (name: string): string =>
   readFileSync(resolve(WORKFLOWS_DIR, name), "utf8");
 
 describe("release pipeline workflows (spec 002, US2)", () => {
-  describe("release.yml — OIDC publish, no token, atomic ordering", () => {
-    const release = readWorkflow("release.yml");
+  // The publish steps live in release-please.yml (single-workflow design): a
+  // GITHUB_TOKEN-created release cannot trigger a separate `on: release`
+  // workflow, so publishing runs in the same job gated on the action's
+  // `release_created` output.
+  describe("release-please.yml — OIDC publish, no token, atomic ordering", () => {
+    const release = readWorkflow("release-please.yml");
 
     it("requests OIDC id-token: write (Trusted Publishers + provenance)", () => {
       expect(release).toMatch(/id-token:\s*write/);
@@ -51,10 +55,12 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(release).not.toMatch(/NODE_AUTH_TOKEN/);
     });
 
-    it("triggers only on a published release, not arbitrary push", () => {
-      expect(release).toMatch(/release:\s*\n\s*types:\s*\[\s*published\s*\]/);
-      // must NOT trigger on push to a branch
-      expect(release).not.toMatch(/on:[\s\S]*?\bpush:\s*\n\s*branches:/);
+    it("gates publish on release-please's release_created output (not on:release)", () => {
+      // A GITHUB_TOKEN-created release does not fire `on: release: published`,
+      // so publishing must be gated on the action output in the same job.
+      expect(release).toMatch(/steps\.release\.outputs\.release_created/);
+      // Must NOT depend on a separate on:release trigger.
+      expect(release).not.toMatch(/release:\s*\n\s*types:\s*\[\s*published\s*\]/);
     });
 
     it("requests contents: write to commit the marketplace pointer", () => {
@@ -73,9 +79,9 @@ describe("release pipeline workflows (spec 002, US2)", () => {
     });
 
     it("F3: checks out the release tag (not main) for the build+publish steps", () => {
-      // The initial checkout must use github.event.release.tag_name, not 'main',
-      // so the built+attested artifact is exactly the tagged commit.
-      expect(release).toMatch(/ref:\s*\$\{\{\s*github\.event\.release\.tag_name\s*\}\}/);
+      // The build checkout must use the release-please tag_name output, not
+      // 'main', so the built+attested artifact is exactly the tagged commit.
+      expect(release).toMatch(/ref:\s*\$\{\{\s*steps\.release\.outputs\.tag_name\s*\}\}/);
       // 'ref: main' must NOT appear as a checkout ref (the safe push step uses
       // 'git checkout -B main origin/main' in a shell script, not a checkout action).
       expect(release).not.toMatch(/ref:\s*main/);
@@ -90,9 +96,9 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(release).toMatch(/for attempt in 1 2 3/);
     });
 
-    it("F7: publish job is gated on the canonical repo and non-prerelease", () => {
+    it("F7: publish is gated on the canonical repo and non-prerelease", () => {
       expect(release).toMatch(/github\.repository\s*==\s*['"]srobroek\/vibe-hero['"]/);
-      expect(release).toMatch(/!github\.event\.release\.prerelease/);
+      expect(release).toMatch(/!steps\.release\.outputs\.prerelease/);
     });
   });
 

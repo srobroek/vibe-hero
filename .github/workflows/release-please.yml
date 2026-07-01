@@ -1,17 +1,39 @@
 name: Release Please
 
-# Release-PR gate for vibe-hero (spec 002, US2 / T018, FR-013/017).
+# Release-PR gate + npm publish for vibe-hero (spec 002, US2 / T018/T019,
+# FR-013/014/016/017, SC-005).
 #
 # SINGLE-PACKAGE mode: @vibe-hero/server (rooted at packages/server) is the one
 # source of version truth. Config lives in release-please-config.json +
-# .release-please-manifest.json (this is NOT a monorepo multi-package manifest;
-# one component, simple `v{version}` tags -- FR-017 / critique E5).
+# .release-please-manifest.json.
+#
+# ONE-WORKFLOW design (why publish lives HERE, not in a separate on:release job):
+# release-please creates the GitHub release + tag using the default GITHUB_TOKEN.
+# GitHub deliberately does NOT trigger further workflow runs from events created
+# by GITHUB_TOKEN (recursion guard), so a separate `on: release: [published]`
+# workflow would NEVER fire for a bot-created release. The canonical fix
+# (release-please-action README) is to run the publish steps in the SAME job,
+# gated on the action's `release_created` output. No PAT, no cross-workflow
+# trigger; OIDC Trusted Publishing still works.
 #
 # Behavior: merges to main accumulate Conventional Commits into a bot-maintained
-# release PR that updates packages/server/package.json version + CHANGELOG.md.
-# Merging that release PR is the single human approval point: release-please then
-# creates the GitHub release and the `v{version}` tag, which fires release.yml
-# (the OIDC npm publish + marketplace-pointer workflow).
+# release PR (updates packages/server/package.json version + CHANGELOG.md +
+# extra-files). Merging that release PR is the single human approval point:
+# release-please then creates the `v{version}` tag + GitHub release AND (in the
+# same run) this workflow publishes to npm and advances the marketplace pointer.
+#
+# Auth: npm Trusted Publishers (OIDC). The publish steps request `id-token: write`;
+# npm is configured once (on npmjs.com) to trust this repo + THIS workflow. There
+# is no long-lived npm publish secret: this file references no publish token
+# secret and sets no npm auth-token env var (verified by release-workflow.test.ts,
+# SC-005). Provenance attestation is emitted by `--provenance`.
+#
+# Atomic ordering (FR-016 -- npm is the source of truth, the marketplace is a
+# derived pointer):
+#   1. build + publish to npm FIRST. If publish fails, the job fails here and the
+#      marketplace pointer is NEVER advanced to a version that does not exist.
+#   2. ONLY after a successful publish, regenerate the marketplace artifact and
+#      commit it back to main (idempotent).
 
 on:
   push:
@@ -25,29 +47,183 @@ on:
     types: [labeled, reopened]
   workflow_dispatch:
 
+# contents: write     -> release-please creates the tag/release + the publish job
+#                        commits the regenerated marketplace pointer back to main
+# pull-requests: write -> release-please maintains the release PR
+# id-token: write     -> OIDC for npm Trusted Publishers + provenance (publish job)
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 # Avoid overlapping release-PR maintenance runs.
 concurrency:
   group: release-please-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  APM_CLI_VERSION: "0.23.0"
+
 jobs:
   release-please:
-    name: maintain release PR / cut release
+    name: maintain release PR / cut release / publish
     runs-on: ubuntu-latest
     steps:
       - name: Run release-please
+        id: release
         uses: googleapis/release-please-action@v5
         with:
-          # Default GITHUB_TOKEN is sufficient for a public single-package repo.
-          # (No artifact-sync-on-PR step is needed: the only version-derived
-          # in-tree artifact is .claude-plugin/marketplace.json, which the
-          # release.yml publish job regenerates and commits AFTER the npm publish,
-          # per the publish-before-marketplace ordering in FR-016. The CI
-          # staleness gate still guards drift on normal PRs.)
+          # Default GITHUB_TOKEN is sufficient: the publish steps below run in
+          # this same job gated on outputs.release_created, so we do NOT rely on
+          # a separate on:release workflow (which GITHUB_TOKEN cannot trigger).
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # ----------------------------------------------------------------------
+      # Publish steps: run ONLY when release-please just created a release.
+      # F7: also gate on the canonical repo and skip pre-releases so forks and
+      # draft/pre-release tags never trigger a real npm publish.
+      # ----------------------------------------------------------------------
+
+      # F3: check out the EXACT release tag so the build is attested to the
+      # tagged commit, not whatever HEAD of main happens to be at run time.
+      - name: Checkout release tag
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.tag_name }}
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node 20
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # registry-url wires npm to the public registry; combined with
+          # id-token: write this enables OIDC Trusted Publisher auth. No npm
+          # auth-token env var is set -- there is no token to set.
+          registry-url: "https://registry.npmjs.org"
+          cache: pnpm
+
+      - name: Upgrade npm for OIDC Trusted Publishers
+        # OIDC Trusted Publisher auth + provenance via the id-token requires a
+        # recent npm (>= 11.5.1); Node 20 ships an older npm. pnpm publish shells
+        # out to this npm for the registry handshake, so upgrade it here.
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @vibe-hero/server
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: pnpm --filter @vibe-hero/server build
+
+      # ---- STEP 1: publish to npm FIRST (atomic ordering, FR-016) ----
+      # OIDC Trusted Publishers: authentication comes from the id-token, NOT a
+      # secret. --provenance emits the npm provenance attestation (SC-005).
+      # --no-git-checks because the release tag/ref state is managed by
+      # release-please, not the workspace working tree.
+      # If this step fails, the job fails BEFORE the marketplace pointer moves.
+      - name: Publish @vibe-hero/server to npm (OIDC + provenance)
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: pnpm --filter @vibe-hero/server publish --access public --provenance --no-git-checks
+
+      # ---- STEP 2: advance the marketplace pointer ONLY after a good publish ----
+      - name: Set up Python (for apm-cli)
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install apm CLI
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: |
+          python -m pip install --upgrade pipx
+          pipx install "apm-cli==${APM_CLI_VERSION}"
+          apm --version
+
+      - name: Regenerate marketplace artifact
+        # Idempotent: regenerates root .claude-plugin/marketplace.json in place
+        # from apm.yml. Runs only because the publish above succeeded.
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: apm pack --offline --marketplace claude
+
+      # F4: fetch + reset to latest origin/main before committing the marketplace
+      # pointer so we do not push on top of a stale base. Idempotent regeneration;
+      # retries up to 3 times to handle a transient push race without failing
+      # after a successful npm publish.
+      - name: Commit and push marketplace pointer (idempotent, safe push)
+        if: >-
+          steps.release.outputs.release_created &&
+          github.repository == 'srobroek/vibe-hero' &&
+          !steps.release.outputs.prerelease
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Switch to latest origin/main (the tag checkout is detached).
+          git fetch origin main
+          git checkout -B main origin/main
+
+          # Regenerate the marketplace pointer on top of main (idempotent).
+          apm pack --offline --marketplace claude
+
+          if git diff --quiet -- .claude-plugin/marketplace.json; then
+            echo "Marketplace pointer already current on main; nothing to commit (idempotent no-op)."
+            exit 0
+          fi
+
+          git add .claude-plugin/marketplace.json
+          git commit -m "chore: advance marketplace pointer for ${{ steps.release.outputs.tag_name }} [skip ci]"
+
+          # Push with up to 3 retries to handle a transient concurrent push.
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Marketplace pointer pushed successfully (attempt ${attempt})."
+              exit 0
+            fi
+            echo "Push attempt ${attempt} failed; rebasing onto latest origin/main and retrying..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "::error::Failed to push marketplace pointer after 3 attempts."
+          exit 1

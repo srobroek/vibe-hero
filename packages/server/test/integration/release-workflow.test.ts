@@ -135,8 +135,8 @@ describe("release pipeline workflows (spec 002, US2)", () => {
   describe("release-please.yml — single-package release-PR gate", () => {
     const rp = readWorkflow("release-please.yml");
 
-    it("uses release-please-action v4", () => {
-      expect(rp).toMatch(/googleapis\/release-please-action@v4/);
+    it("uses release-please-action v5", () => {
+      expect(rp).toMatch(/googleapis\/release-please-action@v5/);
     });
 
     it("uses the single-package config + manifest files", () => {

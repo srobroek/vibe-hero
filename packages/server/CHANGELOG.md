@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/srobroek/vibe-hero/compare/v0.8.0...v0.9.0) (2026-07-01)
+
+
+### Features
+
+* **server:** add isThrottleDisabled() offer-cooldown predicate ([#34](https://github.com/srobroek/vibe-hero/issues/34)) ([4165b4d](https://github.com/srobroek/vibe-hero/commit/4165b4d2b51d425e035b8cb2abf31e5b353224e2))
+
 ## [0.8.0](https://github.com/srobroek/vibe-hero/compare/v0.7.0...v0.8.0) (2026-07-01)
 
 

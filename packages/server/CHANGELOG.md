@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/srobroek/vibe-hero/compare/v0.4.1...v0.5.0) (2026-07-01)
+
+
+### Features
+
+* **plugin:** offer quizzes at inferred work breakpoints via UserPromptSubmit ([#21](https://github.com/srobroek/vibe-hero/issues/21)) ([e6a1dd2](https://github.com/srobroek/vibe-hero/commit/e6a1dd2af897b241f32f5ea803a4a1cea6064653))
+
 ## [0.4.1](https://github.com/srobroek/vibe-hero/compare/v0.4.0...v0.4.1) (2026-06-30)
 
 

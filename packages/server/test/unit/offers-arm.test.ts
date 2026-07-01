@@ -250,6 +250,16 @@ describe("cooldownSeconds (env)", () => {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }
   });
+
+  it("clamps an outsized value to the 7-day maximum (never mutes offers forever)", () => {
+    const MAX = 7 * 24 * 60 * 60;
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "9999999999999999999";
+    try {
+      expect(cooldownSeconds()).toBe(MAX);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------

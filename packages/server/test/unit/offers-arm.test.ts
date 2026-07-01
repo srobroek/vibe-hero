@@ -35,6 +35,7 @@ import {
   isWithinCooldown,
   cooldownSeconds,
   isThrottleDisabled,
+  describeCooldown,
   DEFAULT_COOLDOWN_SECONDS,
   MAX_COOLDOWN_SECONDS,
   MIN_COOLDOWN_SECONDS,
@@ -299,6 +300,33 @@ describe("isThrottleDisabled", () => {
     process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "120";
     try {
       expect(isThrottleDisabled()).toBe(false);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+});
+
+describe("describeCooldown", () => {
+  it("reports the resolved cooldown config as a struct", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "120";
+    try {
+      const d = describeCooldown();
+      expect(d.seconds).toBe(120);
+      expect(d.disabled).toBe(false);
+      expect(d.min).toBe(MIN_COOLDOWN_SECONDS);
+      expect(d.max).toBe(MAX_COOLDOWN_SECONDS);
+      expect(d.default).toBe(DEFAULT_COOLDOWN_SECONDS);
+    } finally {
+      delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    }
+  });
+
+  it("reflects the disabled (no-throttle) state when cooldown is 0", () => {
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "0";
+    try {
+      const d = describeCooldown();
+      expect(d.seconds).toBe(0);
+      expect(d.disabled).toBe(true);
     } finally {
       delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
     }

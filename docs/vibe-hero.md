@@ -211,6 +211,9 @@ machine.
 |---|---|---|
 | `VIBE_HERO_HOME` | `~/.vibe-hero` | Location of `profile.json` and the content cache. |
 | `VIBE_HERO_CONTENT_URL` | *(unset)* | Remote catalog URL. When unset, only bundled content is served. |
+| `VIBE_HERO_OFFER_COOLDOWN_SECONDS` | `900` | Minimum seconds between end-of-work quiz offers per session. A fresh, empty, non-numeric, or fractional value is normalized to an integer (fractional truncated, invalid falls back to `900`). |
+| `VIBE_HERO_DEBUG` | *(unset)* | `1` enables `debug`-level logging to stderr; a file path also tees every line to that file. |
+| `VIBE_HERO_LOG_LEVEL` | `silent` | Explicit log level (`trace`/`debug`/`info`/`warn`/`error`/`silent`), overriding the level implied by `VIBE_HERO_DEBUG`. |
 
 ## Distribution
 

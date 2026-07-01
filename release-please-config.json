@@ -4,10 +4,11 @@
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "tag-separator": "-",
-  "separate-pull-requests": false,
+  "separate-pull-requests": true,
   "packages": {
     "packages/server": {
       "package-name": "@vibe-hero/server",
+      "component": "server",
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {

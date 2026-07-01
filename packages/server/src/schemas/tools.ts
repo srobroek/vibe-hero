@@ -170,6 +170,13 @@ export const StartQuizInputSchema = z.object({
   key: AbilityKeySchema,
   length: z.union([z.literal(3), z.literal(4), z.literal(5)]).optional(),
   allowFreeForm: z.boolean().optional(),
+  /**
+   * Optional: the active session id. When provided, `start_quiz` resets the
+   * per-session offer arm so the UserPromptSubmit hook falls silent until the
+   * cooldown elapses (i.e. quiz started → arm cleared → cooldown restarts).
+   * Omitting it is safe (arm is simply left untouched — backward-compat).
+   */
+  sessionId: z.string().optional(),
 });
 export type StartQuizInput = z.infer<typeof StartQuizInputSchema>;
 

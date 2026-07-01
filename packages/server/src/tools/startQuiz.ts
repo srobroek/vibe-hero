@@ -60,6 +60,8 @@ import {
   type StartQuizInput,
   type StartQuizResult,
 } from "../schemas/tools.js";
+import { clearArmOnQuiz } from "../observation/offers.js";
+import { writeArmCache } from "./offers.js";
 import { defineTool, type AnyToolModule } from "./types.js";
 
 /** Find the catalog topic whose `(class, id)` serializes to `key`. */
@@ -216,13 +218,37 @@ export const makeStartQuizTool = (
         abilityAfter: ability,
       };
 
+      const now = new Date();
+      let clearedArm: ReturnType<typeof clearArmOnQuiz> | undefined;
+
       await updateProfile(
-        (current: Profile) => ({
-          ...current,
-          quizHistory: [...current.quizHistory, record],
-        }),
+        (current: Profile) => {
+          const next: Profile = {
+            ...current,
+            quizHistory: [...current.quizHistory, record],
+          };
+          // If the caller supplied a sessionId, reset the offer arm so the
+          // UserPromptSubmit hook falls silent until the cooldown elapses.
+          // FR-020 extension: quiz started → arm cleared → lastOfferAt stamped.
+          if (input.sessionId !== undefined) {
+            const existingArm = current.offerArms[input.sessionId] ?? {};
+            // clearArmOnQuiz stamps lastQuizAt + resets hasWorkSinceLastQuiz so
+            // arming is blocked until the user does real work after the quiz.
+            clearedArm = clearArmOnQuiz(existingArm, now);
+            return {
+              ...next,
+              offerArms: { ...current.offerArms, [input.sessionId]: clearedArm },
+            };
+          }
+          return next;
+        },
         dirOverride,
       );
+
+      // Write cleared cache outside the lock (best-effort).
+      if (clearedArm !== undefined && input.sessionId !== undefined) {
+        await writeArmCache(input.sessionId, clearedArm);
+      }
 
       return {
         quizId,

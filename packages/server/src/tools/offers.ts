@@ -14,16 +14,45 @@
  *    activity-based candidates. All existing cadence / backoff / decline gates
  *    apply unchanged; no new interruption path is introduced.
  *
+ *    SIDE EFFECT: when a real offer is resolved, `get_offer` calls `armSession`,
+ *    persists `offerArms[sessionId]` into the profile, and writes a cheap /tmp
+ *    cache file. The UserPromptSubmit hook reads ONLY that file — no npx/node
+ *    on the prompt path.
+ *
+ *    BOOTSTRAPPING: the MCP server does NOT know the session id inherently — it
+ *    learns it from the agent's MCP tool calls (`sessionId` is an explicit arg
+ *    on every offer tool). The injected UserPromptSubmit context includes the
+ *    session id and instructs the agent to pass it. On the FIRST prompt of a
+ *    session no cache exists yet, so the hook emits nothing (desired: no offer
+ *    until the agent has called a vibe-hero tool at least once with the id).
+ *
  *  - `record_offer_response` ({sessionId, key, response}) persists the
  *    accept/decline/defer outcome: a decline applies within-session suppression
  *    (FR-020) AND cross-session backoff + eventual global mute (FR-020b) via
  *    {@link applyDecline}; an accept resets the consecutive-decline counter and
  *    clears the mute via {@link applyAccept}; a defer leaves state unchanged.
+ *    Decline and defer also call `clearArm` + write the cleared cache so the
+ *    hook falls silent until the cooldown elapses. Accept writes no cache change
+ *    (the arm is already consumed).
  *
- * Both delegate the decision/state math to the pure engine and own only the IO:
- * clock, catalog load, and the atomic {@link updateProfile} write. Neither tool
- * EVER touches abilities/graduations/quizHistory — offers never score (FR-005,
- * SC-003).
+ * /tmp cache file schema (JSON):
+ *   {
+ *     sessionId:   string,   // must match filename segment AND stdin payload
+ *     armedKey:    string|null,
+ *     armedTitle:  string|null,
+ *     armedAt:     string|null,  // ISO datetime
+ *     lastOfferAt: string|null,  // ISO datetime — cooldown stamp
+ *     cooldownSeconds: number,   // pre-computed by server so hook needs no env
+ *   }
+ * The hook verifies embedded `sessionId` == stdin `session_id` before trusting
+ * the file (guards against stale / reused /tmp entries). Stale-file cleanup:
+ * the server overwrites by session id on every arm; the hook may unlink files
+ * whose `armedAt` + `cooldownSeconds` is expired. No background process needed.
+ *
+ * Both tools delegate the decision/state math to the pure engine and own only
+ * the IO: clock, catalog load, and the atomic {@link updateProfile} write.
+ * Neither tool EVER touches abilities/graduations/quizHistory — offers never
+ * score (FR-005, SC-003).
  *
  * Gated (FR-032): NOT exempt — `index.ts`/`withSetupGate` returns SETUP_REQUIRED
  * when `profile.config` is absent. The handlers assume a configured profile.
@@ -36,6 +65,10 @@
  * (§ OfferLedger), src/config.ts (ASSESSMENT_CONFIG).
  */
 
+import * as fs from "node:fs/promises";
+import * as os from "node:os";
+import * as path from "node:path";
+
 import { ASSESSMENT_CONFIG } from "../config.js";
 import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
 import type { CatalogLoadResult } from "../catalog/loader.js";
@@ -43,7 +76,7 @@ import { isDueForReview, daysBetween } from "../engine/lapse.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import { abilityKey, type AbilityKey, type ToolId } from "../schemas/common.js";
 import type { Topic } from "../schemas/content.js";
-import type { OfferLedger, Profile } from "../schemas/profile.js";
+import type { OfferArm, OfferLedger, Profile } from "../schemas/profile.js";
 import {
   GetOfferInputSchema,
   RecordOfferResponseInputSchema,
@@ -56,11 +89,98 @@ import {
   applyAccept,
   applyDecline,
   applyDefer,
+  armSession,
+  canArm,
+  clearArm,
+  cooldownSeconds,
   ledgerForSession,
   markOffered,
   resolveOffer,
 } from "../observation/offers.js";
 import { defineTool, type AnyToolModule } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// /tmp arm cache helpers
+//
+// Data-flow:
+//   1. Agent calls get_offer (MCP) with sessionId.
+//   2. Server resolves offer, calls armSession, persists profile.offerArms,
+//      writes /tmp/vibe-hero-offer-<sid>.json (cache file).
+//   3. Next UserPromptSubmit: hook reads /tmp file, verifies embedded sessionId,
+//      checks armed/cooldown/expired — all locally, zero node/npx spawn.
+//   4. On decline/defer: server calls clearArm, overwrites cache (cleared).
+//   5. On start_quiz: startQuiz tool calls clearArm, overwrites cache (cleared).
+//   6. Stale-file cleanup: server overwrites by session id on every arm; hook
+//      may unlink expired files to avoid /tmp accumulation (see prompt-offer.sh).
+// ---------------------------------------------------------------------------
+
+/** Sanitise a session id to a safe filename segment (mirrors the hook's tr). */
+const sanitiseSessionId = (sessionId: string): string =>
+  sessionId.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64) || "default";
+
+/** Resolve the /tmp cache path for a session (mirrors the hook convention). */
+export const armCachePath = (sessionId: string): string =>
+  path.join(os.tmpdir(), `vibe-hero-offer-${sanitiseSessionId(sessionId)}.json`);
+
+/**
+ * The shape written to and read from the /tmp cache file. Embedding `sessionId`
+ * lets the hook verify the file belongs to the right session before trusting it
+ * (guards against stale / reused /tmp entries from old runs).
+ */
+export interface ArmCacheEntry {
+  sessionId: string;
+  armedKey: string | null;
+  armedTitle: string | null;
+  armedAt: string | null;
+  lastOfferAt: string | null;
+  cooldownSeconds: number;
+  /** ISO datetime of last quiz start, or null. Used for agent-side reasoning. */
+  lastQuizAt: string | null;
+  /** True if real work has happened since lastQuizAt. Agent may use as hint. */
+  hasWorkSinceLastQuiz: boolean;
+}
+
+/**
+ * Write (or overwrite) the arm cache file for `sessionId`. Errors are swallowed
+ * — a missing cache only means the hook stays silent; it must never crash the
+ * offer path.
+ */
+export const writeArmCache = async (sessionId: string, arm: OfferArm): Promise<void> => {
+  const entry: ArmCacheEntry = {
+    sessionId,
+    armedKey: arm.armedKey ?? null,
+    armedTitle: arm.armedTitle ?? null,
+    armedAt: arm.armedAt ?? null,
+    lastOfferAt: arm.lastOfferAt ?? null,
+    // Always write an integer — POSIX shell arithmetic in the hook crashes on
+    // floats (set -eu; $((900.5 * 1)) → invalid arithmetic operator).
+    cooldownSeconds: Math.trunc(cooldownSeconds()),
+    lastQuizAt: arm.lastQuizAt ?? null,
+    hasWorkSinceLastQuiz: arm.hasWorkSinceLastQuiz ?? false,
+  };
+  try {
+    await fs.writeFile(
+      armCachePath(sessionId),
+      JSON.stringify(entry),
+      { encoding: "utf8", mode: 0o600 },
+    );
+  } catch {
+    // Best-effort — hook reads silently miss if file absent.
+  }
+};
+
+/**
+ * Clear the arm cache file for `sessionId` by overwriting it with a cleared
+ * entry (no arm, but `lastOfferAt` preserved for cooldown enforcement). Errors
+ * are swallowed.
+ */
+const writeClearedCache = async (sessionId: string, clearedArm: OfferArm): Promise<void> => {
+  await writeArmCache(sessionId, clearedArm);
+};
+
+// ---------------------------------------------------------------------------
+// Catalog loader types (shared with startQuiz / recordObservation)
+// ---------------------------------------------------------------------------
 
 /**
  * Sync catalog loader (test seam): returns topics synchronously from a fixture
@@ -242,7 +362,33 @@ export const makeGetOfferTool = (
 
       // Record that the offer surfaced so the cadence caps apply next time.
       const offered = markOffered(ledger, decision.key);
-      await persistLedger(offered, dirOverride);
+
+      // Arm the session — but only write the /tmp cache (for the hook) when the
+      // arm gates allow it. `canArm` checks:
+      //   1. TIMER: cooldown since lastOfferAt has elapsed.
+      //   2. SEMANTIC: real work has happened since the last quiz (if any).
+      // Rationale: `get_offer` is called EXPLICITLY by the agent (who confirmed
+      // the hook already signalled); it always returns the offer so the agent
+      // can present it. But the hook cache is only refreshed when `canArm`
+      // passes — preventing the hook from triggering again during the cooldown
+      // window or when no work has happened since a quiz.
+      const existingArm: OfferArm = profile.offerArms[input.sessionId] ?? {};
+      const shouldArm = canArm(existingArm, now);
+      const arm = shouldArm
+        ? armSession(decision.key, topic.title, now, existingArm)
+        : existingArm; // keep existing arm state unchanged if can't arm
+      await updateProfile((current: Profile): Profile => ({
+        ...current,
+        offers: offered,
+        offerArms: shouldArm
+          ? { ...current.offerArms, [input.sessionId]: arm }
+          : current.offerArms,
+      }), dirOverride);
+
+      // Write /tmp cache as side effect only when arming is permitted.
+      if (shouldArm) {
+        await writeArmCache(input.sessionId, arm);
+      }
 
       // Use the review prompt when the offered topic is due for review, the
       // regular activity prompt otherwise.
@@ -290,11 +436,14 @@ export const makeRecordOfferResponseTool = (
       input: RecordOfferResponseInput,
     ): Promise<RecordOfferResponseResult> => {
       const now = new Date();
+      let armToClear: OfferArm | undefined;
 
       // Single atomic read-modify-write so concurrent sessions serialize. Only
-      // the `offers` ledger + `backoff` change — scoring state is untouched.
+      // the `offers` ledger + `backoff` + `offerArms` change — scoring state is
+      // untouched.
       await updateProfile((current: Profile): Profile => {
         const ledger = ledgerForSession(current.offers, input.sessionId);
+        const existingArm: OfferArm = current.offerArms[input.sessionId] ?? {};
 
         switch (input.response) {
           case "decline": {
@@ -305,9 +454,20 @@ export const makeRecordOfferResponseTool = (
               now,
               ASSESSMENT_CONFIG,
             );
-            return { ...current, offers: nextLedger, backoff };
+            // Clear the arm + stamp lastOfferAt so the hook falls silent until
+            // the cooldown elapses. Arm cleared on decline (FR-020 extension).
+            armToClear = clearArm(existingArm, now);
+            return {
+              ...current,
+              offers: nextLedger,
+              backoff,
+              offerArms: { ...current.offerArms, [input.sessionId]: armToClear },
+            };
           }
           case "accept": {
+            // Accept does not clear the arm (it was already consumed by the
+            // quiz flow) and does not stamp lastOfferAt — the user engaged, so
+            // next offer timing is driven by start_quiz's clearArm call.
             return {
               ...current,
               offers: ledger,
@@ -319,10 +479,23 @@ export const makeRecordOfferResponseTool = (
               ledger,
               current.backoff,
             );
-            return { ...current, offers: nextLedger, backoff };
+            // Defer = "ask me later" — clear the arm so the hook is silent until
+            // the cooldown elapses, then the next get_offer can re-arm.
+            armToClear = clearArm(existingArm, now);
+            return {
+              ...current,
+              offers: nextLedger,
+              backoff,
+              offerArms: { ...current.offerArms, [input.sessionId]: armToClear },
+            };
           }
         }
       }, dirOverride);
+
+      // Write cleared cache outside the lock (best-effort).
+      if (armToClear !== undefined) {
+        await writeClearedCache(input.sessionId, armToClear);
+      }
 
       return { ok: true };
     },

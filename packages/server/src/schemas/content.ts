@@ -230,7 +230,13 @@ export type TriggerSignal = z.infer<typeof TriggerSignalSchema>;
 export const TopicSchema = z.object({
   id: z.string().min(1),
   class: ContentClassSchema,
-  title: z.string().min(1),
+  // Forbid double-quote and backslash: the hook injects `title` into a JSON
+  // string via printf (no-jq path). Even though we escape at hook time, the
+  // schema guard is defence-in-depth so content authors see a clear error
+  // rather than a silent JSON-corruption bug. All 29 current titles are clean.
+  title: z.string().min(1).regex(/^[^"\\]+$/, {
+    message: 'Topic title must not contain double-quote (") or backslash (\\)',
+  }),
   summary: z.string().min(1),
   triggerSignals: z.array(TriggerSignalSchema),
   items: z.array(ContentItemSchema),

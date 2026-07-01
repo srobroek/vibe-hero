@@ -1,6 +1,6 @@
 {
   "name": "@vibe-hero/server",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "MCP server engine for the vibe-hero adaptive-learning plugin — not used standalone; install the vibe-hero Claude Code plugin, which launches this and ships the skills + hook.",
   "keywords": [
     "mcp",

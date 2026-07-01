@@ -63,10 +63,19 @@ const DEFAULT_COOLDOWN_SECONDS = 900;
 const MAX_COOLDOWN_SECONDS = 7 * 24 * 60 * 60;
 
 /**
+ * Lower bound on a POSITIVE cooldown window (60 s). A tiny positive typo (e.g.
+ * `1`) would let offers surface almost every turn — spammy. `0` is left
+ * untouched: it is the explicit "no throttle" sentinel the hook/tests rely on.
+ */
+const MIN_COOLDOWN_SECONDS = 60;
+
+/**
  * Read the configured cooldown window in seconds from the environment
- * (`VIBE_HERO_OFFER_COOLDOWN_SECONDS`). Falls back to 900 s (15 min), and clamps
- * to {@link MAX_COOLDOWN_SECONDS} so an outsized value cannot mute offers
- * indefinitely. Pure.
+ * (`VIBE_HERO_OFFER_COOLDOWN_SECONDS`). Falls back to 900 s (15 min); clamps to
+ * {@link MAX_COOLDOWN_SECONDS} so an outsized value cannot mute offers
+ * indefinitely; and floors a positive value to {@link MIN_COOLDOWN_SECONDS} so a
+ * tiny typo cannot spam offers. `0` is preserved as the explicit no-throttle
+ * value. Pure.
  */
 export const cooldownSeconds = (): number => {
   const raw = process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
@@ -76,7 +85,9 @@ export const cooldownSeconds = (): number => {
   // a float — the hook does POSIX integer arithmetic on cooldownSeconds and
   // `$((900.5 * 1))` crashes under set -eu on every prompt.
   if (!Number.isFinite(n) || n < 0) return DEFAULT_COOLDOWN_SECONDS;
-  return Math.min(Math.trunc(n), MAX_COOLDOWN_SECONDS);
+  const secs = Math.min(Math.trunc(n), MAX_COOLDOWN_SECONDS);
+  // Preserve 0 (no throttle); floor any other positive value to the minimum.
+  return secs === 0 ? 0 : Math.max(secs, MIN_COOLDOWN_SECONDS);
 };
 
 // ---------------------------------------------------------------------------

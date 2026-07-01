@@ -90,6 +90,13 @@ export const cooldownSeconds = (): number => {
   return secs === 0 ? 0 : Math.max(secs, MIN_COOLDOWN_SECONDS);
 };
 
+/**
+ * Whether the offer cooldown throttle is disabled — i.e. the resolved
+ * {@link cooldownSeconds} is `0`, the explicit "no throttle" sentinel. A small
+ * named predicate so callers don't hard-code the `=== 0` comparison. Pure.
+ */
+export const isThrottleDisabled = (): boolean => cooldownSeconds() === 0;
+
 // ---------------------------------------------------------------------------
 // Arm lifecycle helpers (pure — no IO, clock injected as `now: Date`)
 // ---------------------------------------------------------------------------

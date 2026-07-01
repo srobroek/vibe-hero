@@ -8,7 +8,7 @@
     {
       "name": "vibe-hero",
       "description": "vibe-hero adaptive-learning plugin: MCP server + skills + end-of-work quiz hook. Bundles four skills (setup, quiz, status, learn), an agent-mediated Stop hook, and an MCP server launched via npx from the published @vibe-hero/server package.",
-      "version": "0.11.0",
+      "version": "0.12.0",
       "tags": [
         "learning",
         "quiz",

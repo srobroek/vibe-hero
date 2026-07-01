@@ -97,6 +97,26 @@ export const cooldownSeconds = (): number => {
  */
 export const isThrottleDisabled = (): boolean => cooldownSeconds() === 0;
 
+/**
+ * Resolved offer-cooldown configuration as a small struct — the effective
+ * cooldown in seconds, whether the throttle is disabled, and the bounds applied.
+ * Useful for diagnostics/status surfaces that want to explain the current
+ * throttle without re-deriving it. Pure.
+ */
+export const describeCooldown = (): {
+  seconds: number;
+  disabled: boolean;
+  min: number;
+  max: number;
+  default: number;
+} => ({
+  seconds: cooldownSeconds(),
+  disabled: isThrottleDisabled(),
+  min: MIN_COOLDOWN_SECONDS,
+  max: MAX_COOLDOWN_SECONDS,
+  default: DEFAULT_COOLDOWN_SECONDS,
+});
+
 // ---------------------------------------------------------------------------
 // Arm lifecycle helpers (pure — no IO, clock injected as `now: Date`)
 // ---------------------------------------------------------------------------

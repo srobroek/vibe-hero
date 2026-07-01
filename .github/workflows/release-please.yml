@@ -74,7 +74,8 @@ jobs:
         uses: googleapis/release-please-action@v5
         with:
           # Default GITHUB_TOKEN is sufficient: the publish steps below run in
-          # this same job gated on outputs.release_created, so we do NOT rely on
+          # this same job gated on the path-prefixed release_created output, so we
+          # do NOT rely on
           # a separate on:release workflow (which GITHUB_TOKEN cannot trigger).
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
@@ -90,28 +91,28 @@ jobs:
       # tagged commit, not whatever HEAD of main happens to be at run time.
       - name: Checkout release tag
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         uses: actions/checkout@v4
         with:
-          ref: ${{ steps.release.outputs.tag_name }}
+          ref: ${{ steps.release.outputs['packages/server--tag_name'] }}
           fetch-depth: 0
 
       - name: Set up pnpm
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Set up Node 20
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -126,23 +127,23 @@ jobs:
         # recent npm (>= 11.5.1); Node 20 ships an older npm. pnpm publish shells
         # out to this npm for the registry handshake, so upgrade it here.
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: npm install -g npm@latest
 
       - name: Install dependencies
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: pnpm install --frozen-lockfile
 
       - name: Build @vibe-hero/server
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: pnpm --filter @vibe-hero/server build
 
       # ---- STEP 1: publish to npm FIRST (atomic ordering, FR-016) ----
@@ -153,26 +154,26 @@ jobs:
       # If this step fails, the job fails BEFORE the marketplace pointer moves.
       - name: Publish @vibe-hero/server to npm (OIDC + provenance)
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: pnpm --filter @vibe-hero/server publish --access public --provenance --no-git-checks
 
       # ---- STEP 2: advance the marketplace pointer ONLY after a good publish ----
       - name: Set up Python (for apm-cli)
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install apm CLI
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: |
           python -m pip install --upgrade pipx
           pipx install "apm-cli==${APM_CLI_VERSION}"
@@ -182,9 +183,9 @@ jobs:
         # Idempotent: regenerates root .claude-plugin/marketplace.json in place
         # from apm.yml. Runs only because the publish above succeeded.
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: apm pack --offline --marketplace claude
 
       # F4: fetch + reset to latest origin/main before committing the marketplace
@@ -193,9 +194,9 @@ jobs:
       # after a successful npm publish.
       - name: Commit and push marketplace pointer (idempotent, safe push)
         if: >-
-          steps.release.outputs.release_created &&
+          steps.release.outputs['packages/server--release_created'] &&
           github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs.prerelease
+          !steps.release.outputs['packages/server--prerelease']
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -213,7 +214,7 @@ jobs:
           fi
 
           git add .claude-plugin/marketplace.json
-          git commit -m "chore: advance marketplace pointer for ${{ steps.release.outputs.tag_name }} [skip ci]"
+          git commit -m "chore: advance marketplace pointer for ${{ steps.release.outputs['packages/server--tag_name'] }} [skip ci]"
 
           # Push with up to 3 retries to handle a transient concurrent push.
           for attempt in 1 2 3; do

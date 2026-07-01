@@ -48,6 +48,7 @@ import {
 } from "../schemas/tools.js";
 import {
   ledgerForSession,
+  markWorkSinceQuiz,
   matchCandidates,
   noteCandidates,
   type ObservedSignal,
@@ -128,17 +129,36 @@ export const makeRecordObservationTool = (
 
       // Reconcile (or roll over) the per-session ledger, accumulate the matched
       // candidate keys into its per-session pool, and persist ONLY the `offers`
-      // block. No scoring fields are read or written — this is the chokepoint
-      // that makes SC-003 (usage scores nothing) structurally true.
+      // and `offerArms` blocks. No scoring fields are read or written — this is
+      // the chokepoint that makes SC-003 (usage scores nothing) structurally true.
+      //
+      // Semantic work-after-quiz gate: if the session has a lastQuizAt timestamp
+      // (set by start_quiz) but hasWorkSinceLastQuiz is not yet true, this
+      // record_observation call IS the "real work" signal that satisfies the gate.
+      // Mark it here so get_offer can arm again on the next call.
       const candidateKeys = candidates.map((c) => c.key);
       await updateProfile(
-        (current: Profile): Profile => ({
-          ...current,
-          offers: noteCandidates(
+        (current: Profile): Profile => {
+          const nextOffers = noteCandidates(
             ledgerForSession(current.offers, input.sessionId),
             candidateKeys,
-          ),
-        }),
+          );
+          const existingArm = current.offerArms[input.sessionId];
+          // Only update the arm if there's a lastQuizAt that hasn't been
+          // satisfied yet — this avoids a write on every observation when the
+          // gate is already cleared.
+          const needsWorkMark =
+            existingArm !== undefined &&
+            existingArm.lastQuizAt !== undefined &&
+            !existingArm.hasWorkSinceLastQuiz;
+          const nextArms = needsWorkMark
+            ? {
+                ...current.offerArms,
+                [input.sessionId]: markWorkSinceQuiz(existingArm),
+              }
+            : current.offerArms;
+          return { ...current, offers: nextOffers, offerArms: nextArms };
+        },
         dirOverride,
       );
 

@@ -19,6 +19,17 @@
  * (`tools/offers.ts`, `tools/recordObservation.ts`) is the thin wrapper that
  * reads the clock, loads the catalog, and persists via `updateProfile`.
  *
+ * Arm/cache data-flow (UserPromptSubmit redesign):
+ *   The MCP server (running as the agent's live connection) is the ONLY writer
+ *   of arm state. On each `get_offer` call that resolves a real offer, the tool
+ *   layer calls `armSession`, persists the result into `profile.offerArms[sid]`,
+ *   and writes a cheap /tmp cache file. The UserPromptSubmit hook reads ONLY
+ *   that /tmp file — no npx, no node spawn on the prompt path. On quiz start,
+ *   decline, or defer, the tool layer calls `clearArm` to reset the arm and
+ *   stamp `lastOfferAt` so the cooldown restarts. Arms also expire autonomously:
+ *   `isArmExpired` returns true once the cooldown window has elapsed since the
+ *   arm was written (user abandoned the session); re-arming resumes next call.
+ *
  * Source of truth: specs/001-vibe-hero-mvp/spec.md (FR-005, FR-015..017,
  * FR-019/020/020a/020b, SC-003), specs/001-vibe-hero-mvp/data-model.md
  * (§ OfferLedger), specs/001-vibe-hero-mvp/contracts/mcp-tools.md
@@ -30,11 +41,180 @@ import { ASSESSMENT_CONFIG } from "../config.js";
 import { abilityKey, type AbilityKey, type ToolId } from "../schemas/common.js";
 import type {
   Config,
+  OfferArm,
   OfferBackoff,
   OfferLedger,
 } from "../schemas/profile.js";
 import type { Topic, TriggerSignal } from "../schemas/content.js";
 import type { OfferCandidate } from "../schemas/tools.js";
+
+// ---------------------------------------------------------------------------
+// Cooldown helpers (pure — read env once per call; no IO)
+// ---------------------------------------------------------------------------
+
+/** Default cooldown window in seconds (matches the legacy Stop-hook default). */
+const DEFAULT_COOLDOWN_SECONDS = 900;
+
+/**
+ * Read the configured cooldown window in seconds from the environment
+ * (`VIBE_HERO_OFFER_COOLDOWN_SECONDS`). Falls back to 900 s (15 min). Pure.
+ */
+export const cooldownSeconds = (): number => {
+  const raw = process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+  if (raw === undefined || raw === "") return DEFAULT_COOLDOWN_SECONDS;
+  const n = Number(raw);
+  // Math.trunc so fractional values (e.g. 900.5) never reach the cache JSON as
+  // a float — the hook does POSIX integer arithmetic on cooldownSeconds and
+  // `$((900.5 * 1))` crashes under set -eu on every prompt.
+  return Number.isFinite(n) && n >= 0 ? Math.trunc(n) : DEFAULT_COOLDOWN_SECONDS;
+};
+
+// ---------------------------------------------------------------------------
+// Arm lifecycle helpers (pure — no IO, clock injected as `now: Date`)
+// ---------------------------------------------------------------------------
+
+/**
+ * Write an armed offer into the per-session arm record. Called by `get_offer`
+ * when it resolves a real offer: records the key + title + arm timestamp so
+ * the hook can read the /tmp cache WITHOUT calling back to the server. Also
+ * stamps `lastOfferAt` to start the cooldown clock.
+ *
+ * Preserves `lastQuizAt` and `hasWorkSinceLastQuiz` from the existing arm so
+ * the semantic "work-after-quiz" history is not lost when the arm refreshes.
+ *
+ * Pure: returns the updated {@link OfferArm}. The tool layer persists it.
+ *
+ * @param key      - The resolved offer key.
+ * @param title    - Human-readable topic title (cached in the arm for the hook).
+ * @param now      - The arm instant.
+ * @param existing - The existing arm record (carry forward quiz/work history).
+ */
+export const armSession = (
+  key: AbilityKey,
+  title: string,
+  now: Date,
+  existing: OfferArm = {},
+): OfferArm => ({
+  armedKey: key,
+  armedTitle: title,
+  armedAt: now.toISOString(),
+  // IMPORTANT: do NOT stamp lastOfferAt to now here. lastOfferAt records the
+  // last quiz/decline/defer event time (the "cooldown clock start") and is only
+  // written by clearArmOnQuiz and clearArm. Setting it to now would make the
+  // two gates mutually exclusive:
+  //   - expiry gate fires when (now - armedAt) >= cooldown (arm abandoned)
+  //   - cooldown gate fires when (now - lastOfferAt) < cooldown
+  // With armedAt == lastOfferAt the hook is silent at every instant: before
+  // cooldown elapses it's within-cooldown; at/after cooldown the arm expires.
+  // Correct: carry forward the existing lastOfferAt (undefined on a fresh arm
+  // → hook can emit immediately; set by prior quiz/decline → cooldown enforced).
+  lastOfferAt: existing.lastOfferAt,
+  // Carry forward quiz/work history so it isn't erased by re-arming.
+  lastQuizAt: existing.lastQuizAt,
+  hasWorkSinceLastQuiz: existing.hasWorkSinceLastQuiz,
+});
+
+/**
+ * Clear the arm for a session on quiz start, preserving `lastOfferAt` to
+ * enforce the cooldown before the next re-arm, and stamping `lastQuizAt` to
+ * start the semantic "work-required-after-quiz" gate. `hasWorkSinceLastQuiz`
+ * is reset to `false` so the next arm requires a real work signal first.
+ *
+ * Called when a quiz STARTS (not just offered). Pure.
+ *
+ * @param _existing - The current arm (intentionally replaced except cooldown).
+ * @param now       - The quiz-start instant.
+ */
+export const clearArmOnQuiz = (_existing: OfferArm, now: Date): OfferArm => ({
+  lastOfferAt: now.toISOString(),
+  lastQuizAt: now.toISOString(),
+  hasWorkSinceLastQuiz: false,
+});
+
+/**
+ * Clear the arm for a session on decline or defer, preserving `lastOfferAt`
+ * for the cooldown but NOT stamping `lastQuizAt` (the user didn't do a quiz).
+ * Carry forward `lastQuizAt` and `hasWorkSinceLastQuiz` so the semantic gate
+ * remains intact.
+ *
+ * Called when the user declines or defers an offer. Pure.
+ *
+ * @param existing - The current arm (lastQuizAt/hasWorkSinceLastQuiz carried).
+ * @param now      - The decline/defer instant.
+ */
+export const clearArm = (existing: OfferArm, now: Date): OfferArm => ({
+  lastOfferAt: now.toISOString(),
+  // Carry forward quiz/work state so the semantic gate isn't reset by a decline.
+  lastQuizAt: existing.lastQuizAt,
+  hasWorkSinceLastQuiz: existing.hasWorkSinceLastQuiz,
+});
+
+/**
+ * Mark that a real work/activity signal has arrived for this session after
+ * `lastQuizAt`, satisfying the semantic "intervening work" gate. The tool
+ * layer calls this from `record_observation` for each session that has
+ * `lastQuizAt` set and `hasWorkSinceLastQuiz` not yet true.
+ *
+ * The signal chosen for "real work" is a `record_observation` call — it is
+ * already the canonical activity intake path; tying the gate to it requires
+ * no new hook or API surface. Pure.
+ *
+ * @param existing - The current arm.
+ * @returns The updated arm with `hasWorkSinceLastQuiz = true`.
+ */
+export const markWorkSinceQuiz = (existing: OfferArm): OfferArm => ({
+  ...existing,
+  hasWorkSinceLastQuiz: true,
+});
+
+/**
+ * True when the arm is set but `armedAt` is older than the cooldown window.
+ * An expired arm means the user left the session without acting; it expires
+ * silently so re-arming can resume on the next `get_offer`.
+ *
+ * Pure: `armedAt` absent ⇒ false (nothing to expire).
+ */
+export const isArmExpired = (arm: OfferArm, now: Date): boolean => {
+  const { armedAt } = arm;
+  if (armedAt === undefined) return false;
+  const windowMs = cooldownSeconds() * 1_000;
+  return now.getTime() - Date.parse(armedAt) >= windowMs;
+};
+
+/**
+ * True when `lastOfferAt` is set and the cooldown window has NOT yet elapsed.
+ * The server checks this before deciding to re-arm; the hook reads the same
+ * value from the /tmp cache.
+ *
+ * Pure: `lastOfferAt` absent ⇒ false (cooldown not running).
+ */
+export const isWithinCooldown = (arm: OfferArm, now: Date): boolean => {
+  const { lastOfferAt } = arm;
+  if (lastOfferAt === undefined) return false;
+  const windowMs = cooldownSeconds() * 1_000;
+  return now.getTime() - Date.parse(lastOfferAt) < windowMs;
+};
+
+/**
+ * True when arming is semantically permitted for this session.
+ *
+ * Two layers of gates (both must pass):
+ *  1. TIMER: cooldown window since `lastOfferAt` has elapsed (or never set).
+ *  2. SEMANTIC: either no quiz has been done this session (`lastQuizAt` absent),
+ *     OR at least one real work signal has arrived after `lastQuizAt`
+ *     (`hasWorkSinceLastQuiz === true`).
+ *
+ * This prevents immediately re-offering after a quiz regardless of how much
+ * wall-clock time passes — the user must actually DO some work first.
+ * Pure: no IO.
+ */
+export const canArm = (arm: OfferArm, now: Date): boolean => {
+  // Timer gate: cooldown must have elapsed.
+  if (isWithinCooldown(arm, now)) return false;
+  // Semantic gate: if a quiz was done, require intervening work first.
+  if (arm.lastQuizAt !== undefined && !arm.hasWorkSinceLastQuiz) return false;
+  return true;
+};
 
 /**
  * A single derived activity signal as accepted by `record_observation`. Mirrors

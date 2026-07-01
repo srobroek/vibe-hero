@@ -15,6 +15,7 @@ import {
   ToolIdSchema,
 } from "./common.js";
 
+
 /** ISO-8601 datetime string. */
 const IsoDateTimeSchema = z.string().datetime();
 
@@ -148,6 +149,51 @@ export const OfferBackoffSchema = z.object({
 export type OfferBackoff = z.infer<typeof OfferBackoffSchema>;
 
 /**
+ * Per-session offer arm state (one entry per active session). The server
+ * writes this when it decides an offer is ready (arming), and the hook reads
+ * the corresponding /tmp cache file (written as a side effect by the offer
+ * tool path) WITHOUT calling back to the server.
+ *
+ * Keyed by sessionId so two concurrent sessions never clobber each other's
+ * arm/cooldown accounting. Old profiles that pre-date this field parse forward
+ * cleanly via `.default({})` — no migration step needed (additive field).
+ *
+ * Fields:
+ *  - `armedKey`        — the AbilityKey of the topic that was armed.
+ *  - `armedTitle`      — human-readable title (cached so the hook needs no catalog).
+ *  - `armedAt`         — ISO datetime when the arm was written.
+ *  - `lastOfferAt`     — ISO datetime of the last cooldown-stamped offer surface.
+ *                        Restarted by: quiz started, decline, or defer.
+ *  - `lastQuizAt`      — ISO datetime when the most recent quiz STARTED for this
+ *                        session. Used as the semantic "work-required-after-quiz"
+ *                        gate: the server will not arm a new offer unless at least
+ *                        one `record_observation` activity signal has arrived
+ *                        AFTER `lastQuizAt`. This prevents immediately re-offering
+ *                        after a quiz regardless of how much wall-clock time passes.
+ *  - `hasWorkSinceLastQuiz` — true once a `record_observation` call registers an
+ *                        activity signal that arrived after `lastQuizAt`. Cleared
+ *                        (reset to false) whenever a new quiz starts. The arm path
+ *                        checks this before arming: (cooldown elapsed) AND
+ *                        (hasWorkSinceLastQuiz OR lastQuizAt absent).
+ */
+export const OfferArmSchema = z.object({
+  armedKey: AbilityKeySchema.optional(),
+  armedTitle: z.string().optional(),
+  armedAt: z.string().datetime().optional(),
+  lastOfferAt: z.string().datetime().optional(),
+  lastQuizAt: z.string().datetime().optional(),
+  hasWorkSinceLastQuiz: z.boolean().optional(),
+});
+/** Per-session offer arm state. */
+export type OfferArm = z.infer<typeof OfferArmSchema>;
+
+/**
+ * Map of per-session arm records, keyed by sessionId. Safe default `{}`
+ * so older persisted profiles parse forward without migration.
+ */
+export const OfferArmsSchema = z.record(z.string(), OfferArmSchema).default({}).catch({});
+
+/**
  * Transient, privacy-safe observation event derived from a hook payload and/or
  * transcript record (correlated by `tool_use_id`, FR-017). Used only to
  * populate offer candidates; never stored as raw prompt/tool I/O (FR-018).
@@ -200,6 +246,14 @@ export const ProfileSchema = z.object({
   offers: OfferLedgerSchema,
   backoff: OfferBackoffSchema,
   /**
+   * Per-session offer arm state, keyed by sessionId. Written by the server
+   * during offer resolution (as a side-effect of `get_offer` /
+   * `record_observation`) so the UserPromptSubmit hook can read the arm from
+   * /tmp WITHOUT spawning node/npx on the prompt path. Old profiles without
+   * this field parse forward via `.default({})` / `.catch({})`.
+   */
+  offerArms: OfferArmsSchema,
+  /**
    * Append-only log of ability snapshots (one per graded `submit_answer` call).
    * Drives the history graphs in `get_dashboard`. Additive; old profiles without
    * this field parse forward via `.default([])` — no migration step is needed.
@@ -236,5 +290,6 @@ export const emptyProfile = (now: string = new Date().toISOString()): Profile =>
     consecutiveDeclines: 0,
     perTopicNextEligibleAt: {},
   },
+  offerArms: {},
   abilitySnapshots: [],
 });

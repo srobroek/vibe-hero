@@ -86,19 +86,22 @@ describe("distribution manifests (spec 002)", () => {
     // token the NATIVE Claude Code plugin loader substitutes for the install
     // path. (`${PLUGIN_ROOT}` is the APM-only token; under `claude plugin
     // install` it stays unexpanded, so the command resolves to `/hooks/...` and
-    // the Stop hook fails with a non-blocking error — observed in the wild.)
+    // the UserPromptSubmit hook fails with a non-blocking error — observed in
+    // the wild with the old Stop hook.)
     const hooks = readJson("packages/vibe-hero-plugin/hooks/hooks.json") as {
-      hooks: { Stop?: Array<{ hooks: Array<{ type: string; command: string }> }> };
+      hooks: {
+        UserPromptSubmit?: Array<{ hooks: Array<{ type: string; command: string }> }>;
+      };
     };
-    const stop = hooks.hooks?.Stop?.[0]?.hooks?.[0];
-    expect(stop, "hooks/hooks.json must register a Stop hook").toBeDefined();
-    expect(stop?.type).toBe("command");
-    expect(stop?.command).toContain("${CLAUDE_PLUGIN_ROOT}");
-    expect(stop?.command).toContain("hooks/claude-code/stop-offer.sh");
-    // the referenced script must actually ship + be executable
+    const hookEntry = hooks.hooks?.UserPromptSubmit?.[0]?.hooks?.[0];
+    expect(hookEntry, "hooks/hooks.json must register a UserPromptSubmit hook").toBeDefined();
+    expect(hookEntry?.type).toBe("command");
+    expect(hookEntry?.command).toContain("${CLAUDE_PLUGIN_ROOT}");
+    expect(hookEntry?.command).toContain("hooks/claude-code/prompt-offer.sh");
+    // the referenced script must actually ship + be non-empty
     const script = resolve(
       REPO_ROOT,
-      "packages/vibe-hero-plugin/hooks/claude-code/stop-offer.sh",
+      "packages/vibe-hero-plugin/hooks/claude-code/prompt-offer.sh",
     );
     expect(readFileSync(script, "utf8").length).toBeGreaterThan(0);
   });

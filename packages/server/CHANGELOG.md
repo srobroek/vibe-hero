@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.11.0](https://github.com/srobroek/vibe-hero/compare/v0.10.0...v0.11.0) (2026-07-01)
+
+
+### Features
+
+* **server:** export ARM_CACHE_PREFIX for the offer-arm cache filename ([#41](https://github.com/srobroek/vibe-hero/issues/41)) ([d9a9d52](https://github.com/srobroek/vibe-hero/commit/d9a9d529315fd04970643ce7ea3b95426804691e))
+
+
+### Bug Fixes
+
+* reference path-prefixed release-please outputs so npm publish runs ([#39](https://github.com/srobroek/vibe-hero/issues/39)) ([ae0f759](https://github.com/srobroek/vibe-hero/commit/ae0f759d0bb1849c840e7f0d8715c5c1fb4f0297))
+
 ## [0.10.0](https://github.com/srobroek/vibe-hero/compare/v0.9.0...v0.10.0) (2026-07-01)
 
 

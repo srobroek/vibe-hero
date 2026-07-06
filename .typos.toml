@@ -6,3 +6,7 @@
 mis = "mis"
 # "unparseable" is a widely-used variant spelling of "unparsable"; accept it.
 unparseable = "unparseable"
+# "Patern" appears in "inputPatern", an intentional example of a misspelled
+# selector key in the TriggerSignal schema doc comment (illustrating why
+# `match` is .strict()). typos splits the identifier and flags the word.
+Patern = "Patern"

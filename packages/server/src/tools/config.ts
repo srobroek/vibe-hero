@@ -59,6 +59,13 @@ const normalizeConfig = (
     proactiveOffers: input.proactiveOffers,
     // Omit when absent so ConfigSchema applies its default (4); otherwise honor it.
     ...(input.quizLength !== undefined ? { quizLength: input.quizLength } : {}),
+    // Organic-arming eagerness: honor input; else preserve the existing choice;
+    // else let ConfigSchema default to "normal".
+    ...(input.organicEagerness !== undefined
+      ? { organicEagerness: input.organicEagerness }
+      : existing?.organicEagerness !== undefined
+        ? { organicEagerness: existing.organicEagerness }
+        : {}),
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   });

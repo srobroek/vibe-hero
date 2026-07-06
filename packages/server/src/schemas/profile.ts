@@ -20,6 +20,16 @@ import {
 const IsoDateTimeSchema = z.string().datetime();
 
 /**
+ * How eagerly organic (spool-driven) evidence accumulates into an armed offer.
+ * Set by the setup skill; orthogonal to `offerCadence` (cadence governs how
+ * often offers may SURFACE, eagerness governs how quickly evidence ARMS one).
+ * Preset parameters live in observation/eagerness.ts.
+ */
+export const OrganicEagernessSchema = z.enum(["often", "normal", "rarely"]);
+/** Organic-arming eagerness preset. */
+export type OrganicEagerness = z.infer<typeof OrganicEagernessSchema>;
+
+/**
  * User configuration written by the setup skill (FR-031). Absence of `config`
  * on the root profile is the first-run setup gate (FR-032).
  */
@@ -28,6 +38,11 @@ export const ConfigSchema = z.object({
   offerCadence: z.enum(["off", "per_session", "per_topic"]),
   proactiveOffers: z.boolean(),
   quizLength: z.number().int().min(3).max(5).default(4),
+  /**
+   * Organic-arming eagerness. Defaulted so profiles written before this field
+   * read forward without migration; setup asks the question on re-run.
+   */
+  organicEagerness: OrganicEagernessSchema.default("normal"),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
 });
@@ -194,6 +209,57 @@ export type OfferArm = z.infer<typeof OfferArmSchema>;
 export const OfferArmsSchema = z.record(z.string(), OfferArmSchema).default({}).catch({});
 
 /**
+ * One accumulated evidence entry in a session's organic-evidence ledger.
+ * Written by the drain pipeline; carries ONLY derived data (topic key, weight,
+ * phase, success) — never the raw command/path string that matched (FR-018).
+ */
+export const EvidenceEntrySchema = z.object({
+  key: AbilityKeySchema,
+  /** Effective weight (catalog weight, ×2 already applied for failures). */
+  weight: z.number().nonnegative(),
+  phase: z.enum(["start", "during", "seam"]),
+  success: z.boolean(),
+  timestamp: IsoDateTimeSchema,
+  correlationId: z.string().min(1),
+});
+/** An organic-evidence ledger entry. */
+export type EvidenceEntry = z.infer<typeof EvidenceEntrySchema>;
+
+/**
+ * A pending (threshold-crossed but not yet armed) offer awaiting a seam.
+ * Promotion to armed happens on a seam-phase signal or quiet-promotion
+ * (see observation/arming.ts); expiry follows the rolling evidence window.
+ */
+export const PendingOfferSchema = z.object({
+  key: AbilityKeySchema,
+  createdAt: IsoDateTimeSchema,
+  expiresAt: IsoDateTimeSchema,
+});
+/** A pending offer awaiting a seam. */
+export type PendingOffer = z.infer<typeof PendingOfferSchema>;
+
+/**
+ * Per-session organic-intake state: the rolling evidence ledger, any pending
+ * offer, and the last-signal timestamp that drives quiet-promotion. Keyed by
+ * sessionId alongside {@link OfferArmsSchema}. Additive with safe defaults —
+ * old profiles parse forward without migration.
+ */
+export const OrganicSessionSchema = z.object({
+  evidence: z.array(EvidenceEntrySchema).default([]),
+  pending: PendingOfferSchema.optional(),
+  /** ISO datetime of the most recent drained signal (any topic). */
+  lastSignalAt: IsoDateTimeSchema.optional(),
+});
+/** Per-session organic-intake state. */
+export type OrganicSession = z.infer<typeof OrganicSessionSchema>;
+
+/** Map of per-session organic state, keyed by sessionId. */
+export const OrganicSessionsSchema = z
+  .record(z.string(), OrganicSessionSchema)
+  .default({})
+  .catch({});
+
+/**
  * Transient, privacy-safe observation event derived from a hook payload and/or
  * transcript record (correlated by `tool_use_id`, FR-017). Used only to
  * populate offer candidates; never stored as raw prompt/tool I/O (FR-018).
@@ -254,6 +320,12 @@ export const ProfileSchema = z.object({
    */
   offerArms: OfferArmsSchema,
   /**
+   * Per-session organic-intake state (evidence ledger, pending offers), keyed
+   * by sessionId. Written by the drain pipeline. Additive; old profiles parse
+   * forward via `.default({})` / `.catch({})`.
+   */
+  organicSessions: OrganicSessionsSchema,
+  /**
    * Append-only log of ability snapshots (one per graded `submit_answer` call).
    * Drives the history graphs in `get_dashboard`. Additive; old profiles without
    * this field parse forward via `.default([])` — no migration step is needed.
@@ -291,5 +363,6 @@ export const emptyProfile = (now: string = new Date().toISOString()): Profile =>
     perTopicNextEligibleAt: {},
   },
   offerArms: {},
+  organicSessions: {},
   abilitySnapshots: [],
 });

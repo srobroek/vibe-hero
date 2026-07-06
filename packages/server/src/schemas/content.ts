@@ -199,9 +199,51 @@ export const ContentItemSchema =
 export type ContentItem = z.infer<typeof ContentItemSchema>;
 
 /**
+ * Where a signal sits in the arc of a unit of work. Drives the pending-offer
+ * buffer (seam-gated arming):
+ * - `start`  — work is beginning (EnterPlanMode, TaskCreated, SessionStart).
+ *   Adds evidence AND holds promotion (resets the quiet-promotion timer).
+ * - `during` — ordinary mid-work activity. Adds evidence only. The default.
+ * - `seam`   — a unit of work just completed (SubagentStop, TaskCompleted,
+ *   git commit/push). Promotes any pending offer to armed.
+ */
+export const SignalPhaseSchema = z.enum(["start", "during", "seam"]);
+/** A trigger signal's work-arc phase. */
+export type SignalPhase = z.infer<typeof SignalPhaseSchema>;
+
+/**
+ * Hook events beyond PostToolUse that the spool intake records as signals.
+ * Mirrors the `event` field the spool-writer hook stamps on each line.
+ */
+export const SignalEventSchema = z.enum([
+  "SubagentStop",
+  "PreCompact",
+  "TaskCreated",
+  "TaskCompleted",
+  "SessionStart",
+  "SessionEnd",
+]);
+/** A non-tool hook event kind. */
+export type SignalEvent = z.infer<typeof SignalEventSchema>;
+
+/**
  * How observed host activity maps to a topic for offer candidacy (FR-003a).
  * At least one of the `match` selectors must be present. Trigger-only: it
  * selects which topic to offer and never contributes to scoring.
+ *
+ * Selector semantics (all regex selectors are compiled once at catalog load,
+ * see catalog/loader.ts):
+ * - `toolName`        — exact host tool name (e.g. "Task").
+ * - `toolNamePattern` — regex over the host tool name.
+ * - `mcpToolPattern`  — regex over an MCP tool name (mcp__server__tool).
+ * - `inputPattern`    — regex over the FULL tool input string (Bash command,
+ *   etc.). The raw string is matched at drain time and immediately discarded —
+ *   it is never persisted (privacy contract, see observation/drain.ts).
+ * - `pathPattern`     — regex over the tool input `file_path` (Edit/Write/Read).
+ * - `event`           — a non-tool hook event kind (SubagentStop, ...).
+ *
+ * `match` is `.strict()`: an unknown selector key (e.g. a typo like
+ * `inputPatern`) fails catalog load loudly instead of silently never matching.
  */
 export const TriggerSignalSchema = z.object({
   tool: ToolIdSchema,
@@ -210,15 +252,31 @@ export const TriggerSignalSchema = z.object({
       toolName: z.string().min(1).optional(),
       toolNamePattern: z.string().min(1).optional(),
       mcpToolPattern: z.string().min(1).optional(),
+      inputPattern: z.string().min(1).optional(),
+      pathPattern: z.string().min(1).optional(),
+      event: SignalEventSchema.optional(),
     })
+    .strict()
     .refine(
       (m) =>
         m.toolName !== undefined ||
         m.toolNamePattern !== undefined ||
-        m.mcpToolPattern !== undefined,
+        m.mcpToolPattern !== undefined ||
+        m.inputPattern !== undefined ||
+        m.pathPattern !== undefined ||
+        m.event !== undefined,
       { message: "match requires at least one selector" },
     ),
   weight: z.number().min(0).max(1).default(1),
+  /** Work-arc phase; drives seam-gated arming. Defaults to `during`. */
+  phase: SignalPhaseSchema.default("during"),
+  /**
+   * Event-trigger bypass (⚡): when true and the eagerness preset allows it,
+   * this signal arms immediately (subject to the preset's prior-evidence
+   * requirement) instead of waiting for the threshold. Only meaningful on
+   * `seam`-phase signals.
+   */
+  bypass: z.boolean().default(false),
 });
 /** A topic trigger signal. */
 export type TriggerSignal = z.infer<typeof TriggerSignalSchema>;

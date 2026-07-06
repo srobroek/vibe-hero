@@ -1,0 +1,1 @@
+../../packages/vibe-hero-plugin/hooks/claude-code/spool-signal.sh

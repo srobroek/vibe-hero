@@ -10,7 +10,21 @@ title: Hooks
 summary: >-
   Claude Code lifecycle hooks (PreToolUse, PostToolUse, Stop, SessionStart) — JSON I/O over
   stdin/stdout, additionalContext, exit codes, blocking vs advisory, loop guards.
-triggerSignals: []
+triggerSignals:
+  # Edits to settings files are the primary indicator the user is working with hooks.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.claude/settings(\.local)?\.json$'
+    weight: 1.0
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)hooks\.json$'
+    weight: 1.0
+  # Writing hook scripts directly also signals hook authoring activity.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.claude/hooks/.*\.(sh|py|js|ts)$'
+    weight: 1.0
 items:
   - id: h-100-mc-a
     tier: 100

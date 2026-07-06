@@ -19,6 +19,19 @@ triggerSignals:
   - tool: claude-code
     match:
       toolName: Agent
+  # SendMessage resumes a running subagent — also a subagent-workflow signal.
+  - tool: claude-code
+    match:
+      toolName: SendMessage
+    weight: 0.6
+  # SubagentStop fires at the seam between a subagent completing and the parent
+  # resuming — ideal moment to surface a quiz offer (bypass = surface immediately).
+  - tool: claude-code
+    match:
+      event: SubagentStop
+    weight: 1.0
+    phase: seam
+    bypass: true
 items:
   - id: s-100-mc-a
     tier: 100

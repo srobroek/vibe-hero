@@ -10,7 +10,17 @@ title: Permissions & Settings
 summary: >-
   Configuring Claude Code via settings.json — permission modes, allow/deny tool rules, settings
   scopes, environment variables, and the risks of skipping prompts.
-triggerSignals: []
+triggerSignals:
+  # Editing settings files signals the user is configuring permissions/settings.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.claude/settings(\.local)?\.json$'
+    weight: 0.8
+  # Running claude config or allowedTools CLI commands directly.
+  - tool: claude-code
+    match:
+      inputPattern: '\bclaude (config|--allowedTools)\b'
+    weight: 1.0
 items:
   - id: pas-100-mc-a
     tier: 100

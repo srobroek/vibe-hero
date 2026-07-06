@@ -9,7 +9,29 @@ title: Git & Version Control
 summary: >-
   Working with Git — commits and branches, merge vs rebase, worktrees, resolving conflicts, atomic
   commits, bisect, reflog, and when not to force-push.
-triggerSignals: []
+triggerSignals:
+  # Read-only git commands are a weak background signal.
+  - tool: claude-code
+    match:
+      inputPattern: '^git (status|log|diff|show|blame|branch)\b'
+    weight: 0.4
+  # Write-path git commands are a strong signal — the user is actively versioning.
+  - tool: claude-code
+    match:
+      inputPattern: '^git (add|commit|rebase|merge|cherry-pick|stash|reset|revert)\b'
+    weight: 1.0
+  # Commit/push/merge are seam points — natural quiz offer moments.
+  - tool: claude-code
+    match:
+      inputPattern: '^git (commit|push|merge)\b'
+    weight: 1.0
+    phase: seam
+    bypass: true
+  # gh CLI PR/issue/run commands also indicate version-control workflow.
+  - tool: claude-code
+    match:
+      inputPattern: '^gh (pr|issue|run)\b'
+    weight: 0.8
 items:
   - id: gavc-100-mc-a
     tier: 100

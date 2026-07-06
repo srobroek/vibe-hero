@@ -10,7 +10,40 @@ title: Agentic Workflows & Orchestration
 summary: >-
   Orchestrating multiple agents — pipeline vs parallel/barrier patterns, fan-out, adversarial
   verification, judge panels, background tasks.
-triggerSignals: []
+triggerSignals:
+  # Workflow/task orchestration tools signal active agentic workflow construction.
+  - tool: claude-code
+    match:
+      toolName: Workflow
+    weight: 1.0
+  - tool: claude-code
+    match:
+      toolName: TaskOutput
+    weight: 0.6
+  - tool: claude-code
+    match:
+      toolName: TaskStop
+    weight: 0.6
+  # Scheduling/wakeup tools indicate the user is orchestrating async work.
+  - tool: claude-code
+    match:
+      toolName: CronCreate
+    weight: 0.8
+  - tool: claude-code
+    match:
+      toolName: ScheduleWakeup
+    weight: 0.8
+  - tool: claude-code
+    match:
+      toolName: SendMessage
+    weight: 0.6
+  # TaskCompleted fires at the seam when a workflow task finishes.
+  - tool: claude-code
+    match:
+      event: TaskCompleted
+    weight: 1.0
+    phase: seam
+    bypass: true
 items:
   - id: aw-100-mc-a
     tier: 100

@@ -61,8 +61,6 @@ You level up by answering progressively harder questions correctly, graduating t
 100 → 500 (Introductory → Expert), tracked independently per tool and for general
 skills.
 
-Full walkthrough: [`docs/runbooks/testing-vibe-hero.md`](docs/runbooks/testing-vibe-hero.md).
-
 ---
 
 ## Your data stays on your machine

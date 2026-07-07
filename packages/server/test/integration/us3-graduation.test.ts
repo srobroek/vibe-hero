@@ -213,13 +213,16 @@ describe("US-3 graduation + lapse (T047)", () => {
     const first = await answer(quizId, HARD_1, "a");
     expect(first.graduation).toEqual({ changed: false });
 
-    // Second consecutive correct HARD item: crossing held for dwell=2 → graduate.
     const second = await answer(quizId, HARD_2, "a");
-    expect(second.ability.after).toBeGreaterThan(380);
-    expect(second.graduation?.changed).toBe(true);
-    expect(second.graduation?.tier).toBe(400);
-    expect(second.graduation?.status).toBe("current");
-    expect(second.graduation?.reason).toBe("graduated");
+    expect(second.graduation).toEqual({ changed: false });
+
+    // Third consecutive correct HARD item: crossing held for dwell=3 → graduate.
+    const third = await answer(quizId, HARD_3, "a");
+    expect(third.ability.after).toBeGreaterThan(380);
+    expect(third.graduation?.changed).toBe(true);
+    expect(third.graduation?.tier).toBe(400);
+    expect(third.graduation?.status).toBe("current");
+    expect(third.graduation?.reason).toBe("graduated");
 
     // Persisted: tier 400, dwell reset, and a proactive SPACED review enqueued.
     const profile = await loadProfile(home);
@@ -305,9 +308,10 @@ describe("US-3 graduation + lapse (T047)", () => {
     // Graduate the claude-code key to tier 400.
     const quizId = await beginQuiz(CC_KEY);
     await answer(quizId, HARD_1, "a");
-    const second = await answer(quizId, HARD_2, "a");
-    expect(second.graduation?.changed).toBe(true);
-    expect(second.graduation?.tier).toBe(400);
+    await answer(quizId, HARD_2, "a");
+    const third = await answer(quizId, HARD_3, "a");
+    expect(third.graduation?.changed).toBe(true);
+    expect(third.graduation?.tier).toBe(400);
 
     const profile = await loadProfile(home);
     // claude-code advanced...

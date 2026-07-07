@@ -44,6 +44,10 @@ Do not proceed further until setup completes.
 The `get_dashboard` result contains a `rendered` field — the complete,
 server-rendered fixed-width dashboard string.  Output it **verbatim** inside a
 fenced code block.  Do NOT reformat, summarise, or add anything to it.
+This is not stylistic: the ability-over-time sparkline graphs exist ONLY in
+`rendered`. Rebuilding the dashboard as your own table silently drops the
+graphs (a real user-reported regression). If you want to add commentary, put
+it AFTER the fenced block — never instead of it.
 
 ````
 ```

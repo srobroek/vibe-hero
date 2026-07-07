@@ -47,12 +47,16 @@
 import { randomUUID } from "node:crypto";
 
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { selectItems } from "../engine/selection.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
-import { abilityKey, parseAbilityKey, type AbilityKey } from "../schemas/common.js";
-import type { ContentItem, Topic } from "../schemas/content.js";
+import { parseAbilityKey, type AbilityKey } from "../schemas/common.js";
+import type { ContentItem } from "../schemas/content.js";
 import type { Profile, QuizRecord } from "../schemas/profile.js";
 import {
   StartQuizInputSchema,
@@ -63,13 +67,7 @@ import {
 import { clearArmOnQuiz } from "../observation/offers.js";
 import { writeArmCache } from "./offers.js";
 import { defineTool, type AnyToolModule } from "./types.js";
-
-/** Find the catalog topic whose `(class, id)` serializes to `key`. */
-const findTopicByKey = (
-  topics: readonly Topic[],
-  key: AbilityKey,
-): Topic | undefined =>
-  topics.find((topic) => abilityKey(topic.class, topic.id) === key);
+import { findTopicByKey } from "./us2/standing.js";
 
 /**
  * Compute the difficulty of the next tier boundary ABOVE a learner at
@@ -87,7 +85,7 @@ const findTopicByKey = (
  * @param currentTier - The learner's current tier (0 = not yet graduated).
  * @returns The difficulty of the next boundary to target.
  */
-export const nextBoundaryFor = (currentTier: number): number => {
+const nextBoundaryFor = (currentTier: number): number => {
   const { tierCenters, tierBoundaries } = ASSESSMENT_CONFIG;
   // Tier 0 (ungraduated) behaves like the bottom rung: aim at the first boundary.
   if (currentTier <= tierCenters[0]!) return tierBoundaries[0]!;
@@ -136,21 +134,6 @@ const toPresentedItem = (item: ContentItem): PresentedItem => {
 };
 
 /**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature so the seam is compatible
- * with both the production resolver and test fakes.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
-
-/**
  * Build the `start_quiz` tool module (US-1).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
@@ -175,9 +158,7 @@ export const makeStartQuizTool = (
       parseAbilityKey(key);
 
       const profile = await loadProfile(dirOverride);
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
 
       const topic = findTopicByKey(topics, key);
       if (topic === undefined) {

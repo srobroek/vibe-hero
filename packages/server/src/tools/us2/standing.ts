@@ -20,6 +20,7 @@
 
 import { ASSESSMENT_CONFIG } from "../../config.js";
 import { isDueForReview } from "../../engine/lapse.js";
+import { getDetectedTool } from "../../detection.js";
 import {
   abilityKey,
   type AbilityKey,
@@ -28,6 +29,30 @@ import {
 import type { Topic } from "../../schemas/content.js";
 import type { Profile } from "../../schemas/profile.js";
 import type { StatusTopic } from "../../schemas/tools.js";
+
+/**
+ * Resolve which tool a US-2 read tool reports on. Priority order:
+ *   1. explicit `tool` parameter from the caller
+ *   2. auto-detected tool from the MCP handshake ({@link getDetectedTool})
+ *   3. first tool in `config.toolsLearning` (explicit config — always valid)
+ *
+ * Callers are gated (setup gate + tool gate), so by the time this runs a
+ * supported tool is guaranteed: either detection is set or toolsLearning[0]
+ * exists — the non-null assertion encodes that gate invariant. (Previously
+ * duplicated byte-for-byte in status.ts and guidance.ts.)
+ */
+export const resolveTool = (
+  requested: ToolId | undefined,
+  toolsLearning: readonly ToolId[],
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+): ToolId => (requested ?? getDetectedTool() ?? toolsLearning[0])!;
+
+/** Find the catalog topic whose `(class, id)` serializes to `key`. */
+export const findTopicByKey = (
+  topics: readonly Topic[],
+  key: AbilityKey,
+): Topic | undefined =>
+  topics.find((topic) => abilityKey(topic.class, topic.id) === key);
 
 /**
  * A topic's computed standing, plus the source {@link Topic} so callers can read

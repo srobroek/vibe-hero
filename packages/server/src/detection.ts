@@ -4,7 +4,7 @@
  * Holds the MCP-handshake-derived {@link ToolId} and the raw client name so
  * tool handlers can resolve the active tool or surface a clear error when the
  * host is unsupported. Extracted into its own module to avoid a circular
- * dependency on `index.ts` (which imports `tools/placeholders.ts` → every tool).
+ * dependency on `index.ts` (which imports `tools/registry.ts` → every tool).
  *
  * Usage:
  *  - `index.ts` calls {@link setDetectedTool} and {@link setRawClientName} after

@@ -37,7 +37,7 @@ import {
   withToolGate,
   withGates,
 } from "../../src/tools/gate.js";
-import { TOOL_REGISTRY } from "../../src/tools/placeholders.js";
+import { TOOL_REGISTRY } from "../../src/tools/registry.js";
 import { makeGetConfigTool, makeSaveConfigTool } from "../../src/tools/config.js";
 import { makeGetStatusTool } from "../../src/tools/status.js";
 import { saveProfile } from "../../src/profile/store.js";

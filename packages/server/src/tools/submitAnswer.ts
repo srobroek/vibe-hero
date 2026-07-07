@@ -55,8 +55,12 @@
  */
 
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { updateAbility } from "../engine/elo.js";
 import {
   evaluateGraduation,
@@ -484,20 +488,6 @@ const persistGrade = async (
   return outcome;
 };
 
-/**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
-
 /** The graded outcome of one item, agnostic of which path produced it. */
 export interface GradedOutcome {
   /** Continuous score in `[0, 1]` that drives the Elo update. */
@@ -586,9 +576,7 @@ export const makeSubmitAnswerTool = (
         );
       }
 
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
       const found = findItem(topics, input.itemId);
       if (found === undefined) {
         throw new Error(

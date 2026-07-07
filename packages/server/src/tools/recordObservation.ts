@@ -35,8 +35,12 @@
  * data-model.md (§ OfferLedger).
  */
 
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import type { Profile } from "../schemas/profile.js";
 import { getDetectedTool } from "../detection.js";
@@ -54,20 +58,6 @@ import {
   type ObservedSignal,
 } from "../observation/offers.js";
 import { defineTool, type AnyToolModule } from "./types.js";
-
-/**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /**
  * Build the `record_observation` tool module (US-1).
@@ -106,9 +96,7 @@ export const makeRecordObservationTool = (
         return { offerCandidates: [] };
       }
 
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
       const signals: ObservedSignal[] = input.signals.map((s) => ({
         ...(s.toolName !== undefined ? { toolName: s.toolName } : {}),
         ...(s.mcpTool !== undefined ? { mcpTool: s.mcpTool } : {}),

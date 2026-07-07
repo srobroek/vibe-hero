@@ -23,7 +23,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { TOOL_REGISTRY } from "./tools/placeholders.js";
+import { TOOL_REGISTRY } from "./tools/registry.js";
 import { withGates } from "./tools/gate.js";
 import { toCallToolResult, type AnyToolModule } from "./tools/types.js";
 import {

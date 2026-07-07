@@ -313,3 +313,24 @@ coverage/
 
 # APM pack writes a transient repo-root plugin.json (dev artifact); only marketplace.json is the committed catalog (matches agentic-packages)
 /.claude-plugin/plugin.json
+
+###----------------------------------------------###
+###  APM-installed / regenerable agent tooling   ###
+###  (source of truth: apm.yml + apm.lock.yaml;  ###
+###   reinstall with `apm install`)              ###
+###----------------------------------------------###
+.claude/skills/
+.claude/commands/
+.claude/hooks/
+.claude/agents/
+.claude/apm-hooks.json
+.agents/
+.codex/
+
+# SpecKit extensions are installable from the committed catalog
+# (.specify/extension-catalogs.yml + extensions.yml via speckit-setup);
+# .specify's own config/scripts/templates/memory stay tracked.
+.specify/extensions/
+
+# Empty scaffolding
+archive/

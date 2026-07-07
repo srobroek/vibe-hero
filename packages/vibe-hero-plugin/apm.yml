@@ -1,5 +1,5 @@
 name: vibe-hero
-version: 0.15.0  # x-release-please-version
+version: 0.16.0  # x-release-please-version
 description: >-
   vibe-hero adaptive-learning plugin: MCP server + skills + organic observation intake.
   Bundles four skills (setup, quiz, status, learn), a UserPromptSubmit surfacing hook
@@ -25,4 +25,4 @@ dependencies:
       command: npx
       args:
         - '-y'
-        - '@vibe-hero/server@0.15.0' # x-release-please-version
+        - '@vibe-hero/server@0.16.0' # x-release-please-version

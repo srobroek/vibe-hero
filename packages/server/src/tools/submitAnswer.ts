@@ -384,10 +384,19 @@ export const applyGradedItem = (
   const estimateWithDwell: AbilityEstimate = { ...estimate, dwell: grad.dwell };
 
   const answered = buildAnsweredItem(item, score, grade, gradedBy, answeredAt);
+  const items = [...record.items, answered];
+  // Close the session once every planned item has been graded (sniff finding
+  // 2026-07-07: completedAt was never written). Records from before
+  // plannedItemIds existed have no plan and stay open (legacy behavior).
+  const planned = record.plannedItemIds;
+  const complete =
+    planned !== undefined &&
+    planned.every((id) => items.some((a) => a.itemId === id));
   const updatedRecord: QuizRecord = {
     ...record,
-    items: [...record.items, answered],
+    items,
     abilityAfter: estimate.value,
+    ...(complete ? { completedAt: answeredAt } : {}),
   };
   const quizHistory = [...current.quizHistory];
   quizHistory[recordIndex] = updatedRecord;

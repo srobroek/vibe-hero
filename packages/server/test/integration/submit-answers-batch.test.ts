@@ -301,6 +301,42 @@ describe("submit_answers (batch)", () => {
     ).rejects.toThrow(/more than once/);
   });
 
+  it("stamps completedAt once every planned item is graded, then rejects further submits", async () => {
+    await seedProfile(home);
+    const startQuiz = makeStartQuizTool(home, fixtureLoader).handler;
+    const { quizId, items } = (await startQuiz({
+      key: TOPIC_KEY,
+      length: 3,
+      allowFreeForm: false,
+    })) as StartQuizResult;
+    const submitAnswers = makeSubmitAnswersTool(home, fixtureLoader).handler;
+
+    // Answer exactly the planned items (choice/text values don't matter).
+    await submitAnswers({
+      quizId,
+      answers: items.map((i) =>
+        i.type === "multiple_choice"
+          ? { itemId: i.itemId, answer: { choiceId: "a" } }
+          : { itemId: i.itemId, answer: { text: "skill" } },
+      ),
+    });
+
+    const profile = JSON.parse(
+      await readFile(profilePath(home), "utf8"),
+    ) as Profile;
+    const record = profile.quizHistory.find((q) => q.id === quizId)!;
+    expect(record.completedAt).toBeDefined();
+    expect(record.items).toHaveLength(items.length);
+
+    // The completed-quiz guard is now live: a further submit is rejected.
+    await expect(
+      submitAnswers({
+        quizId,
+        answers: [{ itemId: items[0]!.itemId, answer: { choiceId: "a" } }],
+      }),
+    ).rejects.toThrow(/already completed/);
+  });
+
   it("rejects an unknown quizId", async () => {
     await seedProfile(home);
     const submitAnswers = makeSubmitAnswersTool(home, fixtureLoader).handler;

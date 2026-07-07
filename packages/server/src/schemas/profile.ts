@@ -117,6 +117,13 @@ export const QuizRecordSchema = z.object({
   key: AbilityKeySchema,
   startedAt: IsoDateTimeSchema,
   completedAt: IsoDateTimeSchema.optional(),
+  /**
+   * Item ids selected for this session by `start_quiz`. When present,
+   * `submit_answer`(s) stamps `completedAt` once every planned id has been
+   * graded, closing the session. Optional so profiles written before this
+   * field read forward unchanged (their sessions simply never auto-close).
+   */
+  plannedItemIds: z.array(z.string().min(1)).optional(),
   items: z.array(AnsweredItemSchema),
   abilityBefore: z.number(),
   abilityAfter: z.number(),

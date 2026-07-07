@@ -168,18 +168,13 @@ export const main = async (): Promise<void> => {
 };
 
 // ---------------------------------------------------------------------------
-// Entrypoint guard (same pattern as index.ts)
+// Entrypoint guard (shared; includes the npx/symlink realpath fallback the
+// old inline copy here lacked)
 // ---------------------------------------------------------------------------
 
-import { fileURLToPath } from "node:url";
+import { isEntrypoint } from "../lib/isEntrypoint.js";
 
-const isEntrypoint = (): boolean => {
-  const entry = argv[1];
-  if (entry === undefined) return false;
-  return fileURLToPath(import.meta.url) === entry;
-};
-
-if (isEntrypoint()) {
+if (isEntrypoint(import.meta.url)) {
   main().catch((err: unknown) => {
     stderr.write(
       `vibe-hero cli: fatal: ${String(err)}\n`,

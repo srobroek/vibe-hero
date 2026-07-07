@@ -299,14 +299,17 @@ describe("US-1 full adaptive loop E2E (T039 / quickstart V1 / SC-009)", () => {
       }
     }
 
-    // ── Step 5: submit_answer — CORRECT answer for every selected item ────────
-    // Each item grades "correct"; ability rises monotonically across the run.
+    // ── Step 5: submit_answer — CORRECT answer for every selected item BUT
+    // the last. The final item is held back until after the step-6 replays:
+    // grading every planned item now stamps `completedAt` and closes the quiz,
+    // so replays must happen while the session is still live.
     let priorAfter: number | undefined;
     const firstItem = quiz.items[0]!;
+    const lastItem = quiz.items[quiz.items.length - 1]!;
     let firstItemBefore: number | undefined;
     let firstItemAfter: number | undefined;
 
-    for (const presented of quiz.items) {
+    for (const presented of quiz.items.slice(0, -1)) {
       const answer = correctAnswerFor(topic, presented);
       const graded = (await submitAnswer({
         quizId: quiz.quizId,
@@ -359,6 +362,22 @@ describe("US-1 full adaptive loop E2E (T039 / quickstart V1 / SC-009)", () => {
     expect(replayA.grade).toBe("correct");
     expect(replayB.grade).toBe(replayA.grade);
     expect(replayB.score).toBe(replayA.score);
+
+    // ── Step 6.5: grade the held-back final item — this completes the plan and
+    // stamps `completedAt`, after which the session rejects further submits.
+    const lastGraded = (await submitAnswer({
+      quizId: quiz.quizId,
+      itemId: lastItem.itemId,
+      answer: correctAnswerFor(topic, lastItem),
+    })) as SubmitAnswerResult;
+    expect(lastGraded.grade).toBe("correct");
+    await expect(
+      submitAnswer({
+        quizId: quiz.quizId,
+        itemId: firstItem.itemId,
+        answer: replayAnswer,
+      }),
+    ).rejects.toThrow(/already completed/);
 
     // ── Step 7: inspect the persisted profile ────────────────────────────────
     const onDisk = await readFile(profilePath(home), "utf8");

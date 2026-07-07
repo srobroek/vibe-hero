@@ -35,12 +35,11 @@
  * spec.md FR-002 / FR-008 / FR-011, quickstart.md V2.
  */
 
-import { fileURLToPath } from "node:url";
-import { realpathSync } from "node:fs";
 import { argv, stderr } from "node:process";
 
 import { main as serverMain } from "../index.js";
 import { main as getOfferMain } from "./getOffer.js";
+import { isEntrypoint } from "../lib/isEntrypoint.js";
 
 /** The bin name, used in the usage line. Matches package.json `bin`. */
 const BIN_NAME = "vibe-hero";
@@ -80,29 +79,7 @@ export const dispatch = async (args: readonly string[]): Promise<void> => {
   process.exitCode = 2;
 };
 
-/**
- * Entrypoint guard: only auto-dispatch when this module is the process
- * entrypoint (`node .../cli/index.js`), not when imported by tests. Mirrors the
- * `import.meta.url === argv[1]` pattern in `../index.js` and `./getOffer.js`.
- */
-const isEntrypoint = (): boolean => {
-  const entry = argv[1];
-  if (entry === undefined) return false;
-  const self = fileURLToPath(import.meta.url);
-  // Direct comparison handles `node dist/cli/index.js`. But npx (and any
-  // node_modules/.bin install) launches this bin through a SYMLINK, so `argv[1]`
-  // is the symlink path while `import.meta.url` is the realpath — a naive
-  // string compare fails and the server silently does nothing. Resolve both
-  // sides through realpath so the guard holds under the standard npx launch.
-  if (self === entry) return true;
-  try {
-    return realpathSync(self) === realpathSync(entry);
-  } catch {
-    return false;
-  }
-};
-
-if (isEntrypoint()) {
+if (isEntrypoint(import.meta.url)) {
   dispatch(argv).catch((err: unknown) => {
     stderr.write(`${BIN_NAME}: fatal: ${String(err)}\n`);
     process.exitCode = 1;

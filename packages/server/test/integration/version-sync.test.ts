@@ -73,6 +73,17 @@ describe("cross-artifact version sync (spec 002, FR-017)", () => {
     ).toBe(npmVersion);
   });
 
+  it("SERVER_VERSION (src/version.ts, advertised in the MCP handshake) matches package.json", async () => {
+    const serverPkg = readJson<{ version: string }>(
+      "packages/server/package.json",
+    );
+    const { SERVER_VERSION } = await import("../../src/version.js");
+    expect(
+      SERVER_VERSION,
+      "src/version.ts must match packages/server/package.json — release-please rewrites it via the x-release-please-version marker",
+    ).toBe(serverPkg.version);
+  });
+
   it("every release-please extra-file path resolves to a real file (F1)", () => {
     // Mirror release-please's actual path resolution (src/strategies/base.ts
     // `addPath`) so a misconfigured extra-file fails CI instead of silently

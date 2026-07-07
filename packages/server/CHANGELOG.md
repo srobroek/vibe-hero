@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.0](https://github.com/srobroek/vibe-hero/compare/v0.14.1...v0.15.0) (2026-07-07)
+
+
+### Features
+
+* faster tool calls, batch quiz submission, and correct server version reporting ([cf4c989](https://github.com/srobroek/vibe-hero/commit/cf4c989dd69c8f418dcb26539ad7ee3ee49fad13))
+
 ## [0.14.1](https://github.com/srobroek/vibe-hero/compare/v0.14.0...v0.14.1) (2026-07-07)
 
 

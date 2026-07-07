@@ -628,6 +628,18 @@ export const refreshCatalogCache = async (
   dirOverride?: string,
   options: FetchOptions = {},
 ): Promise<FetchOutcome> => {
+  // Fast path: with no source configured, skip ALL preparatory IO (cache meta,
+  // hash-map building — which reads every local topic file) and report
+  // `disabled` immediately. This runs on every tool call in the default
+  // zero-config setup, so it must not touch the disk.
+  if (resolveContentUrl(options.contentUrl) === undefined) {
+    return {
+      ok: false,
+      reason: "disabled",
+      detail: `no content source configured (set ${CONTENT_URL_ENV})`,
+    };
+  }
+
   const cacheDir = contentCacheDir(dirOverride);
 
   // Send the cached ETag (if any) unless the caller pinned one explicitly.

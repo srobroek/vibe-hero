@@ -49,8 +49,8 @@ const PKG_ROOT = path.resolve(
 /** The built bin entrypoint under test. */
 const CLI_DIST = path.join(PKG_ROOT, "dist", "cli", "index.js");
 
-/** Expected MCP tool count (spec-001 server — unchanged). */
-const EXPECTED_TOOL_COUNT = 11;
+/** Expected MCP tool count (spec-001 server + batch submit_answers). */
+const EXPECTED_TOOL_COUNT = 12;
 
 /** Generous build budget; the rest of the suite uses tight per-test timeouts. */
 const BUILD_TIMEOUT_MS = 120_000;

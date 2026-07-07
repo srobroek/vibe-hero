@@ -12,6 +12,10 @@
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         {
+          "type": "generic",
+          "path": "src/version.ts"
+        },
+        {
           "type": "json",
           "path": "/packages/vibe-hero-plugin/.claude-plugin/plugin.json",
           "jsonpath": "$.version"

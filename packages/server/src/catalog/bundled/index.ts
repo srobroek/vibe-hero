@@ -33,7 +33,17 @@ import {
 export const BUNDLED_CATALOG_DIR = dirname(fileURLToPath(import.meta.url));
 
 /**
- * Load the bundled catalog snapshot shipped with the package.
+ * Process-lifetime memo of the bundled load. The bundled snapshot is static
+ * package content — it cannot change while the server runs — so parsing its
+ * YAML + Zod-validating every item on EVERY tool call (the pre-memo behavior)
+ * was pure waste and dominated per-call latency. Reset via
+ * {@link resetBundledCatalogCache} (test seam).
+ */
+let memo: CatalogLoadResult | undefined;
+
+/**
+ * Load the bundled catalog snapshot shipped with the package (memoized for the
+ * process lifetime — the bundled files are static package assets).
  *
  * Resolves the bundled directory relative to this module (works from both `src`
  * and `dist`) and delegates to {@link loadCatalogFromDir}, so the same
@@ -43,5 +53,14 @@ export const BUNDLED_CATALOG_DIR = dirname(fileURLToPath(import.meta.url));
  *
  * @returns The bundled topics plus any per-file load errors.
  */
-export const loadBundledCatalog = (): CatalogLoadResult =>
-  loadCatalogFromDir(join(BUNDLED_CATALOG_DIR));
+export const loadBundledCatalog = (): CatalogLoadResult => {
+  if (memo === undefined) {
+    memo = loadCatalogFromDir(join(BUNDLED_CATALOG_DIR));
+  }
+  return memo;
+};
+
+/** Drop the memoized bundled catalog (test seam). */
+export const resetBundledCatalogCache = (): void => {
+  memo = undefined;
+};

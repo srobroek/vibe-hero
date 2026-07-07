@@ -23,6 +23,7 @@ import * as lockfile from "proper-lockfile";
 
 import { ProfileSchema, emptyProfile, type Profile } from "../schemas/profile.js";
 import { migrateProfile } from "./migrate.js";
+import { timed } from "../perf.js";
 
 /** Basename of the profile document within the profile directory. */
 const PROFILE_FILENAME = "profile.json";
@@ -92,7 +93,10 @@ export const profilePath = (dirOverride?: string): string =>
  * @param dirOverride - Explicit directory (test seam); see {@link profileDir}.
  * @returns The validated profile, or an empty profile on any failure.
  */
-export const loadProfile = async (dirOverride?: string): Promise<Profile> => {
+export const loadProfile = async (dirOverride?: string): Promise<Profile> =>
+  timed("profile:load", () => loadProfileUntimed(dirOverride));
+
+const loadProfileUntimed = async (dirOverride?: string): Promise<Profile> => {
   const file = profilePath(dirOverride);
   let raw: string;
   try {
@@ -179,11 +183,11 @@ export const updateProfile = async (
 ): Promise<Profile> => {
   const dir = profileDir(dirOverride);
   const file = path.join(dir, PROFILE_FILENAME);
-  const release = await acquireLock(dir, file);
+  const release = await timed("profile:lock-wait", () => acquireLock(dir, file));
   try {
-    const current = await readUnderLock(file);
+    const current = await timed("profile:read", () => readUnderLock(file));
     const next = await fn(current);
-    return await writeAtomic(dir, file, next);
+    return await timed("profile:write", () => writeAtomic(dir, file, next));
   } finally {
     await release();
   }

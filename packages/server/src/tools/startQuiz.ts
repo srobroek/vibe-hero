@@ -216,6 +216,8 @@ export const makeStartQuizTool = (
         key,
         startedAt,
         // NO completedAt — partial sessions never count toward graduation.
+        // submit_answer(s) stamps it once every planned item is graded.
+        plannedItemIds: selected.map((item) => item.id),
         items: [],
         abilityBefore: ability,
         // Unchanged until items are graded; submit_answer advances it.

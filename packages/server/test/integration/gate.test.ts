@@ -86,14 +86,15 @@ describe("setup gate (T021)", () => {
     setRawClientName(undefined);
   });
 
-  it("registers exactly the 11 contract tools", () => {
-    expect(TOOL_REGISTRY).toHaveLength(11);
+  it("registers exactly the 12 contract tools", () => {
+    expect(TOOL_REGISTRY).toHaveLength(12);
     expect(TOOL_REGISTRY.map((t) => t.name)).toEqual([
       "get_status",
       "list_topics",
       "get_guidance",
       "start_quiz",
       "submit_answer",
+      "submit_answers",
       "save_config",
       "get_config",
       "record_observation",

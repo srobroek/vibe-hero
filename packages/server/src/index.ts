@@ -20,10 +20,6 @@
  * Source of truth: specs/001-vibe-hero-mvp/contracts/mcp-tools.md, plan.md.
  */
 
-import { fileURLToPath } from "node:url";
-import { realpathSync } from "node:fs";
-import { argv } from "node:process";
-
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
@@ -37,6 +33,8 @@ import {
   setRawClientName,
 } from "./detection.js";
 import { debug } from "./log.js";
+import { isEntrypoint } from "./lib/isEntrypoint.js";
+import { timed, logPerfSummary } from "./perf.js";
 import { startDrainTimer } from "./observation/drain.js";
 import { resolveCatalog } from "./catalog/resolve.js";
 
@@ -46,8 +44,8 @@ export { detectToolFromClientName, getDetectedTool } from "./detection.js";
 /** Server name advertised to MCP hosts. Matches the product/skill namespace. */
 export const SERVER_NAME = "vibe-hero";
 
-/** Server version advertised to MCP hosts. */
-export const SERVER_VERSION = "0.1.0";
+export { SERVER_VERSION } from "./version.js";
+import { SERVER_VERSION } from "./version.js";
 
 /**
  * Register one tool module on an {@link McpServer}, gating its handler and
@@ -74,7 +72,7 @@ export const registerToolModule = (
     },
     async (args: unknown) => {
       debug(`tool call: ${tool.name}`, args);
-      const result = await gated(args);
+      const result = await timed(`tool:${tool.name}`, () => gated(args));
       const status =
         result && typeof result === "object" && "status" in result
           ? (result as { status?: unknown }).status
@@ -158,30 +156,12 @@ export const main = async (): Promise<void> => {
   });
   transport.onclose = (): void => {
     drain.stop();
+    logPerfSummary();
     debug("stdio transport closed; drain timer stopped");
   };
 };
 
-/**
- * Entrypoint guard: only auto-start when this module is the process entrypoint
- * (`node .../index.js`), not when imported by tests. Compares the resolved
- * module path to `argv[1]`.
- */
-const isEntrypoint = (): boolean => {
-  const entry = argv[1];
-  if (entry === undefined) return false;
-  const self = fileURLToPath(import.meta.url);
-  // Resolve symlinks on both sides: a node_modules/.bin or npx launch invokes
-  // this through a symlink, so argv[1] (symlink) != import.meta.url (realpath).
-  if (self === entry) return true;
-  try {
-    return realpathSync(self) === realpathSync(entry);
-  } catch {
-    return false;
-  }
-};
-
-if (isEntrypoint()) {
+if (isEntrypoint(import.meta.url)) {
   main().catch((err: unknown) => {
     process.stderr.write(
       `vibe-hero: fatal error starting MCP server: ${String(err)}\n`,

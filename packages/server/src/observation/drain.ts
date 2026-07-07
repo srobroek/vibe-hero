@@ -220,7 +220,13 @@ export const drainOnce = async (deps: DrainDeps): Promise<void> => {
         const title = titleByKey.get(armKey) ?? armKey;
         const armed = armSession(armKey, title, now, arm);
         next.offerArms = { ...next.offerArms, [sessionId]: armed };
-        next.offers = markOffered(ledger, armKey);
+        // Do NOT markOffered here: arming is not surfacing. The cadence caps
+        // must count offers the agent actually presented, which happens when
+        // get_offer returns the armed key — get_offer marks it then. Marking
+        // at arm time made the later get_offer confirmation look like a
+        // repeat (per_topic cap) and inflated offersThisSession without any
+        // offer reaching the user. Only persist the session rollover.
+        if (ledger.sessionId !== next.offers.sessionId) next.offers = ledger;
         // Fire-and-forget: cache write failures are logged inside, and the
         // profile remains the source of truth.
         void writeArmCache(sessionId, armed);

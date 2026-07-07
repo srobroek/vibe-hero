@@ -256,11 +256,22 @@ export const makeGetOfferTool = (
           input.tool,
           nowIso,
         );
-        const dueSeen = new Set(dueCandidates);
+        // The organically armed key (spool drain → arming state machine →
+        // offerArms) is a first-class candidate: the surfacing hook tells the
+        // agent to call get_offer to CONFIRM that exact offer, so it must be
+        // resolvable here even though record_observation never ran. It ranks
+        // first so the confirmation returns the topic the hook announced;
+        // due-for-review candidates follow, then activity candidates.
+        const armedKey = profile.offerArms[input.sessionId]?.armedKey;
+        const seen = new Set(armedKey === undefined ? [] : [armedKey]);
         const mergedCandidates: AbilityKey[] = [
-          ...dueCandidates,
-          ...ledger.candidateKeys.filter((k) => !dueSeen.has(k)),
+          ...(armedKey === undefined ? [] : [armedKey]),
+          ...dueCandidates.filter((k) => !seen.has(k) && (seen.add(k), true)),
+          ...ledger.candidateKeys.filter(
+            (k) => !seen.has(k) && (seen.add(k), true),
+          ),
         ];
+        const dueSeen = new Set(dueCandidates);
 
         const decision = resolveOffer(
           {

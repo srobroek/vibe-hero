@@ -117,18 +117,22 @@ const toPresentedItem = (item: ContentItem): PresentedItem => {
   };
   if (item.type === "multiple_choice") {
     // Present choices WITHOUT the answer key — the correct id never leaves here.
-    return { ...base, choices: item.choices };
+    return { ...base, choices: item.choices, presentation: "menu" };
   }
   if (item.type === "free_form" && item.rubric !== undefined) {
     // Judging handshake (T048): hand the agent criteria + reference answer.
+    // presentation: "open" — the agent must ask in prose and take typed input;
+    // a menu of agent-invented options would paraphrase the rubric/reference
+    // and leak the answer (recall → recognition).
     return {
       ...base,
       rubric: { criteria: item.rubric.criteria },
       referenceAnswer: item.rubric.referenceAnswer,
+      presentation: "open",
     };
   }
-  // short_answer: prompt only, no answer key leaked.
-  return base;
+  // short_answer: prompt only, no answer key leaked; typed input required.
+  return { ...base, presentation: "open" };
 };
 
 /**

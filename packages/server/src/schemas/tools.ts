@@ -193,6 +193,14 @@ export const PresentedItemSchema = z.object({
   choices: z.array(ChoiceSchema).optional(),
   rubric: z.object({ criteria: z.array(RubricCriterionSchema) }).optional(),
   referenceAnswer: z.string().optional(),
+  /**
+   * Hard presentation directive for the host agent, set by the server from the
+   * item type: `menu` (present the supplied choices; a selection UI is fine)
+   * or `open` (ask in plain prose and wait for typed input; NEVER a menu, NEVER
+   * agent-invented options — fabricated options paraphrase the rubric/reference
+   * and leak the answer, turning recall into recognition).
+   */
+  presentation: z.enum(["menu", "open"]).optional(),
 });
 export type PresentedItem = z.infer<typeof PresentedItemSchema>;
 

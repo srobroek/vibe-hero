@@ -258,6 +258,18 @@ describe("US-4 free-form judging handshake (T048/T049/T051)", () => {
     // The host agent gets the rubric criteria (ids + text) AND the reference
     // answer so it can judge (FR-012).
     expect(ff?.referenceAnswer).toBe(REFERENCE);
+
+    // Presentation directive: free_form is "open" (typed prose input, never a
+    // menu); multiple_choice is "menu". Guards against hosts rendering
+    // free-form items as fabricated option lists that leak the answer.
+    expect(ff?.presentation).toBe("open");
+    for (const item of result.items) {
+      if (item.type === "multiple_choice") {
+        expect(item.presentation).toBe("menu");
+      } else {
+        expect(item.presentation).toBe("open");
+      }
+    }
     expect(ff?.rubric?.criteria.map((c) => c.id).sort()).toEqual([...CRIT].sort());
     for (const c of ff?.rubric?.criteria ?? []) {
       expect(typeof c.text).toBe("string");

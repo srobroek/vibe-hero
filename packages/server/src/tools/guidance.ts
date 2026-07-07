@@ -24,11 +24,14 @@
  * (`get_guidance`), spec.md US-2 / FR-021 / SC-011.
  */
 
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { loadProfile } from "../profile/store.js";
 import {
-  abilityKey,
   parseAbilityKey,
   type AbilityKey,
   type ToolId,
@@ -42,31 +45,13 @@ import {
 } from "../schemas/tools.js";
 import { defineTool, type AnyToolModule } from "./types.js";
 import {
+  resolveTool,
+  findTopicByKey,
   computeStandings,
   rankByWeakness,
   standingFor,
   type TopicStanding,
 } from "./us2/standing.js";
-import { getDetectedTool } from "../detection.js";
-
-/**
- * Resolve the default tool: explicit → auto-detected → first configured.
- * The `?? "claude-code"` hard default is removed — unknown hosts are rejected
- * by the tool gate before reaching here. The non-null assertion is safe: the
- * tool gate guarantees at least one of detected or toolsLearning[0] is present.
- */
-const resolveTool = (
-  requested: ToolId | undefined,
-  toolsLearning: readonly ToolId[],
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-): ToolId => (requested ?? getDetectedTool() ?? toolsLearning[0])!;
-
-/** Find the catalog topic whose `(class, id)` serializes to `key`. */
-const findTopicByKey = (
-  topics: readonly Topic[],
-  key: AbilityKey,
-): Topic | undefined =>
-  topics.find((topic) => abilityKey(topic.class, topic.id) === key);
 
 /**
  * Pick the authored item whose `guidance` best fits `currentTier`: prefer an
@@ -151,20 +136,6 @@ const resolveStanding = (
 };
 
 /**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
-
-/**
  * Build the `get_guidance` tool module (US-2).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
@@ -186,9 +157,7 @@ export const makeGetGuidanceTool = (
     inputSchema: GetGuidanceInputSchema,
     handler: async (input: GetGuidanceInput): Promise<GetGuidanceResult> => {
       const profile = await loadProfile(dirOverride);
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
       const standing = resolveStanding(input, topics, profile);
       return guidanceResultFor(standing);
     },

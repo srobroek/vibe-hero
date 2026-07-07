@@ -125,10 +125,8 @@ export const applyDrainBatch = (
     session.lastSignalAt !== undefined
       ? Date.parse(session.lastSignalAt)
       : undefined;
-  const batchStartMs =
-    hits.length > 0
-      ? Math.min(...hits.map(() => now.getTime())) // Hits carry no per-hit clock; the drain batch time is `now`.
-      : now.getTime();
+  // Hits carry no per-hit clock; the drain batch time is `now` either way.
+  const batchStartMs = now.getTime();
   if (
     pending !== undefined &&
     lastSignalMs !== undefined &&

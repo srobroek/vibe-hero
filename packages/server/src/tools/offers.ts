@@ -98,6 +98,7 @@ import { inWindowWeightByKey } from "../observation/arming.js";
 import { eagernessParams } from "../observation/eagerness.js";
 import { writeArmCache } from "../observation/armCache.js";
 import { defineTool, type AnyToolModule } from "./types.js";
+import { findTopicByKey } from "./us2/standing.js";
 import {
   loadCatalog,
   type CatalogLoader,
@@ -120,13 +121,6 @@ import {
 export { ARM_CACHE_PREFIX, armCachePath, writeArmCache } from "../observation/armCache.js";
 export type { ArmCacheEntry } from "../observation/armCache.js";
 export type { CatalogLoader, CatalogResolver } from "./catalogTypes.js";
-
-/** Find the catalog topic whose `(class, id)` serializes to `key`. */
-const findTopicByKey = (
-  topics: readonly Topic[],
-  key: AbilityKey,
-): Topic | undefined =>
-  topics.find((topic) => abilityKey(topic.class, topic.id) === key);
 
 /** Build the user-facing offer prompt for a regular activity-based offer. */
 const offerPrompt = (topic: Topic): string =>

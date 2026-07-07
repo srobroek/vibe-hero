@@ -37,8 +37,12 @@
  * spec.md US-2 / FR-021 / SC-011.
  */
 
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { loadProfile, updateProfile } from "../profile/store.js";
 import type { AbilityKey, ToolId } from "../schemas/common.js";
 import type { Profile, ReviewEntry } from "../schemas/profile.js";
@@ -48,32 +52,12 @@ import {
   GetStatusInputSchema,
 } from "../schemas/tools.js";
 import {
+  resolveTool,
   computeStandings,
   detectLapses,
   rankByWeakness,
   suggestionReason,
 } from "./us2/standing.js";
-import { getDetectedTool } from "../detection.js";
-
-/**
- * Resolve which tool `get_status` reports on. Priority order:
- *   1. explicit `tool` parameter from the caller
- *   2. auto-detected tool from the MCP handshake ({@link getDetectedTool})
- *   3. first tool in `config.toolsLearning` (explicit config — always valid)
- *
- * The handler is gated (setup gate + tool gate), so by the time this runs a
- * supported tool is guaranteed: either detection is set or toolsLearning[0]
- * exists. The `?? "claude-code"` hard default is intentionally removed —
- * unknown hosts are rejected by the tool gate before reaching here.
- *
- * The non-null assertion is safe: the tool gate guarantees at least one of
- * detected or toolsLearning[0] is present when the handler executes.
- */
-const resolveTool = (
-  requested: ToolId | undefined,
-  toolsLearning: readonly ToolId[],
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-): ToolId => (requested ?? getDetectedTool() ?? toolsLearning[0])!;
 
 /** How many weakest/stale topics to surface as `suggestions`. */
 const MAX_SUGGESTIONS = 3;
@@ -122,20 +106,6 @@ const persistLapses = async (
 };
 
 /**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
-
-/**
  * Build the `get_status` tool module (US-2).
  *
  * @param dirOverride - Profile-directory override (test seam); see `profileDir`.
@@ -159,9 +129,7 @@ export const makeGetStatusTool = (
       const profile = await loadProfile(dirOverride);
       const tool = resolveTool(input.tool, profile.config?.toolsLearning ?? []);
 
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
 
       const baseStandings = computeStandings(topics, profile, tool);
 

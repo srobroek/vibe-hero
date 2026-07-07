@@ -75,9 +75,9 @@
 
 import { homedir } from "node:os";
 import * as path from "node:path";
+import { fileURLToPath } from "node:url";
 import * as fs from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
 
 import {
   CatalogManifestSchema,
@@ -318,11 +318,7 @@ class NotModifiedError extends Error {
  */
 export const loadBundledManifest = async (): Promise<CatalogManifest | undefined> => {
   // Candidate paths: the bundled-assets copy (dist or src) and the repo-root copy.
-  const thisDir = path.dirname(
-    // import.meta.url is a file:// URL; fileURLToPath is in node:url.
-    // We avoid the extra import by using a simple string strip.
-    new URL(import.meta.url).pathname,
-  );
+  const thisDir = path.dirname(fileURLToPath(import.meta.url));
   const candidates = [
     // In `dist/catalog/` → manifest was copied to `dist/catalog/bundled/`
     path.join(thisDir, "bundled", MANIFEST_FILENAME),
@@ -871,7 +867,7 @@ const readBundledManifestForHashes = async (): Promise<
   if (!manifest.topics.some((t) => t.sha256 !== undefined)) return undefined;
 
   // Bundled topic files live alongside the bundled index.ts/index.js.
-  const thisDir = path.dirname(new URL(import.meta.url).pathname);
+  const thisDir = path.dirname(fileURLToPath(import.meta.url));
   const bundledDir = path.join(thisDir, "bundled");
 
   const result = await buildLocalTopicMaps(manifest, bundledDir);

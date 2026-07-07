@@ -27,8 +27,12 @@
  * (`get_dashboard`), spec.md FR-021 / SC-011.
  */
 
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 import { loadProfile } from "../profile/store.js";
 import {
   abilityKey,
@@ -52,15 +56,6 @@ import { defineTool, type AnyToolModule } from "./types.js";
 import { computeStandings, detectLapses, rankByWeakness } from "./us2/standing.js";
 import type { TopicStanding } from "./us2/standing.js";
 import { ASSESSMENT_CONFIG } from "../config.js";
-
-// ---------------------------------------------------------------------------
-// Catalog loader / resolver seam (mirrors status.ts / offers.ts pattern)
-// ---------------------------------------------------------------------------
-
-/** Sync catalog loader (test seam). */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-/** Async catalog resolver (production path). */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 // ---------------------------------------------------------------------------
 // Scope derivation (dynamic — the extension point)
@@ -647,10 +642,7 @@ export const makeGetDashboardTool = (
     handler: async (input: GetDashboardInput): Promise<GetDashboardResult> => {
       const profile = await loadProfile(dirOverride);
 
-      // Normalize: sync loader (tests) vs async resolver (production).
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } =
-        rawResult instanceof Promise ? await rawResult : rawResult;
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
 
       const now = new Date().toISOString();
 

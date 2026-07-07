@@ -12,8 +12,9 @@
  *     `--provenance`, and references NO `NPM_TOKEN`/`NODE_AUTH_TOKEN` secret
  *     (FR-014 / SC-005).
  *   - release.yml triggers ONLY on a published release, not arbitrary push.
- *   - release.yml publishes to npm BEFORE committing the marketplace pointer
- *     (FR-016 atomic ordering).
+ *   - the marketplace pointer is bumped by release-please extra-files inside
+ *     the release PR; the workflow contains NO post-publish commit/push at all
+ *     (FR-016 reframed: the PR is atomic, the publish is the only side effect).
  *   - ci.yml runs the test suite AND a staleness/diff gate (FR-015 / SC-008).
  *   - NO workflow anywhere references a long-lived npm token (SC-005).
  */
@@ -69,15 +70,14 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(release).toMatch(/contents:\s*write/);
     });
 
-    it("publishes to npm BEFORE committing the marketplace pointer (FR-016)", () => {
+    it("publish is the workflow's ONLY side effect — no git commit/push after it (FR-016)", () => {
       const publishIdx = release.indexOf("publish --access public");
-      const commitIdx = release.search(/git\s+commit/);
       expect(publishIdx, "publish step must exist").toBeGreaterThan(-1);
-      expect(commitIdx, "marketplace commit step must exist").toBeGreaterThan(-1);
-      expect(
-        publishIdx,
-        "npm publish must precede the marketplace-pointer commit (atomic ordering)",
-      ).toBeLessThan(commitIdx);
+      // All version artifacts (including the marketplace pointer) are bumped
+      // atomically inside the release PR via extra-files; the workflow must
+      // not mutate the repo after publishing.
+      expect(release).not.toMatch(/git\s+commit/);
+      expect(release).not.toMatch(/git\s+push/);
     });
 
     it("F3: checks out the release tag (not main) for the build+publish steps", () => {
@@ -89,19 +89,21 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(release).not.toMatch(/ref:\s*main/);
     });
 
-    it("F4: marketplace pointer lands via a PR that is merged in-run (ruleset-compliant, retried)", () => {
-      // The main ruleset requires changes via PR (no bypass actors on a
-      // personal repo), so the pointer step pushes a branch, opens a PR with
-      // GITHUB_TOKEN, and squash-merges it immediately — retried so a
-      // transient failure does not strand a published version with a stale
-      // pointer.
-      expect(release).toMatch(/git fetch origin main/);
-      expect(release).toMatch(/gh pr create/);
-      expect(release).toMatch(/gh pr merge .*--squash/);
-      // At least 3 merge attempts.
-      expect(release).toMatch(/for attempt in 1 2 3/);
-      // Never a direct push to main from this step.
+    it("F4: the marketplace pointer rides in the release PR (no post-publish push to main)", () => {
+      // The pointer is an extra-file release-please bumps INSIDE the release
+      // PR, so the workflow never pushes to main after publish — no
+      // branch-protection conflict, no push race, no recovery path needed
+      // (v0.13.2/v0.14.0 incident: post-publish pushes were rejected GH013).
+      const config = readFileSync(
+        resolve(REPO_ROOT, "release-please-config.json"),
+        "utf8",
+      );
+      expect(config).toContain(".claude-plugin/marketplace.json");
+      expect(config).toContain("$.plugins[0].version");
+      // The workflow itself contains NO push or PR machinery after publish.
       expect(release).not.toMatch(/git push origin HEAD:main/);
+      expect(release).not.toMatch(/gh pr create/);
+      expect(release).not.toMatch(/apm pack/);
     });
 
     it("F7: publish is gated on the canonical repo and non-prerelease", () => {

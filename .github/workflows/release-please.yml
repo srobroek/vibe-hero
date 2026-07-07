@@ -18,22 +18,18 @@ name: Release Please
 #
 # Behavior: merges to main accumulate Conventional Commits into a bot-maintained
 # release PR (updates packages/server/package.json version + CHANGELOG.md +
-# extra-files). Merging that release PR is the single human approval point:
-# release-please then creates the `v{version}` tag + GitHub release AND (in the
-# same run) this workflow publishes to npm and advances the marketplace pointer.
+# extra-files: plugin.json, apm.yml, AND .claude-plugin/marketplace.json — the
+# marketplace pointer rides in the release PR itself, so nothing ever pushes to
+# main outside a PR and the branch-protection ruleset is naturally satisfied).
+# Merging that release PR is the single human approval point: release-please
+# then creates the `v{version}` tag + GitHub release AND (in the same run) this
+# workflow publishes to npm.
 #
 # Auth: npm Trusted Publishers (OIDC). The publish steps request `id-token: write`;
 # npm is configured once (on npmjs.com) to trust this repo + THIS workflow. There
 # is no long-lived npm publish secret: this file references no publish token
 # secret and sets no npm auth-token env var (verified by release-workflow.test.ts,
 # SC-005). Provenance attestation is emitted by `--provenance`.
-#
-# Atomic ordering (FR-016 -- npm is the source of truth, the marketplace is a
-# derived pointer):
-#   1. build + publish to npm FIRST. If publish fails, the job fails here and the
-#      marketplace pointer is NEVER advanced to a version that does not exist.
-#   2. ONLY after a successful publish, regenerate the marketplace artifact and
-#      commit it back to main (idempotent).
 
 on:
   push:
@@ -47,8 +43,7 @@ on:
     types: [labeled, reopened]
   workflow_dispatch:
 
-# contents: write     -> release-please creates the tag/release + the publish job
-#                        commits the regenerated marketplace pointer back to main
+# contents: write     -> release-please creates the tag/release
 # pull-requests: write -> release-please maintains the release PR
 # id-token: write     -> OIDC for npm Trusted Publishers + provenance (publish job)
 permissions:
@@ -61,8 +56,6 @@ concurrency:
   group: release-please-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  APM_CLI_VERSION: "0.23.0"
 
 jobs:
   release-please:
@@ -158,96 +151,3 @@ jobs:
           github.repository == 'srobroek/vibe-hero' &&
           !steps.release.outputs['packages/server--prerelease']
         run: pnpm --filter @vibe-hero/server publish --access public --provenance --no-git-checks
-
-      # ---- STEP 2: advance the marketplace pointer ONLY after a good publish ----
-      - name: Set up Python (for apm-cli)
-        if: >-
-          steps.release.outputs['packages/server--release_created'] &&
-          github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs['packages/server--prerelease']
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install apm CLI
-        if: >-
-          steps.release.outputs['packages/server--release_created'] &&
-          github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs['packages/server--prerelease']
-        run: |
-          python -m pip install --upgrade pipx
-          pipx install "apm-cli==${APM_CLI_VERSION}"
-          apm --version
-
-      - name: Regenerate marketplace artifact
-        # Idempotent: regenerates root .claude-plugin/marketplace.json in place
-        # from apm.yml. Runs only because the publish above succeeded.
-        if: >-
-          steps.release.outputs['packages/server--release_created'] &&
-          github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs['packages/server--prerelease']
-        run: apm pack --offline --marketplace claude
-
-      # F4: fetch + reset to latest origin/main before committing the marketplace
-      # pointer so we do not push on top of a stale base. Idempotent regeneration;
-      # retries up to 3 times to handle a transient push race without failing
-      # after a successful npm publish.
-      # The "Main protection" ruleset requires all changes to main to come
-      # through a pull request (no bypass actors are configurable on a personal
-      # repo). The ruleset requires 0 approvals and no status checks, so the
-      # workflow opens the pointer PR and merges it immediately in the same
-      # run — the release stays effectively atomic (v0.13.2/v0.14.0 incident:
-      # direct pushes to main were rejected with GH013 after the ruleset
-      # landed, leaving published versions with a stale pointer).
-      - name: Open and merge marketplace pointer PR (ruleset-compliant)
-        if: >-
-          steps.release.outputs['packages/server--release_created'] &&
-          github.repository == 'srobroek/vibe-hero' &&
-          !steps.release.outputs['packages/server--prerelease']
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.release.outputs['packages/server--tag_name'] }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Switch to latest origin/main (the tag checkout is detached).
-          git fetch origin main
-          git checkout -B main origin/main
-
-          # Regenerate the marketplace pointer on top of main (idempotent).
-          apm pack --offline --marketplace claude
-
-          if git diff --quiet -- .claude-plugin/marketplace.json; then
-            echo "Marketplace pointer already current on main; nothing to commit (idempotent no-op)."
-            exit 0
-          fi
-
-          BRANCH="chore/pointer-${TAG}"
-          git checkout -B "$BRANCH"
-          git add .claude-plugin/marketplace.json
-          git commit -m "chore: advance marketplace pointer for ${TAG}"
-          # apm pack also rewrites content/manifest.json (fresh publishedAt);
-          # discard whatever is not being committed so nothing stray rides along.
-          git checkout -- .
-          git push -u origin "$BRANCH" --force
-
-          # Reuse an existing PR for this branch if a previous attempt left one.
-          if ! gh pr view "$BRANCH" --json state -q .state 2>/dev/null | grep -q OPEN; then
-            gh pr create \
-              --title "chore: advance marketplace pointer for ${TAG}" \
-              --body "Automated: npm publish for ${TAG} succeeded; this advances the derived marketplace pointer. Opened by the release workflow because the main ruleset requires changes via PR."
-          fi
-
-          # Ruleset requires 0 approvals and no checks: merge immediately.
-          # --admin is unnecessary; a plain squash merge satisfies the ruleset.
-          for attempt in 1 2 3; do
-            if gh pr merge "$BRANCH" --squash --delete-branch; then
-              echo "Marketplace pointer merged successfully (attempt ${attempt})."
-              exit 0
-            fi
-            echo "Merge attempt ${attempt} failed; retrying in 10s..."
-            sleep 10
-          done
-          echo "::error::Failed to merge marketplace pointer PR after 3 attempts. Merge it manually: chore/pointer-${TAG}"
-          exit 1

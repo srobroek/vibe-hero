@@ -25,4 +25,4 @@ dependencies:
       command: npx
       args:
         - '-y'
-        - '@vibe-hero/server'
+        - '@vibe-hero/server@0.15.0' # x-release-please-version

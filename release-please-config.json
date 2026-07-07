@@ -26,6 +26,11 @@
         },
         {
           "type": "json",
+          "path": "/packages/vibe-hero-plugin/.mcp.json",
+          "jsonpath": "$.mcpServers[\"vibe-hero\"].args[1]"
+        },
+        {
+          "type": "json",
           "path": "/.claude-plugin/marketplace.json",
           "jsonpath": "$.plugins[0].version"
         }

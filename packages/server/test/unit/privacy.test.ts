@@ -117,7 +117,9 @@ describe("matchSignalHits — privacy boundary (FR-018)", () => {
       { toolName: "Bash", inputText: "API_KEY=secret123", success: false },
     ];
     const hits = matchSignalHits([FIXTURE_TOPIC], "claude-code", signals);
-    const bashHit = hits.find((h) => h.phase === "during");
+    // The signal matches both the toolName (during) and inputPattern (seam)
+    // fixture triggers; the collector keeps the most consequential — seam.
+    const bashHit = hits.find((h) => h.phase === "seam");
     expect(bashHit).toBeDefined();
     // weight=1 × FAILURE_WEIGHT_MULTIPLIER=2 → 2
     expect(bashHit?.weight).toBe(2);

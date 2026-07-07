@@ -423,10 +423,20 @@ export const matchSignalHits = (
 
   for (const signal of signals) {
     for (const topic of topics) {
-      const trigger = topic.triggerSignals.find(
+      // A topic may declare overlapping triggers for the same signal (e.g. a
+      // broad `during` git pattern plus a narrower `seam` commit/push one).
+      // Taking only the first match would shadow the seam trigger and pending
+      // offers would never promote at commit time — so when several match,
+      // keep the most consequential one: seam beats during beats start, and a
+      // bypass seam beats a plain seam. Weight still comes from that trigger.
+      const matching = topic.triggerSignals.filter(
         (t) => t.tool === tool && triggerMatchesSignal(t, signal),
       );
-      if (trigger === undefined) continue;
+      if (matching.length === 0) continue;
+      const rank = (t: (typeof matching)[number]): number =>
+        (t.phase === "seam" ? 4 : t.phase === "during" ? 2 : 0) +
+        (t.bypass ? 1 : 0);
+      const trigger = matching.reduce((a, b) => (rank(b) > rank(a) ? b : a));
 
       const success = signal.success !== false;
       hits.push({

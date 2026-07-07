@@ -239,6 +239,10 @@ export const markWorkSinceQuiz = (existing: OfferArm): OfferArm => ({
  * Pure: `armedAt` absent ⇒ false (nothing to expire).
  */
 export const isArmExpired = (arm: OfferArm, now: Date): boolean => {
+  // No throttle (cooldown 0) ⇒ arms never expire. Mirrors the hook, which
+  // skips its expiry check when cooldownSeconds <= 0 — without this guard a
+  // zero cooldown makes every arm expire the instant it is written.
+  if (isThrottleDisabled()) return false;
   const { armedAt } = arm;
   if (armedAt === undefined) return false;
   const windowMs = cooldownSeconds() * 1_000;

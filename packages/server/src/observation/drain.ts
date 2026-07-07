@@ -1,7 +1,8 @@
 /**
  * @file Drain pipeline: the resident server's autonomous organic intake.
  *
- * Every {@link DRAIN_INTERVAL_MS} the server claims pending spool files
+ * Every {@link drainIntervalMs} (default 30s, `VIBE_HERO_DRAIN_INTERVAL_MS`
+ * to tune) the server claims pending spool files
  * (observation/spool.ts), turns their lines into privacy-safe
  * {@link ObservedSignal}s, matches them against catalog trigger signals
  * (offers.ts `matchSignalHits`), feeds the hits through the arming state
@@ -32,21 +33,55 @@ import type { OrganicSession } from "../schemas/profile.js";
 import { debug } from "../log.js";
 import { updateProfile } from "../profile/store.js";
 import { claimSpools, type SpoolLine } from "./spool.js";
-import { applyDrainBatch } from "./arming.js";
+import { applyDrainBatch, inWindowWeightByKey } from "./arming.js";
 import { eagernessParams } from "./eagerness.js";
 import {
   armSession,
   canArm,
+  isArmExpired,
   ledgerForSession,
-  markOffered,
   matchSignalHits,
   resolveOffer,
   type ObservedSignal,
 } from "./offers.js";
 import { writeArmCache } from "./armCache.js";
+import type { AbilityKey as EvidenceKey } from "../schemas/common.js";
 
-/** Drain tick interval. */
-export const DRAIN_INTERVAL_MS = 30_000;
+/** Default drain tick interval. */
+export const DEFAULT_DRAIN_INTERVAL_MS = 30_000;
+
+/** Lower bound on the drain interval — a sub-second timer is pure churn. */
+export const MIN_DRAIN_INTERVAL_MS = 1_000;
+
+/** Upper bound (10 min) — beyond this the intake is effectively off. */
+export const MAX_DRAIN_INTERVAL_MS = 10 * 60 * 1_000;
+
+/**
+ * Resolve the drain tick interval from `VIBE_HERO_DRAIN_INTERVAL_MS`, clamped
+ * to [{@link MIN_DRAIN_INTERVAL_MS}, {@link MAX_DRAIN_INTERVAL_MS}]. Falls back
+ * to {@link DEFAULT_DRAIN_INTERVAL_MS} when unset or unparseable. Read once at
+ * timer start — changing the env var requires a server restart.
+ */
+export const drainIntervalMs = (): number => {
+  const raw = process.env["VIBE_HERO_DRAIN_INTERVAL_MS"];
+  if (raw === undefined || raw === "") return DEFAULT_DRAIN_INTERVAL_MS;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return DEFAULT_DRAIN_INTERVAL_MS;
+  return Math.min(Math.max(Math.trunc(n), MIN_DRAIN_INTERVAL_MS), MAX_DRAIN_INTERVAL_MS);
+};
+
+/**
+ * Backward-compatible alias for the default interval (tests and older callers
+ * import this name).
+ */
+export const DRAIN_INTERVAL_MS = DEFAULT_DRAIN_INTERVAL_MS;
+
+/**
+ * Age after which a session's organic state (evidence ledger, pending offer,
+ * arm) is considered abandoned and pruned from the profile: no signal for 24h
+ * means the Claude Code session is gone — session ids are never reused.
+ */
+export const SESSION_PRUNE_MS = 24 * 60 * 60 * 1_000;
 
 /** How long a `pre` may dangle without its `post` before it counts as failed. */
 export const PRE_DANGLE_TIMEOUT_MS = 5 * 60 * 1_000;
@@ -180,11 +215,45 @@ export const drainOnce = async (deps: DrainDeps): Promise<void> => {
 
       const next = { ...profile, organicSessions: { ...profile.organicSessions } };
 
+      // HYGIENE PASS 1 — prune abandoned sessions: no signal for
+      // SESSION_PRUNE_MS means the host session is gone (ids are never
+      // reused). Drops the evidence ledger, pending offer, AND the arm so
+      // profile.offerArms cannot grow forever.
+      for (const [sid, s] of Object.entries(next.organicSessions)) {
+        const lastMs =
+          s.lastSignalAt !== undefined ? Date.parse(s.lastSignalAt) : undefined;
+        if (lastMs !== undefined && now.getTime() - lastMs >= SESSION_PRUNE_MS) {
+          delete next.organicSessions[sid];
+          if (next.offerArms[sid] !== undefined) {
+            const arms = { ...next.offerArms };
+            delete arms[sid];
+            next.offerArms = arms;
+          }
+        }
+      }
+
+      // HYGIENE PASS 2 — expire stale arms (isArmExpired was previously
+      // dead code; the module comments always claimed the server pruned).
+      // An expired arm is dropped from the profile and its hook cache is
+      // overwritten cleared so the relay falls silent.
+      for (const [sid, arm] of Object.entries(next.offerArms)) {
+        if (arm.armedKey !== undefined && isArmExpired(arm, now)) {
+          const cleared = {
+            lastOfferAt: arm.lastOfferAt,
+            lastQuizAt: arm.lastQuizAt,
+            hasWorkSinceLastQuiz: arm.hasWorkSinceLastQuiz,
+          };
+          next.offerArms = { ...next.offerArms, [sid]: cleared };
+          void writeArmCache(sid, cleared);
+          debug("drain: expired stale arm", { sessionId: sid });
+        }
+      }
+
       // Every session with signals — plus every persisted session holding a
       // pending offer (quiet-promotion needs ticks even without new signals).
       const sessionIds = new Set<string>([
         ...signalsBySession.keys(),
-        ...Object.entries(profile.organicSessions)
+        ...Object.entries(next.organicSessions)
           .filter(([, s]) => s.pending !== undefined)
           .map(([sid]) => sid),
       ]);
@@ -196,7 +265,32 @@ export const drainOnce = async (deps: DrainDeps): Promise<void> => {
         const hits = matchSignalHits(topics, tool, signals);
         const session: OrganicSession =
           next.organicSessions[sessionId] ?? { evidence: [] };
-        const { state, armKey } = applyDrainBatch(session, hits, params, now);
+        // SIBLING EVIDENCE: concurrent sessions against one home (e.g. two
+        // Claude Code windows in the same project) split hook signals across
+        // session ids, so no single pot may ever cross the threshold. Fold the
+        // in-window weight of every OTHER session into this one's threshold
+        // check. Arms stay strictly per-session: a session still needs its own
+        // evidence for a topic to become pending (see applyDrainBatch), and
+        // each sibling gets the same boost on its own drain turn — sharing
+        // evidence weight is not a race, it is double-counting by design.
+        const externalWeight = new Map<EvidenceKey, number>();
+        for (const [sid, s] of Object.entries(next.organicSessions)) {
+          if (sid === sessionId) continue;
+          for (const [k, w] of inWindowWeightByKey(
+            s.evidence,
+            now,
+            params.windowSeconds,
+          )) {
+            externalWeight.set(k, (externalWeight.get(k) ?? 0) + w);
+          }
+        }
+        const { state, armKey } = applyDrainBatch(
+          session,
+          hits,
+          params,
+          now,
+          externalWeight,
+        );
         next.organicSessions[sessionId] = state;
 
         if (armKey === undefined) continue;
@@ -252,7 +346,7 @@ export interface DrainTimer {
 export const startDrainTimer = (deps: DrainDeps): DrainTimer => {
   const interval = setInterval(() => {
     void drainOnce(deps);
-  }, DRAIN_INTERVAL_MS);
+  }, drainIntervalMs());
   interval.unref();
   return {
     stop: (): void => {

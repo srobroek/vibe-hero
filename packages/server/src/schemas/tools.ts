@@ -377,8 +377,48 @@ export type RecordObservationOutput = z.infer<
 export const GetOfferInputSchema = z.object({
   sessionId: z.string(),
   tool: ToolIdSchema.optional(),
+  /**
+   * When true, the result carries a `diagnostics` block explaining the
+   * decision: per-session organic evidence weights vs. the arming threshold,
+   * pending/armed state, candidate pool, and which gate suppressed (if any).
+   * Read-only -- enabling it never changes offer state.
+   */
+  debug: z.boolean().optional(),
 });
 export type GetOfferInput = z.infer<typeof GetOfferInputSchema>;
+
+/** Per-session organic snapshot inside `get_offer` diagnostics. */
+export const OfferDiagnosticsSessionSchema = z.object({
+  /** In-window evidence weight per topic key. */
+  weights: z.record(z.string(), z.number()),
+  /** Topic pending promotion (threshold crossed, awaiting seam/quiet). */
+  pendingKey: AbilityKeySchema.optional(),
+  /** Topic currently armed for the hook relay. */
+  armedKey: AbilityKeySchema.optional(),
+  lastSignalAt: z.string().optional(),
+});
+
+/**
+ * Diagnostics block for `get_offer` (`debug: true`). Answers "why (not)?"
+ * in one call instead of requiring a read of the raw profile JSON.
+ */
+export const OfferDiagnosticsSchema = z.object({
+  /** The gate that suppressed, or null when an offer was returned. */
+  suppressedBy: z
+    .enum(["cadence", "declined", "offers_off", "no_candidate"])
+    .nullable(),
+  /** Arming threshold (evidence weight) for the configured eagerness. */
+  threshold: z.number(),
+  /** Rolling evidence window in seconds. */
+  windowSeconds: z.number(),
+  /** Effective offer cooldown in seconds (0 = throttle disabled). */
+  cooldownSeconds: z.number(),
+  /** The merged candidate pool the decision ran against, in order. */
+  candidates: z.array(AbilityKeySchema),
+  /** Organic state for every live session in this home, keyed by sessionId. */
+  sessions: z.record(z.string(), OfferDiagnosticsSessionSchema),
+});
+export type OfferDiagnostics = z.infer<typeof OfferDiagnosticsSchema>;
 
 /** Result for `get_offer`. */
 export const GetOfferResultSchema = z.object({
@@ -392,6 +432,8 @@ export const GetOfferResultSchema = z.object({
   suppressed: z
     .enum(["cadence", "declined", "offers_off", "no_candidate"])
     .optional(),
+  /** Present only when the call passed `debug: true`. */
+  diagnostics: OfferDiagnosticsSchema.optional(),
 });
 export type GetOfferResult = z.infer<typeof GetOfferResultSchema>;
 

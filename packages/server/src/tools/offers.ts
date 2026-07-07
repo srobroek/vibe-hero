@@ -77,6 +77,7 @@ import {
   RecordOfferResponseInputSchema,
   type GetOfferInput,
   type GetOfferResult,
+  type OfferDiagnostics,
   type RecordOfferResponseInput,
   type RecordOfferResponseResult,
 } from "../schemas/tools.js";
@@ -87,11 +88,14 @@ import {
   armSession,
   canArm,
   clearArm,
+  cooldownSeconds,
   ledgerForSession,
   markOffered,
   resolveOffer,
   type SuppressionReason,
 } from "../observation/offers.js";
+import { inWindowWeightByKey } from "../observation/arming.js";
+import { eagernessParams } from "../observation/eagerness.js";
 import { writeArmCache } from "../observation/armCache.js";
 import { defineTool, type AnyToolModule } from "./types.js";
 import {
@@ -228,6 +232,7 @@ export const makeGetOfferTool = (
       // interleave between an unlocked read and the locked write. The closure
       // is pure state math (no IO); the arm-cache write happens after, from
       // the outcome captured here.
+      let diagnostics: OfferDiagnostics | undefined;
       let outcome:
         | { kind: "suppressed"; reason: SuppressionReason }
         | {
@@ -284,6 +289,36 @@ export const makeGetOfferTool = (
           now,
         );
 
+        // Diagnostics (debug: true) — read-only snapshot of the decision
+        // inputs, captured inside the lock so it is consistent with the
+        // outcome. Never mutates offer state.
+        if (input.debug === true) {
+          const params = eagernessParams(config?.organicEagerness);
+          const sessions: OfferDiagnostics["sessions"] = {};
+          for (const [sid, s] of Object.entries(profile.organicSessions)) {
+            sessions[sid] = {
+              weights: Object.fromEntries(
+                inWindowWeightByKey(s.evidence, now, params.windowSeconds),
+              ),
+              ...(s.pending !== undefined ? { pendingKey: s.pending.key } : {}),
+              ...(profile.offerArms[sid]?.armedKey !== undefined
+                ? { armedKey: profile.offerArms[sid].armedKey }
+                : {}),
+              ...(s.lastSignalAt !== undefined
+                ? { lastSignalAt: s.lastSignalAt }
+                : {}),
+            };
+          }
+          diagnostics = {
+            suppressedBy: decision.kind === "suppressed" ? decision.reason : null,
+            threshold: params.threshold,
+            windowSeconds: params.windowSeconds,
+            cooldownSeconds: cooldownSeconds(),
+            candidates: mergedCandidates,
+            sessions,
+          };
+        }
+
         if (decision.kind === "suppressed") {
           outcome = { kind: "suppressed", reason: decision.reason };
           // Persist any session rollover (so a fresh session id is recorded)
@@ -336,13 +371,19 @@ export const makeGetOfferTool = (
       }, dirOverride);
 
       if (outcome === undefined || outcome.kind === "suppressed") {
-        return { suppressed: outcome?.reason ?? "no_candidate" };
+        return {
+          suppressed: outcome?.reason ?? "no_candidate",
+          ...(diagnostics !== undefined ? { diagnostics } : {}),
+        };
       }
 
       // Write the hook cache as a side effect, outside the lock (best-effort;
       // logged inside writeArmCache).
       if (outcome.armToWrite !== undefined) {
-        await writeArmCache(input.sessionId, outcome.armToWrite);
+        // Pass dirOverride through: the arm cache must land in the SAME home
+        // as the profile, or a test/tool using the dirOverride seam leaks arm
+        // files into the user's real ~/.vibe-hero (observed in the wild).
+        await writeArmCache(input.sessionId, outcome.armToWrite, dirOverride);
       }
 
       return {
@@ -353,6 +394,7 @@ export const makeGetOfferTool = (
             ? reviewOfferPrompt(outcome.topic)
             : offerPrompt(outcome.topic),
         },
+        ...(diagnostics !== undefined ? { diagnostics } : {}),
       };
     },
   });
@@ -434,7 +476,7 @@ export const makeRecordOfferResponseTool = (
       // Write cleared cache outside the lock (best-effort). Inlined former
       // writeClearedCache pass-through (code-review finding).
       if (armToClear !== undefined) {
-        await writeArmCache(input.sessionId, armToClear);
+        await writeArmCache(input.sessionId, armToClear, dirOverride);
       }
 
       return { ok: true };

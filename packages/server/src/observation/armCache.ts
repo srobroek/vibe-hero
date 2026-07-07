@@ -57,9 +57,9 @@ export const armCacheDir = (home: string = vibeHeroHome()): string =>
   path.join(home, "arm");
 
 /** Resolve the arm-cache path for a session (mirrors the hook convention). */
-export const armCachePath = (sessionId: string): string =>
+export const armCachePath = (sessionId: string, home?: string): string =>
   path.join(
-    armCacheDir(),
+    armCacheDir(home ?? vibeHeroHome()),
     `${ARM_CACHE_PREFIX}${sanitiseSessionId(sessionId)}.json`,
   );
 
@@ -132,6 +132,7 @@ export const buildOfferContext = (
 export const writeArmCache = async (
   sessionId: string,
   arm: OfferArm,
+  home?: string,
 ): Promise<void> => {
   const armed = arm.armedKey !== undefined && arm.armedTitle !== undefined;
   const entry: ArmCacheEntry = {
@@ -149,10 +150,10 @@ export const writeArmCache = async (
       : null,
   };
 
-  const target = armCachePath(sessionId);
+  const target = armCachePath(sessionId, home);
   const tmp = `${target}.tmp-${process.pid}`;
   try {
-    await fs.mkdir(armCacheDir(), { recursive: true, mode: 0o700 });
+    await fs.mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
     await fs.writeFile(tmp, JSON.stringify(entry), {
       encoding: "utf8",
       mode: 0o600,

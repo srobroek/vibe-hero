@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.2](https://github.com/srobroek/vibe-hero/compare/v0.13.1...v0.13.2) (2026-07-07)
+
+
+### Bug Fixes
+
+* tier progression is slower and stricter; dashboard graphs no longer dropped ([#52](https://github.com/srobroek/vibe-hero/issues/52)) ([c5174a5](https://github.com/srobroek/vibe-hero/commit/c5174a5afca6736ba0fd6e8e1a1c56855a3f42e6))
+
 ## [0.13.1](https://github.com/srobroek/vibe-hero/compare/v0.13.0...v0.13.1) (2026-07-07)
 
 

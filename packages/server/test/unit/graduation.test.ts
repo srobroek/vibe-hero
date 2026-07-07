@@ -183,13 +183,31 @@ describe("evaluateGraduation — demotion only below boundary − margin (FR-009
 });
 
 describe("evaluateGraduation — first graduation + top tier", () => {
-  it("graduates an ungraduated learner into tier 100 after dwell consecutive items", () => {
-    // boundaryAbove(0) = 150 ⇒ bar = 180.
+  it("PLACES an ungraduated learner at the ability-supported tier (185 → 200)", () => {
+    // boundaryAbove(0) = 150 ⇒ bar = 180. Ability 185 sits in tier 200's band
+    // (tiers 100 and 200 share the 150 entry boundary), so the first
+    // graduation places at 200 rather than stepping through 100.
     const decisions = runSequence(0, Array.from({ length: dwell }, () => 185));
     const last = decisions[dwell - 1]!;
     expect(last.changed).toBe(true);
     expect(last.reason).toBe("graduated");
-    expect(last.tier).toBe(100);
+    expect(last.tier).toBe(200);
+  });
+
+  it("places a mid-scale starter (θ≈310) at tier 300, not via 100/200 ceremonies", () => {
+    const decisions = runSequence(0, Array.from({ length: dwell }, () => 310));
+    const last = decisions[dwell - 1]!;
+    expect(last.changed).toBe(true);
+    expect(last.tier).toBe(300);
+  });
+
+  it("placement is capped by measured ability, subsequent promotion steps one rung", () => {
+    // Place at 300 (θ=310), then promotion from 300 requires the 380 bar.
+    const placed = runSequence(0, Array.from({ length: dwell }, () => 310));
+    expect(placed[dwell - 1]!.tier).toBe(300);
+    const after = runSequence(300, Array.from({ length: dwell }, () => 385));
+    expect(after[dwell - 1]!.changed).toBe(true);
+    expect(after[dwell - 1]!.tier).toBe(400); // one rung, never a jump to 500
   });
 
   it("never promotes beyond the top tier (500)", () => {

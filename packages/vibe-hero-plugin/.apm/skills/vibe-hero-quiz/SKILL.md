@@ -48,7 +48,7 @@ start_quiz({ key: AbilityKey, length?: 3|4|5, allowFreeForm?: boolean })
   false merely to avoid the work of judging.
 
 The result is `{ quizId, items: PresentedItem[] }`. Each `PresentedItem` =
-`{ itemId, tier, type, prompt, choices?, rubric?, referenceAnswer? }`.
+`{ itemId, tier, type, prompt, presentation, choices?, rubric?, referenceAnswer? }`.
 
 If the response is `{ "status": "SETUP_REQUIRED" }`, stop and tell the user to
 run the **vibe-hero-setup** skill first; do not proceed until setup completes.
@@ -59,6 +59,18 @@ Show **one** item, wait for the user's answer, submit it, relay the result, then
 move to the next. Never show the next prompt before the current one is graded.
 **Never reveal the correct answer, the choice key, the rubric, or the reference
 answer before the user has answered** — that defeats the assessment.
+
+Presentation format is dictated by the item `type` — follow it exactly:
+
+- `multiple_choice` — the item carries `choices`; present exactly those choices.
+  An option-selection UI (e.g. AskUserQuestion) is fine here.
+- `free_form` and `short_answer` — ask the question as **plain prose and wait
+  for the user to type**. NEVER present a menu, NEVER use an option-selection
+  UI, and NEVER fabricate candidate answers "to make it easier" — invented
+  options are paraphrases of the rubric/reference answer, so a menu LEAKS the
+  answer and converts a recall assessment into a recognition one. There is no
+  "Other" workaround: if the user is choosing from options you wrote, the item
+  is already compromised. One open question, one typed answer, then judge.
 
 ### 4a. Deterministic items (`multiple_choice` / `short_answer`)
 

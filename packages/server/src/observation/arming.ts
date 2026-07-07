@@ -34,7 +34,7 @@ import type {
   PendingOffer,
 } from "../schemas/profile.js";
 import type { SignalHit } from "./offers.js";
-import { QUIET_PROMOTION_SECONDS, type EagernessParams } from "./eagerness.js";
+import { quietPromotionSeconds, type EagernessParams } from "./eagerness.js";
 
 /** The outcome of applying one drain batch to a session's organic state. */
 export interface ArmingDecision {
@@ -132,7 +132,7 @@ export const applyDrainBatch = (
   if (
     pending !== undefined &&
     lastSignalMs !== undefined &&
-    batchStartMs - lastSignalMs >= QUIET_PROMOTION_SECONDS * 1_000
+    batchStartMs - lastSignalMs >= quietPromotionSeconds() * 1_000
   ) {
     armKey = pending.key;
     pending = undefined;

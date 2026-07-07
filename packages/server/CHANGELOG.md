@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.0](https://github.com/srobroek/vibe-hero/compare/v0.12.0...v0.13.0) (2026-07-07)
+
+
+### Features
+
+* cross-session quiz arming, offer diagnostics, and tunable pacing ([#48](https://github.com/srobroek/vibe-hero/issues/48)) ([9e710dd](https://github.com/srobroek/vibe-hero/commit/9e710ddb68aa1c65964073f421f9a56c8cdebff1))
+* quiz offers now trigger organically from observed tool activity ([#45](https://github.com/srobroek/vibe-hero/issues/45)) ([73b0028](https://github.com/srobroek/vibe-hero/commit/73b0028b2e400179491a82d2333d170d0e40a9fe))
+
 ## [0.12.0](https://github.com/srobroek/vibe-hero/compare/v0.11.0...v0.12.0) (2026-07-01)
 
 

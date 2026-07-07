@@ -89,13 +89,19 @@ describe("release pipeline workflows (spec 002, US2)", () => {
       expect(release).not.toMatch(/ref:\s*main/);
     });
 
-    it("F4: marketplace push retries on non-fast-forward (safe push)", () => {
-      // The commit-back step must fetch + rebase/reset onto origin/main and retry
-      // so a transient push race does not fail the job after a successful publish.
+    it("F4: marketplace pointer lands via a PR that is merged in-run (ruleset-compliant, retried)", () => {
+      // The main ruleset requires changes via PR (no bypass actors on a
+      // personal repo), so the pointer step pushes a branch, opens a PR with
+      // GITHUB_TOKEN, and squash-merges it immediately — retried so a
+      // transient failure does not strand a published version with a stale
+      // pointer.
       expect(release).toMatch(/git fetch origin main/);
-      expect(release).toMatch(/git rebase origin\/main/);
-      // At least 3 attempts.
+      expect(release).toMatch(/gh pr create/);
+      expect(release).toMatch(/gh pr merge .*--squash/);
+      // At least 3 merge attempts.
       expect(release).toMatch(/for attempt in 1 2 3/);
+      // Never a direct push to main from this step.
+      expect(release).not.toMatch(/git push origin HEAD:main/);
     });
 
     it("F7: publish is gated on the canonical repo and non-prerelease", () => {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.0](https://github.com/srobroek/vibe-hero/compare/v0.13.2...v0.14.0) (2026-07-07)
+
+
+### Features
+
+* first graduation places you at your measured tier instead of walking the ladder ([#55](https://github.com/srobroek/vibe-hero/issues/55)) ([baecfec](https://github.com/srobroek/vibe-hero/commit/baecfecc37dfa8eeb5ec9db10946abac09078e78))
+
 ## [0.13.2](https://github.com/srobroek/vibe-hero/compare/v0.13.1...v0.13.2) (2026-07-07)
 
 

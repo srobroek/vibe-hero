@@ -3,8 +3,8 @@
 # Tool-agnostic agentic-coding concept: how to break complex work into bounded,
 # verifiable units before delegating or implementing. Tiers 100–500.
 #
-# triggerSignals is empty: this concept is not tied to any one tool's tool-calls.
-# It surfaces via the pull-based path (status / on-demand quiz / guidance).
+# triggerSignals: no longer purely pull-based — task tool calls and task-file
+# edits provide push-based signals in addition to the pull path.
 
 id: task-decomposition
 class:
@@ -15,7 +15,27 @@ summary: >-
   before delegating or implementing — and how to recognise when decomposition
   has gone wrong.
 
-triggerSignals: []
+triggerSignals:
+  # Task creation/update tools signal the user is actively decomposing work.
+  - tool: claude-code
+    match:
+      toolName: TaskCreate
+    weight: 0.6
+  - tool: claude-code
+    match:
+      toolName: TaskUpdate
+    weight: 0.6
+  # TaskCreated event fires at the start of a new task — surface early.
+  - tool: claude-code
+    match:
+      event: TaskCreated
+    weight: 0.6
+    phase: start
+  # Editing a TODO or tasks file signals task decomposition planning.
+  - tool: claude-code
+    match:
+      pathPattern: '(TODO|tasks?)\.md$'
+    weight: 0.5
 
 items:
   # ── Tier 100 — Remember ──────────────────────────────────────────────────

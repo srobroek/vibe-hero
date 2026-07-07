@@ -32,10 +32,13 @@ import { withGates } from "./tools/gate.js";
 import { toCallToolResult, type AnyToolModule } from "./tools/types.js";
 import {
   detectToolFromClientName,
+  getDetectedTool,
   setDetectedTool,
   setRawClientName,
 } from "./detection.js";
 import { debug } from "./log.js";
+import { startDrainTimer } from "./observation/drain.js";
+import { resolveCatalog } from "./catalog/resolve.js";
 
 // Re-export detection helpers so callers that import from "index.ts" still work.
 export { detectToolFromClientName, getDetectedTool } from "./detection.js";
@@ -144,6 +147,19 @@ export const main = async (): Promise<void> => {
 
   await server.connect(transport);
   debug("connected over stdio; awaiting tool calls");
+
+  // Organic intake: start the spool-drain timer (observation/drain.ts). The
+  // interval is unref()'d, so it never keeps the process alive once stdio
+  // closes; stopping explicitly on transport close keeps shutdown tidy.
+  const drain = startDrainTimer({
+    loadTopics: async () => (await resolveCatalog()).topics,
+    tool: getDetectedTool,
+    now: () => new Date(),
+  });
+  transport.onclose = (): void => {
+    drain.stop();
+    debug("stdio transport closed; drain timer stopped");
+  };
 };
 
 /**

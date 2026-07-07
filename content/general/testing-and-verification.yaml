@@ -9,7 +9,22 @@ title: Testing & Verification
 summary: >-
   Unit/integration/e2e testing, the test pyramid, TDD, meaningful assertions and coverage, flaky vs
   deterministic tests, and verifying changes before claiming they work.
-triggerSignals: []
+triggerSignals:
+  # Running any major test framework command is a strong signal.
+  - tool: claude-code
+    match:
+      inputPattern: '\b(pytest|jest|vitest|mocha|go test|cargo (test|nextest)|npm (test|run test)|yarn test|pnpm test|mvn test|gradle test|rspec|phpunit|dotnet test|tox)\b'
+    weight: 1.0
+  # Editing test files is a medium-strength signal.
+  - tool: claude-code
+    match:
+      pathPattern: '(_test\.(py|go|ts|js)|\.(test|spec)\.(ts|js|tsx|jsx))$'
+    weight: 0.8
+  # Running coverage tools signals active testing investment.
+  - tool: claude-code
+    match:
+      inputPattern: '\b(coverage|--cov|nyc|c8)\b'
+    weight: 0.8
 items:
   - id: tav-100-mc-a
     tier: 100

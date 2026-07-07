@@ -9,7 +9,22 @@ title: Refactoring & Code Review
 summary: >-
   Improving code safely — recognising code smells, refactoring under test coverage, small reviewable
   diffs, naming, idiomatic style, reuse vs duplication, constructive review.
-triggerSignals: []
+triggerSignals:
+  # Running linters/formatters signals active code quality work.
+  - tool: claude-code
+    match:
+      inputPattern: '\b(eslint|ruff|black|prettier|clippy|gofmt|rustfmt|isort|flake8|shellcheck)\b'
+    weight: 0.8
+  # Reviewing a PR via gh CLI is a medium-strength signal.
+  - tool: claude-code
+    match:
+      inputPattern: '^gh pr (review|diff|view)\b'
+    weight: 0.6
+  # Running git diff to inspect changes before a review.
+  - tool: claude-code
+    match:
+      inputPattern: '^git diff\b'
+    weight: 0.6
 items:
   - id: racr-100-mc-a
     tier: 100

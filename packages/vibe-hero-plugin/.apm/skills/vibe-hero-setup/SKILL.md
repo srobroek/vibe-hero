@@ -62,15 +62,31 @@ ask).
 Map to `quizLength: 3 | 4 | 5`. If the user says "default" or skips, omit the
 field and let the server apply the default of 4.
 
+### Q4 — Organic eagerness
+
+> "How eagerly should vibe-hero pick up on your work patterns and volunteer a
+> quiz — often, normal, or rarely?"
+
+Map to `organicEagerness`:
+
+| Answer | Value | Behaviour |
+|---|---|---|
+| Often / quick to offer / frequent | `"often"` | Threshold 2 signals, 45 min window, 10 min cooldown |
+| Normal / default / balanced | `"normal"` | Threshold 3 signals, 30 min window, 15 min cooldown |
+| Rarely / infrequent / low key | `"rarely"` | Threshold 5 signals, 30 min window, 30 min cooldown |
+
+Default if unclear: `"normal"`.
+
 ## Calling `save_config`
 
 Once all answers are collected, call the MCP tool:
 
 ```
 save_config({
-  offerCadence: "...",        // "off" | "per_session" | "per_topic"
+  offerCadence: "...",          // "off" | "per_session" | "per_topic"
   proactiveOffers: true/false,
-  quizLength: 3|4|5           // omit to use server default of 4
+  quizLength: 3|4|5,            // omit to use server default of 4
+  organicEagerness: "..."       // "often" | "normal" | "rarely"
   // toolsLearning is omitted — the server auto-detects the tool
 })
 ```

@@ -77,17 +77,33 @@ export const MIN_COOLDOWN_SECONDS = 60;
  * tiny typo cannot spam offers. `0` is preserved as the explicit no-throttle
  * value. Pure.
  */
+/**
+ * Memo for {@link cooldownSeconds}, keyed on the raw env string. Repeated
+ * calls within a process resolve consistently and without re-parsing (the
+ * drain timer and MCP tool handlers share one process — code-review finding);
+ * tests that mutate the env var between cases still see the change because a
+ * different raw value misses the memo.
+ */
+let cooldownMemo: { raw: string | undefined; value: number } | undefined;
+
 export const cooldownSeconds = (): number => {
   const raw = process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
-  if (raw === undefined || raw === "") return DEFAULT_COOLDOWN_SECONDS;
-  const n = Number(raw);
-  // Math.trunc so fractional values (e.g. 900.5) never reach the cache JSON as
-  // a float — the hook does POSIX integer arithmetic on cooldownSeconds and
-  // `$((900.5 * 1))` crashes under set -eu on every prompt.
-  if (!Number.isFinite(n) || n < 0) return DEFAULT_COOLDOWN_SECONDS;
-  const secs = Math.min(Math.trunc(n), MAX_COOLDOWN_SECONDS);
-  // Preserve 0 (no throttle); floor any other positive value to the minimum.
-  return secs === 0 ? 0 : Math.max(secs, MIN_COOLDOWN_SECONDS);
+  if (cooldownMemo !== undefined && cooldownMemo.raw === raw) {
+    return cooldownMemo.value;
+  }
+  const value = ((): number => {
+    if (raw === undefined || raw === "") return DEFAULT_COOLDOWN_SECONDS;
+    const n = Number(raw);
+    // Math.trunc so fractional values (e.g. 900.5) never reach the cache JSON as
+    // a float — the hook does POSIX integer arithmetic on cooldownSeconds and
+    // `$((900.5 * 1))` crashes under set -eu on every prompt.
+    if (!Number.isFinite(n) || n < 0) return DEFAULT_COOLDOWN_SECONDS;
+    const secs = Math.min(Math.trunc(n), MAX_COOLDOWN_SECONDS);
+    // Preserve 0 (no throttle); floor any other positive value to the minimum.
+    return secs === 0 ? 0 : Math.max(secs, MIN_COOLDOWN_SECONDS);
+  })();
+  cooldownMemo = { raw, value };
+  return value;
 };
 
 /**
@@ -278,7 +294,41 @@ export interface ObservedSignal {
   readonly mcpTool?: string;
   readonly success?: boolean;
   readonly toolUseId?: string;
+  /**
+   * The FULL tool input string (Bash command line, etc.), present only during
+   * drain-time matching. PRIVACY: transient transit only — matched against
+   * `inputPattern` selectors and immediately discarded; never persisted to the
+   * profile, logs, or any output (FR-018 extension, see observation/drain.ts).
+   */
+  readonly inputText?: string;
+  /** The tool input `file_path` (Edit/Write/Read). Same transit-only rule. */
+  readonly filePath?: string;
+  /** A non-tool hook event kind (SubagentStop, TaskCompleted, ...). */
+  readonly event?: string;
 }
+
+/**
+ * Compile-once regex cache, keyed by pattern source. Catalog patterns are
+ * static per process lifetime, so memoizing here removes the per-call
+ * `new RegExp` allocation under batch-drain workloads (O(topics × triggers ×
+ * signals) tests per drain tick). A malformed pattern is cached as `null` so it
+ * fails closed exactly once instead of re-throwing on every test.
+ */
+const regexCache = new Map<string, RegExp | null>();
+
+/** Test `pattern` against `value`, failing closed on an invalid regex. */
+const safeRegexTest = (pattern: string, value: string): boolean => {
+  let re = regexCache.get(pattern);
+  if (re === undefined) {
+    try {
+      re = new RegExp(pattern);
+    } catch {
+      re = null;
+    }
+    regexCache.set(pattern, re);
+  }
+  return re === null ? false : re.test(value);
+};
 
 /**
  * Does a single {@link TriggerSignal} match a single {@link ObservedSignal} for
@@ -287,6 +337,9 @@ export interface ObservedSignal {
  *  - `match.toolName` — exact (case-sensitive) equality against `signal.toolName`.
  *  - `match.toolNamePattern` — regex tested against `signal.toolName`.
  *  - `match.mcpToolPattern` — regex tested against `signal.mcpTool`.
+ *  - `match.inputPattern` — regex tested against the FULL transient input text.
+ *  - `match.pathPattern` — regex tested against the tool input file path.
+ *  - `match.event` — exact equality against a non-tool hook event kind.
  *
  * A malformed regex pattern fails closed (no match) rather than throwing — a bad
  * trigger declaration must never crash the observation intake path.
@@ -313,16 +366,82 @@ const triggerMatchesSignal = (
     if (safeRegexTest(match.mcpToolPattern, signal.mcpTool)) return true;
   }
 
+  if (match.inputPattern !== undefined && signal.inputText !== undefined) {
+    if (safeRegexTest(match.inputPattern, signal.inputText)) return true;
+  }
+
+  if (match.pathPattern !== undefined && signal.filePath !== undefined) {
+    if (safeRegexTest(match.pathPattern, signal.filePath)) return true;
+  }
+
+  if (
+    match.event !== undefined &&
+    signal.event !== undefined &&
+    match.event === signal.event
+  ) {
+    return true;
+  }
+
   return false;
 };
 
-/** Test `pattern` against `value`, failing closed on an invalid regex. */
-const safeRegexTest = (pattern: string, value: string): boolean => {
-  try {
-    return new RegExp(pattern).test(value);
-  } catch {
-    return false;
+/**
+ * One weighted trigger hit for the drain-time evidence ledger. Carries ONLY
+ * derived data — the raw input/path strings a signal matched against are
+ * dropped at this boundary and never appear in a hit.
+ */
+export interface SignalHit {
+  readonly key: AbilityKey;
+  readonly title: string;
+  /** Effective weight: catalog weight, doubled when the signal failed. */
+  readonly weight: number;
+  readonly phase: "start" | "during" | "seam";
+  readonly bypass: boolean;
+  readonly success: boolean;
+  readonly correlationId: string;
+}
+
+/** Failure multiplier: failed signals count double toward thresholds. */
+export const FAILURE_WEIGHT_MULTIPLIER = 2;
+
+/**
+ * Drain-time matching: map each observed signal to weighted per-topic hits.
+ * Unlike {@link matchCandidates} (which dedupes to distinct candidate topics
+ * for the `record_observation` MCP path), this returns ONE hit per
+ * (signal × matching topic) pair, carrying weight/phase/bypass so the evidence
+ * ledger can accumulate and the arming state machine can gate on phase.
+ *
+ * PRIVACY: the returned hits contain no raw content — `inputText`/`filePath`
+ * on the input signals are consumed here and go no further.
+ */
+export const matchSignalHits = (
+  topics: readonly Topic[],
+  tool: ToolId | undefined,
+  signals: readonly ObservedSignal[],
+): SignalHit[] => {
+  const hits: SignalHit[] = [];
+
+  for (const signal of signals) {
+    for (const topic of topics) {
+      const trigger = topic.triggerSignals.find(
+        (t) => t.tool === tool && triggerMatchesSignal(t, signal),
+      );
+      if (trigger === undefined) continue;
+
+      const success = signal.success !== false;
+      hits.push({
+        key: abilityKey(topic.class, topic.id),
+        title: topic.title,
+        weight: trigger.weight * (success ? 1 : FAILURE_WEIGHT_MULTIPLIER),
+        phase: trigger.phase,
+        bypass: trigger.bypass,
+        success,
+        correlationId: signal.toolUseId ?? "",
+      });
+    }
   }
+
+  return hits;
 };
 
 /**

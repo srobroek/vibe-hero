@@ -356,6 +356,7 @@ describe("per-session arm keying — two sessions independent", () => {
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-arm-"));
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-arm-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -366,11 +367,9 @@ describe("per-session arm keying — two sessions independent", () => {
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    for (const sid of ["arm-sid-a", "arm-sid-b"]) {
-      try { await rm(armCachePath(sid), { force: true }); } catch { /* ok */ }
-    }
   });
 
   it("arming session-A does not affect session-B's offerArms slot", async () => {
@@ -418,6 +417,7 @@ describe("arm reset on decline", () => {
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-arm-decline-"));
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-arm-decline-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -441,9 +441,9 @@ describe("arm reset on decline", () => {
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    try { await rm(armCachePath("session-decline"), { force: true }); } catch { /* ok */ }
   });
 
   it("decline clears the arm (armedKey absent) and stamps lastOfferAt", async () => {
@@ -484,6 +484,7 @@ describe("arm reset on start_quiz", () => {
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-arm-quiz-"));
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-arm-quiz-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -507,9 +508,9 @@ describe("arm reset on start_quiz", () => {
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    try { await rm(armCachePath("session-quiz"), { force: true }); } catch { /* ok */ }
   });
 
   it("start_quiz with sessionId clears the arm and stamps lastOfferAt", async () => {
@@ -542,6 +543,7 @@ describe("cooldown stamping", () => {
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-cooldown-"));
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-cooldown-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -565,9 +567,9 @@ describe("cooldown stamping", () => {
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    try { await rm(armCachePath("session-cd"), { force: true }); } catch { /* ok */ }
   });
 
   it("get_offer sets armedAt on the arm record; lastOfferAt is NOT stamped on fresh arm", async () => {
@@ -624,6 +626,7 @@ describe("break-and-return after quiz: no re-offer without intervening work", ()
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-break-"));
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-break-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -649,9 +652,9 @@ describe("break-and-return after quiz: no re-offer without intervening work", ()
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    try { await rm(armCachePath(SID), { force: true }); } catch { /* ok */ }
   });
 
   it("quiz taken -> cooldown=0, no work since quiz -> get_offer returns offer but does NOT rearm the cache", async () => {
@@ -729,22 +732,29 @@ const REPO_ROOT_FOR_E2E = path.resolve(
   "..", "..", "..", "..",
 );
 const HOOK_SCRIPT = path.join(REPO_ROOT_FOR_E2E, "hooks", "claude-code", "prompt-offer.sh");
+/** Plugin root (contains hooks/claude-code/_lib.sh). */
+const PLUGIN_ROOT_FOR_E2E = path.join(REPO_ROOT_FOR_E2E, "packages", "vibe-hero-plugin");
 const E2E_TIMEOUT = 15_000;
 
-/** Run the real prompt-offer.sh script. cooldownEnv is set on the child process
- *  so the hook reads it from the JSON cache (written by writeArmCache), which
- *  pre-computes cooldownSeconds from the server env at arm time. We also pass it
- *  as an env var so the server-side helpers (writeArmCache) pick it up when
- *  arming. The hook itself reads cooldownSeconds from the JSON cache, not from
- *  the env var directly, but setting the env var at arm time ensures the cache
- *  is written with the right value. */
+/**
+ * Run the real prompt-offer.sh script.
+ *
+ * CLAUDE_PLUGIN_ROOT must be set so the hook can source _lib.sh (set -eu would
+ * crash immediately otherwise). VIBE_HERO_HOME must point to the same tmp dir
+ * used to write arm caches so the hook reads the correct file.
+ */
 function runHookScript(
   sessionId: string,
+  vibeHeroHome: string,
   extraEnv?: Record<string, string>,
 ): Promise<{ code: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
-    const env: Record<string, string> = { ...process.env as Record<string, string> };
-    if (extraEnv) Object.assign(env, extraEnv);
+    const env: Record<string, string> = {
+      ...(process.env as Record<string, string>),
+      CLAUDE_PLUGIN_ROOT: PLUGIN_ROOT_FOR_E2E,
+      VIBE_HERO_HOME: vibeHeroHome,
+      ...extraEnv,
+    };
     const child = execFile(
       HOOK_SCRIPT,
       [],
@@ -767,6 +777,9 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-e2e-"));
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-e2e-cat-"));
+    // Set VIBE_HERO_HOME so armCachePath() and writeArmCache() both resolve
+    // to the same tmp dir; the hook child process also inherits this.
+    process.env["VIBE_HERO_HOME"] = home;
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
     await writeFile(path.join(toolDir, "subagents.yaml"), SUBAGENTS_YAML, "utf8");
@@ -793,11 +806,9 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    for (const sid of ["e2e-fresh", "e2e-expired", "e2e-cooldown", "e2e-post-quiz"]) {
-      try { await rm(armCachePath(sid), { force: true }); } catch { /* ok */ }
-    }
   });
 
   it("(1) fresh arm — cache has armedKey set and lastOfferAt null (not equal armedAt)", async () => {
@@ -851,7 +862,7 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
     // Run the ACTUAL hook script with 900s cooldown in the cache.
     // A fresh arm (armedAt ≈ now) must NOT be expired (< 900s elapsed), so
     // iso_to_epoch must parse the UTC timestamp correctly regardless of host TZ.
-    const { code, stdout } = await runHookScript(SID);
+    const { code, stdout } = await runHookScript(SID, home);
     expect(code).toBe(0);
     // THE REGRESSION ASSERTION: must emit. If iso_to_epoch returns wrong epoch
     // (off by TZ offset), elapsed_arm > 900 → expired → stdout would be empty.
@@ -873,10 +884,12 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
 
   it("(3) arm with armedAt far in the past (> cooldown) is treated as expired — hook silent", async () => {
     // Also exercises iso_to_epoch: an old arm must parse to a low epoch,
-    // making elapsed_arm > cooldown, so the hook removes the file and exits 0.
+    // making elapsed_arm > cooldown, so the hook exits 0.
     const SID = "e2e-expired";
-    // Write a cache file directly with armedAt 2000s ago, cooldown=900s.
+    // Write cache directly with armedAt 2000s ago, cooldown=900s.
     const oldArmedAt = new Date(Date.now() - 2_000_000).toISOString(); // ~33 min ago
+    const armDir = path.join(home, "arm");
+    await mkdir(armDir, { recursive: true });
     const cacheFile = armCachePath(SID);
     await writeFile(cacheFile, JSON.stringify({
       sessionId: SID,
@@ -887,20 +900,20 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
       cooldownSeconds: 900,
       lastQuizAt: null,
       hasWorkSinceLastQuiz: false,
+      context: "some context",
     }), { encoding: "utf8", mode: 0o600 });
 
-    const { code, stdout } = await runHookScript(SID);
+    const { code, stdout } = await runHookScript(SID, home);
     expect(code).toBe(0);
     expect(stdout.trim()).toBe(""); // expired arm → silent
-    // Hook should have cleaned up the file
-    expect(existsSync(cacheFile)).toBe(false);
   }, E2E_TIMEOUT);
 
   it("(4) lastOfferAt recent (within 900s cooldown) → hook silent — exercises cooldown-window gate", async () => {
     // Exercises the cooldown-window iso_to_epoch call (last_epoch path).
     const SID = "e2e-cooldown";
-    // Write a cache with armedAt=now (not expired), lastOfferAt=now (within cooldown).
     const nowIso = new Date().toISOString();
+    const armDir = path.join(home, "arm");
+    await mkdir(armDir, { recursive: true });
     const cacheFile = armCachePath(SID);
     await writeFile(cacheFile, JSON.stringify({
       sessionId: SID,
@@ -911,9 +924,10 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
       cooldownSeconds: 900,
       lastQuizAt: null,
       hasWorkSinceLastQuiz: false,
+      context: "some context",
     }), { encoding: "utf8", mode: 0o600 });
 
-    const { code, stdout } = await runHookScript(SID);
+    const { code, stdout } = await runHookScript(SID, home);
     expect(code).toBe(0);
     expect(stdout.trim()).toBe(""); // within cooldown → silent
   }, E2E_TIMEOUT);
@@ -940,7 +954,7 @@ describe("E2E regression: arm → hook emit cycle (catches mutually-exclusive-ga
       expect(cache.armedKey).toBeNull();
 
       // Hook: armedKey is null → exits silently before any time math.
-      const { code, stdout } = await runHookScript(SID);
+      const { code, stdout } = await runHookScript(SID, home);
       expect(code).toBe(0);
       expect(stdout.trim()).toBe("");
     }
@@ -957,6 +971,8 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
 
   beforeEach(async () => {
     home = await mkdtemp(path.join(tmpdir(), "vh-defect-"));
+    // Set VIBE_HERO_HOME so armCachePath() and writeArmCache() resolve to tmp dir.
+    process.env["VIBE_HERO_HOME"] = home;
     catalogDir = await mkdtemp(path.join(tmpdir(), "vh-defect-cat-"));
     const toolDir = path.join(catalogDir, "claude-code");
     await mkdir(toolDir, { recursive: true });
@@ -979,11 +995,9 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
 
   afterEach(async () => {
     delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    delete process.env["VIBE_HERO_HOME"];
     await rm(home, { recursive: true, force: true });
     await rm(catalogDir, { recursive: true, force: true });
-    for (const sid of ["defect-frac", "defect-title"]) {
-      try { await rm(armCachePath(sid), { force: true }); } catch { /* ok */ }
-    }
   });
 
   it("fractional VIBE_HERO_OFFER_COOLDOWN_SECONDS: server writes integer, hook exits 0 (no arithmetic crash)", async () => {
@@ -1012,7 +1026,7 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
     }
 
     // Run the actual hook — must exit 0, never crash with arithmetic error.
-    const { code, stdout, stderr } = await runHookScript(SID);
+    const { code, stdout, stderr } = await runHookScript(SID, home);
     expect(code).toBe(0);
     // No arithmetic error in stderr.
     expect(stderr).not.toMatch(/invalid arithmetic|arithmetic operator/i);
@@ -1029,6 +1043,8 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
     const SID = "defect-title";
     const trickyTitle = 'The "tricky" \\topic';
     const nowIso = new Date().toISOString();
+    // Ensure the arm dir exists (writeArmCache creates it, but here we write directly).
+    await mkdir(path.join(home, "arm"), { recursive: true });
     const cacheFile = armCachePath(SID);
     await writeFile(cacheFile, JSON.stringify({
       sessionId: SID,
@@ -1039,6 +1055,8 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
       cooldownSeconds: 900,
       lastQuizAt: null,
       hasWorkSinceLastQuiz: false,
+      // context contains the tricky title — it's what the hook relays
+      context: `some context about ${trickyTitle}`,
     }), { encoding: "utf8", mode: 0o600 });
 
     // Run hook with jq absent from PATH so the no-jq printf path is exercised.
@@ -1049,7 +1067,7 @@ describe("Defect regressions: fractional cooldown and title JSON injection", () 
       .filter((p) => !p.includes("jq") && !p.includes("homebrew") && !p.includes("mise"))
       .join(":");
 
-    const { code, stdout, stderr } = await runHookScript(SID, { PATH: noJqPath });
+    const { code, stdout, stderr } = await runHookScript(SID, home, { PATH: noJqPath });
     expect(code).toBe(0);
 
     if (stdout.trim() !== "") {

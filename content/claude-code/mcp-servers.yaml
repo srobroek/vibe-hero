@@ -10,7 +10,22 @@ title: MCP Servers
 summary: >-
   The Model Context Protocol — stdio vs HTTP transport, registering tools with schemas, .mcp.json,
   npx launch, the initialize handshake and tools/list.
-triggerSignals: []
+triggerSignals:
+  # Any MCP tool call is a low-weight background signal for this topic.
+  - tool: claude-code
+    match:
+      mcpToolPattern: '^mcp__'
+    weight: 0.3
+  # Direct edits to the MCP config file are a strong signal.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.mcp\.json$'
+    weight: 1.0
+  # Running claude mcp subcommands in the terminal.
+  - tool: claude-code
+    match:
+      inputPattern: '\bclaude mcp\b'
+    weight: 1.0
 items:
   - id: ms-100-mc-a
     tier: 100

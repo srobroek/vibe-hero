@@ -65,15 +65,10 @@
  * (§ OfferLedger), src/config.ts (ASSESSMENT_CONFIG).
  */
 
-import * as fs from "node:fs/promises";
-import * as os from "node:os";
-import * as path from "node:path";
-
 import { ASSESSMENT_CONFIG } from "../config.js";
-import { resolveCatalog, type ResolvedCatalog } from "../catalog/resolve.js";
-import type { CatalogLoadResult } from "../catalog/loader.js";
+import { resolveCatalog } from "../catalog/resolve.js";
 import { isDueForReview, daysBetween } from "../engine/lapse.js";
-import { loadProfile, updateProfile } from "../profile/store.js";
+import { updateProfile } from "../profile/store.js";
 import { abilityKey, type AbilityKey, type ToolId } from "../schemas/common.js";
 import type { Topic } from "../schemas/content.js";
 import type { OfferArm, OfferLedger, Profile } from "../schemas/profile.js";
@@ -92,116 +87,35 @@ import {
   armSession,
   canArm,
   clearArm,
-  cooldownSeconds,
   ledgerForSession,
   markOffered,
   resolveOffer,
+  type SuppressionReason,
 } from "../observation/offers.js";
+import { writeArmCache } from "../observation/armCache.js";
 import { defineTool, type AnyToolModule } from "./types.js";
+import {
+  loadCatalog,
+  type CatalogLoader,
+  type CatalogResolver,
+} from "./catalogTypes.js";
 
 // ---------------------------------------------------------------------------
-// /tmp arm cache helpers
-//
-// Data-flow:
-//   1. Agent calls get_offer (MCP) with sessionId.
+// Arm cache data-flow (implementation in ../observation/armCache.ts):
+//   1. Agent calls get_offer (MCP) with sessionId — OR the drain pipeline arms
+//      autonomously from organic evidence (observation/drain.ts).
 //   2. Server resolves offer, calls armSession, persists profile.offerArms,
-//      writes /tmp/vibe-hero-offer-<sid>.json (cache file).
-//   3. Next UserPromptSubmit: hook reads /tmp file, verifies embedded sessionId,
-//      checks armed/cooldown/expired — all locally, zero node/npx spawn.
-//   4. On decline/defer: server calls clearArm, overwrites cache (cleared).
-//   5. On start_quiz: startQuiz tool calls clearArm, overwrites cache (cleared).
-//   6. Stale-file cleanup: server overwrites by session id on every arm; hook
-//      may unlink expired files to avoid /tmp accumulation (see prompt-offer.sh).
+//      atomically writes ~/.vibe-hero/arm/vibe-hero-offer-<sid>.json.
+//   3. Next UserPromptSubmit: hook reads that file, verifies embedded
+//      sessionId, emits the pre-built `context` — zero node/npx spawn.
+//   4. On decline/defer/quiz-start: server overwrites the cache cleared.
+//   The server owns the cache lifecycle end-to-end; the hook never deletes.
 // ---------------------------------------------------------------------------
 
-/** Sanitise a session id to a safe filename segment (mirrors the hook's tr). */
-const sanitiseSessionId = (sessionId: string): string =>
-  sessionId.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64) || "default";
-
-/**
- * Filename prefix for the per-session offer-arm cache in the temp dir. Exported
- * as the single source of truth for the convention the UserPromptSubmit hook
- * mirrors (`<tmp>/vibe-hero-offer-<sessionId>.json`).
- */
-export const ARM_CACHE_PREFIX = "vibe-hero-offer-";
-
-/** Resolve the /tmp cache path for a session (mirrors the hook convention). */
-export const armCachePath = (sessionId: string): string =>
-  path.join(os.tmpdir(), `${ARM_CACHE_PREFIX}${sanitiseSessionId(sessionId)}.json`);
-
-/**
- * The shape written to and read from the /tmp cache file. Embedding `sessionId`
- * lets the hook verify the file belongs to the right session before trusting it
- * (guards against stale / reused /tmp entries from old runs).
- */
-export interface ArmCacheEntry {
-  sessionId: string;
-  armedKey: string | null;
-  armedTitle: string | null;
-  armedAt: string | null;
-  lastOfferAt: string | null;
-  cooldownSeconds: number;
-  /** ISO datetime of last quiz start, or null. Used for agent-side reasoning. */
-  lastQuizAt: string | null;
-  /** True if real work has happened since lastQuizAt. Agent may use as hint. */
-  hasWorkSinceLastQuiz: boolean;
-}
-
-/**
- * Write (or overwrite) the arm cache file for `sessionId`. Errors are swallowed
- * — a missing cache only means the hook stays silent; it must never crash the
- * offer path.
- */
-export const writeArmCache = async (sessionId: string, arm: OfferArm): Promise<void> => {
-  const entry: ArmCacheEntry = {
-    sessionId,
-    armedKey: arm.armedKey ?? null,
-    armedTitle: arm.armedTitle ?? null,
-    armedAt: arm.armedAt ?? null,
-    lastOfferAt: arm.lastOfferAt ?? null,
-    // Always write an integer — POSIX shell arithmetic in the hook crashes on
-    // floats (set -eu; $((900.5 * 1)) → invalid arithmetic operator).
-    cooldownSeconds: Math.trunc(cooldownSeconds()),
-    lastQuizAt: arm.lastQuizAt ?? null,
-    hasWorkSinceLastQuiz: arm.hasWorkSinceLastQuiz ?? false,
-  };
-  try {
-    await fs.writeFile(
-      armCachePath(sessionId),
-      JSON.stringify(entry),
-      { encoding: "utf8", mode: 0o600 },
-    );
-  } catch {
-    // Best-effort — hook reads silently miss if file absent.
-  }
-};
-
-/**
- * Clear the arm cache file for `sessionId` by overwriting it with a cleared
- * entry (no arm, but `lastOfferAt` preserved for cooldown enforcement). Errors
- * are swallowed.
- */
-const writeClearedCache = async (sessionId: string, clearedArm: OfferArm): Promise<void> => {
-  await writeArmCache(sessionId, clearedArm);
-};
-
-// ---------------------------------------------------------------------------
-// Catalog loader types (shared with startQuiz / recordObservation)
-// ---------------------------------------------------------------------------
-
-/**
- * Sync catalog loader (test seam): returns topics synchronously from a fixture
- * dir. Tests inject this form; production uses {@link CatalogResolver}.
- * The optional arg is unused by sync loaders but makes the type compatible with
- * the {@link CatalogResolver} union so both can be called as `fn(dirOverride)`.
- */
-export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
-
-/**
- * Async catalog resolver (production path): resolves via fresh-fetch → cache →
- * bundled. Mirrors {@link resolveCatalog}'s signature.
- */
-export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
+// Re-exported for backward compatibility (tests import from this module).
+export { ARM_CACHE_PREFIX, armCachePath, writeArmCache } from "../observation/armCache.js";
+export type { ArmCacheEntry } from "../observation/armCache.js";
+export type { CatalogLoader, CatalogResolver } from "./catalogTypes.js";
 
 /** Find the catalog topic whose `(class, id)` serializes to `key`. */
 const findTopicByKey = (
@@ -304,126 +218,133 @@ export const makeGetOfferTool = (
     handler: async (input: GetOfferInput): Promise<GetOfferResult> => {
       const now = new Date();
       const nowIso = now.toISOString();
-      const profile = await loadProfile(dirOverride);
-      const config = profile.config;
 
-      // Gated: config is present. Reconcile the ledger to THIS session (a new
-      // session id rolls over the per-session accounting) before deciding.
-      const ledger = ledgerForSession(profile.offers, input.sessionId);
+      // Catalog load happens outside the lock (read-only, no profile state).
+      const { topics } = await loadCatalog(loaderOrResolver, dirOverride);
 
-      // Normalize: sync loader (tests) vs async resolver (production).
-      // Loaded here so we can compute due-for-review candidates before resolving.
-      const rawResult = loaderOrResolver(dirOverride);
-      const { topics } = rawResult instanceof Promise ? await rawResult : rawResult;
+      // TOCTOU fix (code-review finding): the ENTIRE read-decide-write runs
+      // inside ONE updateProfile closure, so the decision is made against the
+      // locked, current profile — a concurrent drain-timer write can no longer
+      // interleave between an unlocked read and the locked write. The closure
+      // is pure state math (no IO); the arm-cache write happens after, from
+      // the outcome captured here.
+      let outcome:
+        | { kind: "suppressed"; reason: SuppressionReason }
+        | {
+            kind: "offer";
+            key: AbilityKey;
+            topic: Topic;
+            isDue: boolean;
+            armToWrite: OfferArm | undefined;
+          }
+        | undefined;
 
-      // Due-for-review candidates (task #21): compute from the lapse engine and
-      // prepend them — most-overdue first — ahead of activity-based candidates.
-      // This uses the same lapse engine as get_status, so due detection is
-      // consistent.  No profile writes here — offers never score (SC-003).
-      const dueCandidates = dueForReviewCandidates(
-        topics,
-        profile,
-        input.tool,
-        nowIso,
-      );
+      await updateProfile((profile: Profile): Profile => {
+        const config = profile.config;
 
-      // Merge: due-review candidates first (highest urgency), then activity
-      // candidates from the ledger.  Dedup so a key that is both due AND in
-      // the ledger is only tried once (at its due-review priority position).
-      const activityCandidates = ledger.candidateKeys;
-      const dueSeen = new Set(dueCandidates);
-      const mergedCandidates: AbilityKey[] = [
-        ...dueCandidates,
-        ...activityCandidates.filter((k) => !dueSeen.has(k)),
-      ];
+        // Reconcile the ledger to THIS session (a new session id rolls over
+        // the per-session accounting) before deciding.
+        const ledger = ledgerForSession(profile.offers, input.sessionId);
 
-      const decision = resolveOffer(
-        {
-          proactiveOffers: config?.proactiveOffers ?? false,
-          offerCadence: config?.offerCadence ?? "off",
-          ledger,
-          backoff: profile.backoff,
-          candidates: mergedCandidates,
-        },
-        now,
-      );
+        // Due-for-review candidates (task #21): compute from the lapse engine
+        // and prepend them — most-overdue first — ahead of activity-based
+        // candidates. Same lapse engine as get_status, so due detection is
+        // consistent. No scoring state is touched — offers never score (SC-003).
+        const dueCandidates = dueForReviewCandidates(
+          topics,
+          profile,
+          input.tool,
+          nowIso,
+        );
+        const dueSeen = new Set(dueCandidates);
+        const mergedCandidates: AbilityKey[] = [
+          ...dueCandidates,
+          ...ledger.candidateKeys.filter((k) => !dueSeen.has(k)),
+        ];
 
-      if (decision.kind === "suppressed") {
-        // Persist any session rollover (so a fresh session id is recorded) but
-        // never touch scoring state.
-        if (ledger.sessionId !== profile.offers.sessionId) {
-          await persistLedger(ledger, dirOverride);
+        const decision = resolveOffer(
+          {
+            proactiveOffers: config?.proactiveOffers ?? false,
+            offerCadence: config?.offerCadence ?? "off",
+            ledger,
+            backoff: profile.backoff,
+            candidates: mergedCandidates,
+          },
+          now,
+        );
+
+        if (decision.kind === "suppressed") {
+          outcome = { kind: "suppressed", reason: decision.reason };
+          // Persist any session rollover (so a fresh session id is recorded)
+          // but never touch scoring state.
+          return ledger.sessionId !== profile.offers.sessionId
+            ? { ...profile, offers: ledger }
+            : profile;
         }
-        return { suppressed: decision.reason };
-      }
 
-      const topic = findTopicByKey(topics, decision.key);
-      if (topic === undefined) {
-        // The candidate key has no resolvable topic (catalog drift): treat as
-        // no candidate rather than throwing — offers must never crash the path.
-        if (ledger.sessionId !== profile.offers.sessionId) {
-          await persistLedger(ledger, dirOverride);
+        const topic = findTopicByKey(topics, decision.key);
+        if (topic === undefined) {
+          // Catalog drift: treat as no candidate rather than throwing —
+          // offers must never crash the path.
+          outcome = { kind: "suppressed", reason: "no_candidate" };
+          return ledger.sessionId !== profile.offers.sessionId
+            ? { ...profile, offers: ledger }
+            : profile;
         }
-        return { suppressed: "no_candidate" };
+
+        // Record that the offer surfaced so the cadence caps apply next time.
+        const offered = markOffered(ledger, decision.key);
+
+        // Arm the session — but only refresh the hook cache when the arm gates
+        // allow it. `canArm` checks:
+        //   1. TIMER: cooldown since lastOfferAt has elapsed.
+        //   2. SEMANTIC: real work has happened since the last quiz (if any).
+        // `get_offer` is called EXPLICITLY by the agent; it always returns the
+        // offer so the agent can present it. The hook cache only refreshes
+        // when `canArm` passes.
+        const existingArm: OfferArm = profile.offerArms[input.sessionId] ?? {};
+        const shouldArm = canArm(existingArm, now);
+        const arm = shouldArm
+          ? armSession(decision.key, topic.title, now, existingArm)
+          : existingArm;
+
+        outcome = {
+          kind: "offer",
+          key: decision.key,
+          topic,
+          isDue: dueSeen.has(decision.key),
+          armToWrite: shouldArm ? arm : undefined,
+        };
+        return {
+          ...profile,
+          offers: offered,
+          offerArms: shouldArm
+            ? { ...profile.offerArms, [input.sessionId]: arm }
+            : profile.offerArms,
+        };
+      }, dirOverride);
+
+      if (outcome === undefined || outcome.kind === "suppressed") {
+        return { suppressed: outcome?.reason ?? "no_candidate" };
       }
 
-      // Record that the offer surfaced so the cadence caps apply next time.
-      const offered = markOffered(ledger, decision.key);
-
-      // Arm the session — but only write the /tmp cache (for the hook) when the
-      // arm gates allow it. `canArm` checks:
-      //   1. TIMER: cooldown since lastOfferAt has elapsed.
-      //   2. SEMANTIC: real work has happened since the last quiz (if any).
-      // Rationale: `get_offer` is called EXPLICITLY by the agent (who confirmed
-      // the hook already signalled); it always returns the offer so the agent
-      // can present it. But the hook cache is only refreshed when `canArm`
-      // passes — preventing the hook from triggering again during the cooldown
-      // window or when no work has happened since a quiz.
-      const existingArm: OfferArm = profile.offerArms[input.sessionId] ?? {};
-      const shouldArm = canArm(existingArm, now);
-      const arm = shouldArm
-        ? armSession(decision.key, topic.title, now, existingArm)
-        : existingArm; // keep existing arm state unchanged if can't arm
-      await updateProfile((current: Profile): Profile => ({
-        ...current,
-        offers: offered,
-        offerArms: shouldArm
-          ? { ...current.offerArms, [input.sessionId]: arm }
-          : current.offerArms,
-      }), dirOverride);
-
-      // Write /tmp cache as side effect only when arming is permitted.
-      if (shouldArm) {
-        await writeArmCache(input.sessionId, arm);
+      // Write the hook cache as a side effect, outside the lock (best-effort;
+      // logged inside writeArmCache).
+      if (outcome.armToWrite !== undefined) {
+        await writeArmCache(input.sessionId, outcome.armToWrite);
       }
 
-      // Use the review prompt when the offered topic is due for review, the
-      // regular activity prompt otherwise.
-      const isDue = dueSeen.has(decision.key);
       return {
         offer: {
-          key: decision.key,
-          title: topic.title,
-          prompt: isDue ? reviewOfferPrompt(topic) : offerPrompt(topic),
+          key: outcome.key,
+          title: outcome.topic.title,
+          prompt: outcome.isDue
+            ? reviewOfferPrompt(outcome.topic)
+            : offerPrompt(outcome.topic),
         },
       };
     },
   });
-
-/**
- * Persist ONLY the `offers` ledger block (atomic). Never touches abilities,
- * graduations, quizHistory, reviewSchedule, or backoff — keeping the offer path
- * score-free (FR-005 / SC-003).
- */
-const persistLedger = async (
-  ledger: OfferLedger,
-  dirOverride?: string,
-): Promise<void> => {
-  await updateProfile(
-    (current: Profile): Profile => ({ ...current, offers: ledger }),
-    dirOverride,
-  );
-};
 
 /**
  * Build the `record_offer_response` tool module (US-1).
@@ -499,9 +420,10 @@ export const makeRecordOfferResponseTool = (
         }
       }, dirOverride);
 
-      // Write cleared cache outside the lock (best-effort).
+      // Write cleared cache outside the lock (best-effort). Inlined former
+      // writeClearedCache pass-through (code-review finding).
       if (armToClear !== undefined) {
-        await writeClearedCache(input.sessionId, armToClear);
+        await writeArmCache(input.sessionId, armToClear);
       }
 
       return { ok: true };

@@ -10,7 +10,22 @@ title: Context Window Management
 summary: >-
   Strategic reads, avoiding re-reads, compaction, the Todo list as working memory, /clear vs
   /compact, and what happens when context fills up.
-triggerSignals: []
+triggerSignals:
+  # Editing CLAUDE.md or MEMORY.md files signals context management work.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)(CLAUDE\.md|MEMORY\.md)$'
+    weight: 0.8
+  # Editing .claude/rules/ files — managing steering/rules is context work.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.claude/rules/'
+    weight: 0.8
+  # PreCompact fires right before context is compacted — ideal seam for this topic.
+  - tool: claude-code
+    match:
+      event: PreCompact
+    weight: 1.0
 items:
   - id: cm-100-mc-a
     tier: 100

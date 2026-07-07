@@ -294,6 +294,7 @@ export const SaveConfigInputSchema = z.object({
   offerCadence: z.enum(["off", "per_session", "per_topic"]),
   proactiveOffers: z.boolean(),
   quizLength: z.union([z.literal(3), z.literal(4), z.literal(5)]).optional(),
+  organicEagerness: z.enum(["often", "normal", "rarely"]).optional(),
 });
 export type SaveConfigInput = z.infer<typeof SaveConfigInputSchema>;
 

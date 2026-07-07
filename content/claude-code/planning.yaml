@@ -10,7 +10,19 @@ title: Planning Mode & Task Management
 summary: >-
   Using plan mode and the TodoWrite task list to structure complex work — when to plan, how to
   decompose, and maintaining progress across a session.
-triggerSignals: []
+triggerSignals:
+  # Plan mode entry/exit both surface at start phase per UX decision — the user
+  # is actively structuring work, so offer early rather than mid-flow.
+  - tool: claude-code
+    match:
+      toolName: EnterPlanMode
+    weight: 0.5
+    phase: start
+  - tool: claude-code
+    match:
+      toolName: ExitPlanMode
+    weight: 0.5
+    phase: start
 items:
   - id: p-100-mc-a
     tier: 100

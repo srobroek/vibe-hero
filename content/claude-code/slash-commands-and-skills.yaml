@@ -10,7 +10,22 @@ title: Slash Commands & Skills
 summary: >-
   Authoring and using Claude Code skills and slash commands — SKILL.md, progressive disclosure,
   triggering, scoped skills, references and scripts.
-triggerSignals: []
+triggerSignals:
+  # Using the Skill tool directly is a strong signal for this topic.
+  - tool: claude-code
+    match:
+      toolName: Skill
+    weight: 0.8
+  # Editing SKILL.md files — the user is authoring a skill.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)SKILL\.md$'
+    weight: 1.0
+  # Editing files inside .claude/commands/ or .claude/skills/ directories.
+  - tool: claude-code
+    match:
+      pathPattern: '(^|/)\.claude/(commands|skills)/'
+    weight: 1.0
 items:
   - id: scas-100-mc-a
     tier: 100

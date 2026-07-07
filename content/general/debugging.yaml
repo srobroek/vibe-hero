@@ -9,7 +9,22 @@ title: Debugging
 summary: >-
   Systematic debugging — hypothesis-driven investigation, reproducing first, root cause vs symptom,
   bisection, reading stack traces, targeted logging, minimal reproductions.
-triggerSignals: []
+triggerSignals:
+  # NOTE: A plain Bash signal at low weight would accumulate on every bash call.
+  # Instead we rely on the server-side failure-derivation multiplier (x2) applied
+  # to any other matched signal when tool calls fail — failed patterns already
+  # capture debugging evidence without a noisy catch-all Bash line here.
+  #
+  # Explicit debugger invocations are a high-confidence debugging signal.
+  - tool: claude-code
+    match:
+      inputPattern: '\b(pdb|ipdb|debugger|lldb|gdb|strace|dtruss|--inspect|set -x|DEBUG=)\b'
+    weight: 1.0
+  # Log-diving with tail/less/rg/grep is a medium-strength debugging signal.
+  - tool: claude-code
+    match:
+      inputPattern: '\b(tail|less|rg|grep)\b.*\.(log|err)\b'
+    weight: 0.6
 items:
   - id: d-100-mc-a
     tier: 100

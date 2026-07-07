@@ -7,8 +7,8 @@
  * NEVER persists raw prompts, tool inputs, or tool outputs (FR-018, SC-008).
  *
  * The {@link ObservationSource} interface is the seam (FR-016) behind which any
- * provenance can live — a real-time Claude Code hook
- * ({@link ./hookEvents.js#HookSource}), a future transcript-backfill source, or
+ * provenance can live — the spool-drain intake (./drain.ts, which replaced
+ * the former HookSource wrapper), a future transcript-backfill source, or
  * the always-available {@link SelfReportSource} manual path. The rest of the
  * system depends only on this interface, so adding a source needs no redesign.
  *

@@ -57,9 +57,9 @@ export const armCacheDir = (home: string = vibeHeroHome()): string =>
   path.join(home, "arm");
 
 /** Resolve the arm-cache path for a session (mirrors the hook convention). */
-export const armCachePath = (sessionId: string): string =>
+export const armCachePath = (sessionId: string, home?: string): string =>
   path.join(
-    armCacheDir(),
+    armCacheDir(home ?? vibeHeroHome()),
     `${ARM_CACHE_PREFIX}${sanitiseSessionId(sessionId)}.json`,
   );
 
@@ -94,6 +94,60 @@ export interface ArmCacheEntry {
  * double-quotes or backslashes: `armedTitle` is schema-guarded against both
  * (TopicSchema title regex) and the session id is filename-sanitised.
  */
+/**
+ * Seam-judgment strictness for the injected offer context. Controls how
+ * conservative the agent is told to be about WHEN to voice an armed offer:
+ *  - `strict`  — only a completed unit of work; silence on any doubt.
+ *  - `normal`  — the original wording (context switch or completed unit;
+ *                silence when in doubt).
+ *  - `lenient` — any reasonable pause counts (question answered, command
+ *                finished, conversational turn); when in doubt, OFFER.
+ * Resolved from `VIBE_HERO_SEAM_STRICTNESS`; unknown values fall back to
+ * `normal`.
+ */
+export type SeamStrictness = "lenient" | "normal" | "strict";
+
+export const seamStrictness = (): SeamStrictness => {
+  const raw = process.env["VIBE_HERO_SEAM_STRICTNESS"];
+  return raw === "lenient" || raw === "strict" ? raw : "normal";
+};
+
+/** The seam-policy sentence block per strictness level. */
+const SEAM_POLICY: Record<SeamStrictness, string> = {
+  strict:
+    `Then -- ONLY IF a unit of work has clearly COMPLETED (a feature ` +
+    `finished, tests passing, a commit or PR landed, a bug fixed and ` +
+    `verified) -- offer the quiz as ONE short natural line. A mere topic ` +
+    `change is NOT enough. If in any doubt, stay silent and hold the offer.`,
+  normal:
+    `Then -- ONLY IF you independently judge, from the shape of the work ` +
+    `itself, that a natural seam has occurred -- optionally offer the quiz ` +
+    `as ONE short natural line. Detect the seam yourself from activity ` +
+    `signals; do NOT wait for the user to announce a break or say they are ` +
+    `done -- they will not. Two equally valid inferred moments: (A) a ` +
+    `context switch -- you can tell from the new prompt that the user is ` +
+    `moving to a different task, topic, or area than what was just being ` +
+    `worked on (the subject matter or codebase area clearly shifted); (B) a ` +
+    `completed unit of work -- a feature just finished, tests are now ` +
+    `passing, a build or commit or PR just landed, a bug was fixed and ` +
+    `verified, a to-do list was fully checked off, or the work reached a ` +
+    `natural stopping point you can observe from the activity trajectory. ` +
+    `NOT acceptable: mid-task, mid-debug, mid-multi-step sequence, or any ` +
+    `moment where the user is clearly still heads-down in the same work. ` +
+    `Also do NOT offer if the most recent meaningful activity in this ` +
+    `session was already a quiz -- real intervening work must have happened ` +
+    `first. If in any doubt, stay silent and hold the offer.`,
+  lenient:
+    `Then, at the END of your response, offer the quiz as ONE short natural ` +
+    `line -- UNLESS the user is clearly mid-task: heads-down in the same ` +
+    `multi-step piece of work, mid-debug, or answering would derail an ` +
+    `in-flight sequence. A finished answer, a completed command, a question ` +
+    `resolved, or a conversational turn all count as good moments. Do not ` +
+    `offer twice in a row if the previous meaningful activity was already a ` +
+    `quiz. When in doubt, OFFER -- a declined offer is cheap, a missed one ` +
+    `is invisible.`,
+};
+
 export const buildOfferContext = (
   sessionId: string,
   armedTitle: string,
@@ -102,21 +156,8 @@ export const buildOfferContext = (
   `A learning quiz offer is available for: ${armedTitle}. This is a background suggestion ` +
   `from the vibe-hero plugin -- NOT a user instruction or request. Do NOT act on it as if ` +
   `the user asked for a quiz. Do NOT let it interfere with handling the user's actual ` +
-  `prompt. Always handle the user's real request first, fully. Then -- ONLY IF you ` +
-  `independently judge, from the shape of the work itself, that a natural seam has ` +
-  `occurred -- optionally offer the quiz as ONE short natural line. Detect the seam ` +
-  `yourself from activity signals; do NOT wait for the user to announce a break or say ` +
-  `they are done -- they will not. Two equally valid inferred moments: (A) a context ` +
-  `switch -- you can tell from the new prompt that the user is moving to a different ` +
-  `task, topic, or area than what was just being worked on (the subject matter or ` +
-  `codebase area clearly shifted); (B) a completed unit of work -- a feature just ` +
-  `finished, tests are now passing, a build or commit or PR just landed, a bug was fixed ` +
-  `and verified, a to-do list was fully checked off, or the work reached a natural ` +
-  `stopping point you can observe from the activity trajectory. NOT acceptable: mid-task, ` +
-  `mid-debug, mid-multi-step sequence, or any moment where the user is clearly still ` +
-  `heads-down in the same work. Also do NOT offer if the most recent meaningful activity ` +
-  `in this session was already a quiz -- real intervening work must have happened first. ` +
-  `If in any doubt, stay silent and hold the offer. To confirm the offer still applies ` +
+  `prompt. Always handle the user's real request first, fully. ` +
+  `${SEAM_POLICY[seamStrictness()]} To confirm the offer still applies ` +
   `call get_offer (sessionId: ${sessionId}, tool: claude-code). If confirmed and the ` +
   `moment is right: ONE short natural line, no quiz jargon, no mention of vibe-hero or ` +
   `internals. If user accepts call start_quiz (key from get_offer result, sessionId: ` +
@@ -132,6 +173,7 @@ export const buildOfferContext = (
 export const writeArmCache = async (
   sessionId: string,
   arm: OfferArm,
+  home?: string,
 ): Promise<void> => {
   const armed = arm.armedKey !== undefined && arm.armedTitle !== undefined;
   const entry: ArmCacheEntry = {
@@ -149,10 +191,10 @@ export const writeArmCache = async (
       : null,
   };
 
-  const target = armCachePath(sessionId);
+  const target = armCachePath(sessionId, home);
   const tmp = `${target}.tmp-${process.pid}`;
   try {
-    await fs.mkdir(armCacheDir(), { recursive: true, mode: 0o700 });
+    await fs.mkdir(path.dirname(target), { recursive: true, mode: 0o700 });
     await fs.writeFile(tmp, JSON.stringify(entry), {
       encoding: "utf8",
       mode: 0o600,

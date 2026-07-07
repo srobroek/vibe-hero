@@ -11,10 +11,10 @@
  * This file proves that none of these derived outputs leak raw content.
  */
 
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import { matchSignalHits } from "../../src/observation/offers.js";
 import { applyDrainBatch } from "../../src/observation/arming.js";
-import { writeArmCache, armCachePath } from "../../src/observation/armCache.js";
+import { buildOfferContext, writeArmCache, armCachePath } from "../../src/observation/armCache.js";
 import { eagernessParams } from "../../src/observation/eagerness.js";
 import { armSession } from "../../src/observation/offers.js";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
@@ -117,7 +117,9 @@ describe("matchSignalHits — privacy boundary (FR-018)", () => {
       { toolName: "Bash", inputText: "API_KEY=secret123", success: false },
     ];
     const hits = matchSignalHits([FIXTURE_TOPIC], "claude-code", signals);
-    const bashHit = hits.find((h) => h.phase === "during");
+    // The signal matches both the toolName (during) and inputPattern (seam)
+    // fixture triggers; the collector keeps the most consequential — seam.
+    const bashHit = hits.find((h) => h.phase === "seam");
     expect(bashHit).toBeDefined();
     // weight=1 × FAILURE_WEIGHT_MULTIPLIER=2 → 2
     expect(bashHit?.weight).toBe(2);
@@ -261,5 +263,54 @@ describe("matchSignalHits — defensive / empty inputs", () => {
   it("wrong tool id returns [] (no cross-tool leakage)", () => {
     const signals: ObservedSignal[] = [{ toolName: "Bash" }];
     expect(matchSignalHits([FIXTURE_TOPIC], "codex", signals)).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Seam strictness (VIBE_HERO_SEAM_STRICTNESS) — buildOfferContext variants
+// ---------------------------------------------------------------------------
+
+describe("buildOfferContext — seam strictness", () => {
+  const ENV = "VIBE_HERO_SEAM_STRICTNESS";
+
+  afterEach(() => {
+    delete process.env[ENV];
+  });
+
+  it("defaults to the normal (conservative) policy", () => {
+    delete process.env[ENV];
+    const ctx = buildOfferContext("sid-1", "Hooks");
+    expect(ctx).toContain("If in any doubt, stay silent");
+    expect(ctx).toContain("natural seam");
+  });
+
+  it("lenient flips the doubt default to offering", () => {
+    process.env[ENV] = "lenient";
+    const ctx = buildOfferContext("sid-1", "Hooks");
+    expect(ctx).toContain("When in doubt, OFFER");
+    expect(ctx).not.toContain("stay silent and hold the offer");
+  });
+
+  it("strict requires a completed unit of work", () => {
+    process.env[ENV] = "strict";
+    const ctx = buildOfferContext("sid-1", "Hooks");
+    expect(ctx).toContain("clearly COMPLETED");
+    expect(ctx).toContain("stay silent");
+  });
+
+  it("unknown values fall back to normal", () => {
+    process.env[ENV] = "yolo";
+    const ctx = buildOfferContext("sid-1", "Hooks");
+    expect(ctx).toContain("If in any doubt, stay silent");
+  });
+
+  it("every variant keeps the provenance marker and tool-call instructions", () => {
+    for (const level of ["lenient", "normal", "strict"]) {
+      process.env[ENV] = level;
+      const ctx = buildOfferContext("sid-9", "Hooks");
+      expect(ctx).toMatch(/vibe-hero hook/i);
+      expect(ctx).toContain("get_offer (sessionId: sid-9");
+      expect(ctx).toContain("record_offer_response");
+    }
   });
 });

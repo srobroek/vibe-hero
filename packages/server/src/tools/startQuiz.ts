@@ -247,7 +247,7 @@ export const makeStartQuizTool = (
 
       // Write cleared cache outside the lock (best-effort).
       if (clearedArm !== undefined && input.sessionId !== undefined) {
-        await writeArmCache(input.sessionId, clearedArm);
+        await writeArmCache(input.sessionId, clearedArm, dirOverride);
       }
 
       return {

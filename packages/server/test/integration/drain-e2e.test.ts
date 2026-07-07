@@ -261,3 +261,121 @@ describe("drainOnce — full spool → arm integration", () => {
     ).resolves.toBeUndefined(); // must not throw
   });
 });
+
+// ---------------------------------------------------------------------------
+// Sibling-session evidence merging + hygiene passes (added with
+// feat/organic-intake-hygiene)
+// ---------------------------------------------------------------------------
+
+describe("drainOnce — sibling sessions and hygiene", () => {
+  let home: string;
+
+  beforeEach(async () => {
+    home = await mkdtemp(path.join(tmpdir(), "vh-drain-sib-"));
+    process.env["VIBE_HERO_HOME"] = home;
+    process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"] = "0";
+    await updateProfile(
+      (p) => ({
+        ...p,
+        config: {
+          toolsLearning: ["claude-code" as const],
+          offerCadence: "per_topic" as const,
+          proactiveOffers: true,
+          quizLength: 4 as const,
+          organicEagerness: "normal" as const,
+          createdAt: "2026-07-01T00:00:00.000Z",
+          updatedAt: "2026-07-01T00:00:00.000Z",
+        },
+      }),
+      home,
+    );
+  });
+
+  afterEach(async () => {
+    delete process.env["VIBE_HERO_HOME"];
+    delete process.env["VIBE_HERO_OFFER_COOLDOWN_SECONDS"];
+    await rm(home, { recursive: true, force: true });
+  });
+
+  const deps = (now: Date) => ({
+    loadTopics: async (): Promise<readonly Topic[]> => [FIXTURE_TOPIC],
+    tool: (): ToolId | undefined => "claude-code",
+    now: (): Date => now,
+  });
+
+  it("evidence split across two concurrent sessions still crosses the threshold", async () => {
+    // Threshold (normal) = 3. Session A gets weight 2, session B gets weight 2.
+    // Neither alone crosses; merged (own 2 + sibling 2 = 4) both do.
+    const spoolDir = path.join(home, "spool");
+    await mkdir(spoolDir, { recursive: true });
+    const ts = 1_750_000_000;
+
+    const lines = (sid: string, ids: string[]): string =>
+      ids
+        .map((id) =>
+          JSON.stringify({ kind: "post", session: sid, ts, tool: "Task", id }),
+        )
+        .join("\n") + "\n";
+
+    await writeFile(path.join(spoolDir, "sib-a.jsonl"), lines("sib-a", ["a1", "a2"]), { mode: 0o600 });
+    await writeFile(path.join(spoolDir, "sib-b.jsonl"), lines("sib-b", ["b1", "b2"]), { mode: 0o600 });
+
+    await drainOnce(deps(new Date("2026-07-01T14:00:00.000Z")));
+
+    const profile = await loadProfile(home);
+    // At least one of the two sessions must have reached pending via the
+    // sibling fold (2 own + 2 external ≥ 3); without merging neither could.
+    const pendings = [
+      profile.organicSessions["sib-a"]?.pending?.key,
+      profile.organicSessions["sib-b"]?.pending?.key,
+    ].filter((k) => k !== undefined);
+    expect(pendings.length).toBeGreaterThan(0);
+    expect(pendings[0]).toBe(TOPIC_KEY);
+  });
+
+  it("prunes sessions idle beyond SESSION_PRUNE_MS (evidence + arm dropped)", async () => {
+    const staleIso = "2026-07-01T00:00:00.000Z";
+    await updateProfile(
+      (p) => ({
+        ...p,
+        organicSessions: {
+          ...p.organicSessions,
+          "stale-sid": {
+            evidence: [
+              {
+                key: TOPIC_KEY,
+                weight: 1,
+                phase: "during" as const,
+                success: true,
+                timestamp: staleIso,
+                correlationId: "c-old",
+              },
+            ],
+            lastSignalAt: staleIso,
+          },
+        },
+        offerArms: {
+          ...p.offerArms,
+          "stale-sid": { armedKey: TOPIC_KEY, armedTitle: TOPIC_TITLE, armedAt: staleIso },
+        },
+      }),
+      home,
+    );
+
+    // Fresh signal from another session two days later triggers a drain pass.
+    const spoolDir = path.join(home, "spool");
+    await mkdir(spoolDir, { recursive: true });
+    await writeFile(
+      path.join(spoolDir, "fresh-sid.jsonl"),
+      JSON.stringify({ kind: "post", session: "fresh-sid", ts: 1_750_000_000, tool: "Task", id: "f1" }) + "\n",
+      { mode: 0o600 },
+    );
+
+    await drainOnce(deps(new Date("2026-07-03T00:00:00.000Z")));
+
+    const profile = await loadProfile(home);
+    expect(profile.organicSessions["stale-sid"]).toBeUndefined();
+    expect(profile.offerArms["stale-sid"]).toBeUndefined();
+    expect(profile.organicSessions["fresh-sid"]).toBeDefined();
+  });
+});

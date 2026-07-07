@@ -239,6 +239,10 @@ export const markWorkSinceQuiz = (existing: OfferArm): OfferArm => ({
  * Pure: `armedAt` absent ⇒ false (nothing to expire).
  */
 export const isArmExpired = (arm: OfferArm, now: Date): boolean => {
+  // No throttle (cooldown 0) ⇒ arms never expire. Mirrors the hook, which
+  // skips its expiry check when cooldownSeconds <= 0 — without this guard a
+  // zero cooldown makes every arm expire the instant it is written.
+  if (isThrottleDisabled()) return false;
   const { armedAt } = arm;
   if (armedAt === undefined) return false;
   const windowMs = cooldownSeconds() * 1_000;
@@ -423,10 +427,20 @@ export const matchSignalHits = (
 
   for (const signal of signals) {
     for (const topic of topics) {
-      const trigger = topic.triggerSignals.find(
+      // A topic may declare overlapping triggers for the same signal (e.g. a
+      // broad `during` git pattern plus a narrower `seam` commit/push one).
+      // Taking only the first match would shadow the seam trigger and pending
+      // offers would never promote at commit time — so when several match,
+      // keep the most consequential one: seam beats during beats start, and a
+      // bypass seam beats a plain seam. Weight still comes from that trigger.
+      const matching = topic.triggerSignals.filter(
         (t) => t.tool === tool && triggerMatchesSignal(t, signal),
       );
-      if (trigger === undefined) continue;
+      if (matching.length === 0) continue;
+      const rank = (t: (typeof matching)[number]): number =>
+        (t.phase === "seam" ? 4 : t.phase === "during" ? 2 : 0) +
+        (t.bypass ? 1 : 0);
+      const trigger = matching.reduce((a, b) => (rank(b) > rank(a) ? b : a));
 
       const success = signal.success !== false;
       hits.push({

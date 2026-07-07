@@ -34,7 +34,7 @@ import type {
   PendingOffer,
 } from "../schemas/profile.js";
 import type { SignalHit } from "./offers.js";
-import { QUIET_PROMOTION_SECONDS, type EagernessParams } from "./eagerness.js";
+import { quietPromotionSeconds, type EagernessParams } from "./eagerness.js";
 
 /** The outcome of applying one drain batch to a session's organic state. */
 export interface ArmingDecision {
@@ -50,6 +50,23 @@ const evidenceWeight = (
   key: AbilityKey,
 ): number =>
   evidence.reduce((sum, e) => (e.key === key ? sum + e.weight : sum), 0);
+
+/**
+ * Per-key in-window evidence weight for one session's ledger. Used by the
+ * drain to build the sibling-session (external) weight map that
+ * {@link applyDrainBatch} folds into threshold checks.
+ */
+export const inWindowWeightByKey = (
+  evidence: readonly EvidenceEntry[],
+  now: Date,
+  windowSeconds: number,
+): Map<AbilityKey, number> => {
+  const weights = new Map<AbilityKey, number>();
+  for (const e of pruneEvidence(evidence, now, windowSeconds)) {
+    weights.set(e.key, (weights.get(e.key) ?? 0) + e.weight);
+  }
+  return weights;
+};
 
 /** Prune ledger entries older than the rolling window. */
 const pruneEvidence = (
@@ -97,6 +114,7 @@ export const applyDrainBatch = (
   hits: readonly SignalHit[],
   params: EagernessParams,
   now: Date,
+  externalWeight: ReadonlyMap<AbilityKey, number> = new Map(),
 ): ArmingDecision => {
   let evidence = pruneEvidence(session.evidence, now, params.windowSeconds);
   let pending = pruneExpiredPending(session.pending, now);
@@ -114,7 +132,7 @@ export const applyDrainBatch = (
   if (
     pending !== undefined &&
     lastSignalMs !== undefined &&
-    batchStartMs - lastSignalMs >= QUIET_PROMOTION_SECONDS * 1_000
+    batchStartMs - lastSignalMs >= quietPromotionSeconds() * 1_000
   ) {
     armKey = pending.key;
     pending = undefined;
@@ -147,7 +165,9 @@ export const applyDrainBatch = (
         h.phase === "seam" &&
         h.bypass &&
         (!params.bypassNeedsPriorEvidence ||
-          (priorWeightByKey.get(h.key) ?? 0) > 0),
+          (priorWeightByKey.get(h.key) ?? 0) +
+            (externalWeight.get(h.key) ?? 0) >
+            0),
     );
     if (bypassHit !== undefined) {
       armKey = bypassHit.key;
@@ -168,9 +188,16 @@ export const applyDrainBatch = (
   // no pending offer already waits; one pending at a time keeps offers scarce).
   if (armKey === undefined && pending === undefined) {
     let best: { key: AbilityKey; weight: number } | undefined;
+    // Sibling-session evidence (same home, different session id) counts toward
+    // the threshold: concurrent sessions in one project split hook signals
+    // across session ids, and without merging neither pot ever crosses. Own
+    // evidence still gates candidacy — a topic with zero in-session signals is
+    // never armed here purely on external weight (that would let one session's
+    // activity arm every idle sibling).
     const keys = new Set(evidence.map((e) => e.key));
     for (const key of keys) {
-      const weight = evidenceWeight(evidence, key);
+      const weight =
+        evidenceWeight(evidence, key) + (externalWeight.get(key) ?? 0);
       if (weight >= params.threshold && (best === undefined || weight > best.weight)) {
         best = { key, weight };
       }

@@ -410,3 +410,83 @@ describe("US-1 observation → offer path (T034/T036 / FR-020 / SC-003)", () => 
     expect(profile.backoff.mutedUntil).toBeUndefined();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Organic arm → get_offer confirmation (regression, live-verified 2026-07-07)
+//
+// The spool drain arms a session by writing profile.offerArms[sessionId], but
+// record_observation never ran, so ledger.candidateKeys is empty. get_offer
+// must treat the armed key as a first-class candidate — the surfacing hook
+// explicitly tells the agent to call get_offer to confirm THAT offer. Before
+// the fix this returned {suppressed: "no_candidate"} and the offer died.
+// ---------------------------------------------------------------------------
+
+describe("organic arm is confirmable via get_offer (drain → hook → get_offer)", () => {
+  let home2: string;
+  let catalogDir2: string;
+
+  beforeEach(async () => {
+    home2 = await mkdtemp(path.join(tmpdir(), "vibe-hero-organic-"));
+    catalogDir2 = await mkdtemp(path.join(tmpdir(), "vibe-hero-organic-cat-"));
+    const toolDir = path.join(catalogDir2, "claude-code");
+    await mkdir(toolDir, { recursive: true });
+    await writeFile(path.join(toolDir, "subagents.yaml"), SUBAGENTS_YAML, "utf8");
+  });
+
+  afterEach(async () => {
+    await rm(home2, { recursive: true, force: true });
+    await rm(catalogDir2, { recursive: true, force: true });
+  });
+
+  const SID = "organic-session";
+
+  /** Seed config + a drain-produced arm, with an EMPTY candidateKeys ledger. */
+  const seedArmedProfile = async (): Promise<void> => {
+    await updateProfile(
+      (profile) => ({
+        ...profile,
+        config: seedConfig("per_topic"),
+        offerArms: {
+          [SID]: {
+            armedKey: SUBAGENTS_KEY,
+            armedTitle: "Subagents",
+            armedAt: new Date().toISOString(),
+          },
+        },
+      }),
+      home2,
+    );
+  };
+
+  it("returns the armed topic as the offer despite empty candidateKeys", async () => {
+    await seedArmedProfile();
+    const getOffer = makeGetOfferTool(home2, () =>
+      loadCatalogFromDir(catalogDir2),
+    ).handler;
+
+    const res = (await getOffer({
+      sessionId: SID,
+      tool: "claude-code",
+    })) as GetOfferResult;
+
+    expect(res.suppressed).toBeUndefined();
+    expect(res.offer?.key).toBe(SUBAGENTS_KEY);
+    expect(res.offer?.title).toBe("Subagents");
+  });
+
+  it("second confirmation of the same arm is capped by per_topic cadence", async () => {
+    await seedArmedProfile();
+    const getOffer = makeGetOfferTool(home2, () =>
+      loadCatalogFromDir(catalogDir2),
+    ).handler;
+
+    await getOffer({ sessionId: SID, tool: "claude-code" });
+    const second = (await getOffer({
+      sessionId: SID,
+      tool: "claude-code",
+    })) as GetOfferResult;
+
+    expect(second.offer).toBeUndefined();
+    expect(second.suppressed).toBe("cadence");
+  });
+});

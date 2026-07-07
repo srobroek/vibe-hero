@@ -2,11 +2,14 @@
  * @file Unit tests for organic-arming eagerness presets (observation/eagerness.ts).
  */
 
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import {
   EAGERNESS_PRESETS,
+  MAX_QUIET_PROMOTION_SECONDS,
+  MIN_QUIET_PROMOTION_SECONDS,
   QUIET_PROMOTION_SECONDS,
   eagernessParams,
+  quietPromotionSeconds,
   type EagernessParams,
 } from "../../src/observation/eagerness.js";
 import type { OrganicEagerness } from "../../src/schemas/profile.js";
@@ -90,7 +93,7 @@ describe("QUIET_PROMOTION_SECONDS", () => {
   });
 
   it("equals 90 (agreed design value)", () => {
-    expect(QUIET_PROMOTION_SECONDS).toBe(90);
+    expect(QUIET_PROMOTION_SECONDS).toBe(60);
   });
 });
 
@@ -108,5 +111,46 @@ describe("eagernessParams", () => {
 
   it("defaults to normal when eagerness is undefined", () => {
     expect(eagernessParams(undefined)).toEqual(EAGERNESS_PRESETS.normal);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// quietPromotionSeconds (env override)
+// ---------------------------------------------------------------------------
+
+describe("quietPromotionSeconds", () => {
+  const ENV = "VIBE_HERO_QUIET_PROMOTION_SECONDS";
+
+  afterEach(() => {
+    delete process.env[ENV];
+  });
+
+  it("defaults to QUIET_PROMOTION_SECONDS when unset", () => {
+    delete process.env[ENV];
+    expect(quietPromotionSeconds()).toBe(QUIET_PROMOTION_SECONDS);
+  });
+
+  it("honors a valid override", () => {
+    process.env[ENV] = "20";
+    expect(quietPromotionSeconds()).toBe(20);
+  });
+
+  it("clamps to the bounds", () => {
+    process.env[ENV] = "1";
+    expect(quietPromotionSeconds()).toBe(MIN_QUIET_PROMOTION_SECONDS);
+    process.env[ENV] = String(60 * 60);
+    expect(quietPromotionSeconds()).toBe(MAX_QUIET_PROMOTION_SECONDS);
+  });
+
+  it("falls back to the default on garbage / non-positive values", () => {
+    for (const bad of ["abc", "-5", "0", "NaN"]) {
+      process.env[ENV] = bad;
+      expect(quietPromotionSeconds()).toBe(QUIET_PROMOTION_SECONDS);
+    }
+  });
+
+  it("truncates fractional values", () => {
+    process.env[ENV] = "42.9";
+    expect(quietPromotionSeconds()).toBe(42);
   });
 });

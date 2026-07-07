@@ -356,3 +356,58 @@ describe("lastSignalAt tracking", () => {
     expect(state.lastSignalAt).toBe("2026-07-01T10:00:00.000Z");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Sibling-session evidence merging (externalWeight)
+// ---------------------------------------------------------------------------
+
+describe("sibling-session external weight", () => {
+  it("counts external weight toward the threshold when own evidence exists", () => {
+    // Own evidence 1.0 (below threshold 2); sibling contributes 1.5 → pending.
+    const external = new Map([["general|hooks", 1.5]]);
+    const { state } = applyDrainBatch(
+      emptySession(),
+      [hit({ weight: 1 })],
+      PARAMS,
+      NOW,
+      external,
+    );
+    expect(state.pending?.key).toBe("general|hooks");
+  });
+
+  it("never creates a pending purely from external weight (no own evidence)", () => {
+    // Sibling has 10 weight for hooks, but THIS session saw nothing for it.
+    const external = new Map([["general|hooks", 10]]);
+    const { state, armKey } = applyDrainBatch(
+      emptySession(),
+      [hit({ key: "general|debugging", title: "Debugging", weight: 0.5 })],
+      PARAMS,
+      NOW,
+      external,
+    );
+    expect(armKey).toBeUndefined();
+    expect(state.pending).toBeUndefined();
+  });
+
+  it("external weight satisfies bypassNeedsPriorEvidence", () => {
+    const external = new Map([["general|hooks", 1]]);
+    const { armKey } = applyDrainBatch(
+      emptySession(),
+      [hit({ phase: "seam", bypass: true, weight: 1 })],
+      PARAMS,
+      NOW,
+      external,
+    );
+    expect(armKey).toBe("general|hooks");
+  });
+
+  it("omitting externalWeight preserves the original behavior", () => {
+    const { state } = applyDrainBatch(
+      emptySession(),
+      [hit({ weight: 1 })],
+      PARAMS,
+      NOW,
+    );
+    expect(state.pending).toBeUndefined();
+  });
+});

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.16.0](https://github.com/srobroek/vibe-hero/compare/v0.15.0...v0.16.0) (2026-07-07)
+
+
+### Features
+
+* pin the MCP server version in the plugin config ([#65](https://github.com/srobroek/vibe-hero/issues/65)) ([da9d2d0](https://github.com/srobroek/vibe-hero/commit/da9d2d02264b614855de1e0166a01cc04cbf3a69))
+
 ## [0.15.0](https://github.com/srobroek/vibe-hero/compare/v0.14.1...v0.15.0) (2026-07-07)
 
 

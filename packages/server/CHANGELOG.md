@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.14.1](https://github.com/srobroek/vibe-hero/compare/v0.14.0...v0.14.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* marketplace pointer is versioned inside the release PR, removing post-publish pushes to main ([#58](https://github.com/srobroek/vibe-hero/issues/58)) ([b48a570](https://github.com/srobroek/vibe-hero/commit/b48a57017eec0a921e48184535e1b85aaca3d33b))
+
 ## [0.14.0](https://github.com/srobroek/vibe-hero/compare/v0.13.2...v0.14.0) (2026-07-07)
 
 

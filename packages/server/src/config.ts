@@ -21,8 +21,10 @@ export const ASSESSMENT_CONFIG = {
   },
 
   // --- K-factor (learning rate) -------------------------------------------
-  // High K while provisional to converge quickly from a cold start.
-  kProvisional: 64,
+  // Elevated K while provisional so the estimate converges from a cold start,
+  // but bounded: 64 let a short perfect streak jump nearly two tiers (live
+  // finding), so 32 keeps early single-answer movement under ~20 points.
+  kProvisional: 32,
   // Smaller K once settled — reduces noise from individual questions.
   kSettled: 24,
   // Number of graded items after which the estimate is considered settled.
@@ -38,7 +40,10 @@ export const ASSESSMENT_CONFIG = {
   // Promote at boundary+30; demote/review only below boundary-30.
   hysteresisMargin: 30,
   // Crossing must hold for this many consecutive graded items before acting.
-  dwell: 2,
+  // 3 (was 2): with one-step-per-item promotion this caps a perfect 8-item
+  // quiz at two tier promotions instead of four (live finding: 8/8 answers
+  // took a fresh profile straight to tier 400).
+  dwell: 3,
 
   // --- Spaced-review / lapse model (OD-003) --------------------------------
   // Exponential ability-decay half-life in days (tier-tunable; e.g. 90 for

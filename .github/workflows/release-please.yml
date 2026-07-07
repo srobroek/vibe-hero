@@ -216,6 +216,12 @@ jobs:
           git add .claude-plugin/marketplace.json
           git commit -m "chore: advance marketplace pointer for ${{ steps.release.outputs['packages/server--tag_name'] }} [skip ci]"
 
+          # apm pack also rewrites content/manifest.json (fresh publishedAt);
+          # discard everything not being committed so the retry rebase below
+          # can never fail on unstaged changes (v0.13.1 incident: publish
+          # succeeded but the pointer push died on exactly this).
+          git checkout -- .
+
           # Push with up to 3 retries to handle a transient concurrent push.
           for attempt in 1 2 3; do
             if git push origin HEAD:main; then
@@ -224,6 +230,7 @@ jobs:
             fi
             echo "Push attempt ${attempt} failed; rebasing onto latest origin/main and retrying..."
             git fetch origin main
+            git checkout -- .
             git rebase origin/main
           done
           echo "::error::Failed to push marketplace pointer after 3 attempts."

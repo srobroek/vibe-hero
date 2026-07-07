@@ -91,7 +91,7 @@ describe("kFactor", () => {
 
   it("switches exactly at 15 items (the configured default)", () => {
     expect(ASSESSMENT_CONFIG.settleAfterItems).toBe(15);
-    expect(kFactor(14)).toBe(64);
+    expect(kFactor(14)).toBe(ASSESSMENT_CONFIG.kProvisional);
     expect(kFactor(15)).toBe(24);
   });
 });

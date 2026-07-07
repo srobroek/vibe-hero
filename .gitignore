@@ -340,3 +340,12 @@ archive/
 .specify/feature.json
 .specify/integration.json
 .specify/integrations/
+
+# Stock `specify init` output (scripts/templates/workflows are regenerated
+# by speckit-setup from init-options.json + the extension catalogs; the
+# constitution is an unfilled template). Tracked source of truth:
+# init-options.json, extension-catalogs.yml, extensions.yml.
+.specify/scripts/
+.specify/templates/
+.specify/workflows/
+.specify/memory/

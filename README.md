@@ -110,6 +110,29 @@ build/CI time from the source content in `content/<tool>/*.yaml`.
   Code, Codex, Kiro CLI, Kiro IDE, and general software engineering), authored from
   primary sources.
 
+## Tuning the organic offer flow
+
+Quiz offers arm organically from observed activity: hook signals accumulate
+per-topic evidence, a threshold crossing makes an offer *pending*, and a seam
+(commit, subagent finish) or a quiet gap promotes it to *armed* so the next
+prompt can surface it. Four environment variables tune the pacing (set them in
+the `env` block of the server's `.mcp.json` entry; all optional):
+
+| Variable | Default | Effect |
+|---|---|---|
+| `VIBE_HERO_DRAIN_INTERVAL_MS` | `15000` | How often the server processes spooled activity signals. Clamped to 1s–10min. |
+| `VIBE_HERO_QUIET_PROMOTION_SECONDS` | `60` | Silence needed to promote a pending offer to armed without a seam. Clamped to 5s–30min. |
+| `VIBE_HERO_OFFER_COOLDOWN_SECONDS` | `900` | Minimum gap between offer surfacings (after a quiz, decline, or defer). `0` disables throttling entirely (testing only). |
+| `VIBE_HERO_SEAM_STRICTNESS` | `normal` | How boldly the agent voices an armed offer: `lenient` (offer at any reasonable pause; when in doubt, offer), `normal` (context switch or completed unit of work; silent when in doubt), `strict` (completed unit of work only). |
+
+How eagerly evidence *arms* in the first place is a profile setting, not an env
+var: `organicEagerness` (`often` / `normal` / `rarely`), chosen during setup and
+changeable via the `save_config` tool.
+
+Diagnostics: call the `get_offer` tool with `debug: true` to see per-session
+evidence weights vs. the threshold, the pending/armed state, the candidate
+pool, and which gate (if any) suppressed the offer.
+
 ## Debugging & logging
 
 The MCP server has structured logging, off by default. Logs are newline-delimited

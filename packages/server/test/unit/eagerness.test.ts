@@ -93,7 +93,7 @@ describe("QUIET_PROMOTION_SECONDS", () => {
   });
 
   it("equals 90 (agreed design value)", () => {
-    expect(QUIET_PROMOTION_SECONDS).toBe(90);
+    expect(QUIET_PROMOTION_SECONDS).toBe(60);
   });
 });
 

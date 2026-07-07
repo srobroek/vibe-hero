@@ -61,9 +61,11 @@ export const EAGERNESS_PRESETS: Record<OrganicEagerness, EagernessParams> = {
 /**
  * Default quiet-promotion delay: a pending offer is promoted to armed after
  * this many seconds without ANY new drained signal for the session (the turn
- * likely ended and the user is reading/thinking).
+ * likely ended and the user is reading/thinking). 60s filters mid-turn
+ * model-thinking pauses (typically 10-30s) while still catching real
+ * reading pauses before the user's next prompt.
  */
-export const QUIET_PROMOTION_SECONDS = 90;
+export const QUIET_PROMOTION_SECONDS = 60;
 
 /** Bounds for the quiet-promotion override (below 5s is noise; above 30min
  * outlives the evidence window). */

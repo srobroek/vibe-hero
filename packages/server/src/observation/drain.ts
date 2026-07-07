@@ -1,7 +1,7 @@
 /**
  * @file Drain pipeline: the resident server's autonomous organic intake.
  *
- * Every {@link drainIntervalMs} (default 30s, `VIBE_HERO_DRAIN_INTERVAL_MS`
+ * Every {@link drainIntervalMs} (default 15s, `VIBE_HERO_DRAIN_INTERVAL_MS`
  * to tune) the server claims pending spool files
  * (observation/spool.ts), turns their lines into privacy-safe
  * {@link ObservedSignal}s, matches them against catalog trigger signals
@@ -47,8 +47,9 @@ import {
 import { writeArmCache } from "./armCache.js";
 import type { AbilityKey as EvidenceKey } from "../schemas/common.js";
 
-/** Default drain tick interval. */
-export const DEFAULT_DRAIN_INTERVAL_MS = 30_000;
+/** Default drain tick interval. Idle ticks cost one readdir, so a short
+ * interval is cheap; 15s keeps spool-to-evidence lag low without churn. */
+export const DEFAULT_DRAIN_INTERVAL_MS = 15_000;
 
 /** Lower bound on the drain interval — a sub-second timer is pure churn. */
 export const MIN_DRAIN_INTERVAL_MS = 1_000;

@@ -53,10 +53,8 @@ The result is `{ quizId, items: PresentedItem[] }`. Each `PresentedItem` =
 If the response is `{ "status": "SETUP_REQUIRED" }`, stop and tell the user to
 run the **vibe-hero-setup** skill first; do not proceed until setup completes.
 
-### 3. Present items one at a time
+### 3. Collect answers, then submit once
 
-Show **one** item, wait for the user's answer, submit it, relay the result, then
-move to the next. Never show the next prompt before the current one is graded.
 **Never reveal the correct answer, the choice key, the rubric, or the reference
 answer before the user has answered** — that defeats the assessment.
 
@@ -71,6 +69,17 @@ Presentation format is dictated by the item `type` — follow it exactly:
   answer and converts a recall assessment into a recognition one. There is no
   "Other" workaround: if the user is choosing from options you wrote, the item
   is already compromised. One open question, one typed answer, then judge.
+
+Two submission modes (presentation rules above apply to both):
+
+- **Batch (preferred):** collect every answer first — menus for
+  `multiple_choice`, typed prose for `short_answer`/`free_form` — then submit
+  them ALL in one `submit_answers` call (step 4c). One call instead of N —
+  faster and fewer round-trips.
+- **One-at-a-time:** when the interaction is genuinely turn-by-turn (the user
+  wants feedback after each item), show one item, wait for the answer, submit
+  via `submit_answer`, relay the result, then move on. Never show the next
+  prompt before the current one is graded.
 
 ### 4a. Deterministic items (`multiple_choice` / `short_answer`)
 
@@ -113,10 +122,34 @@ Judging rules — follow exactly:
   Partial credit is expected and fine; the MCP computes the score from the
   fraction of criteria met versus the pass threshold.
 
+### 4c. Batch submission (`submit_answers`) — preferred when all answers are in hand
+
+Submit every answer of the quiz in ONE call. Each row carries `itemId` plus
+either a deterministic `answer` or a free-form `verdict` (same shapes and same
+strict judging rules as 4a/4b):
+
+```
+submit_answers({
+  quizId,
+  answers: [
+    { itemId, answer: { choiceId } },
+    { itemId, answer: { text } },
+    { itemId, verdict: { criteria: [ { id, met, justification }, ... ] } },
+  ]
+})
+```
+
+Returns `{ results: [ { itemId, grade, score, correctAnswer?, guidance,
+ability, graduation? } ], ability: { before, after }, correctCount }` — one
+result row per answer, in order. Grading, Elo updates, and graduation are
+identical to sequential `submit_answer` calls; the batch is all-or-nothing (an
+invalid row rejects the whole call and nothing is recorded — fix and resubmit).
+
 ### 5. Relay the result after each submit
 
 `submit_answer` returns `{ grade, score, correctAnswer?, guidance, ability,
-graduation? }`. After each item:
+graduation? }`; `submit_answers` returns the same shape per row. After each
+item (or after the batch, walking the rows in order):
 
 - Tell the user whether they got it right (`grade`) and, for free-form, which
   criteria they met/missed from your verdict.

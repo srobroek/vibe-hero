@@ -293,6 +293,67 @@ export const SubmitAnswerOutputSchema = gated(SubmitAnswerResultSchema);
 export type SubmitAnswerOutput = z.infer<typeof SubmitAnswerOutputSchema>;
 
 // ---------------------------------------------------------------------------
+// submit_answers (batch)
+// ---------------------------------------------------------------------------
+
+/**
+ * One answer inside a `submit_answers` batch: the item id plus EITHER a
+ * deterministic `answer` XOR a free-form `verdict` (same union semantics as
+ * the single `submit_answer`, re-validated per item by the handler).
+ */
+export const BatchAnswerSchema = z.object({
+  itemId: z.string(),
+  answer: z
+    .object({
+      choiceId: z.string().optional(),
+      text: z.string().optional(),
+    })
+    .optional(),
+  verdict: FreeFormVerdictSchema.optional(),
+});
+export type BatchAnswer = z.infer<typeof BatchAnswerSchema>;
+
+/** Input for `submit_answers`: every answer of one quiz in a single call. */
+export const SubmitAnswersInputSchema = z.object({
+  quizId: z.string(),
+  answers: z.array(BatchAnswerSchema).min(1),
+});
+export type SubmitAnswersInput = z.infer<typeof SubmitAnswersInputSchema>;
+
+/** Per-item result row in `submit_answers` (same shape as `submit_answer`). */
+export const BatchItemResultSchema = z.object({
+  itemId: z.string(),
+  grade: GradeSchema,
+  score: z.number().min(0).max(1),
+  correctAnswer: z.string().optional(),
+  guidance: z.string(),
+  ability: z.object({ before: z.number(), after: z.number() }),
+  graduation: z
+    .object({
+      changed: z.boolean(),
+      tier: TierSchema.optional(),
+      status: z.string().optional(),
+      reason: z.string().optional(),
+    })
+    .optional(),
+});
+export type BatchItemResult = z.infer<typeof BatchItemResultSchema>;
+
+/** Result for `submit_answers`. */
+export const SubmitAnswersResultSchema = z.object({
+  results: z.array(BatchItemResultSchema),
+  /** Ability across the whole batch: before item 1 → after the last item. */
+  ability: z.object({ before: z.number(), after: z.number() }),
+  /** Count of `grade === "correct"` rows, for a quick recap. */
+  correctCount: z.number().int().nonnegative(),
+});
+export type SubmitAnswersResult = z.infer<typeof SubmitAnswersResultSchema>;
+
+/** Output for `submit_answers` (may be gated). */
+export const SubmitAnswersOutputSchema = gated(SubmitAnswersResultSchema);
+export type SubmitAnswersOutput = z.infer<typeof SubmitAnswersOutputSchema>;
+
+// ---------------------------------------------------------------------------
 // save_config (not gated — clears the gate)
 // ---------------------------------------------------------------------------
 

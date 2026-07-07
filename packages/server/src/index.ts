@@ -37,6 +37,7 @@ import {
   setRawClientName,
 } from "./detection.js";
 import { debug } from "./log.js";
+import { timed, logPerfSummary } from "./perf.js";
 import { startDrainTimer } from "./observation/drain.js";
 import { resolveCatalog } from "./catalog/resolve.js";
 
@@ -74,7 +75,7 @@ export const registerToolModule = (
     },
     async (args: unknown) => {
       debug(`tool call: ${tool.name}`, args);
-      const result = await gated(args);
+      const result = await timed(`tool:${tool.name}`, () => gated(args));
       const status =
         result && typeof result === "object" && "status" in result
           ? (result as { status?: unknown }).status
@@ -158,6 +159,7 @@ export const main = async (): Promise<void> => {
   });
   transport.onclose = (): void => {
     drain.stop();
+    logPerfSummary();
     debug("stdio transport closed; drain timer stopped");
   };
 };

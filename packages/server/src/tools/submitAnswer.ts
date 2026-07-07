@@ -133,7 +133,7 @@ const isDeterministic = (
 ): input is Extract<SubmitAnswerInput, { answer: unknown }> => "answer" in input;
 
 /** Find the catalog item with `itemId` across all topics; returns its topic too. */
-const findItem = (
+export const findItem = (
   topics: readonly Topic[],
   itemId: string,
 ): { topic: Topic; item: ContentItem } | undefined => {
@@ -309,7 +309,7 @@ const applyGraduation = (
  * it, matching the result schema (`TierSchema.optional()`). A no-change decision
  * reports `changed: false` and nothing else.
  */
-const toGraduationResult = (
+export const toGraduationResult = (
   decision: GraduationDecision,
 ): NonNullable<SubmitAnswerResult["graduation"]> => {
   if (!decision.changed) return { changed: false };
@@ -322,12 +322,118 @@ const toGraduationResult = (
   return decision.tier === 0 ? base : { ...base, tier: decision.tier };
 };
 
+/** The profile-level outcome of applying one graded item. */
+export interface AppliedGrade {
+  /** The next profile state (input profile is not mutated). */
+  readonly profile: Profile;
+  /** Ability before this item's Elo update. */
+  readonly before: number;
+  /** Ability after this item's Elo update. */
+  readonly after: number;
+  /** The graduation decision this item produced. */
+  readonly decision: GraduationDecision;
+}
+
+/**
+ * Apply ONE graded item to a profile (PURE): append the {@link AnsweredItem} to
+ * the matching live {@link QuizRecord} (rolling its `abilityAfter`), advance the
+ * {@link AbilityEstimate} for the quiz's key, evaluate graduation, and append an
+ * ability snapshot. This is the single-item core shared by `submit_answer`
+ * (one item per transaction) and `submit_answers` (N items folded sequentially
+ * inside one transaction — identical math to N single calls).
+ *
+ * @throws {Error} if no live (un-completed) quiz with `quizId` exists.
+ */
+export const applyGradedItem = (
+  current: Profile,
+  quizId: string,
+  item: ContentItem,
+  score: number,
+  grade: Grade,
+  gradedBy: AnsweredItem["gradedBy"],
+  answeredAt: string,
+): AppliedGrade => {
+  const recordIndex = current.quizHistory.findIndex((q) => q.id === quizId);
+  const record = current.quizHistory[recordIndex];
+  if (record === undefined) {
+    throw new Error(
+      `submit_answer: no quiz session found for quizId ${JSON.stringify(quizId)}`,
+    );
+  }
+  if (record.completedAt !== undefined) {
+    throw new Error(
+      `submit_answer: quiz ${JSON.stringify(quizId)} is already completed`,
+    );
+  }
+
+  const key = record.key;
+  const prior = current.abilities[key];
+  const { before, estimate } = advanceEstimate(prior, item, score, answeredAt);
+
+  // Graduation (T046): evaluate hysteresis/dwell against the JUST-updated
+  // ability, threading the prior dwell counter through the pure engine.
+  const grad = applyGraduation(
+    key,
+    estimate.value,
+    prior?.dwell ?? 0,
+    current.graduations[key],
+    answeredAt,
+  );
+  // Persist the engine's next dwell on the estimate so the consecutive streak
+  // carries across submit_answer calls (advanceEstimate seeded it from prior).
+  const estimateWithDwell: AbilityEstimate = { ...estimate, dwell: grad.dwell };
+
+  const answered = buildAnsweredItem(item, score, grade, gradedBy, answeredAt);
+  const updatedRecord: QuizRecord = {
+    ...record,
+    items: [...record.items, answered],
+    abilityAfter: estimate.value,
+  };
+  const quizHistory = [...current.quizHistory];
+  quizHistory[recordIndex] = updatedRecord;
+
+  const graduations =
+    grad.graduation === undefined
+      ? current.graduations
+      : { ...current.graduations, [key]: grad.graduation };
+
+  // On promotion, enqueue a proactive spaced review (FR-010), de-duped by key
+  // so repeated promotions don't pile up duplicate spaced entries.
+  const reviewSchedule =
+    grad.spacedReview === undefined
+      ? current.reviewSchedule
+      : [
+          ...current.reviewSchedule.filter(
+            (e) => !(e.key === key && e.reason === "spaced"),
+          ),
+          grad.spacedReview,
+        ];
+
+  // Append an ability snapshot so get_dashboard can plot history over time.
+  const snapshot: AbilitySnapshot = {
+    ts: answeredAt,
+    key,
+    ability: estimate.value,
+  };
+
+  return {
+    profile: {
+      ...current,
+      abilities: { ...current.abilities, [key]: estimateWithDwell },
+      graduations,
+      reviewSchedule,
+      quizHistory,
+      abilitySnapshots: [...(current.abilitySnapshots ?? []), snapshot],
+    },
+    before,
+    after: estimate.value,
+    decision: grad.decision,
+  };
+};
+
 /**
  * Apply a graded answer to the profile inside the store's atomic
- * read-modify-write: append the {@link AnsweredItem} to the matching live
- * {@link QuizRecord} (and roll its `abilityAfter`), and replace the
- * {@link AbilityEstimate} for the quiz's key. Returns the new profile plus the
- * before/after abilities for the tool result.
+ * read-modify-write. Thin transactional wrapper around {@link applyGradedItem}.
  *
  * @throws {Error} if no live (un-completed) quiz with `quizId` exists.
  */
@@ -345,79 +451,21 @@ const persistGrade = async (
     | undefined;
 
   await updateProfile((current: Profile): Profile => {
-    const recordIndex = current.quizHistory.findIndex((q) => q.id === quizId);
-    const record = current.quizHistory[recordIndex];
-    if (record === undefined) {
-      throw new Error(
-        `submit_answer: no quiz session found for quizId ${JSON.stringify(quizId)}`,
-      );
-    }
-    if (record.completedAt !== undefined) {
-      throw new Error(
-        `submit_answer: quiz ${JSON.stringify(quizId)} is already completed`,
-      );
-    }
-
-    const key = record.key;
-    const prior = current.abilities[key];
-    const { before, estimate } = advanceEstimate(prior, item, score, answeredAt);
-
-    // Graduation (T046): evaluate hysteresis/dwell against the JUST-updated
-    // ability, threading the prior dwell counter through the pure engine.
-    const grad = applyGraduation(
-      key,
-      estimate.value,
-      prior?.dwell ?? 0,
-      current.graduations[key],
+    const applied = applyGradedItem(
+      current,
+      quizId,
+      item,
+      score,
+      grade,
+      gradedBy,
       answeredAt,
     );
-    // Persist the engine's next dwell on the estimate so the consecutive streak
-    // carries across submit_answer calls (advanceEstimate seeded it from prior).
-    const estimateWithDwell: AbilityEstimate = { ...estimate, dwell: grad.dwell };
-
-    outcome = { before, after: estimate.value, decision: grad.decision };
-
-    const answered = buildAnsweredItem(item, score, grade, gradedBy, answeredAt);
-    const updatedRecord: QuizRecord = {
-      ...record,
-      items: [...record.items, answered],
-      abilityAfter: estimate.value,
+    outcome = {
+      before: applied.before,
+      after: applied.after,
+      decision: applied.decision,
     };
-    const quizHistory = [...current.quizHistory];
-    quizHistory[recordIndex] = updatedRecord;
-
-    const graduations =
-      grad.graduation === undefined
-        ? current.graduations
-        : { ...current.graduations, [key]: grad.graduation };
-
-    // On promotion, enqueue a proactive spaced review (FR-010), de-duped by key
-    // so repeated promotions don't pile up duplicate spaced entries.
-    const reviewSchedule =
-      grad.spacedReview === undefined
-        ? current.reviewSchedule
-        : [
-            ...current.reviewSchedule.filter(
-              (e) => !(e.key === key && e.reason === "spaced"),
-            ),
-            grad.spacedReview,
-          ];
-
-    // Append an ability snapshot so get_dashboard can plot history over time.
-    const snapshot: AbilitySnapshot = {
-      ts: answeredAt,
-      key,
-      ability: estimate.value,
-    };
-
-    return {
-      ...current,
-      abilities: { ...current.abilities, [key]: estimateWithDwell },
-      graduations,
-      reviewSchedule,
-      quizHistory,
-      abilitySnapshots: [...(current.abilitySnapshots ?? []), snapshot],
-    };
+    return applied.profile;
   }, dirOverride);
 
   if (outcome === undefined) {
@@ -442,7 +490,7 @@ export type CatalogLoader = (dirOverride?: string) => CatalogLoadResult;
 export type CatalogResolver = (dirOverride?: string) => Promise<ResolvedCatalog>;
 
 /** The graded outcome of one item, agnostic of which path produced it. */
-interface GradedOutcome {
+export interface GradedOutcome {
   /** Continuous score in `[0, 1]` that drives the Elo update. */
   readonly score: number;
   /** Binary projection persisted in history. */
@@ -465,7 +513,10 @@ interface GradedOutcome {
  *   the MCP-supplied rubric (FR-012/013), graded `"host_agent"`. A bare/partial
  *   verdict is rejected inside `scoreVerdict` (anti-gaming, E2).
  */
-const gradeItem = (input: SubmitAnswerInput, item: ContentItem): GradedOutcome => {
+export const gradeItem = (
+  input: SubmitAnswerInput,
+  item: ContentItem,
+): GradedOutcome => {
   if (isDeterministic(input)) {
     const { score, correctAnswer } = gradeDeterministic(item, input.answer);
     // Deterministic items are all-or-nothing: any threshold in (0,1] suffices.

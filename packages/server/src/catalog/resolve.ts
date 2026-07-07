@@ -46,6 +46,7 @@ import {
   type FetchImpl,
 } from "./fetcher.js";
 import type { Topic } from "../schemas/content.js";
+import { timed } from "../perf.js";
 
 /** Which tier of the resolution order produced the served catalog. */
 export type CatalogSource = "fetched" | "cache" | "bundled";
@@ -111,7 +112,9 @@ export const resolveCatalog = async (
       ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     };
 
-    const outcome = await refreshCatalogCache(dirOverride, fetchOpts);
+    const outcome = await timed("catalog:fetch", () =>
+      refreshCatalogCache(dirOverride, fetchOpts),
+    );
     if (outcome.ok) {
       return {
         topics: outcome.catalog.topics,
@@ -126,7 +129,9 @@ export const resolveCatalog = async (
   }
 
   // --- 2. cache (a prior successful fetch) ---------------------------------
-  const cached = await readCachedCatalog(dirOverride);
+  const cached = await timed("catalog:read-cache", () =>
+    readCachedCatalog(dirOverride),
+  );
   if (cached !== undefined) {
     return {
       topics: cached.topics,
@@ -137,7 +142,9 @@ export const resolveCatalog = async (
   }
 
   // --- 3. bundled (always present; offline / first-run guarantee) ----------
-  const { topics, errors } = loadBundledCatalog();
+  const { topics, errors } = await timed("catalog:bundled", () =>
+    loadBundledCatalog(),
+  );
   const version = bundledVersion(topics);
   return { topics, catalogVersion: version, source: "bundled", errors };
 };

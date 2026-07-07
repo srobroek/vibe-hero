@@ -26,6 +26,7 @@ import { listTopicsTool } from "./listTopics.js";
 import { getGuidanceTool } from "./guidance.js";
 import { startQuizTool } from "./startQuiz.js";
 import { submitAnswerTool } from "./submitAnswer.js";
+import { submitAnswersTool } from "./submitAnswers.js";
 import { recordObservationTool } from "./recordObservation.js";
 import { getOfferTool, recordOfferResponseTool } from "./offers.js";
 import { getDashboardTool } from "./dashboard.js";
@@ -43,6 +44,8 @@ export const TOOL_REGISTRY: readonly AnyToolModule[] = [
   // Real US-1 core-loop tools (T031/T032).
   startQuizTool,
   submitAnswerTool,
+  // Batch form: all answers of one quiz in a single call.
+  submitAnswersTool,
   // Real US-0 implementations (T022).
   saveConfigTool,
   getConfigTool,

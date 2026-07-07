@@ -36,9 +36,18 @@ const FILE =
     ? RAW_DEBUG
     : undefined;
 
-/** Resolve the effective level: explicit env wins, else debug-flag, else silent. */
+/** Is stage-timing profiling on (`VIBE_HERO_PROFILE`)? Enables `info` level. */
+const RAW_PROFILE = process.env["VIBE_HERO_PROFILE"];
+const PROFILE_ON =
+  RAW_PROFILE !== undefined &&
+  RAW_PROFILE !== "" &&
+  RAW_PROFILE !== "0" &&
+  RAW_PROFILE !== "false";
+
+/** Resolve the effective level: explicit env wins, else debug, else profile, else silent. */
 const level =
-  process.env["VIBE_HERO_LOG_LEVEL"] ?? (DEBUG_ON ? "debug" : "silent");
+  process.env["VIBE_HERO_LOG_LEVEL"] ??
+  (DEBUG_ON ? "debug" : PROFILE_ON ? "info" : "silent");
 
 // Destination: stderr (fd 2) so stdout stays a clean JSON-RPC channel. When a
 // file path is configured we tee to BOTH stderr and the file via pino.multistream.

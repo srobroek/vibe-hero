@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.13.1](https://github.com/srobroek/vibe-hero/compare/v0.13.0...v0.13.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* free-form quiz questions are asked openly instead of as a menu ([#49](https://github.com/srobroek/vibe-hero/issues/49)) ([a5e6666](https://github.com/srobroek/vibe-hero/commit/a5e6666535949522c32b4a488716546aeea2d8a4))
+
 ## [0.13.0](https://github.com/srobroek/vibe-hero/compare/v0.12.0...v0.13.0) (2026-07-07)
 
 

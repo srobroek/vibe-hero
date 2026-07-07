@@ -37,18 +37,39 @@ describe("distribution manifests (spec 002)", () => {
     expect(plugin?.source).toBe("./packages/vibe-hero-plugin");
   });
 
-  it("plugin .mcp.json launches @vibe-hero/server via npx, unpinned (FR-008/012)", () => {
+  it("plugin .mcp.json launches @vibe-hero/server via npx, PINNED to the release version", () => {
+    // Pinned, not floating: a plugin release captures the server version it
+    // shipped with. This (a) skips npx's registry "what is latest" lookup on
+    // every session spawn, and (b) means an older installed plugin keeps
+    // launching the server it was tested against even after a newer server
+    // publishes — skills and server tool contracts stay in lockstep.
+    // release-please bumps the pin via extra-files (release-please-config.json).
     const mcp = readJson("packages/vibe-hero-plugin/.mcp.json") as {
       mcpServers: Record<string, { command: string; args: string[] }>;
+    };
+    const serverPkg = readJson("packages/server/package.json") as {
+      version: string;
     };
     const server = mcp.mcpServers["vibe-hero"];
     expect(server).toBeDefined();
     expect(server?.command).toBe("npx");
-    expect(server?.args).toEqual(["-y", "@vibe-hero/server"]);
-    // floating latest: no version pin in the package spec
-    const pkgArg = server?.args.find((a) => a.includes("@vibe-hero/server"));
-    expect(pkgArg).toBe("@vibe-hero/server");
-    expect(pkgArg).not.toMatch(/@vibe-hero\/server@/);
+    expect(server?.args).toEqual([
+      "-y",
+      `@vibe-hero/server@${serverPkg.version}`,
+    ]);
+  });
+
+  it("apm.yml MCP dependency pin matches package.json too", () => {
+    const apmText = readFileSync(
+      resolve(REPO_ROOT, "packages/vibe-hero-plugin/apm.yml"),
+      "utf8",
+    );
+    const serverPkg = readJson("packages/server/package.json") as {
+      version: string;
+    };
+    const m = apmText.match(/@vibe-hero\/server@([^\s'"#]+)/);
+    expect(m, "apm.yml must pin @vibe-hero/server@<version>").not.toBeNull();
+    expect(m?.[1]).toBe(serverPkg.version);
   });
 
   it("plugin.json carries identity + skills, NO mcpServers, and NO name-only deps (FR-008/010)", () => {

@@ -136,6 +136,32 @@ const nextTier = (currentTier: TierOrZero): Tier | undefined => {
 };
 
 /**
+ * PLACEMENT (first graduation only): the highest tier whose entry bar the
+ * ability clears. A brand-new learner starts at the mid-scale Elo prior (300),
+ * which sits above the bars into the low tiers — walking the ladder rung by
+ * rung from there hands out ceremonial promotions through tiers the learner
+ * was never below (live finding: two "graduations" inside one first quiz).
+ * Instead, the FIRST graduation places the learner at the tier their measured
+ * ability actually supports; every subsequent promotion still climbs one rung
+ * with full dwell + hysteresis.
+ *
+ * Pure. Returns 0 when ability does not even clear the bar into tier 100
+ * (callers never hit this: the promotion condition from ungraduated is that
+ * same bar).
+ */
+export const placementTier = (ability: number): TierOrZero => {
+  const { hysteresisMargin, tierBoundaries } = ASSESSMENT_CONFIG;
+  for (let i = TIERS.length - 1; i >= 0; i--) {
+    // Entry bar into TIERS[i]: the boundary below it (+margin). Tier 100's
+    // entry bar is the first boundary — same bar the ungraduated promotion
+    // condition uses.
+    const bar = (i === 0 ? tierBoundaries[0] : tierBoundaries[i - 1]) as number;
+    if (ability >= bar + hysteresisMargin) return TIERS[i] as Tier;
+  }
+  return 0;
+};
+
+/**
  * Decide the graduation outcome for one graded item (PURE, total).
  *
  * Evaluation order, given ability θ, `currentTier`, and the prior `dwell`:
@@ -177,10 +203,14 @@ export const evaluateGraduation = (
   ) {
     const nextDwell = dwell + 1;
     if (nextDwell >= dwellTarget) {
-      // Streak satisfied → graduate, reset dwell for the new tier.
+      // Streak satisfied → graduate, reset dwell for the new tier. First
+      // graduation PLACES at the ability-supported tier (see placementTier);
+      // later promotions step exactly one rung.
+      const granted =
+        currentTier === 0 ? (placementTier(ability) as Tier) : target;
       return {
         changed: true,
-        tier: target,
+        tier: granted,
         reason: "graduated",
         dwell: 0,
         dueForReview: false,

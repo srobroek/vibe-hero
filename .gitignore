@@ -334,3 +334,9 @@ coverage/
 
 # Empty scaffolding
 archive/
+
+# SpecKit machine state (current-feature pointer + integration install
+# manifests); config (init-options, catalogs, templates, workflows) stays.
+.specify/feature.json
+.specify/integration.json
+.specify/integrations/

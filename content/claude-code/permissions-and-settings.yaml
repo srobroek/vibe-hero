@@ -1572,41 +1572,47 @@ items:
     difficulty: 368
     type: free_form
     prompt: >-
-      You denied Read on a secrets file and confirmed Claude refuses cat secrets.txt. But a teammate
-      notes Claude could still read it by running a small Python script (python -c
-      "open('secrets.txt').read()"). Explain why the deny rule misses this and what actually closes
-      the gap.
+      You want a single deny rule that prevents Claude from reading any file under your home
+      directory's .ssh folder (e.g. ~/.ssh/config or ~/.ssh/id_rsa), regardless of which project is
+      open. Write the correct Read deny rule and explain what the leading tilde prefix (~/) means in
+      Read/Edit rules, contrasting it with a single leading slash (/) and a double leading slash (//).
     rubric:
       criteria:
         - id: c1
           text: >-
-            Read/Edit deny rules cover recognized file-reading Bash commands (cat, head, tail, sed)
-            but NOT arbitrary subprocesses
+            Gives a working home-relative rule such as Read(~/.ssh/**) or Read(~/.ssh/*)
         - id: c2
-          text: A Python/Node script that opens the file itself is not intercepted by the rule
+          text: >-
+            Explains that ~/ is home-directory-relative, resolving from $HOME regardless of which
+            project is open
         - id: c3
           text: >-
-            OS-level enforcement (the sandbox) is what actually blocks the subprocess from reading
-            the file
+            Contrasts the anchors: single / is project-root-relative; double // is
+            filesystem-absolute (literal OS path); ~/ is home-relative
       referenceAnswer: >-
-        Read/Edit deny rules are applied to file-reading Bash commands Claude Code recognizes (cat,
-        head, tail, sed) but not to arbitrary subprocesses. A Python or Node script that opens the
-        file itself is not pattern-matched, so the rule misses it. Only OS-level enforcement via the
-        sandbox actually prevents the subprocess from reading the file.
+        Use Read(~/.ssh/**) (or Read(~/.ssh/*) for files directly inside without recursing further).
+        In Read/Edit rules the leading ~/ means home-directory-relative: the pattern resolves from
+        $HOME, so it applies regardless of which project is open. A single leading slash (/) would
+        make the path project-root-relative, pointing at <project-root>/.ssh/**, which almost
+        certainly does not exist. A double leading slash (//) is the filesystem-absolute anchor and
+        requires the literal OS path (e.g. Read(//home/alice/.ssh/**)), which is user-specific and
+        non-portable. Only ~/ reliably targets the real home directory in a portable, scope-independent
+        way.
       passThreshold: 0.6
     guidance: >-
-      Permission rules are matched against recognized tool calls and a known set of file-reading
-      commands, not against what a spawned interpreter does internally. Closing the gap requires the
-      OS sandbox, which enforces at the system level rather than by command pattern.
+      The four path anchors in Read/Edit rules are: bare filename (cwd/project-relative, any depth),
+      / (project-root-relative), // (filesystem-absolute), and ~/ (home-relative). For files under
+      $HOME, ~/ is the correct anchor. A single leading slash looks absolute but is project-relative,
+      a common mistake that silently matches nothing useful and gives a false sense of protection.
   - id: pas-400-mc-a
     tier: 400
     bloom: analyze
     difficulty: 420
     type: multiple_choice
     prompt: >-
-      A developer adds Bash(docker compose up *) to allow so spinning up the stack stops prompting,
-      but it still prompts every time. Their managed settings already contain Bash(docker *) in the
-      deny array. What is the cause, and what is the only real fix?
+      A developer adds Bash(docker compose up *) to allow so spinning up the stack stops
+      being blocked, but the call is still blocked every time. Their managed settings already
+      contain Bash(docker *) in the deny array. What is the cause, and what is the only real fix?
     choices:
       - id: a
         text: >-
@@ -2273,7 +2279,7 @@ items:
   - id: pas-400-mc-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 474
     type: multiple_choice
     prompt: >-
       A PreToolUse hook is configured to allow a specific Bash command, but a higher-scope settings

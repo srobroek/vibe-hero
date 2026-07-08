@@ -315,23 +315,28 @@ items:
     bloom: remember
     difficulty: 178
     type: multiple_choice
-    prompt: After compaction, which of the following is re-injected from disk rather than lost?
+    prompt: >-
+      When Claude Code auto-compacts a conversation, which of the following is
+      explicitly preserved in the generated summary?
     choices:
       - id: a
-        text: 'Rules with paths: frontmatter (path-scoped rules)'
+        text: Every tool-call output, verbatim
       - id: b
-        text: Nested CLAUDE.md files in subdirectories
+        text: The full text of each file Claude read during the session
       - id: c
-        text: The project-root CLAUDE.md
+        text: Pending tasks and user intent
       - id: d
-        text: The startup skill listing (one-line descriptions)
+        text: The git commit log for the current branch
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      The project-root CLAUDE.md, unscoped rules, and auto memory are re-injected after compaction.
-      Path-scoped (paths:) rules and nested CLAUDE.md are lost until a matching file is read again,
-      and the startup skill listing is the one startup item not re-injected.
+      Compaction explicitly preserves pending tasks and user intent (along with key
+      concepts, modified files, and errors that were fixed). Verbatim tool-call
+      output and full file text are the opposite of what compaction keeps — they
+      are the bulk that gets dropped or condensed to free space. The git commit log
+      is not part of the compaction summary. This tests the summarization mechanism
+      itself, which is distinct from what is re-injected from disk after compaction.
   - id: cm-100-ff-n
     tier: 100
     bloom: remember
@@ -503,18 +508,30 @@ items:
           Because model performance degrades as the window fills -- Claude may forget earlier
           instructions and make more mistakes as it nears the limit.
       - id: b
-        text: Because a full context window permanently deletes your project's CLAUDE.md from disk.
+        text: >-
+          Because a full context window triggers an automatic switch to a larger, more capable
+          model variant, which changes the model's behavior in ways that can break ongoing work.
       - id: c
-        text: Because the context window determines how many files exist in your repository.
+        text: >-
+          Because filling the context window forces an immediate /compact that summarizes all
+          prior context with no quality loss, so the only concern is the brief pause while
+          summarization runs.
       - id: d
-        text: Because each token in the window must be re-typed by the user before the next turn.
+        text: >-
+          Because the context window drives per-turn billing -- a fuller window makes every
+          subsequent turn cost significantly more, which is the primary concern the documentation
+          highlights.
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      The window holds the entire conversation, file reads, command outputs, and instructions; as it
-      fills, the model's reliability drops and it can "forget" earlier context. CLAUDE.md lives on
-      disk and is unaffected by a full window, and tokens are not re-typed by the user.
+      The documentation's primary concern is reliability: as the window fills, the model can forget
+      earlier instructions and make more errors. (b) is wrong because Claude Code never
+      auto-switches to a larger model variant when context fills -- you choose the model manually.
+      (c) is wrong because compaction summarizes rather than preserving verbatim, so fidelity is
+      lost; a practitioner who knows /compact exists may wrongly assume summarization is lossless.
+      (d) is wrong because cost is a secondary consideration; the docs cite accuracy and reliability
+      degradation as the primary reason to manage context, not billing rate.
   - id: cm-200-mc-b
     tier: 200
     bloom: understand
@@ -657,24 +674,38 @@ items:
     bloom: understand
     difficulty: 258
     type: multiple_choice
-    prompt: After a compaction, which of these is re-injected from disk rather than lost?
+    prompt: >-
+      A team wants a coding-standards rule applied consistently throughout any long session,
+      including after compaction. They store it in a rule file with `paths: [src/utils/**]`
+      frontmatter so it auto-loads whenever a `src/utils/` file is read. Why does this placement
+      fail to meet their always-active goal?
     choices:
       - id: a
-        text: A rule with `paths:` frontmatter (path-scoped rule).
+        text: >-
+          Path-scoped rules must live in `~/.claude/rules/` to take effect; they are ignored when
+          placed in the project root.
       - id: b
-        text: A nested CLAUDE.md in a subdirectory.
+        text: >-
+          Path-scoped (`paths:`) rules load on demand when a matching file is read and are dropped
+          from context after compaction; they re-activate only when a matching file is read again,
+          so the rule will be absent after any compaction until a `src/utils/` file is re-read.
       - id: c
-        text: The startup skill listing of available skill descriptions.
+        text: >-
+          Path-scoped rules apply only at session startup and are never re-loaded after the first
+          matching file is closed.
       - id: d
-        text: The project-root CLAUDE.md.
+        text: >-
+          The project-root CLAUDE.md silently overrides path-scoped rules when both address the
+          same subject, so the coding standards will be suppressed.
     answerKey:
       kind: choice
-      correctChoiceId: d
+      correctChoiceId: b
     guidance: >-
-      Project-root CLAUDE.md, unscoped rules, auto memory, and the system prompt are re-injected
-      after compaction. Path-scoped (`paths:`) rules and nested CLAUDE.md are lost until a matching
-      file is read again, and the startup skill listing is the one startup item that is NOT
-      re-injected.
+      A path-scoped (`paths:`) rule loads on demand when a file matching its glob is read; it is
+      NOT automatically re-injected after compaction. Only project-root CLAUDE.md, unscoped rules,
+      and auto memory are re-injected automatically. Guidance that must always be active belongs in
+      CLAUDE.md (or an unscoped rule), not in a `paths:` rule. Path-scoped rules suit guidance that
+      only matters when working in a specific subtree and is acceptable to lose across compaction.
   - id: cm-200-mc-h
     tier: 200
     bloom: understand
@@ -1650,7 +1681,7 @@ items:
   - id: cm-400-mc-b
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 475
     type: multiple_choice
     prompt: >-
       After auto-compaction, Claude suddenly stops honoring a lint rule that only applies to files

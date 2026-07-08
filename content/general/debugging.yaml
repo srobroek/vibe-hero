@@ -147,30 +147,42 @@ items:
       A stack trace lists the chain of active call frames when the error occurred, showing the path
       of calls that led to the failure. It is distinct from a syscall log (strace) or a memory
       report; it describes the call structure, not raw memory or syscalls.
-  - id: d-100-mc-f
-    tier: 100
-    bloom: remember
-    difficulty: 150
+  - id: d-200-mc-k
+    tier: 200
+    bloom: understand
+    difficulty: 268
     type: multiple_choice
     prompt: >-
-      In a standard Python traceback, where does the line containing the exception type and message
-      appear?
+      A Python traceback contains the phrase "During handling of the above exception, another
+      exception occurred:" followed by a second traceback block. What does this structure mean, and
+      which exception type and message reflects the immediate cause of the program's termination?
     choices:
       - id: a
-        text: On the first line, with the most recent call shown at the top.
+        text: >-
+          The two traceback blocks are independent; they were raised by different threads and are
+          unrelated to each other.
       - id: b
-        text: In the middle, separating user frames from library frames.
+        text: >-
+          The second exception (the one printed last) is the one that propagated and terminated the
+          program; the first shows the original exception that was active when the second was raised,
+          giving context for the chain.
       - id: c
-        text: It is never shown in the traceback; you must look it up in the logs.
+        text: >-
+          The first exception (the one printed first) is the one that terminated the program; the
+          second block is just a warning about cleanup.
       - id: d
-        text: On the final (last) line, with the oldest call shown first and "most recent call last".
+        text: >-
+          Both exceptions are equivalent; Python prints them in random order, so neither is more
+          significant than the other.
     answerKey:
       kind: choice
-      correctChoiceId: d
+      correctChoiceId: b
     guidance: >-
-      Python prints "Traceback (most recent call last)", so frames go oldest-first and the exception
-      type/message is on the final line. By contrast, Java and JavaScript conventionally print the
-      innermost (most recent) frame at the top.
+      Python's "During handling of the above exception, another exception occurred:" header means a
+      second exception was raised while a handler for the first was active (implicit chaining via
+      __context__). The exception that terminated the program is always the final block — the one
+      printed last — with the first block providing context on the original cause. Reading both in
+      order lets you distinguish the trigger (first) from the terminating failure (last).
   - id: d-100-ff-g
     tier: 100
     bloom: remember
@@ -783,27 +795,49 @@ items:
     difficulty: 268
     type: multiple_choice
     prompt: >-
-      A Python traceback ends with the line "TypeError: ..." and prints "Most recent call last". How
-      should you read it, and where is the failure point?
+      The following Python traceback is produced by a reporting service:
+
+        Traceback (most recent call last):
+          File "app.py", line 5, in main
+          File "app.py", line 23, in serialize_report
+          File "/usr/lib/python3/json/__init__.py", line 231, in dumps
+          File "/usr/lib/python3/json/encoder.py", line 179, in encode
+        TypeError: Object of type datetime is not JSON serializable
+
+      Which frame should you investigate first, and why?
     choices:
       - id: a
         text: >-
-          The oldest call is printed first and the innermost (most recent) frame plus the exception
-          type appear at the bottom
+          app.py line 23 (serialize_report), because it is the innermost application
+          frame — the last one before the traceback enters the library — and the bug
+          almost always lies at that boundary where your code made the bad call, not
+          inside the library itself.
       - id: b
-        text: The exception type is on the first line and the program entry point is last
+        text: >-
+          app.py line 5 (main), because it is the first frame printed and shows where
+          the program entered the call chain.
       - id: c
-        text: Frames are printed in random order, so position carries no meaning
+        text: >-
+          encoder.py line 179 (encode), because it is the most recent call and is
+          therefore closest to the moment of failure.
       - id: d
-        text: The innermost frame is always at the top, matching Java's convention
+        text: >-
+          Whichever frame references "datetime", because the exception message names
+          that type and the frame mentioning it is the true source.
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      Python prints tracebacks oldest-call-first, most-recent-call-last, with the exception type and
-      message on the final line -- which is why it literally says "Most recent call last." Note this
-      ordering is language-specific: Java and JavaScript conventionally print the innermost frame at
-      the top.
+      Python's "most recent call last" ordering means the bottom frame is where the
+      exception was raised — but that frame is inside stdlib, which rarely contains
+      the defect. The correct triage move is to walk up from the bottom until you
+      reach your own code: serialize_report (app.py:23) is the innermost (deepest)
+      application frame before the traceback dives into the library. That boundary
+      is where your code handed a raw datetime to json.dumps without converting it,
+      so that is where the fix belongs. The first frame (main) is too far upstream
+      to be immediately actionable, and matching a type name across frames is an
+      unreliable heuristic — the type appears in the exception message, not
+      necessarily in a useful frame.
   - id: d-200-ff-k
     tier: 200
     bloom: understand
@@ -2220,7 +2254,7 @@ items:
   - id: d-400-ff-q
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 479
     type: free_form
     prompt: >-
       Under a tight deadline an engineer changes five things at once — a config value, a library

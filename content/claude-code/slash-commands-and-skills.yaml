@@ -1042,33 +1042,44 @@ items:
     difficulty: 278
     type: free_form
     prompt: >-
-      A plugin ships a single skill as a SKILL.md at the plugin root with no `name` in its
-      frontmatter, installed from a marketplace. Explain why its `/command` name can silently change
-      across updates, and what fixes it.
+      A skill has disable-model-invocation: true set in its frontmatter. Beyond preventing
+      Claude from auto-loading the skill, what happens to the skill's description in Claude's
+      context, and why does that distinction matter when choosing between this field and
+      user-invocable: false?
     rubric:
       criteria:
         - id: c1
           text: >-
-            States that for a plugin-root SKILL.md the invocation name falls back to the
-            install-directory name when frontmatter name is absent.
+            States that disable-model-invocation: true drops the skill's description from
+            Claude's context entirely, so Claude has no knowledge the skill exists and cannot
+            offer or suggest it.
         - id: c2
           text: >-
-            States that for marketplace installs that install-dir name is a version string that
-            changes each update, so the command name changes.
+            Contrasts this with user-invocable: false, which only hides the skill from the /
+            menu — the description stays in context so Claude can still auto-invoke it.
         - id: c3
-          text: States that setting frontmatter name gives a stable, fixed command name.
+          text: >-
+            Connects this to the practical use-case distinction: disable-model-invocation is
+            for strictly manual-only skills Claude should never discover; user-invocable: false
+            is for background or reference skills Claude uses autonomously but that should not
+            clutter the human's menu.
       referenceAnswer: >-
-        A plugin-root SKILL.md is the special case where frontmatter name sets the command name.
-        When name is omitted, the invocation name falls back to the install-directory name. For a
-        marketplace install, that directory name is a version string that changes on every update,
-        so the /command the user types silently changes from version to version. The fix is to set
-        the frontmatter name field, which pins a stable command name regardless of how the install
-        directory is named - effectively mandatory for a stable plugin-root skill.
+        Setting disable-model-invocation: true does two things: it prevents Claude from
+        auto-loading the skill AND drops the skill's description from Claude's context
+        entirely — Claude has no knowledge the skill exists and cannot offer or suggest it.
+        This differs from user-invocable: false, which only removes the skill from the
+        human-facing / menu; the description remains in context so Claude can still discover
+        and auto-invoke the skill on its own. The practical upshot: disable-model-invocation
+        is the right choice when a skill must be strictly manual-only and Claude should not
+        be able to propose it; user-invocable: false is the right choice for background or
+        reference skills that Claude uses autonomously but that should not clutter the
+        user's menu.
       passThreshold: 0.6
     guidance: >-
-      Plugin-root SKILL.md uniquely lets frontmatter name set the command. Without it the name falls
-      back to the install dir, which is a changing version string for marketplace installs - so the
-      command name drifts across updates. Setting name pins it.
+      The non-obvious nuance is that disable-model-invocation not only suppresses auto-loading
+      but also removes the description from Claude's context, making the skill invisible to
+      Claude entirely. user-invocable: false is softer — it only removes the human-facing menu
+      entry while the description stays available for matching.
   - id: scas-300-mc-a
     tier: 300
     bloom: apply
@@ -2171,7 +2182,7 @@ items:
   - id: scas-400-mc-q
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 479
     type: multiple_choice
     prompt: >-
       A subagent definition lists `skills: [release-checklist]` to preload that skill, but the

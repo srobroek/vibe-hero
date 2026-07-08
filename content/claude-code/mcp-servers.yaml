@@ -2244,7 +2244,7 @@ items:
   - id: ms-400-mc-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 479
     type: multiple_choice
     prompt: >-
       A team using a Vertex/proxy setup notices their many fine-grained MCP tools consume a large

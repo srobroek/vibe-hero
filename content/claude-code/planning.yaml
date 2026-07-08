@@ -1620,34 +1620,40 @@ items:
   - id: p-300-mc-t
     tier: 300
     bloom: apply
-    difficulty: 380
+    difficulty: 342
     type: multiple_choice
     prompt: >-
-      Your session is running in auto mode. You wrote a subagent whose frontmatter declares
-      permissionMode so it would skip prompts, and you launch it to do edits. What actually happens
-      to that subagent's permissionMode, and what is the right expectation?
+      You are tracking a multi-step feature with TaskCreate. You have just verified that the
+      first task's changes pass all checks. Before moving to the next task, what is the correct
+      sequence of TaskUpdate calls, per the one-in-progress discipline?
     choices:
       - id: a
         text: >-
-          Under auto mode the subagent's declared permissionMode is ignored; its actions go through
-          the classifier under the parent session's rules, so you cannot use it to bypass planning
-          or permissions.
+          Mark the current task complete, then mark the next pending task in-progress — keeping
+          exactly one task active at a time.
       - id: b
         text: >-
-          The subagent's permissionMode is honored, so it edits without prompts independently of the
-          parent.
+          Leave all tasks in-progress so the full feature status is visible in a single
+          TaskList call.
       - id: c
-        text: The subagent fails to launch because permissionMode conflicts with auto mode.
+        text: >-
+          Delete the completed task with TaskUpdate to keep the list short, then mark the next
+          one in-progress.
       - id: d
-        text: Launching the subagent prompts you to confirm its permissionMode before it runs.
+        text: >-
+          Do not call TaskUpdate until the entire feature is done; updating status mid-feature
+          causes tracking drift.
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      Under auto mode, a subagent's frontmatter permissionMode is ignored -- its actions are checked
-      by the classifier using the parent session's rules. So you cannot craft a subagent to skip
-      planning or permissions under auto. Launching a subagent also does not itself prompt for
-      permission.
+      The one-in-progress discipline means completing the current task before activating the
+      next. Mark the finished task complete with TaskUpdate, then mark the next task
+      in-progress — that maintains a single clear focus and a legible checkpoint at every
+      transition. Leaving multiple tasks in-progress simultaneously obscures what is actually
+      being worked on; deleting completed tasks loses history without shortening meaningful
+      state; deferring all updates until the end defeats the incremental-checkpoint purpose of
+      task tracking.
   - id: p-400-mc-a
     tier: 400
     bloom: analyze
@@ -1677,70 +1683,86 @@ items:
       yet, not security. Commands still run (gated like default), so it is no defense against prompt
       injection or exfiltration. Real isolation comes from sandboxing, deny rules, or the auto
       classifier, not from plan mode.
-  - id: p-400-mc-b
-    tier: 400
-    bloom: analyze
-    difficulty: 431
+  - id: p-500-mc-d
+    tier: 500
+    bloom: evaluate
+    difficulty: 533
     type: multiple_choice
     prompt: >-
-      Two changes land on an engineer's desk. Change A renames one variable across five files (a
-      pure mechanical rename). Change B fixes a single function in an unfamiliar auth module where
-      the correct approach is unclear. The engineer plans A (because it is "multi-file") and skips
-      planning for B (because it is "just one file"). Why is this exactly backwards?
+      A team adopts the policy: "Any pull request that touches more than three files must be
+      preceded by an approved plan-mode plan." Which critique best evaluates this policy?
     choices:
       - id: a
         text: >-
-          File count is the only documented signal, so the engineer applied the rule correctly and
-          nothing is backwards.
+          The policy is sound because multi-file changes are the canonical planning trigger; the
+          docs say planning is most useful when a change spans multiple files.
       - id: b
-        text: Planning is always required for renames because renames can silently break references.
+        text: >-
+          The threshold is too low; it should require a plan for changes touching ten or more
+          files, at which point the overhead is clearly justified.
       - id: c
         text: >-
-          The break-even is uncertainty times blast radius, not file count alone; A is describable
-          in one sentence so skip it, while B is uncertain and risky so it warrants a plan.
+          The policy should apply to all changes regardless of file count, since every change
+          carries some risk.
       - id: d
-        text: Single-file changes can never be planned, so B could not be planned even if desired.
+        text: >-
+          The policy operationalizes the wrong axis: the real criterion is uncertainty times
+          blast-radius, not file count. A ten-file config propagation that is purely mechanical
+          is a one-sentence diff and low-uncertainty — the gate fires on it needlessly. Meanwhile
+          a two-file edit deep in a payment module the team has never touched is high-uncertainty
+          and high-risk — yet the gate misses it entirely.
     answerKey:
       kind: choice
-      correctChoiceId: c
+      correctChoiceId: d
     guidance: >-
-      The "one-sentence diff" rule and the "uncertain/multi-file/unfamiliar" rule together define a
-      two-axis decision, not a single file-count threshold. A mechanical rename is one sentence even
-      across many files, so skip the plan; an uncertain change in unfamiliar code earns a plan even
-      at one file. The engineer optimized on the wrong axis.
-  - id: p-400-mc-c
-    tier: 400
-    bloom: analyze
-    difficulty: 438
+      The policy uses file count as its gate, but the documented planning criterion is uncertainty
+      multiplied by blast-radius. A mechanical propagation across many files is one-sentence
+      describable and low-uncertainty; mandating a plan adds overhead with no payoff. Conversely,
+      a small but deeply uncertain change in an unfamiliar module is exactly where planning pays
+      off, yet it passes through the gate undetected. Choices a, b, and c all accept file count
+      as the correct axis and debate only calibration or coverage, which is the evaluate-level trap.
+  - id: p-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 494
     type: multiple_choice
     prompt: >-
-      A user is stuck deciding between an offline-first and a server-authoritative sync model for a
-      new feature. They put Claude in plan mode and ask it to read the entire codebase to "figure
-      out the right approach." After reading 200 files Claude still cannot recommend one. What is
-      the real diagnosis?
+      A developer planning a notification system identifies three open questions: (1) which events
+      should trigger notifications, (2) whether the current event-bus implementation can handle the
+      projected fan-out volume, and (3) whether the retry policy should be user-configurable or
+      hardcoded. They are unsure how to route and sequence the three. Which evaluation is correct?
     choices:
       - id: a
         text: >-
-          This is an unstated product decision, not a code question; surveying code cannot resolve
-          it, so the leverage move is to interview the user (AskUserQuestion) to surface the
-          tradeoff.
+          Explore the event-bus first to surface capacity constraints, then frame the product
+          questions — concrete limits help clarify which events are worth supporting before
+          involving the user.
       - id: b
-        text: Claude needed acceptEdits mode to evaluate the approaches by prototyping them.
+        text: >-
+          Route all three to AskUserQuestion before any exploration; requirements must be settled
+          before code is read, and the user can say whether the event-bus is adequate for the load.
       - id: c
         text: >-
-          The codebase is simply too large for plan mode and should be split into subagents per
-          file.
+          Use plan-mode exploration for all three simultaneously; reading the codebase can inform
+          both the product decisions and the technical limits without premature user interruptions.
       - id: d
-        text: Plan mode disables recommendations, so Claude could never answer while in it.
+        text: >-
+          Ask AskUserQuestion about (1) and (3) first; once those product decisions are fixed,
+          use plan-mode exploration for (2) — because the capacity question is only meaningful after
+          you know the target use-case, and code reading cannot resolve unstated product decisions.
     answerKey:
       kind: choice
-      correctChoiceId: a
+      correctChoiceId: d
     guidance: >-
-      No amount of code reading resolves an unstated product decision — that information lives with
-      the human, not in the repository. Exploration/plan mode is the right tool when requirements
-      are fixed but the technical approach is unclear; here the requirement itself is undecided, so
-      interviewing with AskUserQuestion is the higher-leverage move. Surveying code just burns
-      context.
+      (1) which events trigger notifications is a product decision — the user owns it, not the
+      codebase; no amount of file-reading surfaces it. (3) retry policy configurability is a product/
+      UX decision for the same reason. (2) fan-out capacity IS a code question: the answer lives in
+      the event-bus implementation. However, exploring (2) is only meaningful after (1) and (3) are
+      resolved, because you cannot evaluate whether the current implementation is adequate until you
+      know the target event volume and retry load. Option (a) inverts the dependency — requirements
+      gate exploration, not the reverse. Option (b) misroutes the capacity question to the user.
+      Option (c) burns context on product questions that code cannot resolve. The correct path
+      settles what you are building before exploring whether the infrastructure supports it.
   - id: p-400-mc-d
     tier: 400
     bloom: analyze
@@ -1775,36 +1797,45 @@ items:
     difficulty: 452
     type: free_form
     prompt: >-
-      A team adopts a strict "always plan before any change" rule. Within a week, developers
-      complain that trivial fixes now take twice as long. Diagnose why the blanket rule misfires,
-      and describe the two-part heuristic that should replace it.
+      A team partially adopts the planning guidance: they apply the one-sentence-diff rule and skip
+      planning for clearly trivial changes, but they also add a rule that any change touching more
+      than one file must go through plan mode. Analyze this partial policy: state where it improves
+      over the original blanket always-plan rule, where it still misfires, and identify the correct
+      break-even axis the docs describe.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Identifies that plan mode "is useful but adds overhead," so planning is a cost, and
-            applying it to trivial changes spends that cost with no payoff.
+            States the improvement: the partial policy eliminates planning overhead for clearly
+            trivial, one-sentence-diff changes, which the blanket always-plan rule did not.
         - id: c2
           text: >-
-            States the skip rule — if you could describe the diff in one sentence (typo, log line,
-            rename), do it directly.
+            States the misfire: the partial policy still over-plans mechanical multi-file changes
+            (e.g., a five-file rename) whose uncertainty and blast radius do not justify a plan —
+            because file count alone is not the right axis.
         - id: c3
           text: >-
-            States the use rule — plan when the approach is uncertain, the change spans multiple
-            files, or the code is unfamiliar.
+            Identifies the correct break-even axis: uncertainty times blast radius (uncertain
+            approach, unfamiliar code, or genuinely broad impact), not file count.
       referenceAnswer: >-
-        The blanket rule misfires because planning is not free: the docs note plan mode is useful
-        but adds overhead, so forcing it onto one-sentence changes (a typo, a log line, a rename)
-        spends real effort for no benefit. The replacement is a two-part judgment: skip the plan
-        when you could describe the diff in one sentence, and reach for planning when you are
-        uncertain about the approach, the change touches multiple files, or you are unfamiliar with
-        the code. Together those weigh uncertainty and blast radius rather than mandating a plan
-        every time.
+        The partial policy improves on the blanket always-plan rule by correctly skipping planning
+        for trivial, one-sentence-diff changes — a typo, a log line, a variable rename — where
+        planning overhead is not justified. That is a real gain. But it still misfires by mandating
+        a plan whenever a change touches more than one file: a mechanical five-file rename is
+        low-uncertainty with limited blast radius, and requiring a plan for it spends overhead for
+        no benefit, even though it crosses the multi-file threshold. The partial policy has replaced
+        one wrong axis (always plan) with a better but still wrong second axis (file count). The
+        documented break-even is uncertainty multiplied by blast radius — plan when the approach is
+        uncertain, the code is unfamiliar, or the change has genuinely broad impact — not simply
+        when the diff spans more than one file.
       passThreshold: 0.6
     guidance: >-
-      "Always plan" is an anti-pattern precisely because planning carries overhead. The documented
-      heuristics form a cost-benefit decision: act directly on trivial, well-understood diffs, and
-      spend the planning cost only when uncertainty or blast radius justifies it.
+      This partial-adoption scenario requires genuine analysis: the student must recognize both the
+      real improvement (trivial changes no longer over-planned) and the remaining flaw (file count
+      is a proxy for uncertainty and blast radius, not the signal itself). A mechanical multi-file
+      change can be low-uncertainty and low-blast-radius and should be done directly. The two-part
+      heuristic (one-sentence-diff skip + plan when uncertain / multi-file / unfamiliar) together
+      define the correct break-even — file count is only one input, not the axis.
   - id: p-400-mc-f
     tier: 400
     bloom: analyze
@@ -1865,76 +1896,107 @@ items:
       web account and GitHub repo, disconnects Remote Control, and is not available on Bedrock,
       Vertex, or Foundry. For a Bedrock user it is not merely heavier than local plan mode — it is
       unavailable, so the value-vs-cost analysis never even applies.
-  - id: p-400-ff-h
-    tier: 400
-    bloom: analyze
-    difficulty: 468
+  - id: p-500-ff-j
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
     type: free_form
     prompt: >-
-      A team writes their plans into PLAN.md so a fresh session can implement them and an
-      adversarial subagent can review the diff against the file. A reviewer later complains the plan
-      "didn't match what was actually needed." Analyze the central tradeoff between a
-      plan-as-artifact (written file) and a plan-as-conversation (kept in context), and when each
-      fails.
+      A three-person team is in early exploratory planning (requirements still shifting). They have
+      showClearContextOnPlanAccept disabled and no dedicated review subagent. Their previous project
+      used PLAN.md artifacts exclusively and suffered two staleness incidents where the artifact
+      drifted from the actual implementation. Evaluate whether they should use a plan-as-artifact,
+      an in-conversation plan, or a hybrid for this project, and justify the decision against the
+      specific constraints given.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Explains the artifact benefit — a written plan lets a fresh session implement it and an
-            adversarial subagent review the diff against it.
+            Identifies which constraints tip the balance away from artifact-only: shifting
+            requirements make the artifact go stale fastest, and the absence of a review subagent
+            removes the primary portability benefit (independent diff review anchored to the
+            artifact), so artifact-only offers cost without its main payoff.
         - id: c2
           text: >-
-            Explains the artifact risk — a written plan can go stale or omit tacit context that
-            lived only in the exploration.
+            Addresses the staleness risk in light of the team's history and proposes a concrete
+            mitigation or hybrid — for example, deferring the artifact until requirements stabilize,
+            or keeping the plan in-conversation through the exploratory phase and writing the
+            artifact only once requirements are settled.
         - id: c3
           text: >-
-            Explains the conversation tradeoff — keeping the plan in context preserves full nuance
-            but is fragile to compaction (it can be lost or summarized away).
+            Evaluates what is lost by each choice given the specific variables (project phase,
+            clear-on-accept state, team size, no review subagent) rather than restating the generic
+            artifact-vs-conversation tradeoff alone — e.g. notes that disabling clear-on-accept
+            means the in-conversation plan carries exploratory noise into implementation, which a
+            late-written artifact could avoid.
       referenceAnswer: >-
-        Writing the plan to PLAN.md (or SPEC.md, or Ultraplan's Cancel-to-save) makes it portable: a
-        fresh session can execute it and an adversarial subagent can check the diff against it
-        without seeing the author's reasoning. The cost is that a written plan can go stale or
-        quietly omit the tacit context discovered during exploration, which is likely what bit this
-        team. Keeping the plan in-conversation preserves the full nuance but is fragile to
-        compaction — the very details you relied on can be summarized away as context fills. The
-        judgment is whether the plan is self-contained enough to survive being externalized.
+        Artifact-only is the weakest fit here for two compounding reasons. First, requirements are
+        still shifting — exactly when written plans go stale fastest — and the team's history shows
+        PLAN.md drifted even in more settled conditions. Second, there is no dedicated review
+        subagent, so the primary portability benefit of a written artifact (independent,
+        anchored diff review) is not being realized anyway; the artifact cost is incurred without
+        the main payoff. A pure in-conversation plan keeps the full exploratory nuance and stays
+        current as requirements shift, but with showClearContextOnPlanAccept disabled there is no
+        clean-slate implementation window on approval, so the exploratory noise will carry into
+        implementation. The best fit is a hybrid: keep the plan in-conversation through the
+        exploratory phase (when requirements are moving and staleness risk is highest), and write
+        a lean artifact only once requirements stabilize — at which point the artifact's staleness
+        risk drops and a fresh implementation session becomes viable. That defers artifact cost
+        until the moment its stability and portability benefits can actually be realized.
       passThreshold: 0.6
     guidance: >-
-      Plan-as-artifact buys portability and independent review at the risk of staleness and lost
-      tacit context; plan-as-conversation buys full nuance at the risk of compaction. The reviewer's
-      complaint is the classic artifact failure: the written plan omitted something the exploration
-      knew.
+      The core insight is that artifact portability primarily pays off through (a) fresh-session
+      execution and (b) independent review subagents — with no review subagent and moving
+      requirements, neither benefit fully materializes. The staleness history makes artifact-only
+      the highest-risk option, not a safe default. A hybrid that defers artifact creation until
+      requirements stabilize attacks the root cause of the staleness problem rather than working
+      around it.
   - id: p-400-mc-i
     tier: 400
     bloom: analyze
-    difficulty: 473
+    difficulty: 463
     type: multiple_choice
     prompt: >-
-      A lead instructs an adversarial reviewer subagent to "find every gap in this diff." It returns
-      eleven findings; the author dutifully implements all eleven, adding new abstractions and tests
-      for inputs that can never occur. The diff doubles in size. What is the root cause and the
-      documented correction?
+      Midway through a plan-mode exploration session for a new notification feature, an engineer
+      discovers two unresolved issues: (1) whether to use WebSockets or server-sent events — a
+      technical choice the codebase can inform — and (2) whether opt-out should be per-notification-type
+      or global — a product decision only the stakeholder can settle. The engineer reasons that
+      reading code cannot hurt, so continues exploring the technical side while waiting for
+      stakeholder input. Which analysis correctly identifies the flaw in this sequencing?
     choices:
       - id: a
         text: >-
-          The reviewer should have applied its own fixes instead of reporting them, which would have
-          prevented the bloat.
+          There is no flaw; exploring technical options in parallel with gathering requirements is
+          always safe because technical context is useful regardless of the product decision.
       - id: b
         text: >-
-          A gap-finding reviewer over-reports by design; scope it to flag only gaps affecting
-          correctness or stated requirements and treat the rest as optional.
+          The flaw is using plan mode at all: product decisions should be resolved before any
+          exploration session begins, so the engineer should restart in default mode after gathering
+          requirements.
       - id: c
-        text: Adversarial review must run under bypassPermissions or it returns false positives.
+        text: >-
+          The flaw is wasting context by exploring a technical approach that the unsettled product
+          decision could invalidate — e.g., per-type opt-out imposes different fanout constraints
+          than global opt-out. The unstated product decision should be resolved with AskUserQuestion
+          first; technical exploration against shifting requirements burns context and may need to
+          be repeated.
       - id: d
-        text: The author should never run a reviewer subagent on a diff, only on a plan.
+        text: >-
+          The flaw is that AskUserQuestion cannot be called from inside plan mode, so the engineer
+          must exit plan mode to gather product requirements before returning.
     answerKey:
       kind: choice
-      correctChoiceId: b
+      correctChoiceId: c
     guidance: >-
-      A reviewer told to find gaps is biased to produce them and will report some even when work is
-      sound; acting on every finding drifts into over-engineering — extra abstractions and tests for
-      impossible cases. The fix is calibration: scope the reviewer to correctness or stated
-      requirements only and treat everything else as optional, rather than mandatory work.
+      When requirements are still unsettled, exploring a technical approach locks in assumptions
+      the product decision could invalidate. Per-type opt-out and global opt-out impose different
+      data models, fanout logic, and API surfaces; if exploration proceeds under the wrong
+      assumption, it must be redone. The documented pattern is to resolve product ambiguity first
+      (AskUserQuestion surfaces tradeoffs as multiple-choice), then explore the technical approach
+      once requirements are stable. Exploring in parallel looks efficient but is the anti-pattern of
+      using codebase reads to avoid confronting a requirements question — it burns context without
+      answering the ambiguity. AskUserQuestion is available in plan mode (it requires no permission),
+      so d is factually wrong.
   - id: p-400-mc-j
     tier: 400
     bloom: analyze
@@ -2037,74 +2099,85 @@ items:
     difficulty: 441
     type: multiple_choice
     prompt: >-
-      A team standardizes on relying on TodoWrite's exact behavior in their workflow scripts and
-      shared prompts. After upgrading Claude Code, task tracking silently stops behaving as their
-      docs describe. What is the underlying portability hazard?
+      A developer runs the "interview me" pattern: they give Claude a minimal prompt, Claude uses
+      AskUserQuestion to surface requirements across many exchanges, and a complete SPEC.md is
+      produced. The developer then continues in the same session — without clearing — and asks
+      Claude to implement from the spec. The finished feature is inconsistent with SPEC.md in
+      several spots. What most accurately explains the root cause?
     choices:
       - id: a
-        text: TodoWrite was renamed to TaskWrite, so only the name changed.
+        text: >-
+          AskUserQuestion accumulates multiple-choice answers into the spec automatically, so any
+          inconsistency means the tool silently dropped some answers; re-running the interview
+          will fix it.
       - id: b
-        text: Task tracking was removed entirely and must now be done manually in comments.
+        text: >-
+          The context window still holds every interview exchange, including abandoned options and
+          earlier drafts; that history biased implementation away from the final spec. The
+          documented pattern ends by starting a fresh session to execute SPEC.md as sole context.
       - id: c
         text: >-
-          TodoWrite is disabled by default in current versions in favor of the Task tools, so
-          depending on TodoWrite being the active mechanism is fragile across versions.
+          SPEC.md was produced mid-session, so Claude treats it as a draft rather than an
+          authoritative reference; committing it to git is what makes it the ground-truth source
+          for implementation.
       - id: d
-        text: The Task tools require permission, which broke the team's non-interactive scripts.
+        text: >-
+          The developer should have switched to acceptEdits mode before asking Claude to implement
+          so the spec's instructions could be applied without per-edit interruptions.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
+    guidance: >-
+      The "interview me" pattern ends with writing a complete spec and then starting a fresh session
+      to execute it. Skipping the fresh session leaves the implementation window contaminated with
+      the full interview history — abandoned paths, mid-interview clarifications, and superseded
+      options — all of which can pull the implementation away from the final spec. AskUserQuestion
+      does not auto-draft the spec; it only asks multiple-choice questions for the developer to act
+      on. Committing to git has no bearing on Claude's context window. acceptEdits only affects
+      edit approval, not spec fidelity.
+  - id: p-500-mc-l
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
+    type: multiple_choice
+    prompt: >-
+      A developer is 75% through a complex distributed-tracing debug session. Context is at 60%
+      capacity. They now need to investigate a completely separate performance regression in another
+      service — expected to read roughly 30 additional files — and then return to finish the tracing
+      work. They want to preserve their accumulated tracing reasoning. Subagents are available. Which
+      session-hygiene choice best fits these constraints?
+    choices:
+      - id: a
+        text: >-
+          /clear before the performance investigation, then start a fresh session for the tracing
+          bug — giving both tasks a clean, uncontaminated context.
+      - id: b
+        text: >-
+          /compact before starting the performance investigation, shrinking the current context so
+          the additional reads fit while preserving all accumulated tracing reasoning without
+          fidelity loss.
+      - id: c
+        text: >-
+          Delegate the performance regression to a subagent; it reads in its own context and returns
+          only a summary, leaving the parent's tracing analysis completely intact and avoiding both
+          the full discard of /clear and the fidelity loss of /compact.
+      - id: d
+        text: >-
+          Run the performance investigation in the same session first, then /compact afterward to
+          summarize both bodies of work together before returning to the tracing bug.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      TodoWrite still exists but is disabled by default now; the primary tools are TaskCreate,
-      TaskGet, TaskList, and TaskUpdate (none require permission). Building a workflow on TodoWrite
-      being the active tool is a portability hazard because a version change flips the default.
-      Tracking still works — through the Task tools — so the fix is to target those, not to assume
-      TodoWrite.
-  - id: p-400-ff-n
-    tier: 400
-    bloom: analyze
-    difficulty: 449
-    type: free_form
-    prompt: >-
-      A developer keeps one session open all day: they plan a refactor, then break off to debug an
-      unrelated flaky test, then draft release notes, then return to the refactor — never running
-      /clear, reasoning that "one focused session is more efficient because nothing is lost between
-      tasks." By the afternoon Claude's answers on the refactor are noticeably worse. Diagnose why
-      the kitchen-sink session degrades, explain why "staying focused" does not prevent it, and
-      state the documented fix.
-    rubric:
-      criteria:
-        - id: c1
-          text: >-
-            Identifies that mixing unrelated tasks accumulates irrelevant material in the single
-            context window, and that a context filled with off-task content degrades the model's
-            performance.
-        - id: c2
-          text: >-
-            Explains that human "focus" does not help — the prior tasks' tokens (flaky-test
-            debugging, release notes) still sit in context regardless of the developer's attention,
-            so the contamination is structural, not a discipline problem.
-        - id: c3
-          text: >-
-            States the documented fix is to /clear between unrelated tasks so each starts from a
-            clean, relevant context (and notes permission modes are orthogonal to this
-            contamination).
-      referenceAnswer: >-
-        The kitchen-sink session degrades because a single context window now holds three unrelated
-        bodies of work — the refactor, the flaky-test debugging, and the release notes. None of that
-        off-task material is removed just because the developer mentally moves on, so by the
-        afternoon the refactor reasoning is competing with a window full of irrelevant tokens, and
-        performance drops as context fills with material that does not pertain to the current task.
-        "Staying focused" cannot fix this: focus is a property of the human, not of the context
-        window, so the earlier tasks' tokens remain and keep diluting relevance. The documented fix
-        is to /clear between unrelated tasks so each one starts from a clean, relevant context.
-        Permission modes are orthogonal — switching modes does nothing about the contamination.
-      passThreshold: 0.6
-    guidance: >-
-      The kitchen-sink session is a contamination anti-pattern: unrelated tasks pile irrelevant
-      material into one context window and degrade performance, and human focus does not unload
-      those tokens. The fix is /clear between unrelated tasks for a clean, relevant context each
-      time; permission modes are unrelated to this problem.
+      /clear discards the accumulated tracing reasoning the developer needs to return to — it is
+      the right tool when you are done with the current task and have nothing worth keeping, not
+      when you plan to resume. /compact is plausible but has two problems: it introduces fidelity
+      loss (the summary replaces details that may matter for the tracing work), and running the
+      unrelated investigation in the same window first creates the kitchen-sink anti-pattern before
+      compaction can do anything — mixing unrelated tasks degrades the model's answers and
+      /compact cannot undo that contamination retroactively. A subagent is the right fit when the
+      side task is unrelated and isolatable: the subagent absorbs the 30-file reads in its own
+      context window and returns only a text summary, so the tracing session is untouched.
   - id: p-400-mc-o
     tier: 400
     bloom: analyze
@@ -2134,35 +2207,52 @@ items:
       a closing check, the agent optimizes against nothing and can declare "done" on broken work. A
       clear description of behavior is necessary but not sufficient; the verifiable endpoint is what
       makes it actionable.
-  - id: p-400-mc-p
-    tier: 400
-    bloom: analyze
-    difficulty: 461
+  - id: p-500-mc-i
+    tier: 500
+    bloom: evaluate
+    difficulty: 519
     type: multiple_choice
     prompt: >-
-      An engineer wants "fewer prompts" during a long implementation phase and reaches for
-      bypassPermissions, citing planning convenience. A colleague pushes back. What is the strongest
-      reason bypassPermissions is the wrong lever here, given the documented options?
+      A senior engineer is configuring a CI/CD pipeline where Claude Code runs as
+      the agent step inside a purpose-built, network-isolated Docker container with
+      no persistent user data and ephemeral state destroyed after every run. The
+      team debates whether to use auto mode or bypassPermissions for the agent step.
+      Which evaluation of the tradeoff best matches the documented guidance?
     choices:
       - id: a
-        text: bypassPermissions still prompts on every edit, so it would not reduce prompts at all.
+        text: >-
+          Auto mode should be preferred even here: the classifier adds a safety
+          layer on top of the container isolation, and the marginal overhead is
+          worth the extra defense-in-depth regardless of how well-isolated the
+          environment is.
       - id: b
-        text: bypassPermissions can only be set inside plan mode, which the engineer is not in.
+        text: >-
+          Plan mode with acceptEdits gives maximum visibility into each edit and is
+          the right choice for any CI pipeline step.
       - id: c
         text: >-
-          The docs steer toward auto mode (classifier-checked) for fewer prompts with safety;
-          bypassPermissions removes all prompts and is meant for isolated containers/VMs, offering
-          no injection protection.
+          bypassPermissions is the documented right choice here: the container is
+          network-isolated and ephemeral, exactly the environment the docs describe
+          as the intended use case, and auto mode's classifier is unnecessary
+          overhead when the environment itself provides the isolation guarantee.
       - id: d
-        text: bypassPermissions disables the Task tools, breaking the implementation phase.
+        text: >-
+          bypassPermissions is acceptable here only if the team adds explicit
+          allowlist rules to compensate for the missing classifier.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      To reduce prompts while keeping a safety net, the documented choice is auto mode, whose
-      classifier checks actions. bypassPermissions removes prompts entirely and is intended for
-      isolated containers/VMs; it provides no injection protection, so using it for everyday
-      convenience trades away exactly the oversight you want during implementation.
+      bypassPermissions is documented as the intended mode for isolated containers
+      and VMs, where the environment itself supplies the safety boundary the
+      classifier would otherwise provide on a shared workstation. A
+      network-isolated, ephemeral container with no user data is exactly that
+      environment, so bypassPermissions is the right call and auto mode's
+      classifier is redundant overhead. Distractor (a) correctly states the
+      general rule but misapplies it to the documented exception. Distractor (b)
+      mistakes plan mode for an implementation mode: plan mode proposes without
+      editing and would block a CI pipeline from completing. Distractor (d) is
+      wrong because allowlists are a separate, independent mechanism.
   - id: p-400-ff-q
     tier: 400
     bloom: analyze
@@ -2262,44 +2352,54 @@ items:
   - id: p-400-ff-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 476
     type: free_form
     prompt: >-
-      A team treats plan mode as their security control for running model-suggested commands against
-      a production-adjacent box, reasoning "plan mode is read-only, so it's safe." Diagnose every
-      false assumption in this setup and state what would actually provide the isolation they think
-      they have.
+      A developer in plan mode must decide whether to explore the codebase directly in the main
+      session or delegate the exploration to a subagent via the Agent tool. Analyze the tradeoff:
+      when does direct exploration serve better than delegation, and when does delegation serve
+      better? Identify the deciding factor.
     rubric:
       criteria:
         - id: c1
           text: >-
-            States that plan mode prevents source edits but is not a security boundary — it still
-            runs shell commands, gated by the same prompts as default.
+            Identifies that direct exploration keeps all intermediate findings in the main session's
+            context — tool outputs, reasoning chains, subtle patterns — making that tacit context
+            available during implementation, at the cost of filling the context window faster.
         - id: c2
           text: >-
-            States that "read-only" refers to reads running without prompting, not to a guarantee
-            that no commands execute or that injection is blocked.
+            Identifies that delegating to a subagent keeps the main context lean (the subagent reads
+            in its own context and returns only a text summary), but intermediate findings never
+            reach the parent session, so tacit context is lost unless the subagent explicitly
+            surfaces it.
         - id: c3
           text: >-
-            States that real isolation requires sandboxing, deny rules, or the auto classifier (not
-            plan mode), and that confusing plan mode with auto's classifier or bypassPermissions is
-            the error.
+            States the deciding factor: whether the value of the exploration survives
+            summarization — if key findings can be written as a tight summary (a list of files, an
+            interface signature, a data-flow description), delegation is safe; if implementation
+            will depend on accumulated tacit reasoning across many subtle findings, direct
+            exploration (narrowly scoped to control context cost) is safer.
       referenceAnswer: >-
-        The setup rests on several false assumptions. First, plan mode only guarantees no source
-        edits; it is not a security boundary, and it still runs shell commands, gated by the same
-        prompts as default mode. Second, "read-only" in the permission table means reads run without
-        prompting, not that command execution is impossible or that prompt injection is blocked — a
-        malicious instruction can still get a destructive command proposed and approved. Third, the
-        safety classifier belongs to auto mode, not plan mode, so plan mode provides none of that
-        screening. Real isolation against arbitrary execution comes from sandboxing or
-        VMs/containers, deny rules, or running under the auto classifier — not from being in plan
-        mode. On a production-adjacent box, plan mode is the wrong tool for the safety they want.
+        Direct exploration preserves every intermediate finding — tool outputs, reasoning chains,
+        subtle code patterns — in the same context window implementation will use. The cost is that
+        unscoped exploration can fill the context window rapidly and degrade performance (the
+        "infinite exploration" anti-pattern). Delegating to a subagent inverts the tradeoff: the
+        main context stays lean because the subagent absorbs all reads in its own window and
+        returns only a text summary. But tacit context — nuanced findings that are hard to reduce to
+        a summary — is lost unless the subagent explicitly surfaces it in its output. The deciding
+        factor is whether the value of exploration survives summarization: if the key insight is a
+        tight list of relevant files, an interface signature, or a data-flow description, delegate
+        and keep the main context clean; if implementation will depend on accumulated reasoning
+        across many subtle findings that resist condensing, narrow the scope and explore directly
+        so nothing is lost to summarization.
       passThreshold: 0.6
     guidance: >-
-      Plan mode is about not editing yet, not security. It runs commands and prompts like default,
-      "read only" just means reads don't prompt, and the classifier is an auto-mode feature. Genuine
-      isolation needs sandboxing, deny rules, or auto — conflating any of these with plan mode is
-      the core mistake.
+      Delegation and direct exploration solve the same context-cost problem with opposite
+      tradeoffs. Delegation protects the main context at the risk of losing tacit nuance that
+      never makes it into the summary; direct exploration preserves every finding at the risk of
+      context bloat. The practical rule is a judgment about summarization fidelity: when
+      exploration value survives summarization, delegate; when it does not, explore directly with
+      a narrow scope.
   - id: p-500-mc-a
     tier: 500
     bloom: evaluate
@@ -2338,77 +2438,75 @@ items:
   - id: p-500-mc-b
     tier: 500
     bloom: evaluate
-    difficulty: 537
+    difficulty: 533
     type: multiple_choice
     prompt: >-
-      Two changes are on the table: (1) a mechanical five-file rename of a well-understood symbol,
-      and (2) a single-file edit deep in an unfamiliar subsystem whose behavior the developer does
-      not understand. A reviewer argues "always plan the bigger change," meaning change (1). Which
-      judgment best weighs the plan-vs-act decision?
+      A team adopts the policy: "Any pull request that touches more than three files must be
+      preceded by an approved plan-mode plan." Which critique best evaluates this policy?
     choices:
       - id: a
         text: >-
-          Plan (1) and skip (2), because the number of files touched is the only signal that matters
-          for planning.
+          The policy is sound because multi-file changes are the canonical planning trigger.
       - id: b
-        text: Skip planning for both, since neither is a brand-new feature.
+        text: >-
+          The threshold is too low; it should require a plan for changes touching ten or more files.
       - id: c
         text: >-
-          The decision is uncertainty times blast radius, not file count alone: the five-file rename
-          is a one-sentence diff so it can be done directly, while the single-file edit in
-          unfamiliar code is exactly where planning pays off.
+          The policy should apply to all changes regardless of file count.
       - id: d
         text: >-
-          Plan both equally, because once any change touches code the developer has not written,
-          file count becomes irrelevant and planning is mandatory.
+          The policy operationalizes the wrong axis: the real criterion is uncertainty times
+          blast-radius, not file count. A ten-file config propagation that is purely mechanical
+          is low-uncertainty; a two-file edit in an unfamiliar payment module is high-uncertainty
+          and high-risk yet passes through the gate undetected.
     answerKey:
       kind: choice
-      correctChoiceId: c
+      correctChoiceId: d
     guidance: >-
-      The break-even for planning is uncertainty multiplied by blast radius, not task size alone. A
-      mechanical multi-file rename is describable in one sentence and low-uncertainty, so act
-      directly; a single edit in unfamiliar code is high-uncertainty even at low file count, so
-      planning is the higher-leverage move. Treating file count as the sole axis inverts the actual
-      call here.
+      The policy uses file count as its gate, but the documented planning criterion is uncertainty
+      multiplied by blast-radius. Mechanical multi-file propagations are low-uncertainty; mandating
+      a plan adds overhead with no payoff. Small but deeply uncertain changes in unfamiliar modules
+      are exactly where planning pays off. The genuine critique identifies the wrong axis, not just
+      the wrong threshold.
   - id: p-500-mc-c
     tier: 500
     bloom: evaluate
-    difficulty: 489
+    difficulty: 494
     type: multiple_choice
     prompt: >-
-      A developer building a new multi-stakeholder feature opens plan mode and immediately tells
-      Claude to "read the whole codebase and figure out the best design." Two hours later Claude has
-      read hundreds of files, the requirements are still ambiguous, and the proposed design
-      contradicts an unstated product constraint. Which critique most accurately diagnoses the
-      failure?
+      A developer planning a notification system identifies three open questions: (1) which events
+      should trigger notifications, (2) whether the current event-bus implementation can handle the
+      projected fan-out volume, and (3) whether the retry policy should be user-configurable or
+      hardcoded. They are unsure how to route and sequence the three. Which evaluation is correct?
     choices:
       - id: a
         text: >-
-          Exploration was the wrong first move for ambiguous requirements; no amount of code reading
-          resolves an unstated product decision, so the higher-leverage step was to interview the
-          human with AskUserQuestion to surface tradeoffs, and the unscoped read triggered the
-          infinite-exploration anti-pattern.
+          Explore the event-bus first to surface capacity constraints, then frame the product
+          questions — concrete limits help clarify which events are worth supporting before
+          involving the user.
       - id: b
         text: >-
-          Plan mode should never be used for new features; the developer should have started in auto
-          mode.
+          Route all three to AskUserQuestion before any exploration; requirements must be settled
+          before code is read, and the user can say whether the event-bus is adequate for the load.
       - id: c
         text: >-
-          The problem is that plan mode cannot read more than a few files, so it produced a shallow
-          design.
+          Use plan-mode exploration for all three simultaneously; reading the codebase can inform
+          both the product decisions and the technical limits without premature user interruptions.
       - id: d
         text: >-
-          The design contradicted a constraint only because Claude lacked bypassPermissions to fully
-          inspect the repository.
+          Ask AskUserQuestion about (1) and (3) first; once those product decisions are fixed,
+          use plan-mode exploration for (2) — because the capacity question is only meaningful after
+          you know the target use-case, and code reading cannot resolve unstated product decisions.
     answerKey:
       kind: choice
-      correctChoiceId: a
+      correctChoiceId: d
     guidance: >-
-      This conflates two distinct ambiguities. Unstated requirements live in the human's head, not
-      the code, so exhaustive surveying cannot resolve them; the documented move is the interview
-      pattern with AskUserQuestion to surface tradeoffs. The unscoped "read everything" prompt is
-      also the infinite-exploration anti-pattern, whose fix is narrow scoping or subagent
-      delegation, not more permissions.
+      (1) and (3) are product decisions — the user owns them, not the codebase. (2) fan-out capacity
+      is a code question, but only meaningful after the product decisions are settled. Exploring (2)
+      before (1) and (3) are resolved means evaluating adequacy without knowing the target. Option (a)
+      inverts the dependency. Option (b) misroutes the capacity question. Option (c) burns context on
+      product questions that code cannot resolve. Settle what you are building before exploring whether
+      the infrastructure supports it.
   - id: p-500-ff-d
     tier: 500
     bloom: evaluate
@@ -2594,38 +2692,33 @@ items:
     difficulty: 519
     type: free_form
     prompt: >-
-      Compare writing a plan to a file (SPEC.md / PLAN.md) against keeping the plan only in the live
-      conversation. Evaluate the tradeoff: what does the written artifact enable, and what is its
-      risk versus the in-conversation plan?
+      A three-person team is in early exploratory planning (requirements still shifting). They have
+      showClearContextOnPlanAccept disabled and no dedicated review subagent. Evaluate whether they
+      should use a plan-as-artifact, an in-conversation plan, or a hybrid for this project.
     rubric:
       criteria:
         - id: c1
           text: >-
-            States that a written plan lets a fresh session implement it and lets an adversarial
-            subagent review the diff against it (the artifact is reusable and independently
-            checkable).
+            Identifies that shifting requirements make artifacts go stale fastest and the absent
+            review subagent removes the primary portability benefit of written artifacts.
         - id: c2
           text: >-
-            States that a written plan can go stale or omit tacit context that lived in the
-            conversation.
+            Proposes a concrete hybrid that defers artifact creation until requirements stabilize.
         - id: c3
           text: >-
-            States that an in-conversation plan keeps full context but is more fragile to
-            compaction/loss.
+            Notes that disabling clear-on-accept means in-conversation plans carry exploratory
+            noise into implementation, which a late-written artifact could avoid.
       referenceAnswer: >-
-        A written plan as an artifact (SPEC.md, PLAN.md, or an Ultraplan plan saved via Cancel) is
-        reusable and independently checkable: a fresh session can implement it with no prior
-        context, and an adversarial subagent can review the resulting diff against it. The risk is
-        that a written plan can go stale as understanding evolves and can omit tacit context that
-        only existed in the live conversation. Keeping the plan in-conversation preserves that full
-        context but is fragile — it can be lost to compaction or a /clear. The right choice depends
-        on whether you need portability and independent review (write it) or rich tacit context for
-        immediate execution (keep it live).
+        Artifact-only is the weakest fit: requirements are still shifting (when artifacts go stale
+        fastest) and there is no review subagent (so the main portability benefit is absent).
+        A pure in-conversation plan stays current but with clear-on-accept disabled, exploratory
+        noise carries into implementation. Best fit: keep the plan in-conversation through the
+        exploratory phase, write a lean artifact only once requirements stabilize.
       passThreshold: 0.6
     guidance: >-
-      Plan-as-artifact buys portability and independent, anchored-free review, at the cost of
-      staleness and lost tacit context. Plan-as-conversation keeps everything in context but is
-      vulnerable to compaction. This is a genuine tradeoff, not a one-size-fits-all rule.
+      The core insight is that artifact portability primarily pays off through fresh-session
+      execution and independent review subagents. With neither available and moving requirements,
+      artifact-only is the highest-risk option. Defer artifact creation until requirements stabilize.
   - id: p-500-mc-j
     tier: 500
     bloom: evaluate
@@ -2769,36 +2862,32 @@ items:
     difficulty: 498
     type: multiple_choice
     prompt: >-
-      A developer keeps one long session open all day, planning a refactor, then debugging an
-      unrelated flaky test, then drafting release notes, then returning to the refactor — all
-      without clearing. They reason "as long as I stay focused, one session is more efficient."
-      Which critique is most accurate?
+      A developer is 75% through a complex distributed-tracing debug session. Context is at 60%
+      capacity. They need to investigate a separate performance regression (30 files) and then
+      return to the tracing work. Subagents are available. Which session-hygiene choice best fits?
     choices:
       - id: a
         text: >-
-          The reasoning is sound; a single session is always more efficient because nothing is lost
-          between tasks.
+          /clear before the performance investigation, then start a fresh session for the tracing bug.
       - id: b
         text: >-
-          The only problem is that they should have used bypassPermissions to speed up the unrelated
-          debugging.
+          /compact before the performance investigation, preserving tracing reasoning without fidelity
+          loss.
       - id: c
         text: >-
-          The kitchen-sink session is an anti-pattern: mixing unrelated tasks pollutes context with
-          irrelevant material that degrades performance; the fix is to /clear between unrelated
-          tasks.
+          Delegate the performance regression to a subagent; it reads in its own context and returns
+          only a summary, leaving the parent's tracing analysis completely intact.
       - id: d
         text: >-
-          The fix is to disable plan mode so the refactor and release notes share one permission
-          mode.
+          Run the performance investigation first, then /compact afterward.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      "Staying focused" does not save a context window from being polluted by unrelated work; the
-      refactor context, the flaky-test debugging, and the release notes all accumulate and degrade
-      performance. The documented fix is to /clear between unrelated tasks so each starts with a
-      clean, relevant context. Permission modes are orthogonal to this contamination problem.
+      /clear discards the accumulated tracing reasoning needed to resume. /compact introduces
+      fidelity loss, and running the unrelated investigation first creates a mixed-context problem.
+      A subagent absorbs the side investigation in its own context and returns only a summary,
+      leaving the parent session untouched.
   - id: p-500-ff-o
     tier: 500
     bloom: evaluate
@@ -2874,38 +2963,38 @@ items:
   - id: p-500-mc-q
     tier: 500
     bloom: evaluate
-    difficulty: 516
+    difficulty: 519
     type: multiple_choice
     prompt: >-
-      A team wants fewer permission prompts during a long implementation while keeping some safety.
-      One member proposes running in bypassPermissions "since it removes all the prompts." Which
-      evaluation best weighs this against the documented guidance?
+      A senior engineer is configuring a CI/CD pipeline where Claude Code runs inside a
+      network-isolated Docker container with no persistent user data and ephemeral state.
+      The team debates auto mode vs bypassPermissions. Which evaluation best matches
+      the documented guidance?
     choices:
       - id: a
         text: >-
-          bypassPermissions is the recommended way to reduce prompts during implementation because
-          it is the fastest.
+          Auto mode should be preferred: the classifier adds defense-in-depth regardless of
+          container isolation.
       - id: b
-        text: Both modes are identical in safety, so the choice is purely stylistic.
+        text: >-
+          Plan mode with acceptEdits gives maximum visibility and is right for any CI step.
       - id: c
         text: >-
-          The docs steer toward auto mode for fewer prompts with retained safety, because auto
-          routes actions through a classifier; bypassPermissions removes all prompts but provides no
-          safety check and is intended for isolated containers or VMs, so it is the wrong choice for
-          a normal workstation.
+          bypassPermissions is the documented right choice: the container is network-isolated
+          and ephemeral, exactly the intended use case, and the classifier is unnecessary overhead
+          when the environment provides the isolation guarantee.
       - id: d
         text: >-
-          Plan mode is the right way to reduce implementation prompts, since it never prompts at
-          all.
+          bypassPermissions is acceptable only if the team adds explicit allowlist rules to
+          compensate for the missing classifier.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      For fewer prompts with safety retained, the documented direction is auto mode, whose
-      classifier still checks actions. bypassPermissions removes every prompt and every check and is
-      intended for isolated containers or VMs, not a normal workstation. Plan mode does not solve
-      implementation prompting because it does not implement, and it prompts like default for
-      non-read actions.
+      bypassPermissions is documented for isolated containers and VMs where the environment
+      supplies the safety boundary. A network-isolated, ephemeral container is exactly that
+      environment. Auto mode's classifier is redundant overhead here. Plan mode (b) blocks
+      editing, which defeats the CI use case. Allowlists (d) are independent of bypassPermissions.
   - id: p-500-ff-r
     tier: 500
     bloom: evaluate

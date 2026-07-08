@@ -1810,7 +1810,7 @@ items:
   - id: cmt-400-mc-p
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: multiple_choice
     prompt: >-
       You want to forbid a server's destructive tools but a teammate keeps re-adding them to

@@ -418,31 +418,40 @@ items:
   - id: gavc-100-ff-q
     tier: 100
     bloom: remember
-    difficulty: 170
+    difficulty: 172
     type: free_form
     prompt: >-
-      What does the command git bisect run <script> do, and what does the script's exit code
-      communicate to Git? Mention the special exit code for an untestable commit.
+      What does `git worktree add <path> <branch>` create, and how is it
+      different from cloning the repository again?
     rubric:
       criteria:
         - id: c1
-          text: States that it automates the bisection by running the script at each step
+          text: >-
+            States that it creates a new working directory at the given path with
+            the specified branch checked out
         - id: c2
-          text: States that exit 0 means good and any other code (e.g. 1) means bad
+          text: >-
+            States that the new working directory shares the same object store
+            and refs as the original checkout (not a separate clone — no objects
+            are duplicated)
         - id: c3
-          text: States that exit code 125 means skip / untestable
+          text: >-
+            Notes that this lets you have two different branches checked out at
+            the same time without duplicating repository data
       referenceAnswer: >-
-        git bisect run <script> automates the bisection: at each step Git checks out a commit and
-        runs the script, using its exit code to decide. Exit code 0 marks the commit good, exit code
-        125 tells Git the commit is untestable so it should be skipped, and any other nonzero code
-        (for example 1) marks the commit bad.
+        `git worktree add <path> <branch>` creates a new working directory at the
+        given path with the specified branch checked out, linked to the same
+        repository. Unlike `git clone`, no objects are copied: the new worktree
+        shares the same `.git` object store and refs as the original, so you can
+        work on a second branch simultaneously without duplicating the full
+        repository data on disk.
       passThreshold: 0.6
     guidance: >-
-      Automating bisect with a test script removes the manual good/bad marking at each step. The key
-      detail is exit code 125, which signals "untestable / skip" (for example when a commit will not
-      build), distinguishing it from a genuine bad result. Note that 126 and 127 are not "bad"
-      markers: Git treats them as normal command errors that abort the bisect run entirely, so a
-      test script should return 1 (or another small nonzero value) to mean bad.
+      A linked worktree is a lightweight second checkout, not a clone. It reuses
+      the original object database, so creating one is fast and disk-efficient.
+      The main use case is working on two branches at once — for example keeping
+      a hotfix branch checked out alongside a long-running feature — without
+      stashing or re-cloning.
   - id: gavc-100-mc-r
     tier: 100
     bloom: remember
@@ -908,35 +917,39 @@ items:
   - id: gavc-200-mc-m
     tier: 200
     bloom: understand
-    difficulty: 232
+    difficulty: 242
     type: multiple_choice
     prompt: >-
-      Why does `git revert <commit>` differ fundamentally from `git reset` as a way to "undo" a
-      change on a shared branch?
+      After running `git add src/app.js` you make additional edits to the same file. Running `git
+      diff` shows only the new edits and appears to ignore what you staged. Which statement correctly
+      explains this, and which command shows what is staged?
     choices:
       - id: a
         text: >-
-          `revert` creates a new commit that applies the inverse of the target commit, leaving
-          history intact; `reset` moves the branch pointer and rewrites history, which is unsafe on
-          shared branches.
+          `git diff` compares the working tree against HEAD, so it always includes staged changes;
+          if staged content appears missing, the `git add` did not capture the right files.
       - id: b
         text: >-
-          `revert` permanently deletes the target commit from history, while `reset` only hides it
-          temporarily.
+          `git diff` compares the working tree to the index (staging area) and shows only changes
+          not yet staged; use `git diff --cached` (or `--staged`) to compare the index to HEAD and
+          see what has been staged.
       - id: c
-        text: They are identical in effect; `revert` is just the newer alias for `reset --hard`.
+        text: >-
+          `git diff` shows unstaged changes only, and staged content is visible exclusively through
+          `git status --verbose`; `git diff --cached` is not a valid Git option.
       - id: d
         text: >-
-          `revert` only works on the most recent commit, while `reset` can target any commit, but
-          neither changes history.
+          Staging a file with `git add` moves its content directly into the repository, so staged
+          changes are already committed and `git diff` correctly shows no diff for them.
     answerKey:
       kind: choice
-      correctChoiceId: a
+      correctChoiceId: b
     guidance: >-
-      `git revert` is additive: it records a brand-new commit that undoes the referenced commit's
-      changes, so the original stays in history and everyone's clones remain consistent. `git reset`
-      rewinds the branch pointer (optionally touching the index/working tree), rewriting history —
-      fine locally but dangerous on a branch others share. Confusing the two is a classic error.
+      `git diff` (no flags) compares the working tree to the index and shows only unstaged changes.
+      `git diff --cached` (alias `--staged`) compares the index to HEAD, revealing exactly what will
+      go into the next commit. To see all outstanding changes relative to HEAD in one command, use
+      `git diff HEAD`. Understanding this three-way relationship — working tree, index, and HEAD —
+      is essential for precise staging.
   - id: gavc-200-ff-n
     tier: 200
     bloom: understand
@@ -1129,40 +1142,50 @@ items:
       new SHA (the parent differs). The original commit is untouched on its branch. So the change is
       duplicated, not the same commit living in two places — a distinction that matters when you
       later merge the branches.
-  - id: gavc-200-ff-t
-    tier: 200
-    bloom: understand
-    difficulty: 276
-    type: free_form
+  - id: gavc-500-mc-k
+    tier: 500
+    bloom: evaluate
+    difficulty: 521
+    type: multiple_choice
     prompt: >-
-      Explain the difference between a lightweight tag and an annotated tag in Git, and explain why
-      releases are conventionally cut with annotated tags.
-    rubric:
-      criteria:
-        - id: c1
-          text: >-
-            Explains that a lightweight tag is just a named pointer to a commit, with no extra
-            metadata.
-        - id: c2
-          text: >-
-            Explains that an annotated tag (`git tag -a`) is a full tag object storing tagger
-            identity, date, and a message, and can be GPG-signed.
-        - id: c3
-          text: >-
-            Explains that releases use annotated tags because the metadata and optional signature
-            provide a verifiable, self-describing record of the release.
-      referenceAnswer: >-
-        A lightweight tag is essentially just a name that points at a commit, like a branch that
-        never moves; it carries no extra information. An annotated tag, created with `git tag -a`,
-        is a full Git object that stores the tagger's name and email, a timestamp, and a tagging
-        message, and it can be GPG-signed. Releases conventionally use annotated tags because that
-        stored metadata — who cut the release, when, and why, plus an optional signature — makes the
-        tag a verifiable, self-describing record, rather than an anonymous pointer.
-      passThreshold: 0.6
+      A platform team adopts SLSA Level 2 for their release pipeline and must choose a tag-signing
+      strategy. They are weighing (1) GPG-signed annotated tags with web-of-trust or
+      keyserver-distributed keys versus (2) SSH-signed annotated tags with a repository-local
+      allowed-signers file. The org rotates engineering staff annually. Which evaluation correctly
+      weighs the tradeoffs for this constraint?
+    choices:
+      - id: a
+        text: >-
+          GPG web-of-trust is superior: a new employee's key can be counter-signed by existing staff,
+          so third-party attestations survive rotation without touching any repository file.
+      - id: b
+        text: >-
+          SSH signing is the stronger fit: it reuses existing SSH key infrastructure, has no
+          keyserver dependency, and the allowed-signers file lives in the repo so key additions and
+          revocations are atomic, auditable commits — operationally lighter than GPG expiry and
+          keyserver management for a team that turns over annually.
+      - id: c
+        text: >-
+          The two approaches are equivalent for this use case because `git verify-tag` works
+          identically for both GPG-signed and SSH-signed annotated tags.
+      - id: d
+        text: >-
+          Signed tags are unnecessary at SLSA Level 2 because provenance attestations attached to
+          the build artifact are sufficient; the tag itself needs no signature.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
     guidance: >-
-      The practical difference is metadata and verifiability. Lightweight tags are fine for private
-      bookmarks, but annotated (and ideally signed) tags give releases provenance — author, date,
-      message, and a signature — which is why tooling and conventions favor them for version tags.
+      The annual-rotation constraint tips the balance toward SSH+allowed-signers. SSH signing reuses
+      key material already managed for repo access, requires no external keyserver, and the
+      allowed-signers file is version-controlled so every key addition and revocation is an auditable
+      in-repo commit — exactly what you want when the signing population changes every year. GPG
+      web-of-trust transitivity (a) is plausible but managing expiry, revocation, and keyserver
+      publishing for a constantly-rotating staff is operationally heavier. (c) is false: the two
+      approaches share the git verify-tag interface but differ in key distribution model, revocation
+      path, and required infrastructure. (d) misidentifies the question: SLSA Level 2 focuses on
+      build-artifact provenance, but the team has already decided to implement tag signing as a
+      complementary source-integrity layer; (d) challenges the wrong premise.
   - id: gavc-300-mc-a
     tier: 300
     bloom: apply
@@ -1611,35 +1634,50 @@ items:
       you want for throwaway "fix typo" commits. squash also combines but keeps the messages
       (prompting you to merge them), reword only changes a message, and edit pauses to amend the
       commit's contents.
-  - id: gavc-300-mc-q
-    tier: 300
-    bloom: apply
-    difficulty: 358
+  - id: gavc-500-mc-c
+    tier: 500
+    bloom: evaluate
+    difficulty: 500
     type: multiple_choice
     prompt: >-
-      You ran git push --force-with-lease and it succeeded, but you later discover you accidentally
-      clobbered a teammate's commit anyway. You recall your IDE runs git fetch automatically in the
-      background. What most likely defeated the lease's protection?
+      Your team is evaluating three branch-protection strategies for shared feature branches: (A) plain
+      `--force-with-lease`, (B) `--force-with-lease=<ref>:<sha>` where the SHA is captured immediately
+      before rewriting—before any fetch—in the workflow script, (C) server-side branch protection
+      requiring all changes to arrive via pull request. Which evaluation of their protection guarantees
+      is most accurate?
     choices:
       - id: a
-        text: '--force-with-lease is just an alias for --force and never protects anything'
+        text: >-
+          A and B are equivalent because both compare the remote-tracking ref against the server's
+          current tip at push time, so they offer identical protection.
       - id: b
         text: >-
-          The background fetch updated your remote-tracking ref, so the lease saw the remote as
-          unchanged and allowed the overwrite
+          A is the weakest: a background fetch silently advances the tracking ref so the lease passes
+          even when the remote moved. B closes that window but depends on author or CI discipline to
+          capture the SHA before any fetch—used incorrectly it degrades to A. C provides server-enforced
+          protection regardless of client behavior, but mandates a PR workflow rather than substituting
+          for a lease on branches where direct pushes are still permitted.
       - id: c
-        text: The teammate force-pushed, which always bypasses any lease
+        text: >-
+          C eliminates the need for A or B because branch protection catches every unauthorized direct
+          push server-side, regardless of what lease flag the client supplies.
       - id: d
-        text: The lease only protects tags, not branch heads
+        text: >-
+          B is the strongest absolute policy because a pinned SHA cannot be advanced by any background
+          process, so no force-push can ever bypass it.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      --force-with-lease compares your remote-tracking ref to the actual remote. A background fetch
-      can quietly advance that tracking ref without you integrating the changes, so the lease
-      believes nothing moved and permits the overwrite. The precise form
-      --force-with-lease=<ref>:<expected-sha> pins the SHA you actually verified and avoids this
-      trap.
+      Plain --force-with-lease (A) compares your local remote-tracking ref against the server; a
+      background auto-fetch advances that ref without you integrating the new commits, so the lease
+      passes and the overwrite proceeds. The explicit form --force-with-lease=<ref>:<sha> (B) pins the
+      exact SHA you verified, bypassing the remote-tracking ref entirely and closing the background-fetch
+      window. Its weakness is that it is client-side: the discipline of capturing the SHA at the correct
+      point in the workflow is the author's or CI script's responsibility. Server-side branch protection
+      requiring PRs (C) enforces policy regardless of client behavior but is a workflow mandate, not a
+      lease variant. Evaluating across all three: A is strictly weaker than B for client-side safety; C
+      provides the strongest server-level guarantee but at the cost of mandating a PR workflow.
   - id: gavc-300-mc-r
     tier: 300
     bloom: apply
@@ -1693,39 +1731,36 @@ items:
   - id: gavc-300-ff-t
     tier: 300
     bloom: apply
-    difficulty: 380
+    difficulty: 365
     type: free_form
     prompt: >-
       You started bisecting a regression, but partway through you realize the bug is flaky: it
       reproduces only intermittently, and one early commit had a broken build. Explain two concrete
-      actions you would take so that bisect still gives a trustworthy result (or how you would
-      recognize bisect is the wrong tool here).
+      actions you would take so that bisect still gives a trustworthy result.
     rubric:
       criteria:
         - id: c1
-          text: Marks the unbuildable/untestable commit with git bisect skip rather than good or bad
+          text: >-
+            Marks the unbuildable/untestable commit with git bisect skip (or exit 125 in a run
+            script) rather than good or bad
         - id: c2
           text: >-
-            Addresses the flaky bug (e.g. run the test many times per commit / use a more reliable
-            repro before marking good or bad)
-        - id: c3
-          text: >-
-            Recognizes bisect assumes a clean good->bad transition and may be the wrong tool if that
-            assumption is violated
+            Addresses the flaky bug by running the test many times per commit, or hardening the
+            repro to make it deterministic, before marking a commit good or bad
       referenceAnswer: >-
-        First, for the commit that will not build, use git bisect skip (or exit 125 in a run script)
-        so bisect tries a neighbor instead of being misled by a false good/bad. Second, because the
-        bug is flaky, run the reproduction many times (or harden the repro) at each tested commit
-        before marking it good or bad, so a single lucky pass does not mislabel a commit. Finally,
-        recognize that bisect assumes a clean, monotonic good-to-bad transition; if the bug was
-        fixed and reintroduced or the repro is too unreliable, bisect's assumption is broken and it
-        may be the wrong tool.
+        First, for the commit that will not build, use git bisect skip (or return exit code 125 in
+        a bisect run script) so bisect routes around it to a neighboring testable commit rather than
+        scoring it good or bad and corrupting the binary search. Second, because the bug is flaky,
+        run the reproduction script many times at each tested commit — or harden the test harness so
+        the failure is deterministic — before marking the commit good or bad, so a single lucky or
+        unlucky run does not mislabel a commit and steer the search in the wrong direction.
       passThreshold: 0.6
     guidance: >-
-      git bisect assumes a single clean good->bad transition. Untestable commits must be skipped
-      (exit 125), and a flaky bug must be repeated enough to avoid mislabeling a commit; when the
-      transition is non-monotonic (fixed then reintroduced) bisect can point at the wrong commit
-      entirely.
+      Untestable commits must be skipped via git bisect skip (or exit 125 in bisect run) rather than
+      scored; mislabeling them poisons the binary search. A flaky repro must be run many times per
+      bisect step, or made deterministic, so stochastic results do not mislabel commits. These are the
+      two practical apply-level mechanics for running a trustworthy bisect when the test environment is
+      imperfect.
   - id: gavc-400-mc-a
     tier: 400
     bloom: analyze
@@ -1924,43 +1959,56 @@ items:
       deliberately leaves your local branch and working tree alone. The new commits ARE local now
       (you can `git log origin/main`); they just are not integrated into your branch until you merge
       or rebase. `git pull` is fetch plus that integration step.
-  - id: gavc-400-ff-g
-    tier: 400
-    bloom: analyze
-    difficulty: 471
-    type: free_form
+  - id: gavc-500-mc-f
+    tier: 500
+    bloom: evaluate
+    difficulty: 488
+    type: multiple_choice
     prompt: >-
-      A secret API key was committed and pushed to a public repo two weeks ago. A colleague proposes
-      running `git filter-repo` to purge it from all history and considers the leak resolved.
-      Critique this plan and state the correct order of operations.
-    rubric:
-      criteria:
-        - id: c1
-          text: >-
-            States that rewriting history does NOT undo the exposure; the secret must be
-            rotated/revoked because it may already be compromised.
-        - id: c2
-          text: >-
-            Notes the old SHAs/secret can persist in forks, existing clones, CI caches, and
-            PR/cached views, so the rewrite cannot guarantee removal everywhere.
-        - id: c3
-          text: >-
-            Concludes the correct order is rotate the secret FIRST, then rewrite history
-            (filter-repo/BFG), and that the rewrite invalidates everyone's existing history
-            (force-push, coordinated re-clone).
-      referenceAnswer: >-
-        Rewriting history with `git filter-repo` does not undo a two-week-old public exposure:
-        assume the key is compromised and rotate/revoke it first. The old commits and secret can
-        survive in forks, prior clones, CI caches, and cached PR views, so the purge cannot
-        guarantee global removal. The expert order is "rotate first, rewrite second"; the rewrite
-        also changes every affected SHA, so it invalidates everyone's history and requires a
-        coordinated force-push and re-clone.
-      passThreshold: 0.6
+      Your CISO is finalising an incident-response SOP for committed secrets. Draft A
+      mandates rotate-then-done. Draft B mandates rotate, then rewrite history with
+      git filter-repo, coordinate a force-push, notify all downstream consumers, and
+      audit CI/CD caches — all within 48 hours. Which evaluation of the two drafts is
+      most sound?
+    choices:
+      - id: a
+        text: >-
+          Draft B is the stronger default: rotating a credential without purging its
+          historical record leaves a discoverable copy of the secret, so the rewrite
+          step should be standard practice to eliminate residual exposure risk —
+          privilege level and blast radius do not change that calculus.
+      - id: b
+        text: >-
+          Draft A is sufficient: once a credential is rotated it is no longer valid,
+          so its presence in history poses no further access risk, and Draft B's
+          coordination overhead can itself introduce errors and downtime in critical
+          systems.
+      - id: c
+        text: >-
+          Draft B's overhead is proportionate when the secret is high-privilege or
+          the repo has many forks and consumers; Draft A accepts the residual risk
+          that the old credential remains discoverable in history and in clones or
+          forks predating the purge — a tolerable risk for a low-privilege,
+          short-lived secret in a small private, fork-free repo.
+      - id: d
+        text: >-
+          The decision should be based on how quickly the rotation can be
+          completed; the secret's privilege level, number of forks, and downstream
+          consumer count are secondary concerns compared to rotation speed.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
     guidance: >-
-      The misconception is "rewrite history and the leak is gone." Exposure is irreversible once
-      public: rotation is mandatory and comes first. History rewriting reduces future
-      discoverability but cannot reach forks, clones, and caches, and it rewrites every downstream
-      SHA, forcing the whole team to re-sync.
+      This is a genuine policy tradeoff. Draft A's assumption is that a rotated credential is
+      immediately harmless; its residual risk is that the old value persists in history and can
+      be extracted from any clone or fork created before the purge — acceptable for a
+      low-privilege, short-lived secret in a small private repo, but not for a long-lived
+      high-privilege key with many downstream consumers. Draft B's overhead (history rewrite,
+      force-push, downstream coordination, cache audit) is justified when the blast-radius is
+      large. Option a overstates Draft B's necessity by treating one context-dependent measure
+      as universal; option b overstates rotation's sufficiency by ignoring residual
+      discoverability risk; option d ignores the factors — privilege level, forks, downstream
+      consumers — that actually drive the decision.
   - id: gavc-400-mc-h
     tier: 400
     bloom: analyze
@@ -1997,41 +2045,48 @@ items:
       value, immune to a stray auto-fetch. A plain `--force` after a fetch (d) drops the safety
       check entirely, and `--force-if-includes` is a complementary guard, not a way to "always
       supersede" the lease.
-  - id: gavc-400-ff-i
-    tier: 400
-    bloom: analyze
-    difficulty: 477
-    type: free_form
+  - id: gavc-500-mc-h
+    tier: 500
+    bloom: evaluate
+    difficulty: 482
+    type: multiple_choice
     prompt: >-
-      Your team must choose between squash-merge and rebase-merge for pull requests into main.
-      Compare the tradeoffs and explain what each choice optimizes for and what it sacrifices.
-    rubric:
-      criteria:
-        - id: c1
-          text: >-
-            Squash-merge: one tidy commit per PR (clean main, easy revert/readability) but collapses
-            intra-PR atomic commits, hurting fine-grained bisect and blame.
-        - id: c2
-          text: >-
-            Rebase-merge: keeps individual commits (preserving per-commit granularity for
-            bisect/blame) but rewrites their SHAs and loses an explicit PR-boundary record.
-        - id: c3
-          text: >-
-            Concludes there is no universally correct answer; the choice depends on whether the team
-            values per-PR readability or per-commit granularity.
-      referenceAnswer: >-
-        Squash-merge produces a single commit per PR, which keeps main readable and makes reverting
-        a whole PR trivial, but it collapses the atomic commits inside the PR so fine-grained `git
-        bisect` and `git blame` lose resolution. Rebase-merge preserves each individual commit (good
-        for granular bisect and blame) but rewrites their SHAs and discards the explicit PR-boundary
-        record. Neither is universally right: pick squash if you value per-PR tidiness, rebase if
-        you value per-commit granularity.
-      passThreshold: 0.6
+      Your 60-engineer team switched to squash-merge 18 months ago. Post-adoption data: main commit
+      count down 78%, median time-to-root-cause a regression via bisect up from 90 min to 5 h,
+      production revert rate down 55%, and two compliance audits both passed (auditors accepted
+      PR-level granularity). A principal engineer now proposes reverting to rebase-merge, citing the
+      bisect slowdown. Which evaluation is strongest?
+    choices:
+      - id: a
+        text: >-
+          The bisect regression is the decisive signal — the team should revert to rebase-merge,
+          because restoring per-commit granularity will directly reduce root-cause time by giving
+          bisect a finer-grained search target.
+      - id: b
+        text: >-
+          The data shows a genuine bisect-latency cost that was partially offset by reduced revert
+          pressure; before switching, the team should measure whether the 5 h bisect time is driven
+          by per-commit granularity loss or by slow CI, because rebase-merge only helps if the former
+          dominates.
+      - id: c
+        text: >-
+          The compliance audits passing means the current policy is objectively correct and no change
+          is warranted.
+      - id: d
+        text: >-
+          Squash-merge is universally preferred at scale; the bisect slowdown is an acceptable cost
+          for any team larger than 20 engineers.
+    answerKey:
+      kind: choice
+      correctChoiceId: b
     guidance: >-
-      This is a genuine tradeoff, not a "rebase is always cleaner" rule. Squash optimizes main-line
-      readability at the cost of intra-PR detail; rebase-merge keeps detail but rewrites SHAs and
-      erases the PR seam. The right call depends on which granularity the team's bisect/blame
-      workflows rely on.
+      (b) is the strongest evaluation because it recognises the bisect-latency signal as real but
+      causally ambiguous: the 5 h root-cause time could stem from lost per-commit granularity (which
+      rebase-merge would restore) OR from slow CI per bisect step (which rebase-merge would not fix
+      at all). A policy reversal carries high coordination cost, so the team must isolate the dominant
+      cause before committing to it. (a) is plausible but incomplete: it assumes granularity loss is
+      the bottleneck without ruling out slow CI as the confound. (c) conflates audit compliance with
+      workflow optimality. (d) invents a team-size threshold with no empirical basis.
   - id: gavc-400-mc-j
     tier: 400
     bloom: analyze
@@ -2097,40 +2152,81 @@ items:
       commits in a `.git-blame-ignore-revs` file (referenced via `blame.ignoreRevsFile`) so blame
       routinely looks past them to the prior meaningful change. Reverting (c) would undo the
       formatting, and blame shows the latest change, not the first (d).
-  - id: gavc-400-ff-l
-    tier: 400
-    bloom: analyze
-    difficulty: 456
+  - id: gavc-500-ff-a
+    tier: 500
+    bloom: evaluate
+    difficulty: 498
     type: free_form
     prompt: >-
-      A junior dev accidentally ran `git reset --hard HEAD~5` on their local feature branch and lost
-      5 unpushed commits. The branch was never pushed. Explain how to recover the commits and why
-      recovery is possible.
+      A developer ran `git reset --hard HEAD~3` on their local feature branch 35 days ago, never
+      pushed the branch, and in the weeks since ran several merges and pulls that overwrote
+      ORIG_HEAD. A routine `git gc` then expired the reflog entries for the unreachable commits,
+      and they subsequently ran `git gc --prune=now` to reclaim disk space. The upstream is a
+      bare remote server with no reflog. List every plausible recovery path still available,
+      evaluate the realistic likelihood of success for each, and explain which Git configuration
+      controls would have extended the recovery window.
     rubric:
       criteria:
         - id: c1
-          text: Uses `git reflog` to find the SHA of the commit the branch pointed at before the reset.
+          text: >-
+            Recognises that the standard recovery guards are now closed: the reflog entries for the
+            unreachable commits aged out after the default 30-day `gc.reflogExpireUnreachable`
+            window, a routine `git gc` expired them, and `git gc --prune=now` then bypassed the
+            normal loose-object grace period (`gc.pruneExpire`, default 14 days) to immediately
+            discard the formerly dangling commit objects; ORIG_HEAD, which was set to the pre-reset
+            tip (the most recent lost commit) at the time of the reset, was subsequently overwritten
+            by the intervening merges and pulls and is no longer available.
         - id: c2
           text: >-
-            Recovers by resetting/branching back to that SHA (e.g. `git reset --hard <sha>` or `git
-            branch recover <sha>`).
+            Evaluates at least two alternative recovery paths with honest likelihood assessment; for
+            example: ORIG_HEAD was overwritten by later operations and is no longer available;
+            `git fsck --lost-found` can surface dangling objects only if they survived GC — after
+            `--prune=now` this path is almost certainly exhausted; server-side backup or bundle is
+            viable only if the organisation snapshots repos and the timing is right, but commits that
+            were never pushed are absent from the bare remote entirely; IDE or editor local history
+            (e.g. JetBrains, VS Code) may recover file content independent of Git objects if the
+            files were open during those sessions.
         - id: c3
           text: >-
-            Explains the commits still exist because reset only moved the branch pointer; they
-            remain reachable via the reflog and are not GC'd until unreachable AND expired.
+            Identifies the configuration levers that would have extended the window:
+            `gc.reflogExpireUnreachable` (default 30 days) keeps unreachable reflog entries longer;
+            `gc.pruneExpire` (default 14 days) defers pruning of loose unreachable objects; avoiding
+            `--prune=now` on developer machines preserves the normal grace period.
       referenceAnswer: >-
-        Run `git reflog` to find the entry recording where the branch tip pointed just before the
-        reset, then move the branch back to that SHA with `git reset --hard <sha>` (or create a
-        rescue branch with `git branch recover <sha>`). Recovery works because `reset --hard` only
-        moves the branch pointer and resets the working tree; the original commits still exist in
-        the object database, kept reachable by the reflog, and are not garbage-collected until they
-        are both unreachable and aged out of the reflog.
+        The standard recovery paths are exhausted. The reflog entries aged out after the default
+        30-day `gc.reflogExpireUnreachable` window elapsed; a routine `git gc` then discarded them.
+        `git gc --prune=now` subsequently bypassed the normal loose-object grace period
+        (`gc.pruneExpire`, default 14 days), immediately collecting the formerly dangling commit
+        objects. ORIG_HEAD was written to the pre-reset HEAD (the most recent of the three lost
+        commits) at the time of the reset — had it survived, `git reset --hard ORIG_HEAD` would
+        have recovered all three commits via the ancestor chain — but it was overwritten by the
+        intervening merges and pulls before GC ran.
+
+        Remaining paths and realistic likelihood: (1) ORIG_HEAD — overwritten; no longer available.
+        (2) `git fsck --lost-found` — would surface unreachable objects that survived GC, but
+        `--prune=now` explicitly collected them; this path is almost certainly exhausted.
+        (3) Server-side backup or bundle — if the organisation takes scheduled repository snapshots,
+        a backup predating the reset may contain the missing commits; the bare remote has no reflog
+        and these commits were never pushed, so the objects are absent from the server entirely;
+        success depends entirely on whether a local-machine or infrastructure backup captured them.
+        (4) IDE or editor local history — tools like JetBrains IDEs and VS Code maintain file-level
+        undo history independent of Git object storage; if the developer had the files open during
+        those sessions, this may recover the textual content even though the commit objects are gone.
+
+        Configuration controls that would have extended the recovery window: raise
+        `gc.reflogExpireUnreachable` (default 30 days) so unreachable reflog entries survive longer
+        before becoming GC-eligible; raise `gc.pruneExpire` (default 14 days) so loose unreachable
+        objects are not immediately pruneable after reflog expiry; and avoid using `--prune=now` on
+        developer machines, reserving it for servers where storage reclamation is the priority.
       passThreshold: 0.6
     guidance: >-
-      `git reset --hard` is destructive to uncommitted work but does not erase committed objects; it
-      just repoints the branch. The reflog records the prior tip locally, so the "lost" commits are
-      recoverable until reflog expiry/GC. This is exactly why reflog is the first-line recovery
-      tool.
+      The scenario tests whether the learner understands both guards that protect lost commits: the
+      reflog keeps unreachable commits reachable, and the loose-object grace period defers their
+      physical deletion even after the reflog entries expire. `--prune=now` collapses the second
+      guard to zero. The evaluation moves are: recognise both guards are closed, rank remaining
+      paths honestly (fsck is too late post-prune; backup and IDE history are the realistic last
+      resorts), and identify `gc.reflogExpireUnreachable` and `gc.pruneExpire` as the preventive
+      controls.
   - id: gavc-400-mc-m
     tier: 400
     bloom: analyze
@@ -2205,34 +2301,45 @@ items:
     difficulty: 435
     type: multiple_choice
     prompt: >-
-      A teammate wants to "undo" a bad commit that is already on the shared main branch. They are
-      deciding between `git reset --hard <prev>` and `git revert <bad>`. Which analysis is correct?
+      Your `feature` branch was started from `experiment`, which itself branches off
+      `main`. Your team has decided to drop `experiment`. You want to rebase `feature`
+      directly onto `main`, carrying ONLY the commits unique to `feature` — not the
+      `experiment` commits. Which command achieves this?
     choices:
       - id: a
         text: >-
-          Use `git reset --hard`: it is the only command that truly removes the bad changes, and
-          revert just hides them.
+          `git rebase --onto main experiment feature` — replays only the
+          `experiment..feature` range onto `main`, leaving the `experiment` commits
+          behind.
       - id: b
         text: >-
-          They are interchangeable on a shared branch; both create a new commit and neither rewrites
-          history.
+          `git rebase main` (run from `feature`) — Git automatically excludes commits
+          already on `experiment` and replays only the feature-unique commits.
       - id: c
         text: >-
-          Use `git revert` only on private branches; on shared branches `git reset --hard` is the
-          safe option.
+          `git rebase --onto experiment feature main` — the reversed arguments instruct
+          Git to "unroot" `experiment` and graft the feature work onto `main`.
       - id: d
         text: >-
-          Use `git revert`: it adds a new inverse commit and rewrites no history, so other clones
-          stay consistent; `git reset --hard` would rewind the shared branch and force a destructive
-          push.
+          `git merge feature --squash` (run from `main`) — squash-merging collapses the
+          feature history into a single commit; Git automatically excludes any
+          `experiment` commits shared with `main`.
     answerKey:
       kind: choice
-      correctChoiceId: d
+      correctChoiceId: a
     guidance: >-
-      On a shared branch, `git revert` is the safe undo: it records a new commit that inverts the
-      bad change while leaving history intact, so everyone's clones stay consistent. `git reset
-      --hard` rewinds the branch pointer and requires a force-push that rewrites history others
-      already have. Confusing revert (adds an inverse) with reset (rewinds) is a classic error.
+      `git rebase --onto <newbase> <upstream> <branch>` replays `<upstream>..<branch>`
+      onto `<newbase>`. Here that is `experiment..feature` (only the feature-specific
+      commits) onto `main` — exactly the selective transplant you need. Plain `git rebase
+      main` (b) is wrong because it computes the fork-point between `feature` and `main`,
+      which reaches back to before `experiment` branched off `main`; it would therefore
+      replay `experiment`'s commits too. Choice c reverses the `--onto` arguments,
+      meaning "rebase `main` using `feature` as upstream and `experiment` as newbase,"
+      which rebases the wrong branch entirely. Choice d is wrong for two reasons: run
+      from `main`, `git merge feature --squash` would create a squash commit containing
+      the full diff of `feature` relative to `main` — which includes all of
+      `experiment`'s changes — and no merge-based command can perform the selective
+      commit-range transplant that `--onto` achieves.
   - id: gavc-400-mc-p
     tier: 400
     bloom: analyze
@@ -2340,36 +2447,45 @@ items:
     difficulty: 453
     type: multiple_choice
     prompt: >-
-      Your team uses `git merge --no-ff` so every feature lands as a merge commit. Months later you
-      must back out an entire feature, so you `git revert -m 1 <merge>`. Later the same feature
-      branch needs to be re-merged, but its changes do not come back. What is the nuanced cause?
+      Your team maintains an in-house fork of a vendor library. The vendor just released v4, which
+      you need to "absorb" into your fork's history — recording that you evaluated and consciously
+      skipped it — without letting any of the vendor's changes actually enter your tree. Your fork
+      has completely diverged and must stay byte-identical to HEAD after the merge. Which command
+      achieves this?
     choices:
       - id: a
-        text: '`--no-ff` merges cannot be reverted at all, so the revert silently did nothing.'
+        text: >-
+          `git merge -X ours vendor/v4` — the `-X ours` strategy option resolves every conflict in
+          your favour, so your tree is fully preserved.
       - id: b
         text: >-
-          Reverting a merge commit records that the merged content is now undone, so a later
-          re-merge sees nothing new to bring in; you must revert the revert (or re-apply the
-          changes) before re-merging.
+          `git merge --no-ff vendor/v4` — `--no-ff` forces a merge commit but leaves your tree
+          unchanged because it suppresses content integration.
       - id: c
         text: >-
-          Reverting deleted the feature branch's commits from history, so there is nothing left to
-          merge.
+          `git merge -s ours vendor/v4` — the `ours` merge strategy produces a merge commit whose
+          resulting tree is identical to HEAD, discarding the vendor's tree entirely.
       - id: d
-        text: Re-merging requires a force-push; the changes are there but hidden until you force.
+        text: >-
+          `git merge --squash vendor/v4` — squash collapses the vendor's commits into a single
+          staged diff, leaving your committed tree untouched until you decide to commit.
     answerKey:
       kind: choice
-      correctChoiceId: b
+      correctChoiceId: c
     guidance: >-
-      `--no-ff` makes feature boundaries explicit and lets you revert a whole feature with `revert
-      -m 1`. But that revert is itself a commit saying "these merged changes are undone." Since the
-      feature commits are still ancestors, a later re-merge finds nothing new. You must revert the
-      revert (or otherwise re-apply) to bring the feature back -- a well-known complication of
-      reverting merge commits.
+      `-s ours` is the "ours" merge *strategy*: it records a proper merge commit but the resulting
+      tree is exactly your current HEAD — the other branch's content is discarded wholesale. This is
+      the right tool when you want to close off a vendor line in history without changing a byte.
+      `-X ours` (option a) is a *strategy option* to the default recursive/ort strategy, not a
+      strategy itself: it picks "our" side when a hunk conflicts, but non-conflicting additions and
+      edits from the vendor (new files, lines that only they touched) still come in, so your tree is
+      not fully preserved. `--no-ff` (option b) only prevents a fast-forward; it performs a normal
+      integration and does change your tree. `--squash` (option d) stages the combined delta without
+      creating a merge commit at all, so the history record you wanted is missing.
   - id: gavc-400-ff-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 475
     type: free_form
     prompt: >-
       An org wants to set a repo-wide default to stop accidental merge bubbles from routine pulls.
@@ -2414,68 +2530,94 @@ items:
     difficulty: 482
     type: multiple_choice
     prompt: >-
-      A team standardizes on squash-merging every PR into a single commit on main, arguing it keeps
-      the log tidy. A senior engineer pushes back. Which critique is the strongest evaluation of
-      this policy?
+      A team standardizes on squash-merging every PR into a single commit on main. After six
+      months, developers report that `git bisect` investigations take significantly longer than
+      before the policy change. Which evaluation best explains the tradeoff and suggests the
+      appropriate response?
     choices:
       - id: a
         text: >-
-          Squash-merge rewrites the SHAs of main's existing commits, so older history becomes
-          unreachable and prone to garbage collection.
+          Squash-merge is strictly superior to rebase-merge; the bisect slowdown is an
+          acceptable side-effect of a cleaner history and should not drive a policy reversal.
       - id: b
         text: >-
-          Squash collapses the PR's individual atomic commits into one, which can hurt fine-grained
-          bisect and blame even though it improves main's top-level readability — so it is a
-          granularity tradeoff, not a strict win.
+          The slowdown is caused by having fewer commits on main: bisect must search a smaller
+          number of coarser commits, each covering more changes, which means the first bad commit
+          points to a large surface area rather than a precise change. The appropriate response is
+          to decide whether the history-clarity benefit outweighs the bisect-latency cost for this
+          team.
       - id: c
         text: >-
-          Squash-merge prevents anyone from ever reverting the change, because the original commits
-          no longer exist anywhere.
+          Squash-merging is the wrong approach for any team that values post-merge debugging;
+          the team should switch to rebase-merge immediately to restore granularity.
       - id: d
         text: >-
-          Squash-merge is objectively wrong; rebase-merge is always the correct choice for any team
-          that values clean history.
+          The bisect slowdown is caused by CI being slower, not by the squash-merge policy;
+          the history structure has no bearing on bisect performance.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      Squash-merge is a real tradeoff: one commit per PR aids main readability but discards intra-PR
-      atomicity that fine-grained bisect and blame rely on. It does not touch existing main SHAs (a
-      is false), the single commit is fully revertable (c is false), and no merge style is
-      universally correct (d overstates). The expert framing is per-PR vs per-commit granularity.
+      Squash-merge produces one commit per PR on main, condensing potentially hundreds of
+      micro-commits into a single point. Bisect on squashed history still narrows to the
+      first bad PR but cannot identify which individual change within that PR caused the
+      regression — the investigator must then manually review the full PR diff. This
+      increases median investigation time proportional to average PR size. The evaluation
+      is a tradeoff: squash-merge gives a clean, linear main history at the cost of
+      per-commit bisect granularity. Neither choice is universally correct; the right
+      answer depends on the team's relative frequency of regression investigations versus
+      their desire for a clean main history.
   - id: gavc-500-mc-b
     tier: 500
     bloom: evaluate
     difficulty: 488
     type: multiple_choice
     prompt: >-
-      A developer leaks an API key in a commit three weeks ago, then runs git filter-repo to purge
-      it from all history and force-pushes. They declare the incident resolved. What is the most
-      important flaw in that conclusion?
+      Your org must expunge a hardcoded credential from the full history of a 60 GB monorepo
+      that uses Git LFS for large binaries and has several long-lived branches. The team is
+      weighing BFG Repo Cleaner against git filter-repo. Which evaluation of the two tools
+      for this specific scenario is most accurate?
     choices:
       - id: a
         text: >-
-          filter-repo only edits the working tree, so the secret is still in every commit object and
-          was never actually removed.
+          BFG Repo Cleaner is preferable here because it natively understands LFS object
+          storage and will automatically purge the binary blobs from the LFS server, whereas
+          filter-repo only rewrites pointer files.
       - id: b
         text: >-
-          Rewriting history does not undo exposure: the key must be rotated, and old SHAs can
-          persist in forks, clones, and CI caches — rotate first, rewrite second.
+          git filter-repo is the recommended modern tool for complex rewrites; critically,
+          both tools only operate on Git's object database (including LFS pointer files) and
+          neither purges actual binary objects from LFS storage — that requires a separate
+          LFS-side operation. BFG also skips branch-tip commits by default, requiring a
+          preparatory cleanup of each current HEAD before the run.
       - id: c
         text: >-
-          force-pushing the rewrite is harmless to collaborators because everyone can simply pull to
-          receive the cleaned history automatically.
+          The two tools are equivalent for this scenario; the only meaningful factor is
+          execution speed, so BFG Repo Cleaner is the correct choice because it is
+          significantly faster on large repos.
       - id: d
-        text: filter-repo cannot remove secrets at all; only git revert can undo a committed secret.
+        text: >-
+          Neither tool can be used on a repo with LFS objects; you must first migrate all
+          LFS-tracked files back to standard Git objects before either tool can remove the
+          credential from history.
     answerKey:
       kind: choice
       correctChoiceId: b
     guidance: >-
-      History rewriting removes the secret from the canonical repo but cannot recall copies already
-      pulled, forked, or cached, and the secret was exposed the moment it was pushed. The expert
-      move is rotate-then-rewrite. filter-repo does rewrite every commit's content (not just the
-      working tree), the rewrite breaks everyone's history (not a clean auto-pull), and revert would
-      only add an inverse commit leaving the secret in history.
+      git filter-repo is the Git-project-endorsed replacement for the deprecated filter-branch
+      and handles complex, multi-path rewrites more reliably than BFG. The decisive evaluation
+      point is the LFS boundary: both tools rewrite commits in the Git object database, which
+      for LFS-tracked files means only the small text pointer files stored in normal Git
+      history. The actual binary objects — stored on the remote LFS server or locally under
+      .git/lfs/objects — are outside the Git object database entirely and are untouched by
+      both tools; purging them requires contacting your LFS server provider, running git lfs
+      prune with appropriate flags, or using git lfs migrate. BFG's additional enterprise
+      gotcha is its default branch-tip protection: it will not rewrite the most-recent commit
+      on any branch unless you amend those commits first or pass --no-blob-protection,
+      creating an incomplete purge if left unaddressed. Choice (a) inverts the LFS-storage
+      capability; (c) treats speed as the sole criterion and ignores the correctness gap; (d)
+      overstates the constraint — both tools operate on LFS repos fine, they simply do not
+      reach LFS storage.
   - id: gavc-500-ff-c
     tier: 500
     bloom: evaluate
@@ -2517,31 +2659,51 @@ items:
     difficulty: 500
     type: multiple_choice
     prompt: >-
-      A teammate insists "--force-with-lease is always safe, so we can use it freely on any branch."
-      Which scenario best demonstrates the limit of that claim?
+      Your team's IDEs run git fetch in the background automatically. You must establish a
+      force-push policy for feature branches that minimises accidental clobbers. Which
+      evaluation of the three available protection mechanisms is most accurate?
     choices:
       - id: a
-        text: The remote branch is protected, so the push is rejected regardless of the lease.
+        text: >-
+          Plain --force-with-lease is the strongest option for teams with background fetches:
+          the automatic fetch keeps your remote-tracking ref current, which makes the lease
+          check more reliable than pinning an expected SHA.
       - id: b
         text: >-
-          --force-with-lease only works over SSH, so an HTTPS remote silently falls back to a plain
-          --force.
+          Plain --force-with-lease is weaker than --force-with-lease=<ref>:<expected-sha> when
+          IDEs fetch in the background, because a silent fetch advances the tracking ref the
+          lease checks and allows the push to clobber work you never integrated.
+          The pinned form is immune to this but requires capturing the verified SHA per push,
+          making it too cumbersome as a universal default. Server-side branch protection adds
+          a complementary backstop but typically covers only explicitly configured branches
+          and does not automatically guard every short-lived, unprotected feature branch.
+          The right policy therefore layers mechanisms based on branch type.
       - id: c
         text: >-
-          An editor or background job ran git fetch, advancing your remote-tracking ref without you
-          integrating the new commits, so the lease check passes and you still clobber a teammate's
-          work.
+          Server-side branch protection requiring up-to-date branches before push is strictly
+          superior to both client-side options and fully replaces the need for any
+          --force-with-lease flag once it is enabled.
       - id: d
-        text: The lease compares commit messages rather than SHAs, so a reworded commit defeats it.
+        text: >-
+          All three mechanisms are functionally equivalent in the background-fetch scenario;
+          the choice between them is ergonomic rather than a genuine safety tradeoff.
     answerKey:
       kind: choice
-      correctChoiceId: c
+      correctChoiceId: b
     guidance: >-
-      --force-with-lease compares your remote-tracking ref against the remote. If a background fetch
-      already updated that ref without you integrating the changes, the lease "thinks" you have seen
-      them and the force succeeds anyway, destroying the new commits. The precise defense is
-      --force-with-lease=<ref>:<expected-sha>. The other options describe mechanisms that do not
-      exist.
+      A background fetch silently advances your remote-tracking ref, which is exactly what
+      plain --force-with-lease compares against. So an auto-fetch makes plain lease LESS safe,
+      not more — it lets the push pass even after a teammate's commit arrived (choice a
+      inverts this). The pinned form --force-with-lease=<ref>:<expected-sha> checks a specific
+      SHA the developer explicitly captured, so it is immune to the stale-tracking-ref defeat;
+      but requiring every developer to supply a SHA on every push is operationally heavy and
+      unsuitable as a blanket default. Server-side branch protection blocks force-pushes to
+      guarded branches regardless of client behaviour, but it typically covers only important
+      long-lived branches (e.g. main) unless wildcard protection rules are explicitly
+      configured for all branches, and cannot substitute for client-side lease discipline on
+      those unprotected branches (choice c overgeneralises). The three mechanisms are not
+      interchangeable (d is wrong): they have distinct failure modes and suitable scopes.
+      Choice b captures the layered tradeoff correctly.
   - id: gavc-500-mc-e
     tier: 500
     bloom: evaluate
@@ -2583,32 +2745,62 @@ items:
     difficulty: 512
     type: free_form
     prompt: >-
-      A colleague reverts a feature by reverting its no-ff merge commit on main. Weeks later they
-      try to re-merge the same feature branch to "bring it back" and almost nothing comes through.
-      Evaluate what went wrong and the right way to restore the feature.
+      Your team's rollback policy is: merge features with `git merge --no-ff` so each feature lands
+      as a named merge commit, then use `git revert -m 1 <merge>` on main to roll back a whole
+      feature without rewriting history. Evaluate this policy by addressing two points: (1) explain
+      the re-merge limitation AND why "revert the revert" (`git revert <revert-commit>`) restores the
+      changes when a direct re-merge of the same branch does not — your answer must cover the
+      ancestry-graph reason the re-merge fails and the mechanism by which the revert-the-revert
+      bypasses it; (2) evaluate at least one alternative rollback policy — such as squash-merge,
+      tagging the pre-feature tip and hard-resetting, or using feature flags — and state which
+      situations make it preferable to the no-ff + revert approach.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Explains that reverting a merge commit records that the merged content is undone, so
-            re-merging the same branch brings nothing new because Git sees those commits as already
-            integrated.
+            Explains both the re-merge trap AND why the revert-the-revert sidesteps it: `git revert
+            -m 1` adds an inverse commit that suppresses the feature, but the original feature commits
+            remain in the ancestor graph of main, so a later `git merge feature-branch` finds nothing
+            new to integrate; running `git revert <revert-commit>` bypasses this because it introduces
+            the feature content as a new commit applied to the working tree — not as a re-merge of the
+            original branch — so the ancestry-based "already integrated" check is never triggered.
+            (Naming the trap alone without the bypass mechanism does not satisfy this criterion.)
         - id: c2
           text: >-
-            Identifies the fix as reverting the revert (or rebasing/cherry-picking the feature
-            commits onto a fresh branch) to actually restore the changes.
+            Evaluates at least one alternative policy with a concrete tradeoff: e.g., squash-merge
+            collapses each feature to one commit on main — rollback is a simple `git revert
+            <squash-commit>` and re-introduction is `git revert <revert-commit>` with no re-merge
+            trap, at the cost of losing intra-PR commit granularity; or tag + hard-reset removes the
+            feature cleanly so a later re-merge works normally, but rewrites shared history and
+            requires a force-push; or feature flags disable the feature at runtime without any Git
+            history manipulation, making rollback and re-enable pure config changes — best when
+            behavioral isolation rather than code removal is the goal.
       referenceAnswer: >-
-        Reverting the merge commit (with -m) adds an inverse commit but the original feature commits
-        remain in history and are still considered merged. So a second merge of the same branch is a
-        near no-op — Git thinks the content is already present. To restore the feature you typically
-        revert the revert commit, or cherry-pick / rebase the feature commits onto a new branch and
-        merge that. This is a known cost of the merge --no-ff + revert workflow.
+        (1) The re-merge limitation and the bypass: `git revert -m 1` records an inverse commit that
+        suppresses the feature changes but leaves the original merge commits as ancestors of main. When
+        the team later tries to restore the feature with `git merge feature-branch`, Git sees those
+        commits as already integrated (they sit in the ancestor graph) and produces a near-no-op merge
+        — nothing comes back. Running `git revert <the-revert-commit>` creates a new commit that
+        inverts the revert's diff and directly re-adds the feature content to main. This works because
+        the re-introduction is a fresh application of the content as a new commit, not a merge of the
+        original branch, so the ancestry check that blocked the direct re-merge is irrelevant. (2)
+        Alternative policies: squash-merge collapses each feature to one commit on main, eliminating
+        multi-commit ancestry complexity; rollback is `git revert <squash-commit>` and restoration is
+        `git revert <revert-commit>` with no trap — preferable when teams want trivially clean
+        revertability and can accept losing per-commit granularity inside a PR. Tagging the
+        pre-feature tip and `git reset --hard <tag>` + force-push removes the feature without leaving
+        an inverse commit, so a later re-merge works normally — but it rewrites shared history and
+        requires coordinated force-push and re-clones, making it unsuitable for long-lived public
+        branches. Feature flags avoid Git history manipulation entirely: rollback is a config toggle
+        and re-enable is reversing it, with zero re-merge complexity — the best fit when the team has
+        robust flag infrastructure and the risk is behavioral rather than a hard defect requiring
+        removal from the codebase.
       passThreshold: 0.6
     guidance: >-
-      Reverting a merge undoes the content but leaves the branch's commits marked as merged, so
-      re-merging brings nothing. You must revert the revert (or re-introduce the commits via
-      cherry-pick/rebase). This is a classic gotcha of the no-ff-plus-revert pattern for
-      whole-feature rollbacks.
+      The re-merge trap is the canonical hidden cost of the no-ff + revert workflow. At tier 500,
+      the learner must explain WHY the "revert the revert" sidesteps the trap (new commit applied to
+      tree, not a re-merge of the branch) and evaluate when a different policy eliminates the problem
+      entirely. Criterion c1 intentionally fuses naming the trap with explaining the bypass mechanism.
   - id: gavc-500-mc-g
     tier: 500
     bloom: evaluate
@@ -2650,37 +2842,62 @@ items:
     difficulty: 524
     type: free_form
     prompt: >-
-      A regression is somewhere in 800 commits. An engineer sets up git bisect run with a test
-      script, but the bisect keeps landing on commits where the project does not even build, and the
-      bug seems to come and go. Critique the use of bisect here and explain what the engineer should
-      do.
+      A performance regression appeared somewhere in the last 800 commits on a monorepo.
+      The symptom is a 15-20% throughput drop that shows up in load tests but not unit
+      tests, is absent on developer laptops, and was first noticed after a batch of
+      infrastructure commits (dependency upgrades, build-system changes) landed alongside
+      feature work. A colleague proposes running `git bisect run ./load-test.sh`. Evaluate
+      whether bisect is the right tool here, identify the specific conditions that make it
+      unreliable in this case, and recommend an alternative or hybrid investigation strategy
+      with justification for each choice.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Notes that bisect assumes a single clean good->bad transition and is undermined by
-            non-buildable intermediate commits and flaky/intermittent bugs.
+            Identifies that the load-test script produces noisy, environment-sensitive output,
+            making bisect's binary good/bad classification unreliable without statistical
+            stabilisation (multiple runs per commit, a comparison threshold, or a deterministic
+            synthetic micro-benchmark as a proxy).
         - id: c2
           text: >-
-            Recommends having the script exit 125 (skip) for untestable/unbuildable commits so
-            bisect routes around them.
+            Evaluates that the interleaving of infrastructure commits (dependency upgrades,
+            build-system changes) with feature work means the regression may have multiple
+            interacting causes — violating bisect's monotonicity assumption — and that infra
+            commits may produce untestable or misleading intermediate states that further
+            undermine the binary search.
         - id: c3
           text: >-
-            Recognizes that for a flaky or fixed-then-reintroduced bug, bisect may be the wrong tool
-            or needs careful bracketing.
+            Recommends a concrete alternative or hybrid strategy with justification: e.g.
+            narrow the range first by examining only infrastructure commits or using path
+            filters (`git log -- <dependency-files>`); use profiling or flame graphs to
+            identify the hot path before bisecting; or isolate the dependency upgrade via a
+            targeted diff rather than bisecting the full 800-commit range blindly.
       referenceAnswer: >-
-        git bisect assumes a clean good->bad monotonic transition. Commits that do not build break
-        the test, and a bug that "comes and goes" violates monotonicity, so plain bisect will
-        mislead. The script should detect an untestable/unbuildable commit and exit 125 so bisect
-        skips it. For a flaky or fixed-then-reintroduced bug, the engineer must first make the test
-        reliable (or bracket the range tightly); otherwise bisect is the wrong tool because its core
-        assumption is violated.
+        The colleague's proposal is a reasonable instinct but has serious reliability problems
+        here. First, a load-test script running in CI or staging produces noisy,
+        environment-sensitive output; a single run cannot reliably classify a commit as good or
+        bad when the signal is only 15-20% and is absent on laptops. Statistical stabilisation
+        — multiple runs per step and a threshold comparison, or a synthetic micro-benchmark that
+        isolates the hot path — is required before bisect's oracle is trustworthy. Second,
+        bisect assumes a single monotonic good-to-bad transition. The interleaving of infrastructure
+        commits (dependency upgrades, build-system changes) with feature work breaks that
+        assumption — the regression may emerge from two or more interacting changes, and the
+        midpoint bisect picks could land on a half-upgraded dependency state that is not
+        meaningfully testable. A better strategy is to narrow the range first: separate out the
+        infrastructure commits and examine them as a targeted group
+        (e.g. `git log --diff-filter=M -- package.json`), or profile the system to find the hot
+        path before bisecting so the suspect range is small and the test is stable. Only then
+        does `git bisect run` become trustworthy and worth running.
       passThreshold: 0.6
     guidance: >-
-      Exit code 125 tells git bisect run to skip an untestable commit instead of scoring it
-      good/bad. But the deeper issue is that bisect needs a monotonic good->bad transition; flaky or
-      reintroduced bugs break that assumption and call for a more reliable test or a different
-      approach.
+      This tests strategic tool-fitness judgment, not bisect mechanics. The two evaluation
+      axes are (1) oracle reliability — bisect is only as correct as its good/bad test, and
+      a noisy load-test without statistical stabilisation is not a reliable oracle — and (2)
+      the monotonicity assumption — bisect finds the first bad commit in a clean transition
+      but is misled when the regression emerges from multiple interacting changes or when
+      infra commits produce untestable intermediate states. The expert move is to profile and
+      narrow the range before invoking bisect, not to run it blindly over 800 heterogeneous
+      commits with a load-test that the laptop cannot even reproduce.
   - id: gavc-500-mc-i
     tier: 500
     bloom: evaluate
@@ -2867,37 +3084,51 @@ items:
     difficulty: 498
     type: free_form
     prompt: >-
-      A teammate reports their work "disappeared" after they ran git reset --hard to abandon some
-      changes and then realized they actually needed one of the discarded commits. Another teammate
-      says "it's gone, the reset deleted it permanently." Evaluate that claim and describe the
-      recovery path and its limits.
+      A performance regression appeared somewhere in the last 800 commits on a monorepo.
+      The symptom is a 15-20% throughput drop that shows up in load tests but not unit tests,
+      is absent on developer laptops, and was first noticed after a batch of infrastructure
+      commits (dependency upgrades, build-system changes) landed alongside feature work. A
+      colleague proposes running `git bisect run ./load-test.sh`. Evaluate whether bisect is
+      the right tool here, identify the specific conditions that make it unreliable in this
+      case, and recommend an alternative or hybrid investigation strategy.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Rejects "permanently deleted": the commit is likely still recoverable via git reflog
-            while it remains in the local reflog and before GC.
+            Identifies that the load-test script produces noisy, environment-sensitive output,
+            making bisect's binary good/bad classification unreliable without statistical
+            stabilisation.
         - id: c2
           text: >-
-            Describes recovery: find the lost commit's SHA in the reflog and
-            reset/branch/cherry-pick back to it.
+            Evaluates that the interleaving of infrastructure commits with feature work means
+            the regression may have multiple interacting causes, violating bisect's
+            monotonicity assumption.
         - id: c3
           text: >-
-            Notes limits: reflog is local-only (a teammate's reflog will not help) and entries
-            expire / become GC-eligible once unreachable and aged out.
+            Recommends a concrete alternative or hybrid strategy: narrow the commit range first
+            by examining infrastructure commits in isolation, profile to find the hot path, or
+            isolate the dependency upgrade via a targeted diff rather than bisecting blindly.
       referenceAnswer: >-
-        The claim is wrong while the commit is still in the reflog. git reflog records where HEAD
-        pointed before the reset, so you can find the lost commit's SHA and recover it with git
-        reset --hard <sha>, git branch <name> <sha>, or git cherry-pick <sha>. Limits: the reflog is
-        local to that clone, so no teammate's reflog can recover it; and a commit becomes eligible
-        for garbage collection only once it is unreachable from any ref AND has aged out of the
-        reflog (defaults around 30 days for unreachable), after which git gc can truly prune it.
+        The proposal is a reasonable instinct but has serious reliability problems. A load-test
+        running in CI or staging produces noisy, environment-sensitive output; a single run cannot
+        reliably classify a commit as good or bad when the signal is only 15-20% and is absent on
+        laptops. Statistical stabilisation — multiple runs per step and a threshold comparison, or
+        a synthetic micro-benchmark — is required before bisect's oracle is trustworthy.
+
+        Bisect assumes a single monotonic good-to-bad transition. The interleaving of infrastructure
+        commits with feature work breaks that assumption — the regression may emerge from two or more
+        interacting changes, and the midpoint bisect picks could land on a half-upgraded dependency
+        state that is not meaningfully testable.
+
+        A better strategy: separate out the infrastructure commits and examine them as a targeted
+        group (e.g. `git log --diff-filter=M -- package.json`), or profile the system to find the
+        hot path before bisecting so the suspect range is small and the test is stable. Only then
+        does `git bisect run` become trustworthy.
       passThreshold: 0.6
     guidance: >-
-      A --hard reset only moves refs; the old commit stays reachable through the reflog and is
-      recoverable until it both falls out of the reflog and gets GC'd. The crucial limit is that the
-      reflog is local-only — it is your own safety net, not a server-side backup, and a teammate
-      cannot recover your lost commit from their reflog.
+      This tests strategic tool-fitness judgment. The two evaluation axes are oracle reliability
+      and the monotonicity assumption. The expert move is to profile and narrow the range before
+      invoking bisect, not to run it blindly over 800 heterogeneous commits.
   - id: gavc-500-mc-o
     tier: 500
     bloom: evaluate
@@ -3009,31 +3240,47 @@ items:
     difficulty: 521
     type: multiple_choice
     prompt: >-
-      A release manager tags releases with plain git tag v2.0 (lightweight) and argues annotated
-      tags are unnecessary ceremony. Which evaluation best weighs the choice for release tagging?
+      An SDK team debates two release strategies: (A) land all hotfixes on main and cut a new
+      patch tag (v2.3.1, v2.3.2, ...) each time, requiring consumers to upgrade for fixes; or
+      (B) maintain a `release/2.3` branch, cherry-pick critical fixes there, and tag from the
+      branch while main advances independently. Which evaluation most accurately guides when
+      each model is appropriate?
     choices:
       - id: a
-        text: Lightweight tags are preferable for releases because only they can be signed and verified.
+        text: >-
+          Model A is always preferable: cherry-picking in Model B duplicates commits across
+          branches and offers no real advantage over simply requiring all consumers to stay on
+          the latest patch tag.
       - id: b
-        text: There is no difference; both store a tagger and message identically.
+        text: >-
+          Model B is the sounder default because cherry-picking onto a release branch creates
+          an explicit, reviewed gate for each fix, whereas Model A bundles unreviewed
+          in-progress main work into the patch the moment a tag is cut.
       - id: c
         text: >-
-          Annotated tags move automatically as the branch advances, so they better track the latest
-          release.
+          Model A works well when all consumers can upgrade freely and each fix ships as a new
+          patch release; Model B is warranted when a deployed version must be patched without
+          absorbing unrelated main changes — as in an LTS or enterprise support line — at the
+          cost of cherry-pick discipline and ongoing branch maintenance.
       - id: d
         text: >-
-          Annotated tags are preferable for releases because they are real objects carrying tagger,
-          date, and message and can be GPG-signed for provenance — lightweight tags are just a bare
-          pointer with none of that.
+          Model B is only justified for teams with dedicated release-engineering capacity;
+          the cherry-pick and branch-maintenance overhead is operationally unsustainable for
+          most teams regardless of consumer upgrade constraints, making Model A the practical
+          default for all but the largest organizations.
     answerKey:
       kind: choice
-      correctChoiceId: d
+      correctChoiceId: c
     guidance: >-
-      Annotated tags are full objects with tagger, date, and message and can be GPG-signed, giving
-      releases auditable provenance; lightweight tags are just a name pointing at a commit. So a is
-      backwards (signing is an annotated-tag capability), b is false (only annotated tags store that
-      metadata), and c is false — tags are fixed pointers, not moving like branches. For releases
-      the small ceremony of annotated tags buys real metadata and signing.
+      Neither model is universally correct. Model A (tag-from-main) eliminates branch overhead
+      and works for products that can mandate "upgrade to receive fixes." Model B (release branch
+      + cherry-pick + tag) is necessary when a deployed version must be serviced independently,
+      such as an LTS or enterprise support line where consumers cannot freely upgrade major or
+      minor versions. The tradeoff is cherry-pick discipline, potential drift between branches,
+      and housekeeping overhead. Option a dismisses legitimate LTS-style servicing needs. Option
+      b mischaracterises Model A — you control exactly where on main to cut the patch tag. Option
+      d correctly identifies cherry-pick overhead as a real cost but wrongly frames it as a
+      team-size threshold; the true discriminator is whether consumers need serviced versioning.
   - id: gavc-500-mc-s
     tier: 500
     bloom: evaluate

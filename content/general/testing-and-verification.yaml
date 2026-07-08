@@ -732,26 +732,37 @@ items:
     difficulty: 248
     type: multiple_choice
     prompt: >-
-      A test exercises a function but contains no assertions. Why does it provide little
-      verification value even though it passes?
+      A colleague's test calls a function and immediately asserts the result with no explicit setup
+      block — it jumps straight from the function call to the assertion. What is the primary
+      readability problem this creates, and what does the Arrange phase of Arrange-Act-Assert solve?
     choices:
       - id: a
-        text: It will always fail because a test without an assertion is a syntax error
+        text: >-
+          Omitting Arrange is a purely cosmetic preference; a test that goes straight to Act and
+          Assert is equally readable for any function regardless of its inputs
       - id: b
-        text: It double-counts toward coverage, inflating the metric to over 100%
+        text: >-
+          Without an Arrange block the assertion lacks an expected value to compare against, because
+          the test has nowhere to construct the value being checked
       - id: c
         text: >-
-          It only proves the code ran without throwing; with nothing checked, wrong return values or
-          states pass undetected
+          Without explicit setup, the reader must reconstruct the assumed preconditions from the
+          function's arguments and the assertion alone; the Arrange phase surfaces those preconditions
+          up front so the test reads as: given this context, when I do X, I expect Y
       - id: d
-        text: It runs in a separate process, so its result is never reported to the suite
+        text: >-
+          Skipping Arrange makes the test order-dependent because other tests cannot reset shared
+          state before it runs
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      With no assertion, the only thing the test confirms is "did not crash"; any incorrect result
-      still passes, so it verifies almost nothing. It is valid code (not a syntax error), does not
-      exceed 100% coverage, and its result is reported normally.
+      The Arrange phase documents the starting state the test depends on. Without it, a reader must
+      reverse-engineer the assumed context from how the function is called and what is asserted, which
+      obscures intent and slows diagnosis when the test fails. Option a mistakes a structural practice
+      for cosmetics; option b confuses the source of expected values with setup code — expected values
+      live in the assertion literal, not in Arrange; option d conflates Arrange with teardown or
+      isolation concerns rather than readability.
   - id: tav-200-ff-i
     tier: 200
     bloom: understand
@@ -1225,33 +1236,45 @@ items:
       TDD's defining discipline is test-first and confirming the red state before implementing.
       Skipping the failing-first observation risks a test that passes for the wrong reason and never
       actually drives or guards the new code.
-  - id: tav-300-mc-e
-    tier: 300
-    bloom: apply
-    difficulty: 338
+  - id: tav-200-mc-i
+    tier: 200
+    bloom: understand
+    difficulty: 248
     type: multiple_choice
     prompt: >-
-      Reviewing a pull request you find a test that calls the function under test but contains no
-      assertion of any kind. The author says "it passes, so we are covered." What is the right
-      assessment?
+      A test method calls createOrder(), asserts the returned ID is non-null, then immediately
+      calls fulfillOrder() on that ID and asserts the status is "shipped" — two Act-Assert cycles
+      in a single test. A reviewer flags this as a structural problem. What is the primary
+      practical downside of testing two distinct behaviours in one test method?
     choices:
       - id: a
-        text: It is fine; passing means the behavior is verified
+        text: >-
+          When the test fails, you cannot tell from the failure alone which behaviour broke;
+          diagnosing the failure requires reading the entire test body, whereas two focused tests
+          each produce a self-describing, immediately actionable failure
       - id: b
         text: >-
-          It only proves the call did not throw; with no assertion it verifies almost nothing, so a
-          meaningful assertion on the result should be added
+          Test frameworks execute each Act-Assert block in a separate subprocess, so chaining
+          two cycles in one method introduces a race condition between them
       - id: c
-        text: It is fine as long as the line is counted toward coverage
+        text: >-
+          Having two assertions in one method double-counts the covered lines, inflating the
+          branch-coverage percentage beyond what either behaviour contributes alone
       - id: d
-        text: It should be deleted because tests without assertions are illegal syntax
+        text: >-
+          There is no downside; testing two related behaviours together produces a more
+          realistic scenario and is generally preferred over splitting them into separate methods
     answerKey:
       kind: choice
-      correctChoiceId: b
+      correctChoiceId: a
     guidance: >-
-      An assertion-free test passes simply because nothing threw; it does not check that the result
-      is correct, so it has little verification value. It is syntactically valid and may even raise
-      coverage, which is exactly why coverage alone is a misleading signal.
+      A test should cover one behaviour so its failure is self-documenting: a red result on a
+      single-behaviour test tells you exactly what broke without reading the body. When two
+      behaviours are chained, a failure could mean createOrder is broken, fulfillOrder is broken,
+      or the handoff between them is wrong — diagnosis is deferred. Frameworks do not isolate
+      assertions into subprocesses (eliminating b), assertion count does not affect coverage
+      percentages (eliminating c), and option d embodies the misconception the reviewer is
+      correcting: realism in one test comes at the cost of failure localization.
   - id: tav-300-mc-f
     tier: 300
     bloom: apply
@@ -2227,7 +2250,7 @@ items:
   - id: tav-400-ff-r
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 475
     type: free_form
     prompt: >-
       Two senior engineers disagree. One introduced heavy dependency injection and interfaces purely

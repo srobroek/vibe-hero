@@ -1658,32 +1658,44 @@ items:
     difficulty: 364
     type: free_form
     prompt: >-
-      Your team's codebase consistently uses an older, slightly non-idiomatic error-handling
-      pattern. You are submitting a small bug fix inside one such module. Explain whether your fix
-      should follow the modern language idiom or the local pattern, and how you would handle the
-      idiom question.
+      A method getNextPendingOrder() both selects the first pending order from the database and
+      immediately marks it as "in_progress" in the same call. Callers cannot safely invoke it twice
+      (the second call returns a different order), and tests that want to assert only on which order
+      would be selected must also trigger the status mutation. Identify the name of the refactoring
+      that addresses this structure and describe the result after applying it.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Recommends following the existing local pattern for the small change (consistency /
-            least surprise for maintainers).
+            Names the refactoring as Separate Query from Modifier (or equivalently describes the
+            principle that a method should either return a value or cause a side effect, not both).
         - id: c2
           text: >-
-            States that a large-scale idiom migration should be done as a separate, deliberate,
-            mechanical refactor rather than smuggled into the bug fix.
+            Describes the mechanical result: split into a pure query (e.g., findNextPendingOrder
+            that only reads and returns the order) and a separate modifier (e.g.,
+            markOrderInProgress that only performs the state change), leaving callers to call them in
+            sequence.
+        - id: c3
+          text: >-
+            Explains at least one concrete benefit of the split: the query is now idempotent and safe
+            to call repeatedly, or the query can be tested without triggering a mutation, or the
+            query can be reused in other contexts that need to inspect the order without changing it.
       referenceAnswer: >-
-        For a small, localized bug fix, follow the existing local pattern so the module stays
-        internally consistent; consistency-within-the-module usually wins short-term and gives
-        maintainers least surprise. A lone idiom rewrite inside a bug fix surprises readers and
-        mixes two changes. If the team genuinely wants the modern idiom, do that as a separate,
-        deliberate, largely mechanical refactor reviewed on its own, not piecemeal inside an
-        unrelated fix where it bloats the diff and half-migrates the file.
+        This is the Separate Query from Modifier refactoring (Fowler, chapter 11). A method that
+        both returns a value and causes a visible side effect violates the principle that queries
+        should be free of side effects. The fix is to split it into two methods: a pure query,
+        such as findNextPendingOrder(), that reads and returns the order without touching its
+        status, and a modifier, such as markOrderInProgress(order), that updates the status.
+        Callers invoke them in sequence when both effects are needed. After the split the query is
+        idempotent — safe to call multiple times or from multiple test scenarios — and can be
+        reused wherever the codebase needs to inspect the next pending order without advancing it.
       passThreshold: 0.6
     guidance: >-
-      Consistency-within-the-module usually wins short-term (principle of least surprise for
-      maintainers). Large-scale idiom migrations should be done as separate, deliberate, mechanical
-      refactors, not smuggled into an unrelated bug fix where they bloat the diff.
+      Separate Query from Modifier (Fowler) removes side effects from returning methods so queries
+      are idempotent and freely reusable. The split is mechanical: create a pure read method and a
+      pure write method; callers compose them. The benefit is testability (the query can be
+      asserted without triggering mutation) and safety (the query cannot accidentally advance state
+      when called for inspection only).
   - id: racr-300-ff-s
     tier: 300
     bloom: apply
@@ -1908,7 +1920,9 @@ items:
       Metz's rule: "duplication is far cheaper than the wrong abstraction." When an abstraction
       grows flags and conditionals to serve diverging callers, the cure is to re-inline it,
       re-create the duplication, and wait for the real abstraction to reveal itself (AHA: Avoid
-      Hasty Abstractions). Options b-d just hide or entrench the wrong abstraction.
+      Hasty Abstractions). Options c and d just hide or entrench the wrong abstraction: c wraps
+      the flags in a config object without removing the conditional logic, and d re-packages the
+      branching into private methods while leaving the single tangled entry point intact.
   - id: racr-400-ff-f
     tier: 400
     bloom: analyze
@@ -2181,34 +2195,48 @@ items:
   - id: racr-400-mc-n
     tier: 400
     bloom: analyze
-    difficulty: 459
+    difficulty: 455
     type: multiple_choice
     prompt: >-
-      A module currently uses an established but non-idiomatic in-house pattern throughout. Your
-      small bugfix touches one function in it. You could either follow the local in-house pattern or
-      rewrite that function in the modern language idiom. Which choice best reflects expert
-      practice, and why?
+      You are reviewing a bugfix PR that touches four files in a shared module. The author has
+      also rewritten those four files to use the modern language idiom alongside the fix. The
+      module has ten files total; two were migrated to the modern idiom in an earlier PR, and the
+      remaining four (not touched by this PR) still use the team's established local pattern. The
+      bugfix is correct; the idiom usage is correct throughout. What recommendation should you give
+      the author?
     choices:
       - id: a
         text: >-
-          Rewrite the one function in the modern idiom now, since idiomatic code always beats local
-          consistency.
+          Accept the partial migration because every file moved to the modern idiom is a net
+          improvement, and the author has already done the work.
       - id: b
         text: >-
-          Follow the local in-house pattern for this small change (consistency / least surprise for
-          maintainers); do idiom migrations as a separate, deliberate, mechanical refactor.
+          Reject the PR and require the author to migrate all ten files to the modern idiom before
+          the bugfix can land.
       - id: c
-        text: Leave the bug unfixed until the whole module is migrated to the idiom.
+        text: >-
+          Approve only the bugfix scope; request that the idiom migration be extracted into a
+          separate, tracked PR that covers the entire module uniformly.
       - id: d
-        text: Mix both styles in the function so reviewers can compare them side by side.
+        text: >-
+          Reject the PR because any cross-file style split within a module is a design smell that
+          must be fully resolved before merging.
     answerKey:
       kind: choice
-      correctChoiceId: b
+      correctChoiceId: c
     guidance: >-
-      In a module with an established pattern, short-term consistency usually wins: a lone idiom
-      rewrite inside a bugfix surprises maintainers and mixes two changes. Large-scale idiom
-      migrations are valuable but should be done as separate, deliberate, mechanical refactors, not
-      smuggled into an unrelated fix.
+      The analysis requires weighing scope, review burden, and migration strategy simultaneously.
+      Scope: the bugfix is a small, self-contained change; bundling a four-file idiom rewrite makes
+      it harder to review the fix independently and harder to bisect if a regression surfaces later.
+      Migration strategy: accepting four files now leaves the module in a mixed state — four files
+      on the old pattern, six on the modern idiom — which is harder to reason about than either a
+      uniformly old or uniformly new module, and it sets no clear path to completing the migration.
+      The expert move is to ship the bugfix cleanly and consolidate the migration into a dedicated
+      PR that covers all ten files in one pass, leaving the module uniformly on the modern idiom.
+      Accepting partial migration (a) advances it piecemeal but worsens the split state. Blocking
+      the bugfix on full migration (b) holds the fix hostage to a larger effort. Treating any
+      cross-file style split as an absolute blocker (d) ignores the legitimate managed-migration
+      use case.
   - id: racr-400-ff-o
     tier: 400
     bloom: analyze
@@ -2371,12 +2399,12 @@ items:
       The Cisco/SmartBear study shows defect detection drops sharply when reviewing well over
       ~200-400 LOC at once or faster than ~300-500 LOC/hour. An 800-line diff at 1200 LOC/hour is
       far past both, so smaller diffs and slower pacing should help. The direction is solid even
-      though the exact numbers vary by retelling, so treating them as hard cutoffs (d) overstates
+      though the exact numbers vary by retelling, so treating them as hard cutoffs (a) overstates
       the evidence.
   - id: racr-400-mc-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 479
     type: multiple_choice
     prompt: >-
       During review you spot three things in a CL: (1) an off-by-one that will corrupt data, (2) a

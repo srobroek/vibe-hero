@@ -1909,7 +1909,7 @@ items:
   - id: kiro-400-ff-f
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: free_form
     prompt: |
       Analyze the trade-off of granting autoApprove to MCP tools: what do you

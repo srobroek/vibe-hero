@@ -472,30 +472,35 @@ items:
       All `tool_result` blocks for a parallel batch must be returned in a single user message.
       Splitting them across multiple user messages silently trains the model to stop making parallel
       calls.
-  - id: aw-100-ff-s
-    tier: 100
-    bloom: remember
-    difficulty: 145
-    type: free_form
+  - id: aw-200-mc-d
+    tier: 200
+    bloom: understand
+    difficulty: 266
+    type: multiple_choice
     prompt: >-
-      What does an `always_ask` permission policy do to a server-executed tool call in an agent
-      loop?
-    rubric:
-      criteria:
-        - id: c1
-          text: States it pauses or idles the session before the tool runs
-        - id: c2
-          text: States it waits for a human confirmation (allow/deny) such as a `user.tool_confirmation`
-      referenceAnswer: >-
-        An `always_ask` policy pauses the server-executed tool and idles the session until a human
-        sends a tool confirmation (allow or deny), such as a `user.tool_confirmation` event. This is
-        the human-in-the-loop gate inside an orchestrated loop; a deny can carry a message
-        explaining why.
-      passThreshold: 0.6
+      An orchestrated agent receives a deny user.tool_confirmation for an always_ask-gated tool; the
+      confirmation includes a message explaining why the action was refused. What should the
+      orchestrator do on its next turn?
+    choices:
+      - id: a
+        text: Retry the same tool call unchanged, because a deny confirmation is transient.
+      - id: b
+        text: Terminate the agent loop immediately and surface an error to the caller.
+      - id: c
+        text: >-
+          Incorporate the denial reason from the message into its next planning step and choose a
+          different action.
+      - id: d
+        text: Re-queue the tool call silently and wait for a second confirmation.
+    answerKey:
+      kind: choice
+      correctChoiceId: c
     guidance: >-
-      `always_ask` inserts a human-in-the-loop gate: the tool is held and the session idles until an
-      allow/deny confirmation arrives. A deny can include a message so the agent adapts rather than
-      retrying blindly.
+      A deny confirmation is not a fatal terminal — the message attached to it is input to the
+      agent's reasoning. The orchestrator should read the denial reason and adjust its plan
+      (choose a different action, reframe the goal, or escalate). Retrying unchanged (a) ignores
+      the feedback and loops; terminating immediately (b) treats a recoverable gate as a fatal
+      error; silently re-queuing (d) also ignores the message and re-blocks the session.
   - id: aw-100-mc-t
     tier: 100
     bloom: remember
@@ -1135,29 +1140,36 @@ items:
     difficulty: 270
     type: multiple_choice
     prompt: >-
-      An always_ask permission policy on a server-executed tool is the human-in-the-loop gate inside
-      an orchestrated agent loop. How does it behave when the agent tries to call that tool?
+      An always_ask gate fires mid-session and the human operator sends a deny confirmation that
+      includes a short explanation of why the action is not appropriate right now. Which description
+      of the agent's expected behavior is correct?
     choices:
       - id: a
-        text: It silently blocks the tool forever, with no way to approve it.
+        text: >-
+          The agent must terminate the session immediately because a deny is a permanent revocation
+          of permission for that tool for the rest of the session.
       - id: b
         text: >-
-          It logs the call for later audit but lets the tool run immediately without waiting for
-          approval.
+          The agent ignores the deny and retries the same tool call up to three times before giving
+          up, because always_ask is a soft advisory policy.
       - id: c
         text: >-
-          It pauses the tool and idles the session until a user.tool_confirmation (allow or deny) is
-          sent; a deny can carry a message telling the agent why, so it can adapt.
+          The agent abandons that specific call, reads the deny explanation, adjusts its plan
+          accordingly, and continues the session — possible because a deny can carry steering
+          guidance rather than being a hard session halt.
       - id: d
-        text: It downgrades the agent to a cheaper model whenever a gated tool is requested.
+        text: >-
+          The agent escalates to a supervisor agent because always_ask does not define a built-in
+          handler for a deny that carries a message payload.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      always_ask suspends the gated tool and idles the session (stop_reason requires_action) until
-      the client replies with a tool_confirmation; a deny can include a message that steers the
-      agent. It is not a permanent block, does not run the tool immediately, and has nothing to do
-      with model selection.
+      A deny confirmation does not end the session or permanently revoke tool access: it stops only
+      that specific call. The key property is that a deny can carry a message providing the reason,
+      giving the agent actionable steering to adapt its plan rather than retrying blindly or
+      escalating. Permanent revocation (a) and advisory-ignore (b) both misread the protocol;
+      automatic supervisor escalation (d) is not part of always_ask semantics.
   - id: aw-300-mc-a
     tier: 300
     bloom: apply
@@ -1526,35 +1538,47 @@ items:
     difficulty: 376
     type: free_form
     prompt: >-
-      You wrote an agentic code-review pass instructed "only report high-severity issues, be
-      conservative." Reviewers complain real bugs are being missed. Explain what recent Claude
-      models do with that instruction and describe the documented two-step fix.
+      Your orchestrator fans out 20 mechanical subagents that each extract a single
+      numeric field from a source file, then a synthesis pass combines all 20 results
+      into a final report. The orchestrator also plans which files to assign to which
+      subagent. Describe how you would set the `effort` parameter differently across
+      the mechanical extraction calls versus the orchestrator-planning and synthesis
+      calls, and explain the reasoning.
     rubric:
       criteria:
         - id: c1
           text: >-
-            States the model follows the conservative filter literally so recall drops (true
-            findings suppressed).
+            Sets effort=low (or medium) on the mechanical extraction subagent calls
+            because the work is bounded and does not require deep reasoning or many
+            tool calls.
         - id: c2
           text: >-
-            Says to instead have the model report everything, each tagged with confidence and
-            severity.
+            Keeps a higher effort level (effort=high, xhigh, or max) on the
+            orchestrator planning step and the synthesis step where coherence and
+            quality matter.
         - id: c3
           text: >-
-            Says to apply the severity filter in a separate downstream step rather than inside the
-            model prompt.
+            Explains the cost rationale: low effort produces fewer, more-consolidated
+            tool calls and terser output, reducing token spend on mechanical work
+            without degrading the quality of the steps that drive the final result.
       referenceAnswer: >-
-        Recent Claude models follow the "only high-severity, be conservative" instruction literally,
-        so they suppress findings and measured recall drops. The fix is two steps: have the model
-        report every issue it sees, each tagged with a confidence and severity, then filter for
-        high-severity items in a separate downstream step. That keeps detection complete and moves
-        the conservatism out of the model.
+        For the 20 mechanical extraction subagents, set effort=low (or medium): each
+        subagent has a single bounded goal (find one numeric field) and does not need
+        deep reasoning, extensive tool calls, or verbose output. Low effort reduces
+        per-call token cost and keeps the subagent focused. For the orchestrator
+        planning step and the synthesis pass, use effort=high or higher: planning
+        which files to assign requires judgment, and writing a coherent report from
+        20 inputs benefits from richer reasoning. The effort parameter is the
+        primary cost-quality lever within a model — low effort means fewer,
+        more-consolidated tool calls and terser output, which is right for cheap
+        mechanical subtasks and wrong for the planning and synthesis steps where
+        quality drives the overall result.
       passThreshold: 0.6
     guidance: >-
-      Telling the model to be conservative makes it withhold true findings because it follows the
-      instruction literally. Separate detection from filtering: report everything with confidence
-      and severity, then filter downstream. That preserves recall while still surfacing only what
-      you want to act on.
+      The effort parameter is a cost-quality lever distinct from model tiering: dial
+      it low for bounded mechanical subagents (fewer tool calls, terser output) and
+      keep it high for planning and synthesis (richer reasoning). Mismatching effort
+      wastes tokens where they are not needed or produces weak output where they are.
   - id: aw-300-mc-o
     tier: 300
     bloom: apply
@@ -2346,7 +2370,7 @@ items:
   - id: aw-400-ff-r
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 465
     type: free_form
     prompt: >-
       A Managed Agents Outcomes loop is configured with a rubric whose only criterion is "the output
@@ -2529,40 +2553,69 @@ items:
     difficulty: 495
     type: free_form
     prompt: >-
-      A reviewer config instructs the code-review agent: "Only report high-severity issues; be
-      conservative and do not nitpick." Measured recall on a benchmark of known bugs then drops
-      versus the previous model. Critique this design and propose a fix that preserves precision
-      without sacrificing recall.
+      A code-review pipeline instructs its Claude-based reviewer: "Only report high-severity issues;
+      be conservative." After upgrading to a recent model, measured recall on a known-bug benchmark
+      drops noticeably, even though direct queries confirm the model can identify those same bugs
+      when asked explicitly. A teammate proposes two fixes: (A) a two-step pipeline — first pass
+      reports everything annotated with confidence and severity, second pass filters downstream —
+      and (B) a single-pass prompt rewrite to "Report all findings; flag severity, let me decide."
+      Evaluate: (1) whether the recall drop is a detection regression or a reporting-stage
+      suppression; (2) a concrete tradeoff between alternatives A and B; and (3) under what general
+      condition maximising recall at the finding stage and filtering downstream is preferable, naming
+      at least one scenario where this pattern would NOT be appropriate.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Identifies that recent Claude models follow the conservative/severity filter literally,
-            suppressing true findings at the reporting stage (not a capability regression in
-            bug-finding).
+            Correctly distinguishes a literal-instruction compliance failure from a model capability
+            regression: the model still detects the bugs but suppresses them at the reporting stage
+            to obey the conservative filter, so recall drops without any underlying detection loss.
         - id: c2
           text: >-
-            Proposes having the model report everything with confidence and severity attached,
-            rather than self-filtering during the finding stage.
+            Evaluates at least one concrete tradeoff between alternative A (two-step pipeline) and
+            alternative B (single-pass prompt rewrite): for example, A adds an extra API call
+            (latency/cost) but structurally decouples detection from filtering so recall is
+            architecturally enforced rather than relying on the model's severity judgment; B is
+            simpler and cheaper but makes recall control prompt-level rather than architectural, so
+            the model could still re-apply conservatism internally.
         - id: c3
           text: >-
-            Moves the importance/confidence filtering into a separate downstream step so coverage
-            and ranking are decoupled.
+            Articulates why maximising recall at the finding stage and filtering downstream is
+            preferable when missed findings are irreversible or asymmetrically costly (cost of a
+            false negative far exceeds the cost of a false positive), and names at least one scenario
+            where this pattern would NOT be appropriate — such as very high token cost for full
+            output, a real-time latency-sensitive pipeline, or a context where false positives carry
+            their own high operational cost.
       referenceAnswer: >-
-        The instruction is the problem: recent Claude models follow "only high-severity / be
-        conservative" literally, so the model still finds the bugs but declines to report ones it
-        judges below the bar — precision rises but measured recall falls even though underlying
-        bug-finding improved. The fix is to instruct the model to report every finding it sees,
-        including low-confidence and low-severity ones, each tagged with a confidence level and an
-        estimated severity, and then filter/rank in a separate downstream step (or a second pass).
-        This decouples coverage from filtering: the finding stage maximizes recall, the filter stage
-        restores precision.
-      passThreshold: 0.6
+        (1) The drop is a reporting-stage effect, not a detection regression. Recent Claude models
+        follow "be conservative / only high-severity" literally: the model investigates fully and
+        identifies bugs but then declines to report findings it judges below the stated bar. Precision
+        rises; recall falls. No underlying bug-finding capability is lost — the suppression is at the
+        reporting stage, not the detection stage.
+
+        (2) Alternative A (two-step) adds an extra API call, raising latency and cost, but
+        structurally decouples detection from filtering: by instructing the first pass to report
+        everything, recall at that stage is architecturally enforced and independent of the model's
+        severity judgment. Alternative B (single-pass rewrite) is simpler and cheaper (one call),
+        but recall control is prompt-level — the model must not re-apply conservatism when reading
+        "flag severity, let me decide," which is generally more reliable than the original prompt but
+        less deterministic than A's architectural separation. A provides a stronger guarantee; B is
+        the lower-cost option with less deterministic control.
+
+        (3) Maximising recall at the finding stage and filtering downstream is preferable when missed
+        findings are irreversible or asymmetrically costly — a shipped security bug is far more
+        expensive than a false positive that gets filtered away. The pattern is NOT appropriate when
+        full-output token cost is prohibitive (e.g. a 200k-context review where reporting every
+        finding exhausts the budget), when the pipeline is real-time and latency cannot absorb an
+        extra filtering step, or when false positives carry high operational cost (e.g. each flagged
+        finding triggers expensive human review with no further triage, making every false positive
+        costly in its own right).
+      passThreshold: 0.67
     guidance: >-
-      This is the documented LLM-as-judge filtering anti-pattern. Telling a recent model to be
-      conservative at the finding stage literally suppresses true findings. Separate "report
-      everything with confidence+severity" from "filter downstream" so a literal-following model
-      can't drop real bugs before they're ever surfaced.
+      The tier-500 demand is comparative judgment (A vs B tradeoffs) and conditional reasoning (when
+      does maximise-recall-then-filter apply, and when does it not?). c1 is shared with lower-tier
+      counterparts and cannot alone satisfy the pass threshold (0.67 requires at least two of three).
+      c2 and c3 require genuine evaluation that cannot be satisfied by restating the two-step fix.
   - id: aw-500-mc-d
     tier: 500
     bloom: evaluate
@@ -2765,11 +2818,15 @@ items:
       instead. What determines which join policy is correct?
     choices:
       - id: a
-        text: All-or-nothing is always safer because partial results are never useful in any system.
+        text: >-
+          All-or-nothing is the correct default for fan-out joins because branch failures are
+          typically transient, and retrying the failed branch is cheaper than propagating a gap to
+          the consumer.
       - id: b
         text: >-
-          Best-effort is always preferable because it maximizes throughput regardless of what the
-          downstream consumer needs.
+          Best-effort aggregation should be the default because holding back the entire aggregate
+          over a single branch failure punishes consumers who can work with partial data; all-or-nothing
+          is only warranted when the consumer has explicitly signaled a completeness requirement.
       - id: c
         text: >-
           Whether the downstream consumer can tolerate partial results — best-effort aggregation
@@ -2777,16 +2834,22 @@ items:
           consumers that require completeness.
       - id: d
         text: >-
-          The choice is purely a performance optimization with no correctness implications either
-          way.
+          The policy is determined by expected branch failure rate: high failure rates warrant
+          best-effort to preserve availability, while low failure rates make all-or-nothing acceptable
+          since the aggregate rarely fails.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      In a fan-out join you choose between all-or-nothing (fail if any branch fails) and best-effort
-      (proceed with the successful branches, mark the gaps). The right choice depends on whether the
-      downstream consumer can tolerate partial results — it's a correctness decision tied to
-      consumer requirements, not a blanket rule (a/b) or a pure perf tweak (d).
+      The deciding axis is downstream consumer tolerance, not retry economics (a), explicit signaling
+      (b), or failure rate (d). Choice a errs by treating retry cost as the primary criterion: even
+      when a failed branch is trivially retryable, all-or-nothing is still the wrong policy if the
+      consumer can proceed with gaps — consumer semantics, not retry economics, drive the choice.
+      Choice b mistakes the threshold: the criterion is not whether the consumer has explicitly
+      signaled a preference but whether it can semantically tolerate partial results. Choice d
+      conflates an operational metric (branch failure rate) with a semantic design property (consumer
+      tolerance): a consumer that cannot tolerate partial results requires all-or-nothing even when
+      failures are vanishingly rare.
   - id: aw-500-mc-j
     tier: 500
     bloom: evaluate

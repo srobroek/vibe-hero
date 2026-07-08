@@ -1,6 +1,6 @@
 {
-  "version": "0.14.1",
-  "publishedAt": "2026-07-07T17:36:59.818Z",
+  "version": "0.16.0",
+  "publishedAt": "2026-07-08T09:35:51.051Z",
   "topics": [
     {
       "id": "agentic-workflows",
@@ -17,7 +17,7 @@
         400,
         500
       ],
-      "sha256": "d7ab616fe3f1c73f6537e5dc13c40ed3332954d47ec0bb3ac7c4c3a9726e4201"
+      "sha256": "cc6b9968ba099ec50c4ae6484fc2e965e03fc0211bf79fd7d18f025fae96790b"
     },
     {
       "id": "context-management",
@@ -34,7 +34,7 @@
         400,
         500
       ],
-      "sha256": "597ce5bc6829ad1a3854210f439a7e7447d353ea6b1a7600736eb519a8574740"
+      "sha256": "bd2e1dd444f56797dceaf55594b2c6510bbb8be72e26bc760a2d3fa1a5c8d97a"
     },
     {
       "id": "hooks",
@@ -51,7 +51,7 @@
         400,
         500
       ],
-      "sha256": "05d146d96697cfe5995830be6db44f6aa3be1977b91d071187b54078cdfef1a1"
+      "sha256": "6d63b76113c30f24bda12ecee07e1c08259ede96ef433fe106759ead30a411f8"
     },
     {
       "id": "mcp-servers",
@@ -68,7 +68,7 @@
         400,
         500
       ],
-      "sha256": "3e8091b3364730e5372960cb85086f8e95d3037f300c59dee9ff6630e66d0797"
+      "sha256": "ca9ea1a253a8644a61866a047235cda04e56997dee75d97c94623a2b08c8bddf"
     },
     {
       "id": "permissions-and-settings",
@@ -85,7 +85,7 @@
         400,
         500
       ],
-      "sha256": "2b8398b29e31d1789b5de26da83b68d3e845db9b62e6e91d64104461a79d16f6"
+      "sha256": "a11a0b0e4a7282ca739795e1446fc1c510da5d2fb8d5f9154a928faaedd4f793"
     },
     {
       "id": "planning",
@@ -102,7 +102,7 @@
         400,
         500
       ],
-      "sha256": "b4e1980e3351451c12f1c1e18ffa9597a50e1b123b77a03e3620fd88e6884188"
+      "sha256": "6147e8e30ae09e907e22d9d12a0dfafddcb9214c1c55eaedf591e5438b659e2b"
     },
     {
       "id": "slash-commands-and-skills",
@@ -119,7 +119,7 @@
         400,
         500
       ],
-      "sha256": "db53a27762ef28ddfc7dcac1b4bdffc179a3b2110da21acfb08df6bcc67ae758"
+      "sha256": "efc4d93f7e191fda249973e27d1657f9d6fc339c507533e530948c5c203fbdbe"
     },
     {
       "id": "subagents",
@@ -136,7 +136,7 @@
         400,
         500
       ],
-      "sha256": "59ac54c88c7a044e9ad136493c511be7f2de20b2c463ef6454109b85625dad91"
+      "sha256": "f67c9133cdb3d675faa1325aba067ea5fa16400e9df1728e6891450d1f5867c2"
     },
     {
       "id": "codex-approval-and-sandbox",
@@ -153,7 +153,7 @@
         400,
         500
       ],
-      "sha256": "154e201f0c87af3d9e2712711397877ec392847267d3fa02c36b5b496555cd12"
+      "sha256": "55ad4e484b548d8c9b891c2d39175be98c0faaa29965481eaed211b6c4ac6b17"
     },
     {
       "id": "codex-cli-basics",
@@ -187,7 +187,7 @@
         400,
         500
       ],
-      "sha256": "5ecf852983189b71bc213cf87cb329ec961173e91acf89298e60e77050fea4b0"
+      "sha256": "969031342320545ccfdaa27481197441c116f5bcf36906dce708a2a68faa0e19"
     },
     {
       "id": "codex-mcp-and-tools",
@@ -204,7 +204,7 @@
         400,
         500
       ],
-      "sha256": "76902aaea128c99e44f662e9513bc8c1a76e1dc7f344d348f9d95a57ce6fc9a7"
+      "sha256": "d910072c4a060fe52b4ddcf01ba1667d7ce955baeb6103b68cffdbbbf3a7acfc"
     },
     {
       "id": "debugging",
@@ -220,7 +220,7 @@
         400,
         500
       ],
-      "sha256": "e921b8173ddd02b998a42f261603b3c97e1965cabd33a3848f45d8022362181b"
+      "sha256": "0f888d663b600053cf109e120904f809b2c13c8ae1f575067412d8ea53f4863e"
     },
     {
       "id": "git-and-version-control",
@@ -236,7 +236,7 @@
         400,
         500
       ],
-      "sha256": "d3cc01900af986ced28e741e15730f3cf577d77ac9aef708f02167b05cf4eb9f"
+      "sha256": "aa8bc778b474dc5b3a043f1c121442017a17ac1ab61775bb1a0615c5930dfb04"
     },
     {
       "id": "refactoring-and-code-review",
@@ -252,7 +252,7 @@
         400,
         500
       ],
-      "sha256": "1351c3135ae27a50f7501f55605b93a21c9884dc025f660ea769c7748e92eb9c"
+      "sha256": "9a4f2084c01dc6b6f3183cfa0c29f8347ebd6c2836e252d37efa8b0e9ddec3b3"
     },
     {
       "id": "task-decomposition",
@@ -260,7 +260,7 @@
         "kind": "general"
       },
       "file": "general/task-decomposition.yaml",
-      "itemCount": 10,
+      "itemCount": 100,
       "tiers": [
         100,
         200,
@@ -268,7 +268,7 @@
         400,
         500
       ],
-      "sha256": "a88d1f50d5b8a42d5de6d819f3e119caeb2633f97bab7e0644031403791e335e"
+      "sha256": "d0bdd043d77b4daa03d179843cbfbc2ebe26d93a7d9b48ca860f39543d0039e6"
     },
     {
       "id": "testing-and-verification",
@@ -284,7 +284,7 @@
         400,
         500
       ],
-      "sha256": "2f36897a37f5371ee5d2b12c4b211a580bbbdf5e810e7365b6429e69ecd6b6ea"
+      "sha256": "41d0701b9e8eda4c70f9ab76339bebd7ddf05b6c6687912440b36745ba8b00e8"
     },
     {
       "id": "kiro-cli-autopilot-and-trust",
@@ -335,7 +335,7 @@
         400,
         500
       ],
-      "sha256": "3bda86da5372aa6188e906e404c414ad0d8929a08f6a62c516e6474a5de5768f"
+      "sha256": "2b38c3a93bb9fb50a0076702ed8ac21ff42edddfea157c63b8ddd5343346826b"
     },
     {
       "id": "kiro-cli-mcp",
@@ -352,7 +352,7 @@
         400,
         500
       ],
-      "sha256": "f5a771328213ef077ad3ba6cca2d267100187c8221e1714014873ba0ac57b4ad"
+      "sha256": "4d99abf5dc39a6ebed27fce7a75c57f0a6120a76fa148965f6607bf8a59a45aa"
     },
     {
       "id": "kiro-cli-specs-and-steering",
@@ -403,7 +403,7 @@
         400,
         500
       ],
-      "sha256": "58b770df7a652dbe751c71ba91d93372f8870644e8b5579252e1e24a6b627c0c"
+      "sha256": "e0141243bd42f5dbfa39847b781042c3f642adfbd2c60b149d5e75f2b8ccf723"
     },
     {
       "id": "kiro-ide-ears-requirements",
@@ -454,7 +454,7 @@
         400,
         500
       ],
-      "sha256": "0d70ba7f79c67b13d01eb277afd73a25e6317b90e717e4b6a859f4631bf3e830"
+      "sha256": "f53802270a4d42af231a8a25f211b91b024c0a3f5ddb486da8afb67b9bdf0a99"
     },
     {
       "id": "kiro-ide-steering",
@@ -488,7 +488,7 @@
         400,
         500
       ],
-      "sha256": "4f7c43cabf440be8b3219b2448984099403428e875213e90f6efc8532945d10f"
+      "sha256": "4f103004d783ed9c0362315836d91c609679f622165616e3833d7083b1360ef1"
     }
   ]
 }

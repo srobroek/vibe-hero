@@ -1591,7 +1591,7 @@ items:
   - id: kah-400-ff-e
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: free_form
     prompt: >-
       A PostToolUse hook is intended to format files the agent just wrote, but it occasionally

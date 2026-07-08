@@ -146,66 +146,85 @@ items:
       Only name and description are required frontmatter fields; everything else (tools, model,
       permissionMode, etc.) is optional. The description is what Claude uses to decide when to
       auto-delegate to that subagent.
-  - id: s-100-mc-e
-    tier: 100
-    bloom: remember
-    difficulty: 138
+  - id: s-200-mc-b
+    tier: 200
+    bloom: understand
+    difficulty: 240
     type: multiple_choice
-    prompt: What happens to a subagent's tool access if the `tools` field is omitted from its frontmatter?
+    prompt: >-
+      A subagent has `tools: Read, Bash, Grep` in its frontmatter and works correctly.
+      The team then adds a new MCP database tool (`mcp__db__query`) to the project.
+      The developer assumes the subagent will gain access automatically because the
+      tool is now project-wide, but the subagent still cannot call it. What correctly
+      explains this behavior?
     choices:
       - id: a
         text: >-
-          It receives no tools at all and can only reason in plain text, so it cannot read files or
-          run commands until specific tools are explicitly added to its frontmatter.
+          Once the tools field is present it acts as an allowlist, restricting the subagent
+          to exactly the listed tools; the new MCP tool was not listed, so it is excluded
+          even though the parent conversation has it.
       - id: b
         text: >-
-          It receives only the Read tool by default, giving it read-only access so a subagent
-          defined without an explicit tools list can never accidentally modify any files.
+          MCP tools require a separate mcpTools frontmatter field; the tools field only
+          covers built-in tools, so any MCP tool is unavailable until explicitly declared
+          under mcpTools.
       - id: c
         text: >-
-          It inherits only the handful of tools the parent conversation used most recently, so its
-          available tool set depends on whatever the parent happened to call just before delegating.
+          Subagent tool sets are resolved at session start, so restarting the session after
+          adding the MCP server causes the new tool to appear automatically alongside the
+          listed tools without modifying the tools field.
       - id: d
         text: >-
-          It inherits ALL tools available in the main conversation, including internal and MCP
-          tools; listing tools instead turns that inherited set into a narrower allowlist.
+          The new MCP tool is blocked by the default permission mode; setting
+          permissionMode: bypassPermissions in the frontmatter would grant it without
+          touching the tools list.
     answerKey:
       kind: choice
-      correctChoiceId: d
+      correctChoiceId: a
     guidance: >-
-      Omitting the tools field means the subagent inherits all tools available in the main
-      conversation (internal plus MCP). Listing tools acts as an allowlist instead. The default is
-      full inheritance, not an empty or single-tool set.
+      When the tools field is present it is an allowlist: the subagent receives exactly
+      and only the tools named there. Any tool not on the list — including new MCP tools
+      added project-wide — is excluded. The fix is to add mcp__db__query to the allowlist.
+      MCP tools are not handled by a separate field, a session restart does not override
+      the allowlist, and permissionMode governs permission prompting rather than which
+      tools exist.
   - id: s-100-mc-f
     tier: 100
     bloom: remember
     difficulty: 142
     type: multiple_choice
-    prompt: What is the default value of a subagent's `model` field?
+    prompt: >-
+      Which values are accepted by the `model` field in a subagent's frontmatter?
     choices:
       - id: a
         text: >-
-          haiku, the cheapest and fastest model, so that delegated subagents stay inexpensive by
-          default and only become costly when you explicitly opt them up to a larger model.
+          Only the three short aliases haiku, sonnet, and opus; full model IDs like
+          claude-3-5-sonnet-20241022 are not accepted and must be shortened to the
+          alias form.
       - id: b
         text: >-
-          opus, the most capable model, so that delegated work always gets the strongest available
-          reasoning unless you deliberately downgrade the subagent to a cheaper model.
+          A short model alias (haiku, sonnet, opus), a full model ID such as
+          claude-3-5-sonnet-20241022, or the special value inherit; omitting the
+          field entirely is also valid and is treated as inherit.
       - id: c
         text: >-
-          inherit, meaning the subagent runs on the same model as the parent conversation unless its
-          frontmatter overrides the model with a specific alias or full model ID.
+          Any string at all, including arbitrary text; Claude Code passes it
+          unchanged to the API, and the API is responsible for resolving or
+          rejecting unrecognized values at invocation time.
       - id: d
         text: >-
-          sonnet, a fixed balanced default that is independent of the parent's model, so every
-          subagent lands on the mid-tier model regardless of what the main conversation is using.
+          Only the literal string inherit or a full model ID; short aliases such as
+          haiku are not accepted and cause a validation error when the subagent is
+          loaded.
     answerKey:
       kind: choice
-      correctChoiceId: c
+      correctChoiceId: b
     guidance: >-
-      The default model value is inherit, so a subagent runs on the parent's model unless
-      overridden. A common misconception is that subagents default to Haiku; only the built-in
-      Explore agent defaults to Haiku among the built-ins.
+      The model field accepts a short alias (haiku, sonnet, opus), a full model ID
+      (e.g. claude-3-5-sonnet-20241022), the special value inherit, or may be omitted
+      entirely — omitting it is equivalent to inherit. Choices (a) and (d) each
+      incorrectly exclude one valid form, and (c) is wrong because the field is not
+      an unconstrained pass-through string.
   - id: s-100-mc-g
     tier: 100
     bloom: remember
@@ -2532,7 +2551,7 @@ items:
   - id: s-400-ff-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 476
     type: free_form
     prompt: >-
       A maintainer wants a custom subagent to use a fork for a context-heavy side analysis,

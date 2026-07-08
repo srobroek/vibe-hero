@@ -1826,7 +1826,7 @@ items:
   - id: kch-400-mc-j
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: multiple_choice
     prompt: |
       A security reviewer objects that a workspace hook runs arbitrary shell commands

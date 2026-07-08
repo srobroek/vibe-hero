@@ -674,29 +674,35 @@ items:
     difficulty: 255
     type: multiple_choice
     prompt: >-
-      A Stop hook is written to block (exit 2) whenever the linter has not yet passed, with no other
-      condition. On a project the linter can never satisfy, what is the durable risk, and what
-      should the hook do instead?
+      A Stop hook blocks (exit 2) whenever the linter has not passed — and on this project the
+      linter never passes. Which sequence correctly describes what happens after the first block?
     choices:
       - id: a
         text: >-
-          It risks an infinite continue loop, because each block forces another turn that the hook
-          blocks again; the hook should stop blocking once progress is impossible and let Claude
-          stop.
+          Block then Claude starts a new turn then turn completes then hook fires again then linter still
+          failing then block again — repeating indefinitely.
       - id: b
-        text: 'Nothing can go wrong: a Stop hook can only ever block one time per session.'
+        text: >-
+          Block then hook fires a second time immediately, before any new turn starts then hook exits 0
+          to avoid a loop.
       - id: c
-        text: It risks corrupting the transcript, because Stop hooks may not write to stderr.
+        text: >-
+          Block then Claude records a loop-guard counter then after three consecutive blocks the hook is
+          skipped automatically.
       - id: d
-        text: It risks being ignored, because exit 2 is non-blocking for Stop hooks.
+        text: >-
+          Block then the session is suspended until the user re-prompts, which breaks the loop.
     answerKey:
       kind: choice
       correctChoiceId: a
     guidance: >-
-      A Stop hook that always blocks creates a continue loop: blocking the stop forces another turn,
-      which finishes and triggers the hook again. The durable fix is to make the block conditional
-      on real progress still being possible, and otherwise exit 0 (or surface advice via
-      additionalContext) so Claude is allowed to stop.
+      A Stop hook block forces Claude to start a new turn. When that turn ends the Stop hook fires
+      again; if the linter still fails it blocks again — and so on without end. The key mechanics
+      are: (1) the hook fires after a turn completes, not mid-turn and not repeatedly before any new
+      turn starts, and (2) there is no built-in loop-guard counter — Claude Code will not auto-skip
+      the hook after N blocks. The session does not suspend waiting for the user; Claude re-enters
+      immediately and ends another turn, retriggering the hook. A well-behaved Stop hook must make
+      the block conditional so it exits 0 once no further progress is possible.
   - id: h-200-ff-h
     tier: 200
     bloom: understand
@@ -1526,36 +1532,55 @@ items:
   - id: h-300-ff-q
     tier: 300
     bloom: apply
-    difficulty: 365
+    difficulty: 360
     type: free_form
     prompt: >-
-      Two PreToolUse hooks match the same Bash call: a "logger" hook that always writes an audit
-      line, and a "guard" hook that returns permissionDecision "deny". A colleague assumes the
-      guard's deny will stop the logger from writing. Will the audit line still be written? Explain
-      the parallel-hook semantics.
+      Your team needs an audit log that records only Bash commands Claude actually
+      executes — denied commands must not appear in the log. Design a hook
+      architecture that satisfies this requirement. Name the event(s) you would use,
+      explain why your chosen event naturally excludes denied commands, and identify
+      one tradeoff of your approach.
     rubric:
       criteria:
         - id: c1
           text: >-
-            States all matching hooks run in parallel, so the logger still executes and writes its
-            audit line.
+            Proposes a valid design: either (a) a PostToolUse hook on Bash, which only
+            fires when the tool was not blocked, so denied commands never reach it; or
+            (b) a single PreToolUse hook that writes to the log only on the allow
+            branch and skips the write on the deny branch.
         - id: c2
-          text: Explains a deny from one hook does NOT suppress sibling hooks' side effects.
+          text: >-
+            Correctly explains the mechanism: PostToolUse fires only after successful
+            execution (a blocked tool never triggers it), OR a single conditional hook
+            controls its own write and so can skip logging on the deny path.
         - id: c3
           text: >-
-            (optional) Notes the tool call itself is still blocked because the most restrictive
-            decision (deny) wins.
+            (optional) Names a real tradeoff: PostToolUse cannot see the command before
+            it runs and cannot block execution; a merged PreToolUse hook couples guard
+            and logging logic in one script; PostToolUse cannot capture denied commands
+            at all, which would be a gap for a different audit requirement.
       referenceAnswer: >-
-        Yes, the audit line is still written. When an event fires, all matching hooks run in
-        parallel, so the logger executes independently of the guard. One hook's deny does not stop
-        sibling hooks' side effects — they have already run. The tool call itself is blocked
-        because, across PreToolUse hooks, the most restrictive decision wins (a deny is not
-        overridden by an allow), but that only governs the tool, not the other hooks' writes.
+        Two valid designs exist. Design A: add a PostToolUse hook matching Bash.
+        PostToolUse fires only after a tool has successfully executed — if any
+        PreToolUse hook blocked the call, PostToolUse never fires for that invocation,
+        so denied commands are naturally excluded. Tradeoff: the hook sees the command
+        only after it ran, and it cannot itself block execution; it also cannot record
+        denied attempts at all (which is fine here, but would be a gap for a different
+        audit). Design B: use a single PreToolUse hook that both evaluates the
+        allow/deny decision and, on the allow branch only, writes the audit line.
+        Because the hook controls its own write, it skips the write on the deny path.
+        Tradeoff: guard logic and logging are coupled in one script. Note that two
+        separate parallel PreToolUse hooks — a dedicated logger plus a dedicated guard
+        — would NOT satisfy the requirement: matching PreToolUse hooks run in parallel
+        and independently, so the logger fires regardless of the guard's deny decision.
       passThreshold: 0.6
     guidance: >-
-      A common pitfall is treating a guard's deny as a way to suppress another hook. Parallel
-      execution means side effects from every matching hook still happen; deny only controls whether
-      the tool proceeds.
+      The design lever is event timing. PostToolUse is only reachable when a tool
+      actually ran — a blocked call never triggers it — making it the natural fit for
+      "log only executed commands." A single PreToolUse hook can also work by making
+      the audit write conditional on its own allow decision. Two separate parallel
+      PreToolUse hooks cannot satisfy the requirement because hooks share no decision
+      state before they execute.
   - id: h-300-ff-r
     tier: 300
     bloom: apply
@@ -1943,36 +1968,44 @@ items:
     prompt: >-
       You must auto-block the agent from editing files under `infra/` while keeping it autonomous on
       the rest of the repo, and the block must survive a user running with
-      `--dangerously-skip-permissions`. Explain why a PreToolUse `deny` hook achieves this where a
-      permission deny rule combined with normal mode would not be enough, and note the one thing a
-      hook still cannot do.
+      `--dangerously-skip-permissions`. A colleague suggests a bare deny permission rule — noting it
+      also survives bypass mode. You agree, but argue a PreToolUse `deny` hook is the better pattern
+      here. Explain the shared property that makes both options survive `--dangerously-skip-permissions`,
+      identify the one autonomy advantage a deny hook has that a bare deny permission rule lacks, and
+      note the one thing even a deny hook cannot do.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Explains PreToolUse hooks fire before the permission-mode check, so a deny holds even
-            under bypassPermissions / --dangerously-skip-permissions.
+            Explains that PreToolUse hooks fire before the permission-mode check, so a deny holds even
+            under bypassPermissions / --dangerously-skip-permissions — and acknowledges that a deny
+            permission rule shares this property (both are valid for the bypass-survival guarantee).
         - id: c2
           text: >-
-            Notes a deny decision feeds a reason back to Claude so it can adapt and continue
-            autonomously (vs an interrupting ask).
+            Identifies the autonomy advantage unique to the hook: a deny decision returns a
+            permissionDecisionReason that Claude reads and can adapt to, keeping the agent running
+            autonomously on the allowed parts of the repo; a bare deny permission rule blocks silently
+            without providing this structured feedback.
         - id: c3
           text: >-
-            States the limit: a hook cannot loosen/grant power past permission rules; an allow
-            cannot override a deny rule.
+            States the limit: a hook cannot loosen permissions; an allow decision cannot override an
+            existing deny rule, so hooks can only ever tighten policy.
       referenceAnswer: >-
-        PreToolUse hooks run before any permission-mode check, so a `permissionDecision: "deny"`
-        blocks the edit even when the user launched with --dangerously-skip-permissions /
-        bypassPermissions. This makes a deny hook the recommended pattern for org guardrails that
-        must survive a careless user. The deny also returns a reason that Claude reads and adapts
-        to, keeping the agent autonomous rather than interrupting a human. The thing a hook still
-        cannot do is loosen permissions: an allow decision cannot override an existing deny rule, so
-        hooks only ever tighten.
+        Both a PreToolUse deny hook and a deny permission rule fire/are enforced before or independent
+        of the bypassPermissions mode check, so either option blocks the edit even when the user
+        launches with --dangerously-skip-permissions — the colleague is right that a deny rule is also
+        valid. The autonomy edge a deny hook adds is that it returns a `permissionDecisionReason` that
+        Claude reads and can act on, so the agent understands why the edit was blocked and tries an
+        alternative path without interrupting a human. A bare deny permission rule blocks silently;
+        Claude sees no structured reason to adapt to. The one thing even a deny hook cannot do is
+        loosen permissions: a permissionDecision of "allow" cannot override an existing deny rule, so
+        hooks are strictly a tightening layer.
       passThreshold: 0.6
     guidance: >-
-      The firing order (PreToolUse before permission-mode check) is what makes a deny hook the only
-      true override that survives bypass mode. The symmetry-breaker to remember: deny can tighten
-      past bypass, but allow can never loosen past a deny rule.
+      Both a PreToolUse deny hook and a deny permission rule survive bypassPermissions mode. The
+      hook's unique edge is the permissionDecisionReason it returns, enabling Claude to adapt and
+      stay autonomous. The symmetry-breaker to remember: deny can tighten past bypass, but allow can
+      never loosen past a deny rule.
   - id: h-400-mc-k
     tier: 400
     bloom: analyze
@@ -2149,7 +2182,7 @@ items:
   - id: h-400-ff-p
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 475
     type: free_form
     prompt: >-
       A team is deciding where to put three rules: (1) "never force-push to main" (must be
@@ -2464,37 +2497,62 @@ items:
   - id: h-500-ff-a
     tier: 500
     bloom: evaluate
-    difficulty: 506
+    difficulty: 510
     type: free_form
     prompt: >-
-      You must enforce a deterministic, non-bypassable ban on a dangerous command, add an advisory
-      auto-format step after edits, and encode a soft naming convention. For each of the three,
-      judge whether it belongs in the permission system, a hook, or CLAUDE.md, and justify the
-      hard-ban choice in terms of failure modes.
+      A team wants to enforce "no git push --force to main" with a PreToolUse hook on Bash. They
+      write the hook so it inspects tool_input.command for the --force flag and returns
+      permissionDecision "deny" when it matches. A security engineer adds an "if" field
+      (Bash(git push --force:*)) to avoid spawning the hook on unrelated calls. Six months later
+      a force-push slips through. Reconstruct the two distinct failure surfaces that together
+      explain the slip, and for each state whether the failure is intrinsic to the chosen
+      mechanism or correctable by changing that mechanism's configuration.
     rubric:
       criteria:
         - id: c1
           text: >-
-            Puts the deterministic non-bypassable hard ban in the permission system (not a hook),
-            because hooks and the if filter fail open
+            Identifies the detection failure surface: both the "if" field and the command-string
+            pattern in the hook script are best-effort and fail open — if the command uses an alias,
+            env-var substitution, a shell wrapper, or any other indirection that obscures the flag,
+            neither the "if" filter nor the hook's grep matches, the deny never fires, and the call
+            proceeds. This failure is intrinsic to command-string parsing: changing the regex or
+            widening the "if" reduces the gap but cannot close it, because new indirections can always
+            bypass a string-based check.
         - id: c2
-          text: Puts the advisory auto-format step in a hook (deterministic but advisory side effect)
+          text: >-
+            Identifies the enforcement-layer failure surface: even when detection works perfectly,
+            the hook is not the authoritative enforcement boundary — the permission system is.
+            A permission deny rule blocks the call based on the structured tool invocation, not a
+            string parse, so it does not share the fail-open detection weakness. This failure is
+            correctable: adding a permission deny rule for Bash(git push --force:*) closes the
+            enforcement gap without replacing the hook.
         - id: c3
-          text: Puts the soft naming convention in CLAUDE.md (model-interpreted guidance)
+          text: >-
+            Concludes that the two failures are independent: fixing detection (better regex or wider
+            "if") does not address the enforcement-layer gap, and adding a permission deny rule does
+            not fix the detection logic. A robust design requires both — the hook as an advisory early
+            signal and the permission rule as the hard boundary — because neither alone is sufficient.
       referenceAnswer: >-
-        The hard, non-bypassable ban belongs in the permission system: it cannot be bypassed and
-        does not fail open, whereas hooks (and the if filter) are best-effort and fail open on
-        unparseable input, so a hook is the wrong layer for a hard security guarantee. The advisory
-        auto-format belongs in a hook: it is deterministic but does not need to hard-block, so a
-        PostToolUse or Stop hook formatting the file is appropriate. The soft naming convention
-        belongs in CLAUDE.md, since it is model-interpreted guidance rather than a deterministic
-        gate.
+        There are two distinct failure surfaces. The first is detection: both the "if" field and the
+        hook script's command-string check are best-effort and fail open. If the force-push arrives
+        via an alias, a shell function, an env-var like GIT_FLAGS, or any wrapper that hides --force
+        from the raw command string, neither the "if" filter nor the hook pattern matches. The deny
+        never fires. This is intrinsic to string-based detection: widening the pattern or the "if"
+        expression shrinks the gap but cannot close it, because indirection can always be invented to
+        avoid a given string match. The second is enforcement layer: even when detection is perfect,
+        the hook is not the authoritative enforcement boundary. The permission system evaluates the
+        structured tool invocation and its deny rules do not depend on parsing tool_input.command, so
+        they do not share the fail-open weakness. This failure is correctable by adding a permission
+        deny rule for the force-push pattern — the rule blocks reliably where the hook cannot
+        guarantee it will. The two failures are independent: improving the detection regex does not
+        fill the enforcement-layer gap, and adding a permission rule does not make the hook's
+        detection reliable. A robust design uses both — the hook as a deterministic early advisory
+        signal and the permission rule as the hard boundary.
       passThreshold: 0.6
     guidance: >-
-      The layering rule: permission system for hard non-bypassable bans (cannot be bypassed, does
-      not fail open), hooks for deterministic-but-advisory nudges, CLAUDE.md for soft conventions.
-      The classic mistake is reaching for a hook to enforce hard security; the if filter and hooks
-      fail open, so the permission system is the real enforcement layer.
+      The item forces learners to reason about two orthogonal failure axes — detection reliability
+      (intrinsic to command-string parsing, cannot be fully closed) and enforcement-layer authority
+      (correctable by adding a permission rule) — rather than simply recalling that hooks fail open.
   - id: h-500-mc-e
     tier: 500
     bloom: evaluate
@@ -2778,30 +2836,54 @@ items:
     difficulty: 540
     type: multiple_choice
     prompt: >-
-      A team uses a PostToolUse hook with decision "block" on the Edit tool, believing it will undo
-      a bad edit and prevent the file change from taking effect. Evaluate this belief.
+      A team wants a PostToolUse hook on the Read tool to deliver a redacted copy of
+      file contents to the model — stripping lines matching /SECRET=\w+/ — while still
+      letting the model use the file. Their current hook sets decision: "block" and exits
+      2, but the model still sees the raw unredacted content. A colleague proposes
+      switching entirely to a PreToolUse hook that blocks the Read call when the file
+      path matches a sensitive pattern. A second colleague says to keep PostToolUse but
+      return exit 0 with hookSpecificOutput.updatedToolOutput containing the already-redacted
+      text. Evaluate the two alternatives.
     choices:
       - id: a
-        text: It is correct only for the Write tool; for Edit, block does roll back the change
+        text: >-
+          The PreToolUse switch is strictly better: it fires before the file is read,
+          so the model has no chance to see any content — a stronger guarantee than
+          post-hoc output replacement.
       - id: b
         text: >-
-          It is correct: PostToolUse with decision block rolls back the file to its prior contents
-          automatically
+          The second colleague's direction is right, but the hook must also include
+          decision: "block" in the same JSON response to prevent the original output
+          from reaching the model alongside the replacement.
       - id: c
         text: >-
-          It is mistaken: PostToolUse fires after the edit has already succeeded and cannot undo it;
-          the block decision only feeds the model feedback for the next step. To actually prevent
-          the change you need a PreToolUse hook
+          The second colleague is right: PostToolUse can replace what the model sees via
+          hookSpecificOutput.updatedToolOutput (exit 0 with JSON) — the hook supplies the
+          redacted text and that is what enters the conversation context. PreToolUse could
+          block the Read entirely but cannot serve a redacted version; decision: "block"
+          / exit 2 only feeds the model corrective feedback and does not intercept or
+          replace tool output.
       - id: d
-        text: PostToolUse cannot use decision block at all, so the hook is silently ignored
+        text: >-
+          Both alternatives are wrong because PostToolUse fires after the file is already
+          in Claude's context and PreToolUse has no access to file contents; the correct
+          interception point is a UserPromptSubmit hook that strips secrets before the
+          model sees them.
     answerKey:
       kind: choice
       correctChoiceId: c
     guidance: >-
-      PostToolUse runs after the tool has already succeeded, so it cannot undo the action. Its
-      decision "block" only provides feedback that steers the model's next step, not a rollback. To
-      actually prevent or alter a change, you must gate it in PreToolUse, which fires before
-      execution.
+      PostToolUse + hookSpecificOutput.updatedToolOutput (exit 0 with JSON) is the
+      purpose-built mechanism for replacing the tool output the model sees: the hook
+      supplies the already-redacted text and only that enters the conversation context.
+      decision: "block" / exit 2 feeds corrective feedback for the model's next step;
+      it does not intercept or replace the output (and combining it with updatedToolOutput
+      is impossible — exit 2 discards JSON entirely). PreToolUse fires before the Read
+      executes and can block the call, but blocking is not redacting: the model receives
+      no file content at all rather than a sanitized version, which fails the stated goal
+      of letting the model use the file. UserPromptSubmit gates the user's prompt, not
+      tool results. The expert judgment is that PostToolUse + updatedToolOutput is the
+      only path that satisfies "model reads the file but sees only the sanitized version."
   - id: h-500-mc-l
     tier: 500
     bloom: evaluate

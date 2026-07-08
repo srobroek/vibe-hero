@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.0](https://github.com/srobroek/vibe-hero/compare/v0.16.0...v0.17.0) (2026-07-08)
+
+
+### Features
+
+* expand task-decomposition quiz topic to 100 questions and fix audited content defects across all topics ([#68](https://github.com/srobroek/vibe-hero/issues/68)) ([7c3db23](https://github.com/srobroek/vibe-hero/commit/7c3db23514850b696abf2dfb72786d9e582cb2f6))
+
 ## [0.16.0](https://github.com/srobroek/vibe-hero/compare/v0.15.0...v0.16.0) (2026-07-07)
 
 

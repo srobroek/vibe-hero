@@ -1859,7 +1859,7 @@ items:
   - id: cas-400-ff-g
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: free_form
     prompt: >-
       A security review flags that several repos in an org each ship a `.codex/config.toml` enabling

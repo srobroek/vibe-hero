@@ -1698,7 +1698,7 @@ items:
   - id: kcm-400-mc-k
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: multiple_choice
     prompt: |
       A secret leaked because someone committed `"env": {"TOKEN": "ghp_real_value"}` in mcp.json.

@@ -2458,7 +2458,7 @@ items:
       bias; it will tend to endorse its own claimed work. Tests help but may not
       cover every task's success criterion.
 
-  - id: task-decomposition-400-sa-a
+  - id: task-decomposition-400-mc-b
     tier: 400
     bloom: analyze
     difficulty: 440

@@ -1694,7 +1694,7 @@ items:
   - id: ktx-400-mc-k
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: multiple_choice
     prompt: |
       You want a hook that adds context to the agent before each task by printing to

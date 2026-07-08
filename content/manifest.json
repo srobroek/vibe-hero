@@ -1,6 +1,6 @@
 {
   "version": "0.16.0",
-  "publishedAt": "2026-07-08T09:28:57.560Z",
+  "publishedAt": "2026-07-08T09:35:51.051Z",
   "topics": [
     {
       "id": "agentic-workflows",
@@ -153,7 +153,7 @@
         400,
         500
       ],
-      "sha256": "154e201f0c87af3d9e2712711397877ec392847267d3fa02c36b5b496555cd12"
+      "sha256": "55ad4e484b548d8c9b891c2d39175be98c0faaa29965481eaed211b6c4ac6b17"
     },
     {
       "id": "codex-cli-basics",
@@ -187,7 +187,7 @@
         400,
         500
       ],
-      "sha256": "5ecf852983189b71bc213cf87cb329ec961173e91acf89298e60e77050fea4b0"
+      "sha256": "969031342320545ccfdaa27481197441c116f5bcf36906dce708a2a68faa0e19"
     },
     {
       "id": "codex-mcp-and-tools",
@@ -204,7 +204,7 @@
         400,
         500
       ],
-      "sha256": "76902aaea128c99e44f662e9513bc8c1a76e1dc7f344d348f9d95a57ce6fc9a7"
+      "sha256": "d910072c4a060fe52b4ddcf01ba1667d7ce955baeb6103b68cffdbbbf3a7acfc"
     },
     {
       "id": "debugging",
@@ -268,7 +268,7 @@
         400,
         500
       ],
-      "sha256": "fc99556163e1393abacbedfdb27fd3d6aa412e10f42178119081d0789d1cb732"
+      "sha256": "d0bdd043d77b4daa03d179843cbfbc2ebe26d93a7d9b48ca860f39543d0039e6"
     },
     {
       "id": "testing-and-verification",
@@ -335,7 +335,7 @@
         400,
         500
       ],
-      "sha256": "3bda86da5372aa6188e906e404c414ad0d8929a08f6a62c516e6474a5de5768f"
+      "sha256": "2b38c3a93bb9fb50a0076702ed8ac21ff42edddfea157c63b8ddd5343346826b"
     },
     {
       "id": "kiro-cli-mcp",
@@ -352,7 +352,7 @@
         400,
         500
       ],
-      "sha256": "f5a771328213ef077ad3ba6cca2d267100187c8221e1714014873ba0ac57b4ad"
+      "sha256": "4d99abf5dc39a6ebed27fce7a75c57f0a6120a76fa148965f6607bf8a59a45aa"
     },
     {
       "id": "kiro-cli-specs-and-steering",
@@ -403,7 +403,7 @@
         400,
         500
       ],
-      "sha256": "58b770df7a652dbe751c71ba91d93372f8870644e8b5579252e1e24a6b627c0c"
+      "sha256": "e0141243bd42f5dbfa39847b781042c3f642adfbd2c60b149d5e75f2b8ccf723"
     },
     {
       "id": "kiro-ide-ears-requirements",
@@ -454,7 +454,7 @@
         400,
         500
       ],
-      "sha256": "0d70ba7f79c67b13d01eb277afd73a25e6317b90e717e4b6a859f4631bf3e830"
+      "sha256": "f53802270a4d42af231a8a25f211b91b024c0a3f5ddb486da8afb67b9bdf0a99"
     },
     {
       "id": "kiro-ide-steering",
@@ -488,7 +488,7 @@
         400,
         500
       ],
-      "sha256": "4f7c43cabf440be8b3219b2448984099403428e875213e90f6efc8532945d10f"
+      "sha256": "4f103004d783ed9c0362315836d91c609679f622165616e3833d7083b1360ef1"
     }
   ]
 }

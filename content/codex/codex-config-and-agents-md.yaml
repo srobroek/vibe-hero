@@ -1902,7 +1902,7 @@ items:
   - id: cca-400-mc-t
     tier: 400
     bloom: analyze
-    difficulty: 480
+    difficulty: 478
     type: multiple_choice
     prompt: >-
       Under the Auto preset (workspace-write + on-request), Codex paused and asked permission to

@@ -9,4 +9,4 @@
  */
 
 /** Server version advertised to MCP hosts. */
-export const SERVER_VERSION = "0.16.0"; // x-release-please-version
+export const SERVER_VERSION = "0.17.0"; // x-release-please-version

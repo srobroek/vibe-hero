@@ -1,18 +1,5 @@
 {
   "mcpServers": {
-    "codebase-memory-mcp": {
-      "type": "stdio",
-      "command": "codebase-memory-mcp",
-      "args": []
-    },
-    "context7": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ]
-    },
     "mcp-package-version": {
       "type": "stdio",
       "command": "npx",
